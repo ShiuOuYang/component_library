@@ -1,0 +1,88 @@
+name: Deploy Vue.js ym-dashboard
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  #     - dev
+  pull_request:
+    types: [closed]
+    branches:
+      - dev
+
+jobs:
+  build-and-deploy:
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
+    runs-on: [self-hosted]
+    
+    steps:
+    - name: Checkout Vue.js project
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ github.ref_name }}
+    
+    - name: Setup Node.js for Vue 3 + Vite
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install Vue.js dependencies
+      run: |
+        Write-Host "Installing Vue.js 3 + Composition API dependencies..."
+        npm ci
+      shell: powershell
+    
+    - name: Build Vue.js Dashboard with Vite
+      run: |
+        Write-Host "Building Vue.js 3 + Composition API WIP Dashboard..."
+        npm run build
+        
+        if (Test-Path "dist/index.html") {
+          Write-Host "SUCCESS: Vue.js Dashboard build completed"
+          Write-Host "Components: Dashboard + FilterDropdown + DataChart"
+        } else {
+          Write-Host "ERROR: Vue.js build failed"
+          exit 1
+        }
+      shell: powershell
+    
+    - name: Deploy Vue.js YM YIP Dashboard
+      run: |
+        Write-Host "Deploying Vue.js 3 + Composition API YM YIP Dashboard..."
+        
+        # 停止現有容器
+        docker-compose down --remove-orphans --timeout 30
+        
+        # 建置並啟動 Vue.js Dashboard
+        docker-compose build --no-cache
+        docker-compose up -d
+        
+        Write-Host "Vue.js YM YIP Dashboard deployment completed"
+      shell: powershell
+    
+    - name: Verify Vue.js Dashboard
+      run: |
+        Write-Host "Verifying Vue.js YM YIP Dashboard..."
+        Start-Sleep -Seconds 30
+        
+        try {
+          $response = Invoke-WebRequest -Uri "http://localhost:5015" -UseBasicParsing -TimeoutSec 15
+          if ($response.StatusCode -eq 200) {
+            Write-Host "SUCCESS: Vue.js 3 YM YIP Dashboard is running!"
+            Write-Host "Dashboard URL: http://localhost:5015"
+            Write-Host "Tech Stack: Vue.js 3 + Composition API + Vue Router 4 + Vite + Tailwind CSS"
+          }
+        } catch {
+          Write-Host "WARNING: Dashboard verification failed"
+          Write-Host "Container logs:"
+          docker logs realtime-kanban1 --tail=10
+        }
+      shell: powershell
+    
+    - name: Cleanup Docker resources
+      run: |
+        Write-Host "Cleaning up Docker resources..."
+        docker system prune -f --volumes
+      shell: powershell

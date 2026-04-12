@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>03 - 手寫長條圖 (不使用任何 JavaScript 函式庫)</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #FF9800;
+      padding-bottom: 10px;
+    }
+    
+    .section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+      color: #FF9800;
+      margin-top: 0;
+    }
+    
+    .description {
+      color: #666;
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+    
+    svg {
+      border: 1px solid #ddd;
+      background: white;
+      display: block;
+      margin: 10px 0;
+    }
+    
+    .code-hint {
+      background: #fff3e0;
+      border-left: 4px solid #FF9800;
+      padding: 10px 15px;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    
+    .task {
+      background: #e8f5e9;
+      border-left: 4px solid #4CAF50;
+      padding: 10px 15px;
+      margin: 10px 0;
+    }
+    
+    .calculation {
+      background: #f3e5f5;
+      border-left: 4px solid #9C27B0;
+      padding: 10px 15px;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 手寫長條圖 (Manual Bar Chart)</h1>
+  <p class="description">
+    <strong>學習目標：</strong>在不使用任何 JavaScript 的情況下，純手寫 SVG 製作長條圖。
+    這個練習會讓你深刻理解：<br>
+    1️⃣ 如何將數據值映射到像素高度<br>
+    2️⃣ 如何計算長條的位置<br>
+    3️⃣ 如何添加座標軸和標籤<br>
+    <strong>這些正是 D3.js 的 scales 和 axes 在背後做的事情！</strong>
+  </p>
+
+  <!-- 練習 1: 最簡單的長條圖 -->
+  <div class="section">
+    <h2>1️⃣ 最簡單的長條圖</h2>
+    <p class="description">
+      我們從最基本的開始：給定一些數據，手動計算每個長條的位置和高度。
+    </p>
+    
+    <div class="calculation">
+      <strong>📊 數據：</strong> [10, 25, 15, 30, 20]<br>
+      <strong>🎯 目標：</strong> 繪製 5 個長條，每個數值對應一個長條的高度
+    </div>
+    
+    <svg width="600" height="250">
+      <!-- 長條 1: 數值 10 -->
+      <rect x="50" y="150" width="80" height="50" fill="#4CAF50"/>
+      <text x="90" y="220" text-anchor="middle" font-size="14">10</text>
+      
+      <!-- 長條 2: 數值 25 -->
+      <rect x="150" y="75" width="80" height="125" fill="#4CAF50"/>
+      <text x="190" y="220" text-anchor="middle" font-size="14">25</text>
+      
+      <!-- 長條 3: 數值 15 -->
+      <rect x="250" y="125" width="80" height="75" fill="#4CAF50"/>
+      <text x="290" y="220" text-anchor="middle" font-size="14">15</text>
+      
+      <!-- 長條 4: 數值 30 (最高) -->
+      <rect x="350" y="50" width="80" height="150" fill="#4CAF50"/>
+      <text x="390" y="220" text-anchor="middle" font-size="14">30</text>
+      
+      <!-- 長條 5: 數值 20 -->
+      <rect x="450" y="100" width="80" height="100" fill="#4CAF50"/>
+      <text x="490" y="220" text-anchor="middle" font-size="14">20</text>
+      
+      <!-- 基準線 -->
+      <line x1="40" y1="200" x2="540" y2="200" stroke="#333" stroke-width="2"/>
+    </svg>
+    
+    <div class="calculation">
+      <strong>🧮 計算邏輯 (手動！)：</strong><br>
+      • 最大值：30<br>
+      • 可用高度：150px (預留 50px 給標籤)<br>
+      • 比例尺：150px / 30 = 5px per unit<br>
+      <br>
+      <strong>每個長條的計算：</strong><br>
+      • 長條 1 (值=10): height = 10 × 5 = 50px, y = 200 - 50 = 150<br>
+      • 長條 2 (值=25): height = 25 × 5 = 125px, y = 200 - 125 = 75<br>
+      • 長條 3 (值=15): height = 15 × 5 = 75px, y = 200 - 75 = 125<br>
+      • 長條 4 (值=30): height = 30 × 5 = 150px, y = 200 - 150 = 50<br>
+      • 長條 5 (值=20): height = 20 × 5 = 100px, y = 200 - 100 = 100<br>
+      <br>
+      <strong>⚠️ 關鍵理解：</strong><br>
+      • rect 的 y 座標是「頂部」位置<br>
+      • 因為 SVG 的 Y 軸向下，所以 y = baseline - height<br>
+      • 這就是為什麼在 D3 中，Y scale 通常要「反轉」domain
+    </div>
+  </div>
+
+  <!-- 練習 2: 帶完整座標軸的長條圖 -->
+  <div class="section">
+    <h2>2️⃣ 帶完整座標軸的長條圖</h2>
+    <p class="description">
+      現在加入完整的座標軸、刻度、標籤和標題。這是企業級圖表的標準結構。
+    </p>
+    
+    <div class="calculation">
+      <strong>📊 數據：</strong> Apple: 45, Banana: 30, Cherry: 55, Date: 20, Elderberry: 40<br>
+      <strong>📐 圖表尺寸：</strong><br>
+      • 完整 SVG: 800 × 500<br>
+      • Margin: top=40, right=40, bottom=60, left=80<br>
+      • 繪圖區域: 680 × 400
+    </div>
+    
+    <svg width="800" height="500">
+      <!-- 標題 -->
+      <text x="400" y="25" text-anchor="middle" font-size="20" font-weight="bold" fill="#333">
+        水果銷售數量 (單位：箱)
+      </text>
+      
+      <!-- 使用 margin convention -->
+      <g transform="translate(80, 40)">
+        <!-- Y 軸 -->
+        <line x1="0" y1="0" x2="0" y2="400" stroke="#333" stroke-width="2"/>
+        
+        <!-- Y 軸刻度和標籤 -->
+        <!-- 60 -->
+        <line x1="-5" y1="0" x2="0" y2="0" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="5" text-anchor="end" font-size="14" fill="#333">60</text>
+        <line x1="0" y1="0" x2="680" y2="0" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 50 -->
+        <line x1="-5" y1="67" x2="0" y2="67" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="72" text-anchor="end" font-size="14" fill="#333">50</text>
+        <line x1="0" y1="67" x2="680" y2="67" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 40 -->
+        <line x1="-5" y1="133" x2="0" y2="133" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="138" text-anchor="end" font-size="14" fill="#333">40</text>
+        <line x1="0" y1="133" x2="680" y2="133" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 30 -->
+        <line x1="-5" y1="200" x2="0" y2="200" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="205" text-anchor="end" font-size="14" fill="#333">30</text>
+        <line x1="0" y1="200" x2="680" y2="200" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 20 -->
+        <line x1="-5" y1="267" x2="0" y2="267" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="272" text-anchor="end" font-size="14" fill="#333">20</text>
+        <line x1="0" y1="267" x2="680" y2="267" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 10 -->
+        <line x1="-5" y1="333" x2="0" y2="333" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="338" text-anchor="end" font-size="14" fill="#333">10</text>
+        <line x1="0" y1="333" x2="680" y2="333" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 0 -->
+        <line x1="-5" y1="400" x2="0" y2="400" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="405" text-anchor="end" font-size="14" fill="#333">0</text>
+        
+        <!-- X 軸 -->
+        <line x1="0" y1="400" x2="680" y2="400" stroke="#333" stroke-width="2"/>
+        
+        <!-- 長條與標籤 -->
+        <!-- Apple: 45 -->
+        <rect x="40" y="100" width="100" height="300" fill="#FF6B6B"/>
+        <text x="90" y="430" text-anchor="middle" font-size="14" fill="#333">Apple</text>
+        <text x="90" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">45</text>
+        
+        <!-- Banana: 30 -->
+        <rect x="176" y="200" width="100" height="200" fill="#FFD93D"/>
+        <text x="226" y="430" text-anchor="middle" font-size="14" fill="#333">Banana</text>
+        <text x="226" y="190" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">30</text>
+        
+        <!-- Cherry: 55 -->
+        <rect x="312" y="33" width="100" height="367" fill="#E91E63"/>
+        <text x="362" y="430" text-anchor="middle" font-size="14" fill="#333">Cherry</text>
+        <text x="362" y="23" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">55</text>
+        
+        <!-- Date: 20 -->
+        <rect x="448" y="267" width="100" height="133" fill="#A0522D"/>
+        <text x="498" y="430" text-anchor="middle" font-size="14" fill="#333">watermelon</text>
+        <text x="498" y="257" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">20</text>
+        
+        <!-- Elderberry: 40 -->
+        <rect x="584" y="133" width="100" height="267" fill="#9C27B0"/>
+        <text x="634" y="430" text-anchor="middle" font-size="14" fill="#333">Elderberry</text>
+        <text x="634" y="123" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">40</text>
+        
+        <!-- Y 軸標題 (垂直) -->
+        <text x="-50" y="200" text-anchor="middle" font-size="16" font-weight="bold" fill="#333"
+              transform="rotate(-90, -50, 200)">
+          數量 (箱)
+        </text>
+        
+        <!-- X 軸標題 -->
+        <text x="340" y="460" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">
+          水果種類
+        </text>
+      </g>
+    </svg>
+    
+    <div class="calculation">
+      <strong>🧮 詳細計算過程：</strong><br>
+      <br>
+      <strong>1. 設定比例尺：</strong><br>
+      • 數據範圍 (domain): 0 ~ 60 (取最大值 55 向上取整)<br>
+      • 像素範圍 (range): 400px ~ 0px (注意：反轉！)<br>
+      • 比例：400px / 60 = 6.67px per unit<br>
+      <br>
+      <strong>2. 計算每個長條：</strong><br>
+      • Apple (45): <br>
+      &nbsp;&nbsp;height = 45 × 6.67 = 300px<br>
+      &nbsp;&nbsp;y = 400 - 300 = 100px<br>
+      <br>
+      • Cherry (55):<br>
+      &nbsp;&nbsp;height = 55 × 6.67 = 367px<br>
+      &nbsp;&nbsp;y = 400 - 367 = 33px<br>
+      <br>
+      <strong>3. X 軸位置計算 (5 個長條)：</strong><br>
+      • 總寬度：680px<br>
+      • 每個長條寬度：100px<br>
+      • 間距：(680 - 5×100) / 6 = 30px (左右各一個間距 + 4 個中間間距)<br>
+      • 位置：40, 176, 312, 448, 584<br>
+      <br>
+      <strong>💡 這就是 D3 的 scaleBand 在做的事情！</strong>
+    </div>
+  </div>
+
+  <!-- 練習 3: 水平長條圖 -->
+  <div class="section">
+    <h2>3️⃣ 水平長條圖 (Horizontal Bar Chart)</h2>
+    <p class="description">
+      有時候類別名稱很長，或者數據更適合水平呈現。讓我們製作一個水平長條圖。
+    </p>
+    
+    <svg width="700" height="400">
+      <!-- 標題 -->
+      <text x="350" y="25" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">
+        員工滿意度調查 (滿分 100)
+      </text>
+      
+      <g transform="translate(150, 50)">
+        <!-- Y 軸 (現在是類別軸) -->
+        <line x1="0" y1="0" x2="0" y2="300" stroke="#333" stroke-width="2"/>
+        
+        <!-- 類別標籤 -->
+        <text x="-10" y="35" text-anchor="end" font-size="14" fill="#333">工作環境</text>
+        <text x="-10" y="95" text-anchor="end" font-size="14" fill="#333">薪資福利</text>
+        <text x="-10" y="155" text-anchor="end" font-size="14" fill="#333">職涯發展</text>
+        <text x="-10" y="215" text-anchor="end" font-size="14" fill="#333">團隊氛圍</text>
+        <text x="-10" y="275" text-anchor="end" font-size="14" fill="#333">工作彈性</text>
+        
+        <!-- X 軸 (現在是數值軸) -->
+        <line x1="0" y1="300" x2="500" y2="300" stroke="#333" stroke-width="2"/>
+        
+        <!-- X 軸刻度 -->
+        <line x1="0" y1="295" x2="0" y2="305" stroke="#333" stroke-width="2"/>
+        <text x="0" y="320" text-anchor="middle" font-size="12" fill="#333">0</text>
+        
+        <line x1="125" y1="295" x2="125" y2="305" stroke="#333" stroke-width="2"/>
+        <text x="125" y="320" text-anchor="middle" font-size="12" fill="#333">25</text>
+        
+        <line x1="250" y1="295" x2="250" y2="305" stroke="#333" stroke-width="2"/>
+        <text x="250" y="320" text-anchor="middle" font-size="12" fill="#333">50</text>
+        
+        <line x1="375" y1="295" x2="375" y2="305" stroke="#333" stroke-width="2"/>
+        <text x="375" y="320" text-anchor="middle" font-size="12" fill="#333">75</text>
+        
+        <line x1="500" y1="295" x2="500" y2="305" stroke="#333" stroke-width="2"/>
+        <text x="500" y="320" text-anchor="middle" font-size="12" fill="#333">100</text>
+        
+        <!-- 網格線 -->
+        <line x1="125" y1="0" x2="125" y2="300" stroke="#e0e0e0" stroke-width="1"/>
+        <line x1="250" y1="0" x2="250" y2="300" stroke="#e0e0e0" stroke-width="1"/>
+        <line x1="375" y1="0" x2="375" y2="300" stroke="#e0e0e0" stroke-width="1"/>
+        <line x1="500" y1="0" x2="500" y2="300" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 水平長條 -->
+        <!-- 工作環境: 85 -->
+        <rect x="0" y="10" width="425" height="40" fill="#4CAF50"/>
+        <text x="435" y="35" font-size="14" font-weight="bold" fill="#333">85</text>
+        
+        <!-- 薪資福利: 72 -->
+        <rect x="0" y="70" width="360" height="40" fill="#2196F3"/>
+        <text x="370" y="95" font-size="14" font-weight="bold" fill="#333">72</text>
+        
+        <!-- 職涯發展: 68 -->
+        <rect x="0" y="130" width="340" height="40" fill="#FF9800"/>
+        <text x="350" y="155" font-size="14" font-weight="bold" fill="#333">68</text>
+        
+        <!-- 團隊氛圍: 92 -->
+        <rect x="0" y="190" width="460" height="40" fill="#E91E63"/>
+        <text x="470" y="215" font-size="14" font-weight="bold" fill="#333">92</text>
+        
+        <!-- 工作彈性: 78 -->
+        <rect x="0" y="250" width="390" height="40" fill="#9C27B0"/>
+        <text x="400" y="275" font-size="14" font-weight="bold" fill="#333">78</text>
+      </g>
+    </svg>
+    
+    <div class="calculation">
+      <strong>🧮 水平長條圖計算：</strong><br>
+      • 比例尺：500px / 100 = 5px per unit<br>
+      • 工作環境 (85): width = 85 × 5 = 425px<br>
+      • 團隊氛圍 (92): width = 92 × 5 = 460px<br>
+      <br>
+      <strong>💡 觀察：</strong><br>
+      • 水平長條圖不需要「翻轉」Y 軸！<br>
+      • X 和 Y 的角色互換了<br>
+      • 適合用於：類別名稱很長、比較排名、時間線
+    </div>
+  </div>
+
+  <!-- 練習 4: 堆疊長條圖 -->
+  <div class="section">
+    <h2>4️⃣ 堆疊長條圖 (Stacked Bar Chart)</h2>
+    <p class="description">
+      當我們想要顯示部分與整體的關係時，堆疊長條圖非常有用。
+    </p>
+    
+    <div class="calculation">
+      <strong>📊 數據：</strong> 每個月的產品銷售組成<br>
+      • Jan: Product A=20, Product B=15, Product C=10<br>
+      • Feb: Product A=25, Product B=20, Product C=12<br>
+      • Mar: Product A=30, Product B=18, Product C=15
+    </div>
+    
+    <svg width="700" height="400">
+      <text x="350" y="25" text-anchor="middle" font-size="18" font-weight="bold" fill="#333">
+        季度產品銷售組成
+      </text>
+      
+      <g transform="translate(100, 50)">
+        <!-- Y 軸 -->
+        <line x1="0" y1="0" x2="0" y2="300" stroke="#333" stroke-width="2"/>
+        
+        <!-- Y 軸刻度 -->
+        <line x1="-5" y1="0" x2="0" y2="0" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="5" text-anchor="end" font-size="12" fill="#333">70</text>
+        
+        <line x1="-5" y1="100" x2="0" y2="100" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="105" text-anchor="end" font-size="12" fill="#333">50</text>
+        
+        <line x1="-5" y1="200" x2="0" y2="200" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="205" text-anchor="end" font-size="12" fill="#333">30</text>
+        
+        <line x1="-5" y1="300" x2="0" y2="300" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="305" text-anchor="end" font-size="12" fill="#333">0</text>
+        
+        <!-- X 軸 -->
+        <line x1="0" y1="300" x2="500" y2="300" stroke="#333" stroke-width="2"/>
+        
+        <!-- January 堆疊 (總計 45: A=20, B=15, C=10) -->
+        <!-- 比例尺: 300px / 70 = 4.29px per unit -->
+        <g transform="translate(80, 0)">
+          <!-- Product C (10): height=43px, y=257 -->
+          <rect x="0" y="257" width="80" height="43" fill="#9C27B0"/>
+          <!-- Product B (15): height=64px, y=193 -->
+          <rect x="0" y="193" width="80" height="64" fill="#2196F3"/>
+          <!-- Product A (20): height=86px, y=107 -->
+          <rect x="0" y="107" width="80" height="86" fill="#4CAF50"/>
+          
+          <text x="40" y="320" text-anchor="middle" font-size="14" fill="#333">Jan</text>
+        </g>
+        
+        <!-- February 堆疊 (總計 57: A=25, B=20, C=12) -->
+        <g transform="translate(230, 0)">
+          <!-- Product C (12): height=51px, y=249 -->
+          <rect x="0" y="251" width="80" height="49" fill="#9C27B0"/>
+          <!-- Product B (20): height=86px, y=165 -->
+          <rect x="0" y="165" width="80" height="86" fill="#2196F3"/>
+          <!-- Product A (25): height=107px, y=58 -->
+          <rect x="0" y="58" width="80" height="107" fill="#4CAF50"/>
+          
+          <text x="40" y="320" text-anchor="middle" font-size="14" fill="#333">Feb</text>
+        </g>
+        
+        <!-- March 堆疊 (總計 63: A=30, B=18, C=15) -->
+        <g transform="translate(380, 0)">
+          <!-- Product C (15): height=64px, y=236 -->
+          <rect x="0" y="236" width="80" height="64" fill="#9C27B0"/>
+          <!-- Product B (18): height=77px, y=159 -->
+          <rect x="0" y="159" width="80" height="77" fill="#2196F3"/>
+          <!-- Product A (30): height=129px, y=30 -->
+          <rect x="0" y="30" width="80" height="129" fill="#4CAF50"/>
+          
+          <text x="40" y="320" text-anchor="middle" font-size="14" fill="#333">Mar</text>
+        </g>
+        
+        <!-- 圖例 -->
+        <g transform="translate(500, 10)">
+          <rect x="0" y="0" width="15" height="15" fill="#4CAF50"/>
+          <text x="20" y="12" font-size="12" fill="#333">Product A</text>
+          
+          <rect x="0" y="20" width="15" height="15" fill="#2196F3"/>
+          <text x="20" y="32" font-size="12" fill="#333">Product B</text>
+          
+          <rect x="0" y="40" width="15" height="15" fill="#9C27B0"/>
+          <text x="20" y="52" font-size="12" fill="#333">Product C</text>
+        </g>
+      </g>
+    </svg>
+    
+    <div class="calculation">
+      <strong>🧮 堆疊計算邏輯：</strong><br>
+      <br>
+      <strong>January (總計 45):</strong><br>
+      • Product A (20): y = 300 - (20×4.29) = 107, height = 86<br>
+      • Product B (15): y = 107 + 86 = 193, height = 64<br>
+      • Product C (10): y = 193 + 64 = 257, height = 43<br>
+      <br>
+      <strong>關鍵：</strong>每個區塊的 y 位置 = 前一個區塊的 y + height<br>
+      <br>
+      <strong>💡 這就是 D3 的 d3.stack() 在做的事情！</strong><br>
+      它會自動計算每個「層」的起始和結束位置。
+    </div>
+  </div>
+
+  <!-- 挑戰任務 -->
+  <div class="section" style="background: #e8f5e9;">
+    <h2>🎯 實戰挑戰</h2>
+    <div class="task">
+      <strong>挑戰 1：分組長條圖 (Grouped Bar Chart)</strong><br>
+      繪製一個圖表，顯示 3 個產品在 3 個月份的銷售數據，但不是堆疊，而是並排顯示。<br>
+      <br>
+      <strong>挑戰 2：添加互動效果 (用 CSS)</strong><br>
+      為長條添加 CSS hover 效果，滑鼠移上去時改變顏色和陰影。<br>
+      <br>
+      <strong>挑戰 3：負值長條圖</strong><br>
+      繪製一個包含正負值的長條圖 (例如：收入/支出)，需要在中間設置 0 基準線。<br>
+      <br>
+      <strong>挑戰 4：圓角長條圖</strong><br>
+      使用 rect 的 rx 和 ry 屬性，或者用 path 來繪製圓角長條。
+    </div>
+  </div>
+
+  <!-- 總結 -->
+  <div class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <h2 style="color: white;">🎓 恭喜完成手寫長條圖！</h2>
+    <p>
+      <strong>你已經理解了資料視覺化的核心：</strong><br>
+      ✅ 資料到像素的映射 (這就是 D3 Scales)<br>
+      ✅ 座標軸的構建 (這就是 D3 Axes)<br>
+      ✅ 長條位置的計算 (這就是 scaleBand)<br>
+      ✅ 堆疊資料的處理 (這就是 d3.stack)<br>
+      ✅ Margin Convention 的應用
+    </p>
+    <p>
+      <strong>💡 重要心得：</strong><br>
+      當你使用 D3 時，它只是自動化了這些計算。<br>
+      但理解背後的數學邏輯，能讓你在遇到問題時快速 debug，<br>
+      也能在需要客製化時知道該修改什麼。
+    </p>
+    <p>
+      <strong>📌 下一步：</strong> 前往 <code>04-vanilla-js-svg.html</code> 學習用 JavaScript 動態生成這些圖表！
+    </p>
+
+
+    
+  </div>
+  <svg width="800" height="500">
+      <!-- 標題 -->
+      <text x="400" y="25" text-anchor="middle" font-size="20" font-weight="bold" fill="#333">
+        水果銷售數量 (單位：箱)
+      </text>
+      
+      <!-- 使用 margin convention -->
+      <g transform="translate(80, 40)">
+        <!-- Y 軸 -->
+        <line x1="0" y1="0" x2="0" y2="400" stroke="#333" stroke-width="2"/>
+        
+        <!-- Y 軸刻度和標籤 -->
+        <!-- 60 -->
+        <line x1="-5" y1="0" x2="0" y2="0" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="5" text-anchor="end" font-size="14" fill="#333">60</text>
+        <line x1="0" y1="0" x2="680" y2="0" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 50 -->
+        <line x1="-5" y1="67" x2="0" y2="67" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="72" text-anchor="end" font-size="14" fill="#333">50</text>
+        <line x1="0" y1="67" x2="680" y2="67" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 40 -->
+        <line x1="-5" y1="133" x2="0" y2="133" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="138" text-anchor="end" font-size="14" fill="#333">40</text>
+        <line x1="0" y1="133" x2="680" y2="133" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 30 -->
+        <line x1="-5" y1="200" x2="0" y2="200" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="205" text-anchor="end" font-size="14" fill="#333">30</text>
+        <line x1="0" y1="200" x2="680" y2="200" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 20 -->
+        <line x1="-5" y1="267" x2="0" y2="267" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="272" text-anchor="end" font-size="14" fill="#333">20</text>
+        <line x1="0" y1="267" x2="680" y2="267" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 10 -->
+        <line x1="-5" y1="333" x2="0" y2="333" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="338" text-anchor="end" font-size="14" fill="#333">10</text>
+        <line x1="0" y1="333" x2="680" y2="333" stroke="#e0e0e0" stroke-width="1"/>
+        
+        <!-- 0 -->
+        <line x1="-5" y1="400" x2="0" y2="400" stroke="#333" stroke-width="2"/>
+        <text x="-10" y="405" text-anchor="end" font-size="14" fill="#333">0</text>
+        
+        <!-- X 軸 -->
+        <line x1="0" y1="400" x2="680" y2="400" stroke="#333" stroke-width="2"/>
+        
+        <!-- 長條與標籤 -->
+        <!-- Apple: 45 -->
+        <rect x="40" y="100" width="100" height="300" fill="#FF6B6B"/>
+        <text x="90" y="430" text-anchor="middle" font-size="14" fill="#333">Apple</text>
+        <text x="90" y="90" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">45</text>
+        
+        <!-- Banana: 30 -->
+        <rect x="176" y="200" width="100" height="200" fill="#FFD93D"/>
+        <text x="226" y="430" text-anchor="middle" font-size="14" fill="#333">Banana</text>
+        <text x="226" y="190" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">30</text>
+        
+        <!-- Cherry: 55 -->
+        <rect x="312" y="33" width="100" height="367" fill="#E91E63"/>
+        <text x="362" y="430" text-anchor="middle" font-size="14" fill="#333">Cherry</text>
+        <text x="362" y="23" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">55</text>
+        
+        <!-- Date: 20 -->
+        <rect x="448" y="267" width="100" height="133" fill="#A0522D"/>
+        <text x="498" y="430" text-anchor="middle" font-size="14" fill="#333">watermelon</text>
+        <text x="498" y="257" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">20</text>
+        
+        <!-- Elderberry: 40 -->
+        <rect x="584" y="133" width="100" height="267" fill="#9C27B0"/>
+        <text x="634" y="430" text-anchor="middle" font-size="14" fill="#333">Elderberry</text>
+        <text x="634" y="123" text-anchor="middle" font-size="12" font-weight="bold" fill="#333">40</text>
+        
+        <!-- Y 軸標題 (垂直) -->
+        <text x="-50" y="200" text-anchor="middle" font-size="16" font-weight="bold" fill="#333"
+              transform="rotate(-90, -50, 200)">
+          數量 (箱)
+        </text>
+        
+        <!-- X 軸標題 -->
+        <text x="340" y="460" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">
+          水果種類
+        </text>
+      </g>
+    </svg>
+  <script>
+    console.log('手寫長條圖練習已載入！');
+    console.log('🎯 下一個挑戰：用 JavaScript 動態生成這些長條！');
+  </script>
+</body>
+</html>

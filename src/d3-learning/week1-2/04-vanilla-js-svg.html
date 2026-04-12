@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>04 - Vanilla JavaScript 操作 SVG</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #E91E63;
+      padding-bottom: 10px;
+    }
+    
+    .section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+      color: #E91E63;
+      margin-top: 0;
+    }
+    
+    .description {
+      color: #666;
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+    
+    svg {
+      border: 1px solid #ddd;
+      background: white;
+      display: block;
+      margin: 10px 0;
+    }
+    
+    .code-hint {
+      background: #fce4ec;
+      border-left: 4px solid #E91E63;
+      padding: 10px 15px;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    
+    .controls {
+      background: #f5f5f5;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      background: #E91E63;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    
+    button:hover {
+      background: #C2185B;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    input[type="number"] {
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+      width: 80px;
+    }
+    
+    label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+    }
+    
+    /* 互動效果 */
+    .bar-interactive:hover {
+      opacity: 0.8;
+      cursor: pointer;
+    }
+    
+    .bar-interactive:active {
+      opacity: 0.6;
+    }
+    
+    /* 動畫 */
+    @keyframes growBar {
+      from {
+        height: 0;
+        y: 300;
+      }
+    }
+    
+    .animated-bar {
+      animation: growBar 0.5s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 Vanilla JavaScript 操作 SVG</h1>
+  <p class="description">
+    <strong>學習目標：</strong>使用原生 JavaScript 動態創建和操作 SVG 元素。
+    這是理解 D3.js 核心機制的關鍵一步！<br>
+    <strong>重要觀念：</strong>D3 本質上就是一個更強大的 DOM 操作工具，理解原生 JS 如何操作 SVG，
+    就能理解 D3 在背後做了什麼。
+  </p>
+
+  <!-- 練習 1: 創建 SVG 元素 -->
+  <div class="section">
+    <h2>1️⃣ 創建 SVG 元素的正確方式</h2>
+    <p class="description">
+      ⚠️ <strong>重要：</strong>SVG 元素屬於 XML 命名空間，不能用 <code>document.createElement()</code>，
+      必須使用 <code>document.createElementNS()</code>！
+    </p>
+    
+    <div id="chart1"></div>
+    
+    <div class="controls">
+      <button onclick="createCircle()">創建圓形</button>
+      <button onclick="createRect()">創建矩形</button>
+      <button onclick="clearChart1()">清除所有</button>
+    </div>
+    
+    <div class="code-hint">
+      <strong>💡 核心程式碼：</strong><br>
+      <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 5px; overflow-x: auto;">
+// SVG 命名空間
+const svgNS = "http://www.w3.org/2000/svg";
+
+// 創建 SVG 容器
+const svg = document.createElementNS(svgNS, "svg");
+svg.setAttribute("width", "600");
+svg.setAttribute("height", "200");
+
+// 創建圓形
+const circle = document.createElementNS(svgNS, "circle");
+circle.setAttribute("cx", "100");
+circle.setAttribute("cy", "100");
+circle.setAttribute("r", "50");
+circle.setAttribute("fill", "#4CAF50");
+
+// 添加到 SVG
+svg.appendChild(circle);
+document.getElementById("chart1").appendChild(svg);
+      </pre>
+    </div>
+  </div>
+
+  <!-- 練習 2: 動態生成長條圖 -->
+  <div class="section">
+    <h2>2️⃣ 動態生成長條圖</h2>
+    <p class="description">
+      使用 JavaScript 陣列來生成長條圖。這是 D3 data binding 的基礎概念。
+    </p>
+    
+    <div id="chart2"></div>
+    
+    <div class="controls">
+      <button onclick="generateBarChart()">生成長條圖</button>
+      <button onclick="updateData()">更新數據</button>
+      <button onclick="sortBars()">排序長條</button>
+    </div>
+    
+    <div class="code-hint">
+      <strong>💡 核心概念：</strong><br>
+      • 使用 <code>Array.forEach()</code> 遍歷數據<br>
+      • 為每個數據點創建對應的 SVG 元素<br>
+      • 計算位置和大小 (這就是 D3 Scales 的工作)<br>
+      • 動態更新時，清除舊元素，創建新元素
+    </div>
+  </div>
+
+  <!-- 練習 3: 互動效果 -->
+  <div class="section">
+    <h2>3️⃣ 添加互動效果</h2>
+    <p class="description">
+      為 SVG 元素添加事件監聽器，實現滑鼠互動。
+    </p>
+    
+    <div id="chart3"></div>
+    <div id="info3" style="padding: 10px; background: #f5f5f5; border-radius: 5px; margin-top: 10px; min-height: 30px;">
+      <strong>提示：</strong> 點擊或懸停在長條上查看資訊
+    </div>
+    
+    <div class="controls">
+      <button onclick="createInteractiveChart()">生成互動圖表</button>
+    </div>
+    
+    <div class="code-hint">
+      <strong>💡 事件監聽：</strong><br>
+      <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 5px; overflow-x: auto;">
+// 添加滑鼠事件
+rect.addEventListener('mouseover', function(event) {
+  this.setAttribute('fill', '#FF9800');
+  showTooltip(event, data);
+});
+
+rect.addEventListener('mouseout', function() {
+  this.setAttribute('fill', originalColor);
+  hideTooltip();
+});
+
+rect.addEventListener('click', function() {
+  console.log('Clicked:', data);
+});
+      </pre>
+    </div>
+  </div>
+
+  <!-- 練習 4: 動畫與過渡效果 -->
+  <div class="section">
+    <h2>4️⃣ 動畫與過渡效果</h2>
+    <p class="description">
+      使用 CSS transitions 和 JavaScript 實現平滑動畫。
+    </p>
+    
+    <div id="chart4"></div>
+    
+    <div class="controls">
+      <button onclick="animateChart()">動畫生成</button>
+      <button onclick="animateUpdate()">動畫更新</button>
+      <button onclick="resetAnimation()">重置</button>
+    </div>
+    
+    <div class="code-hint">
+      <strong>💡 動畫技巧：</strong><br>
+      • 使用 CSS transitions 實現平滑過渡<br>
+      • 使用 setTimeout 控制動畫時序<br>
+      • 使用 requestAnimationFrame 實現高效能動畫<br>
+      • 在 D3 中，這些由 d3.transition() 自動處理
+    </div>
+  </div>
+
+  <!-- 練習 5: 完整的資料驅動圖表 -->
+  <div class="section">
+    <h2>5️⃣ 完整的資料驅動圖表</h2>
+    <p class="description">
+      結合所有概念，創建一個完整的動態長條圖，包含座標軸、標籤和互動。
+    </p>
+    
+    <div id="chart5"></div>
+    
+    <div class="controls">
+      <label>
+        新增數據：
+        <input type="number" id="newValue" value="50" min="0" max="100">
+        <button onclick="addDataPoint()">新增</button>
+      </label>
+      <button onclick="removeLastBar()">刪除最後一個</button>
+      <button onclick="randomizeData()">隨機數據</button>
+      <button onclick="clearAllBars()">清除所有</button>
+    </div>
+    
+    <div class="code-hint">
+      <strong>💡 資料驅動開發流程：</strong><br>
+      1. 定義數據結構<br>
+      2. 創建 SVG 容器和座標系統<br>
+      3. 根據數據創建視覺元素<br>
+      4. 添加互動和動畫<br>
+      5. 實現數據更新機制<br>
+      <br>
+      <strong>這就是 D3 的核心哲學：Data-Driven Documents！</strong>
+    </div>
+  </div>
+
+  <!-- 挑戰任務 -->
+  <div class="section" style="background: #e8f5e9;">
+    <h2>🎯 進階挑戰</h2>
+    <p>
+      <strong>挑戰 1：實現 Enter-Update-Exit 模式</strong><br>
+      當數據更新時，不是重新繪製所有元素，而是：<br>
+      • Enter: 為新數據創建元素<br>
+      • Update: 更新現有元素<br>
+      • Exit: 移除多餘的元素<br>
+      <br>
+      <strong>挑戰 2：創建一個折線圖</strong><br>
+      使用 SVG &lt;path&gt; 元素和 JavaScript 計算路徑數據。<br>
+      <br>
+      <strong>挑戰 3：實現拖曳功能</strong><br>
+      讓使用者可以拖曳長條來改變數值。<br>
+      <br>
+      <strong>挑戰 4：響應式圖表</strong><br>
+      使用 ResizeObserver 監聽容器大小變化，自動重繪圖表。
+    </p>
+  </div>
+
+  <!-- 總結 -->
+  <div class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <h2 style="color: white;">🎓 恭喜完成階段一：基石與原理！</h2>
+    <p>
+      <strong>你已經掌握：</strong><br>
+      ✅ SVG 基本元素和屬性<br>
+      ✅ SVG 座標系統和變換<br>
+      ✅ 手動計算資料到像素的映射<br>
+      ✅ 使用原生 JavaScript 操作 SVG DOM<br>
+      ✅ 資料驅動的開發思維
+    </p>
+    <p>
+      <strong>🎉 重要里程碑：</strong><br>
+      你現在已經理解了 D3.js 的底層原理！<br>
+      當你開始使用 D3 時，你會發現它只是把這些操作變得更簡潔、更強大。
+    </p>
+    <p>
+      <strong>📌 準備好進入階段二了嗎？</strong><br>
+      下一步將學習 D3 的核心概念：<br>
+      • Selections (選擇集)<br>
+      • Data Binding (資料綁定)<br>
+      • Scales (比例尺)<br>
+      • Axes (座標軸)<br>
+      • Join Pattern (Enter-Update-Exit)
+    </p>
+  </div>
+
+  <script>
+    // SVG 命名空間
+    const svgNS = "http://www.w3.org/2000/svg";
+    
+    // 全域變數
+    let chart2Data = [30, 50, 25, 70, 45, 60];
+    let chart5Data = [45, 30, 55, 20, 40];
+    
+    // ==================== 練習 1 ====================
+    function createCircle() {
+      const container = document.getElementById('chart1');
+      let svg = container.querySelector('svg');
+      
+      if (!svg) {
+        svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '200');
+        container.appendChild(svg);
+      }
+      
+      const circle = document.createElementNS(svgNS, 'circle');
+      circle.setAttribute('cx', Math.random() * 580 + 10);
+      circle.setAttribute('cy', Math.random() * 180 + 10);
+      circle.setAttribute('r', Math.random() * 30 + 20);
+      circle.setAttribute('fill', `hsl(${Math.random() * 360}, 70%, 60%)`);
+      circle.setAttribute('opacity', '0.8');
+      
+      svg.appendChild(circle);
+    }
+    
+    function createRect() {
+      const container = document.getElementById('chart1');
+      let svg = container.querySelector('svg');
+      
+      if (!svg) {
+        svg = document.createElementNS(svgNS, 'svg');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '200');
+        container.appendChild(svg);
+      }
+      
+      const rect = document.createElementNS(svgNS, 'rect');
+      rect.setAttribute('x', Math.random() * 550);
+      rect.setAttribute('y', Math.random() * 150);
+      rect.setAttribute('width', Math.random() * 50 + 30);
+      rect.setAttribute('height', Math.random() * 50 + 30);
+      rect.setAttribute('fill', `hsl(${Math.random() * 360}, 70%, 60%)`);
+      rect.setAttribute('opacity', '0.8');
+      rect.setAttribute('rx', '5');
+      
+      svg.appendChild(rect);
+    }
+    
+    function clearChart1() {
+      const container = document.getElementById('chart1');
+      container.innerHTML = '';
+    }
+    
+    // ==================== 練習 2 ====================
+    function generateBarChart() {
+      const container = document.getElementById('chart2');
+      container.innerHTML = '';
+      
+      const width = 700;
+      const height = 300;
+      const margin = { top: 20, right: 20, bottom: 40, left: 60 };
+      const chartWidth = width - margin.left - margin.right;
+      const chartHeight = height - margin.top - margin.bottom;
+      
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('width', width);
+      svg.setAttribute('height', height);
+      
+      const g = document.createElementNS(svgNS, 'g');
+      g.setAttribute('transform', `translate(${margin.left}, ${margin.top})`);
+      svg.appendChild(g);
+      
+      // 計算比例尺
+      const maxValue = Math.max(...chart2Data);
+      const barWidth = chartWidth / chart2Data.length;
+      
+      // 繪製長條
+      chart2Data.forEach((value, index) => {
+        const barHeight = (value / maxValue) * chartHeight;
+        const x = index * barWidth;
+        const y = chartHeight - barHeight;
+        
+        const rect = document.createElementNS(svgNS, 'rect');
+        rect.setAttribute('x', x + barWidth * 0.1);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', barWidth * 0.8);
+        rect.setAttribute('height', barHeight);
+        rect.setAttribute('fill', '#4CAF50');
+        rect.style.transition = 'all 0.3s ease';
+        
+        g.appendChild(rect);
+        
+        // 數值標籤
+        const text = document.createElementNS(svgNS, 'text');
+        text.setAttribute('x', x + barWidth / 2);
+        text.setAttribute('y', y - 5);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '14');
+        text.setAttribute('fill', '#333');
+        text.textContent = value;
+        
+        g.appendChild(text);
+      });
+      
+      // 繪製座標軸
+      const axisLine = document.createElementNS(svgNS, 'line');
+      axisLine.setAttribute('x1', 0);
+      axisLine.setAttribute('y1', chartHeight);
+      axisLine.setAttribute('x2', chartWidth);
+      axisLine.setAttribute('y2', chartHeight);
+      axisLine.setAttribute('stroke', '#333');
+      axisLine.setAttribute('stroke-width', '2');
+      g.appendChild(axisLine);
+      
+      container.appendChild(svg);
+    }
+    
+    function updateData() {
+      chart2Data = chart2Data.map(() => Math.floor(Math.random() * 80) + 20);
+      generateBarChart();
+    }
+    
+    function sortBars() {
+      chart2Data.sort((a, b) => b - a);
+      generateBarChart();
+    }
+    
+    // ==================== 練習 3 ====================
+    function createInteractiveChart() {
+      const container = document.getElementById('chart3');
+      const infoDiv = document.getElementById('info3');
+      container.innerHTML = '';
+      
+      const width = 700;
+      const height = 300;
+      const margin = { top: 20, right: 20, bottom: 60, left: 60 };
+      const chartWidth = width - margin.left - margin.right;
+      const chartHeight = height - margin.top - margin.bottom;
+      
+      const data = [
+        { name: 'Monday', value: 45 },
+        { name: 'Tuesday', value: 52 },
+        { name: 'Wednesday', value: 38 },
+        { name: 'Thursday', value: 67 },
+        { name: 'Friday', value: 73 }
+      ];
+      
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('width', width);
+      svg.setAttribute('height', height);
+      
+      const g = document.createElementNS(svgNS, 'g');
+      g.setAttribute('transform', `translate(${margin.left}, ${margin.top})`);
+      svg.appendChild(g);
+      
+      const maxValue = Math.max(...data.map(d => d.value));
+      const barWidth = chartWidth / data.length;
+      
+      data.forEach((d, index) => {
+        const barHeight = (d.value / maxValue) * chartHeight;
+        const x = index * barWidth;
+        const y = chartHeight - barHeight;
+        
+        const rect = document.createElementNS(svgNS, 'rect');
+        rect.setAttribute('x', x + barWidth * 0.1);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', barWidth * 0.8);
+        rect.setAttribute('height', barHeight);
+        rect.setAttribute('fill', '#2196F3');
+        rect.setAttribute('class', 'bar-interactive');
+        rect.style.transition = 'all 0.3s ease';
+        
+        // 互動事件
+        rect.addEventListener('mouseover', function() {
+          this.setAttribute('fill', '#FF9800');
+          infoDiv.innerHTML = `<strong>${d.name}:</strong> ${d.value} 訪問次數`;
+        });
+        
+        rect.addEventListener('mouseout', function() {
+          this.setAttribute('fill', '#2196F3');
+          infoDiv.innerHTML = '<strong>提示：</strong> 點擊或懸停在長條上查看資訊';
+        });
+        
+        rect.addEventListener('click', function() {
+          alert(`${d.name} 的詳細資料：\n訪問次數：${d.value}\n排名：第 ${index + 1} 名`);
+        });
+        
+        g.appendChild(rect);
+        
+        // X 軸標籤
+        const text = document.createElementNS(svgNS, 'text');
+        text.setAttribute('x', x + barWidth / 2);
+        text.setAttribute('y', chartHeight + 20);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '12');
+        text.setAttribute('fill', '#666');
+        text.textContent = d.name;
+        
+        g.appendChild(text);
+      });
+      
+      const axisLine = document.createElementNS(svgNS, 'line');
+      axisLine.setAttribute('x1', 0);
+      axisLine.setAttribute('y1', chartHeight);
+      axisLine.setAttribute('x2', chartWidth);
+      axisLine.setAttribute('y2', chartHeight);
+      axisLine.setAttribute('stroke', '#333');
+      axisLine.setAttribute('stroke-width', '2');
+      g.appendChild(axisLine);
+      
+      container.appendChild(svg);
+    }
+    
+    // ==================== 練習 4 ====================
+    function animateChart() {
+      const container = document.getElementById('chart4');
+      container.innerHTML = '';
+      
+      const width = 700;
+      const height = 300;
+      const margin = { top: 20, right: 20, bottom: 40, left: 60 };
+      const chartWidth = width - margin.left - margin.right;
+      const chartHeight = height - margin.top - margin.bottom;
+      
+      const data = [35, 60, 42, 75, 28, 65];
+      
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('width', width);
+      svg.setAttribute('height', height);
+      
+      const g = document.createElementNS(svgNS, 'g');
+      g.setAttribute('transform', `translate(${margin.left}, ${margin.top})`);
+      svg.appendChild(g);
+      
+      const maxValue = Math.max(...data);
+      const barWidth = chartWidth / data.length;
+      
+      data.forEach((value, index) => {
+        setTimeout(() => {
+          const barHeight = (value / maxValue) * chartHeight;
+          const x = index * barWidth;
+          const y = chartHeight - barHeight;
+          
+          const rect = document.createElementNS(svgNS, 'rect');
+          rect.setAttribute('x', x + barWidth * 0.1);
+          rect.setAttribute('y', chartHeight); // 從底部開始
+          rect.setAttribute('width', barWidth * 0.8);
+          rect.setAttribute('height', 0); // 初始高度為 0
+          rect.setAttribute('fill', `hsl(${index * 60}, 70%, 60%)`);
+          
+          g.appendChild(rect);
+          
+          // 使用 setTimeout 實現動畫
+          setTimeout(() => {
+            rect.style.transition = 'all 0.5s ease-out';
+            rect.setAttribute('y', y);
+            rect.setAttribute('height', barHeight);
+          }, 10);
+          
+        }, index * 100); // 延遲產生波浪效果
+      });
+      
+      const axisLine = document.createElementNS(svgNS, 'line');
+      axisLine.setAttribute('x1', 0);
+      axisLine.setAttribute('y1', chartHeight);
+      axisLine.setAttribute('x2', chartWidth);
+      axisLine.setAttribute('y2', chartHeight);
+      axisLine.setAttribute('stroke', '#333');
+      axisLine.setAttribute('stroke-width', '2');
+      g.appendChild(axisLine);
+      
+      container.appendChild(svg);
+    }
+    
+    function animateUpdate() {
+      const rects = document.querySelectorAll('#chart4 rect');
+      const maxValue = 100;
+      
+      rects.forEach(rect => {
+        const newValue = Math.floor(Math.random() * 80) + 20;
+        const chartHeight = 260;
+        const newHeight = (newValue / maxValue) * chartHeight;
+        const newY = chartHeight - newHeight;
+        
+        rect.style.transition = 'all 0.5s ease-out';
+        rect.setAttribute('y', newY);
+        rect.setAttribute('height', newHeight);
+      });
+    }
+    
+    function resetAnimation() {
+      animateChart();
+    }
+    
+    // ==================== 練習 5 ====================
+    function drawChart5() {
+      const container = document.getElementById('chart5');
+      container.innerHTML = '';
+      
+      const width = 800;
+      const height = 400;
+      const margin = { top: 40, right: 40, bottom: 60, left: 80 };
+      const chartWidth = width - margin.left - margin.right;
+      const chartHeight = height - margin.top - margin.bottom;
+      
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('width', width);
+      svg.setAttribute('height', height);
+      
+      // 標題
+      const title = document.createElementNS(svgNS, 'text');
+      title.setAttribute('x', width / 2);
+      title.setAttribute('y', 25);
+      title.setAttribute('text-anchor', 'middle');
+      title.setAttribute('font-size', '18');
+      title.setAttribute('font-weight', 'bold');
+      title.textContent = '動態資料視覺化';
+      svg.appendChild(title);
+      
+      const g = document.createElementNS(svgNS, 'g');
+      g.setAttribute('transform', `translate(${margin.left}, ${margin.top})`);
+      svg.appendChild(g);
+      
+      if (chart5Data.length === 0) {
+        const emptyText = document.createElementNS(svgNS, 'text');
+        emptyText.setAttribute('x', chartWidth / 2);
+        emptyText.setAttribute('y', chartHeight / 2);
+        emptyText.setAttribute('text-anchor', 'middle');
+        emptyText.setAttribute('font-size', '16');
+        emptyText.setAttribute('fill', '#999');
+        emptyText.textContent = '沒有資料，請新增數據點';
+        g.appendChild(emptyText);
+      } else {
+        const maxValue = Math.max(...chart5Data);
+        const barWidth = chartWidth / chart5Data.length;
+        
+        chart5Data.forEach((value, index) => {
+          const barHeight = (value / 100) * chartHeight;
+          const x = index * barWidth;
+          const y = chartHeight - barHeight;
+          
+          const rect = document.createElementNS(svgNS, 'rect');
+          rect.setAttribute('x', x + barWidth * 0.1);
+          rect.setAttribute('y', chartHeight);
+          rect.setAttribute('width', barWidth * 0.8);
+          rect.setAttribute('height', 0);
+          rect.setAttribute('fill', '#E91E63');
+          rect.setAttribute('class', 'bar-interactive');
+          rect.style.transition = 'all 0.3s ease';
+          
+          setTimeout(() => {
+            rect.setAttribute('y', y);
+            rect.setAttribute('height', barHeight);
+          }, index * 50);
+          
+          rect.addEventListener('mouseover', function() {
+            this.setAttribute('fill', '#FF9800');
+          });
+          
+          rect.addEventListener('mouseout', function() {
+            this.setAttribute('fill', '#E91E63');
+          });
+          
+          g.appendChild(rect);
+          
+          const text = document.createElementNS(svgNS, 'text');
+          text.setAttribute('x', x + barWidth / 2);
+          text.setAttribute('y', y - 5);
+          text.setAttribute('text-anchor', 'middle');
+          text.setAttribute('font-size', '14');
+          text.setAttribute('font-weight', 'bold');
+          text.textContent = value;
+          
+          g.appendChild(text);
+        });
+      }
+      
+      // Y 軸
+      const yAxis = document.createElementNS(svgNS, 'line');
+      yAxis.setAttribute('x1', 0);
+      yAxis.setAttribute('y1', 0);
+      yAxis.setAttribute('x2', 0);
+      yAxis.setAttribute('y2', chartHeight);
+      yAxis.setAttribute('stroke', '#333');
+      yAxis.setAttribute('stroke-width', '2');
+      g.appendChild(yAxis);
+      
+      // X 軸
+      const xAxis = document.createElementNS(svgNS, 'line');
+      xAxis.setAttribute('x1', 0);
+      xAxis.setAttribute('y1', chartHeight);
+      xAxis.setAttribute('x2', chartWidth);
+      xAxis.setAttribute('y2', chartHeight);
+      xAxis.setAttribute('stroke', '#333');
+      xAxis.setAttribute('stroke-width', '2');
+      g.appendChild(xAxis);
+      
+      container.appendChild(svg);
+    }
+    
+    function addDataPoint() {
+      const input = document.getElementById('newValue');
+      const value = parseInt(input.value) || 50;
+      chart5Data.push(value);
+      drawChart5();
+    }
+    
+    function removeLastBar() {
+      if (chart5Data.length > 0) {
+        chart5Data.pop();
+        drawChart5();
+      }
+    }
+    
+    function randomizeData() {
+      chart5Data = Array.from({ length: 6 }, () => Math.floor(Math.random() * 80) + 20);
+      drawChart5();
+    }
+    
+    function clearAllBars() {
+      chart5Data = [];
+      drawChart5();
+    }
+    
+    // 初始化
+    window.addEventListener('load', () => {
+      console.log('🎮 Vanilla JavaScript 操作 SVG 練習已載入！');
+      console.log('💡 提示：打開開發者工具，觀察 SVG DOM 結構的變化');
+      
+      // 初始化練習 5
+      drawChart5();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>02 - SVG 座標系統與變換</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #2196F3;
+      padding-bottom: 10px;
+    }
+    
+    .section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+      color: #2196F3;
+      margin-top: 0;
+    }
+    
+    .description {
+      color: #666;
+      margin-bottom: 15px;
+      line-height: 1.6;
+    }
+    
+    svg {
+      border: 1px solid #ddd;
+      background: #fafafa;
+      display: block;
+      margin: 10px 0;
+    }
+    
+    .code-hint {
+      background: #e3f2fd;
+      border-left: 4px solid #2196F3;
+      padding: 10px 15px;
+      margin: 10px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+    
+    .task {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 10px 15px;
+      margin: 10px 0;
+    }
+    
+    .grid-line {
+      stroke: #e0e0e0;
+      stroke-width: 0.5;
+    }
+    
+    .axis-line {
+      stroke: #999;
+      stroke-width: 1;
+    }
+    
+    .origin-point {
+      fill: #e53935;
+    }
+  </style>
+</head>
+<body>
+  <h1>📍 SVG 座標系統與變換</h1>
+  <p class="description">
+    <strong>學習目標：</strong>深入理解 SVG 的座標系統、transform 屬性，以及 viewBox 的應用。
+    這些概念是掌握 D3.js 的關鍵基礎。
+  </p>
+
+  <!-- 練習 1: SVG 座標系統 -->
+  <div class="section">
+    <h2>1️⃣ SVG 座標系統基礎</h2>
+    <p class="description">
+      SVG 的座標系統與數學座標系統不同：<br>
+      • 原點 (0, 0) 在<strong>左上角</strong><br>
+      • X 軸向右遞增<br>
+      • Y 軸向下遞增 (注意：是向下！)
+    </p>
+    
+    <svg width="600" height="400">
+      <!-- 繪製網格 -->
+      <defs>
+        <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+          <path d="M 50 0 L 0 0 0 50" fill="none" class="grid-line"/>
+        </pattern>
+      </defs>
+      <rect width="600" height="400" fill="url(#grid)"/>
+      
+      <!-- 繪製座標軸 -->
+      <line x1="0" y1="0" x2="600" y2="0" class="axis-line"/>
+      <line x1="0" y1="0" x2="0" y2="400" class="axis-line"/>
+      
+      <!-- 標示原點 -->
+      <circle cx="0" cy="0" r="8" class="origin-point"/>
+      <text x="15" y="25" fill="#e53935" font-weight="bold">原點 (0, 0)</text>
+      
+      <!-- 標示 X 軸 -->
+      <text x="550" y="25" fill="#333" font-weight="bold">X 軸 →</text>
+      <line x1="520" y1="15" x2="540" y2="15" stroke="#333" stroke-width="2" marker-end="url(#arrowX)"/>
+      
+      <!-- 標示 Y 軸 -->
+      <text x="15" y="380" fill="#333" font-weight="bold">Y 軸 ↓</text>
+      <line x1="25" y1="360" x2="25" y2="380" stroke="#333" stroke-width="2" marker-end="url(#arrowY)"/>
+      
+      <!-- 示範點 -->
+      <circle cx="150" cy="100" r="6" fill="#4CAF50"/>
+      <text x="160" y="105" fill="#4CAF50" font-weight="bold">(150, 100)</text>
+      
+      <circle cx="400" cy="250" r="6" fill="#2196F3"/>
+      <text x="410" y="255" fill="#2196F3" font-weight="bold">(400, 250)</text>
+      
+      <!-- 繪製虛線輔助線 -->
+      <line x1="150" y1="0" x2="150" y2="100" stroke="#4CAF50" stroke-width="1" stroke-dasharray="5,5" opacity="0.5"/>
+      <line x1="0" y1="100" x2="150" y2="100" stroke="#4CAF50" stroke-width="1" stroke-dasharray="5,5" opacity="0.5"/>
+      
+      <line x1="400" y1="0" x2="400" y2="250" stroke="#2196F3" stroke-width="1" stroke-dasharray="5,5" opacity="0.5"/>
+      <line x1="0" y1="250" x2="400" y2="250" stroke="#2196F3" stroke-width="1" stroke-dasharray="5,5" opacity="0.5"/>
+      
+      <!-- 箭頭標記 -->
+      <defs>
+        <marker id="arrowX" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto">
+          <polygon points="0 0, 10 3, 0 6" fill="#333"/>
+        </marker>
+        <marker id="arrowY" markerWidth="10" markerHeight="10" refX="3" refY="5" orient="auto">
+          <polygon points="0 0, 6 0, 3 10" fill="#333"/>
+        </marker>
+      </defs>
+    </svg>
+
+    
+    
+    <div class="code-hint">
+      <strong>💡 關鍵觀念：</strong><br>
+      • SVG 座標從左上角 (0,0) 開始<br>
+      • Y 軸向下遞增 (與數學座標系統相反！)<br>
+      • 每個 SVG 元素都有自己的座標空間<br>
+      • 在 D3 繪圖時，經常需要「翻轉」Y 軸來符合數據邏輯
+    </div>
+
+    <div class="code-hint" style="margin-top: 10px; background: #f3e5f5; border-left-color: #9c27b0;">
+      <strong>💡 網格背景原理解析：</strong><br>
+      這段程式碼展示了如何製作重複的網格背景：<br>
+      1. <strong>&lt;defs&gt;</strong>: 定義區，裡面的圖形不會直接顯示。<br>
+      2. <strong>&lt;pattern&gt;</strong>: 定義一塊 50x50 的「磁磚」。<br>
+      3. <strong>&lt;path&gt;</strong>: 在磁磚內畫線 (上邊框與左邊框)。<br>
+      4. <strong>&lt;rect fill="url(#grid)"&gt;</strong>: 畫一個大矩形，並用定義好的磁磚填滿它。
+      
+      <pre style="background: #fff; padding: 10px; border-radius: 4px; margin-top: 10px; overflow-x: auto; font-size: 13px;">
+&lt;defs&gt;
+  &lt;pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"&gt;
+    &lt;path d="M 50 0 L 0 0 0 50" fill="none" class="grid-line"/&gt;
+  &lt;/pattern&gt;
+&lt;/defs&gt;
+&lt;rect width="600" height="400" fill="url(#grid)"/&gt;</pre>
+    </div>
+
+  </div>
+
+  
+
+  <!-- 練習 2: Transform - Translate (位移) -->
+  <div class="section">
+    <h2>2️⃣ Transform: Translate (位移)</h2>
+    <p class="description">
+      <code>transform="translate(x, y)"</code> 可以移動元素的位置，而不需要修改元素本身的座標。
+      這在 D3 中非常常用，特別是在建立圖表的邊界 (margin) 時。
+    </p>
+    
+    <svg width="800" height="300">
+      <!-- 背景參考 -->
+      <rect width="800" height="300" fill="#fafafa"/>
+      
+      <!-- 原始位置的矩形 -->
+      <rect x="50" y="50" width="80" height="60" fill="#E91E63" opacity="0.3"/>
+      <text x="90" y="130" text-anchor="middle" fill="#999">原始位置</text>
+      
+      <!-- 使用 translate 位移 -->
+      <g transform="translate(200, 0)">
+        <rect x="50" y="50" width="80" height="60" fill="#E91E63"/>
+        <text x="90" y="130" text-anchor="middle">translate(200, 0)</text>
+        <line x1="0" y1="80" x2="50" y2="80" stroke="#999" stroke-dasharray="3,3"/>
+        <text x="25" y="75" text-anchor="middle" fill="#999" font-size="12">200px</text>
+      </g>
+      
+      <!-- Y 軸位移 -->
+      <g transform="translate(400, 100)">
+        <rect x="50" y="50" width="80" height="60" fill="#2196F3"/>
+        <text x="90" y="130" text-anchor="middle">translate(400, 100)</text>
+      </g>
+      
+      <!-- 結合 X 和 Y -->
+      <g transform="translate(600, 50)">
+        <rect x="50" y="50" width="80" height="60" fill="#4CAF50"/>
+        <text x="90" y="130" text-anchor="middle">translate(600, 50)</text>
+      </g>
+      
+      <!-- 繪製參考線 -->
+      <line x1="50" y1="80" x2="130" y2="80" stroke="#E91E63" stroke-width="2" opacity="0.3"/>
+      <line x1="250" y1="80" x2="330" y2="80" stroke="#E91E63" stroke-width="2"/>
+      <line x1="450" y1="180" x2="530" y2="180" stroke="#2196F3" stroke-width="2"/>
+      <line x1="650" y1="130" x2="730" y2="130" stroke="#4CAF50" stroke-width="2"/>
+    </svg>
+    
+    <div class="code-hint">
+      <strong>💡 為什麼使用 translate？</strong><br>
+      • 保持元素原始座標不變，便於重複使用<br>
+      • 可以對整個 &lt;g&gt; 群組進行位移<br>
+      • 在 D3 中，常用 translate 來設定圖表的 margin<br>
+      <br>
+      <strong>範例：</strong><br>
+      &lt;g transform="translate(60, 20)"&gt;<br>
+      &nbsp;&nbsp;&lt;rect x="0" y="0" width="100" height="50"/&gt;<br>
+      &lt;/g&gt;<br>
+      實際顯示位置：(60, 20)
+    </div>
+  </div>
+
+  <!-- 練習 3: Transform - Rotate (旋轉) -->
+  <div class="section">
+    <h2>3️⃣ Transform: Rotate (旋轉)</h2>
+    <p class="description">
+      <code>transform="rotate(angle)"</code> 或 <code>transform="rotate(angle, cx, cy)"</code> 可以旋轉元素。
+    </p>
+    
+    <svg width="800" height="350">
+      <rect width="800" height="350" fill="#fafafa"/>
+      
+      <!-- 中心點參考 -->
+      <circle cx="150" cy="150" r="3" fill="#e53935"/>
+      <text x="150" y="170" text-anchor="middle" fill="#999" font-size="12">中心點</text>
+      
+      <!-- 繪製多個旋轉的矩形 -->
+      <g transform="translate(150, 150)">
+        <!-- 0 度 -->
+        <rect x="-40" y="-20" width="80" height="40" fill="#4CAF50" opacity="0.3"/>
+        
+        <!-- 30 度 -->
+        <rect x="-40" y="-20" width="80" height="40" fill="#4CAF50" opacity="0.5" 
+              transform="rotate(30)"/>
+        
+        <!-- 60 度 -->
+        <rect x="-40" y="-20" width="80" height="40" fill="#4CAF50" opacity="0.7" 
+              transform="rotate(60)"/>
+        
+        <!-- 90 度 -->
+        <rect x="-40" y="-20" width="80" height="40" fill="#4CAF50" 
+              transform="rotate(90)"/>
+      </g>
+      <text x="150" y="240" text-anchor="middle">圍繞中心點旋轉</text>
+      
+      <!-- X 軸標籤旋轉示範 (常用於圖表) -->
+      <g transform="translate(400, 100)">
+        <text x="0" y="0" fill="#333" font-size="14">2024-01</text>
+        <text x="0" y="0" fill="#2196F3" font-size="14" 
+              transform="rotate(-45)" transform-origin="0 0">2024-01</text>
+        <line x1="0" y1="10" x2="0" y2="30" stroke="#999"/>
+        <text x="0" y="50" text-anchor="middle" fill="#999" font-size="12">標籤旋轉 -45°</text>
+      </g>
+      
+      <!-- 時鐘示範 -->
+      <g transform="translate(650, 150)">
+        <circle cx="0" cy="0" r="80" fill="none" stroke="#ddd" stroke-width="2"/>
+        
+        <!-- 12 點方向 -->
+        <line x1="0" y1="-60" x2="0" y2="-75" stroke="#333" stroke-width="3"/>
+        
+        <!-- 3 點方向 -->
+        <line x1="0" y1="-60" x2="0" y2="-75" stroke="#333" stroke-width="3" 
+              transform="rotate(90)"/>
+        
+        <!-- 6 點方向 -->
+        <line x1="0" y1="-60" x2="0" y2="-75" stroke="#333" stroke-width="3" 
+              transform="rotate(180)"/>
+        
+        <!-- 9 點方向 -->
+        <line x1="0" y1="-60" x2="0" y2="-75" stroke="#333" stroke-width="3" 
+              transform="rotate(270)"/>
+        
+        <!-- 時針 (指向 2 點) -->
+        <line x1="0" y1="0" x2="0" y2="-40" stroke="#E91E63" stroke-width="4" 
+              stroke-linecap="round" transform="rotate(60)"/>
+        
+        <!-- 分針 (指向 6 點) -->
+        <line x1="0" y1="0" x2="0" y2="-55" stroke="#2196F3" stroke-width="3" 
+              stroke-linecap="round" transform="rotate(180)"/>
+        
+        <circle cx="0" cy="0" r="5" fill="#333"/>
+        <text x="0" y="100" text-anchor="middle" fill="#999" font-size="12">時鐘刻度</text>
+      </g>
+    </svg>
+    
+    <div class="code-hint">
+      <strong>💡 Rotate 用法：</strong><br>
+      • transform="rotate(angle)": 預設繞原點 (0,0) 旋轉<br>
+      • transform="rotate(angle, cx, cy)": 繞指定點 (cx, cy) 旋轉<br>
+      • 角度單位是「度」，正值為順時針<br>
+      • 常用於：X 軸標籤旋轉、圓形圖表 (pie chart)、放射圖 (radar chart)
+    </div>
+    
+    <div class="task">
+      <strong>🎯 練習任務：</strong><br>
+      1. 創建一個圓形圖表的扇形 (使用 path 和 rotate)<br>
+      2. 製作一個指南針圖案 (使用多個 rotate)
+    </div>
+  </div>
+
+  <!-- 練習 4: Transform - Scale (縮放) -->
+  <div class="section">
+    <h2>4️⃣ Transform: Scale (縮放)</h2>
+    <p class="description">
+      <code>transform="scale(s)"</code> 或 <code>transform="scale(sx, sy)"</code> 可以縮放元素。
+    </p>
+    
+    <svg width="800" height="300">
+      <rect width="800" height="300" fill="#fafafa"/>
+      
+      <!-- 原始大小 -->
+      <g transform="translate(100, 150)">
+        <rect x="-30" y="-30" width="60" height="60" fill="#4CAF50" opacity="0.3"/>
+        <text x="0" y="50" text-anchor="middle" font-size="12">scale(1)</text>
+      </g>
+      
+      <!-- 放大 1.5 倍 -->
+      <g transform="translate(250, 150)">
+        <rect x="-30" y="-30" width="60" height="60" fill="#4CAF50" opacity="0.5" 
+              transform="scale(1.5)"/>
+        <text x="0" y="70" text-anchor="middle" font-size="12">scale(1.5)</text>
+      </g>
+      
+      <!-- 放大 2 倍 -->
+      <g transform="translate(420, 150)">
+        <rect x="-30" y="-30" width="60" height="60" fill="#4CAF50" 
+              transform="scale(2)"/>
+        <text x="0" y="90" text-anchor="middle" font-size="12">scale(2)</text>
+      </g>
+      
+      <!-- X 和 Y 不同縮放 -->
+      <g transform="translate(620, 150)">
+        <rect x="-30" y="-30" width="60" height="60" fill="#2196F3" 
+              transform="scale(1.5, 0.8)"/>
+        <text x="0" y="60" text-anchor="middle" font-size="12">scale(1.5, 0.8)</text>
+      </g>
+    </svg>
+    
+    <div class="code-hint">
+      <strong>💡 Scale 注意事項：</strong><br>
+      • scale(s): X 和 Y 同時縮放 s 倍<br>
+      • scale(sx, sy): X 縮放 sx 倍，Y 縮放 sy 倍<br>
+      • 縮放會影響所有屬性，包括 stroke-width<br>
+      • 縮放中心點預設是 (0, 0)，通常需要配合 translate 使用
+    </div>
+  </div>
+
+  <!-- 練習 5: 組合變換 -->
+  <div class="section">
+    <h2>5️⃣ 組合多個變換</h2>
+    <p class="description">
+      可以在同一個 transform 屬性中組合多個變換，<strong>執行順序從右到左</strong>。
+    </p>
+    
+    <svg width="800" height="350">
+      <rect width="800" height="350" fill="#fafafa"/>
+      
+      <!-- 示範 1: translate + rotate -->
+      <g transform="translate(150, 150)">
+        <circle cx="0" cy="0" r="3" fill="#e53935"/>
+        <rect x="0" y="-20" width="100" height="40" fill="#4CAF50"/>
+        <rect x="0" y="-20" width="100" height="40" fill="#4CAF50" opacity="0.5" 
+              transform="rotate(30)"/>
+        <text x="50" y="60" text-anchor="middle" font-size="12">translate + rotate</text>
+      </g>
+      
+      <!-- 示範 2: translate + scale + rotate -->
+      <g transform="translate(400, 150)">
+        <circle cx="0" cy="0" r="3" fill="#e53935"/>
+        <rect x="-25" y="-25" width="50" height="50" fill="#2196F3" 
+              transform="scale(1.5) rotate(45)"/>
+        <text x="0" y="70" text-anchor="middle" font-size="12">scale + rotate</text>
+      </g>
+      
+      <!-- 示範 3: 完整的組合 -->
+      <g transform="translate(650, 150)">
+        <circle cx="0" cy="0" r="3" fill="#e53935"/>
+        <g transform="rotate(30)">
+          <rect x="0" y="-15" width="80" height="30" fill="#FF9800"/>
+          <circle cx="90" cy="0" r="15" fill="#FF9800"/>
+        </g>
+        <text x="0" y="70" text-anchor="middle" font-size="12">巢狀變換</text>
+      </g>
+      
+      <!-- 順序很重要的示範 -->
+      <g transform="translate(150, 280)">
+        <text x="0" y="-10" font-size="14" fill="#e53935">順序 A: translate(50,0) rotate(45)</text>
+        <rect x="0" y="0" width="60" height="30" fill="#E91E63" 
+              transform="translate(50, 0) rotate(45)"/>
+      </g>
+      
+      <g transform="translate(500, 280)">
+        <text x="0" y="-10" font-size="14" fill="#2196F3">順序 B: rotate(45) translate(50,0)</text>
+        <rect x="0" y="0" width="60" height="30" fill="#2196F3" 
+              transform="rotate(45) translate(50, 0)"/>
+      </g>
+    </svg>
+    
+    <div class="code-hint">
+      <strong>⚠️ 重要觀念：變換順序</strong><br>
+      • transform="translate(50,0) rotate(45)": 先位移 50px，再原地旋轉 45°<br>
+      • transform="rotate(45) translate(50,0)": 先旋轉 45°，再沿旋轉後的軸位移<br>
+      • <strong>變換從右到左執行</strong> (與直覺相反！)<br>
+      • 在 D3 中，常見模式是：translate → rotate → scale
+    </div>
+  </div>
+
+  <!-- 練習 6: viewBox -->
+  <div class="section">
+    <h2>6️⃣ ViewBox：響應式 SVG 的關鍵</h2>
+    <p class="description">
+      <code>viewBox="minX minY width height"</code> 定義了 SVG 的「視窗」，可以實現響應式設計和縮放。
+    </p>
+    
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <!-- 沒有 viewBox -->
+      <div>
+        <p><strong>沒有 viewBox (固定大小)</strong></p>
+        <svg width="200" height="150" style="border: 2px solid #E91E63;">
+          <rect x="10" y="10" width="80" height="60" fill="#4CAF50"/>
+          <circle cx="140" cy="100" r="30" fill="#2196F3"/>
+        </svg>
+      </div>
+      
+      <!-- 使用 viewBox -->
+      <div>
+        <p><strong>使用 viewBox (自動縮放)</strong></p>
+        <svg width="200" height="150" viewBox="0 0 400 300" style="border: 2px solid #2196F3;">
+          <rect x="10" y="10" width="80" height="60" fill="#4CAF50"/>
+          <circle cx="140" cy="100" r="30" fill="#2196F3"/>
+        </svg>
+      </div>
+      
+      <!-- viewBox 放大局部 -->
+      <div>
+        <p><strong>放大局部 (viewBox zoom)</strong></p>
+        <svg width="200" height="150" viewBox="0 0 100 75" style="border: 2px solid #FF9800;">
+          <rect x="10" y="10" width="80" height="60" fill="#4CAF50"/>
+          <circle cx="140" cy="100" r="30" fill="#2196F3"/>
+        </svg>
+      </div>
+      
+      <!-- viewBox 平移 -->
+      <div>
+        <p><strong>視窗平移 (viewBox pan)</strong></p>
+        <svg width="200" height="150" viewBox="50 30 400 300" style="border: 2px solid #9C27B0;">
+          <rect x="10" y="10" width="80" height="60" fill="#4CAF50"/>
+          <circle cx="140" cy="100" r="30" fill="#2196F3"/>
+        </svg>
+      </div>
+    </div>
+    
+    <div class="code-hint">
+      <strong>💡 ViewBox 語法：</strong><br>
+      viewBox="minX minY width height"<br>
+      • minX, minY: 視窗左上角的座標<br>
+      • width, height: 視窗的寬高<br>
+      <br>
+      <strong>實用場景：</strong><br>
+      • 響應式圖表：定義固定的 viewBox，讓 SVG 自動縮放<br>
+      • 縮放功能：改變 viewBox 的 width/height 來實現 zoom in/out<br>
+      • 平移功能：改變 viewBox 的 minX/minY 來實現 pan<br>
+      • D3 的 zoom 行為就是基於 viewBox 或 transform 實現的
+    </div>
+    
+    <div class="task">
+      <strong>🎯 進階挑戰：</strong><br>
+      1. 創建一個 SVG 圖表，使用 viewBox 使其在不同螢幕尺寸下保持比例<br>
+      2. 用 JavaScript 動態修改 viewBox，實現簡單的縮放效果
+    </div>
+  </div>
+
+  <!-- 實戰練習：D3 常用的 Margin Convention -->
+  <div class="section">
+    <h2>7️⃣ D3 Margin Convention (圖表邊界慣例)</h2>
+    <p class="description">
+      這是 D3 社群的標準做法，用於在圖表周圍留出空間給座標軸和標籤。
+    </p>
+    
+    <svg width="800" height="400">
+      <!-- 外框 (完整的 SVG 區域) -->
+      <rect x="0" y="0" width="800" height="400" fill="none" stroke="#999" stroke-width="2"/>
+      <text x="400" y="20" text-anchor="middle" fill="#999" font-weight="bold">
+        完整 SVG 區域 (800 x 400)
+      </text>
+      
+      <!-- Margin 標註 -->
+      <text x="400" y="60" text-anchor="middle" fill="#E91E63" font-size="12">
+        margin.top = 60
+      </text>
+      <text x="50" y="200" text-anchor="middle" fill="#E91E63" font-size="12" 
+            transform="rotate(-90, 50, 200)">
+        margin.left = 80
+      </text>
+      <text x="400" y="380" text-anchor="middle" fill="#E91E63" font-size="12">
+        margin.bottom = 40
+      </text>
+      <text x="750" y="200" text-anchor="middle" fill="#E91E63" font-size="12" 
+            transform="rotate(90, 750, 200)">
+        margin.right = 60
+      </text>
+      
+      <!-- 實際繪圖區域 -->
+      <g transform="translate(80, 60)">
+        <!-- 繪圖區域邊框 -->
+        <rect x="0" y="0" width="660" height="300" fill="#e3f2fd" stroke="#2196F3" stroke-width="2"/>
+        <text x="330" y="150" text-anchor="middle" fill="#2196F3" font-size="16" font-weight="bold">
+          繪圖區域 (width: 660, height: 300)
+        </text>
+        <text x="330" y="175" text-anchor="middle" fill="#2196F3" font-size="14">
+          transform="translate(margin.left, margin.top)"
+        </text>
+        
+        <!-- 模擬圖表內容 -->
+        <rect x="50" y="50" width="80" height="200" fill="#4CAF50" opacity="0.7"/>
+        <rect x="150" y="100" width="80" height="150" fill="#4CAF50" opacity="0.7"/>
+        <rect x="250" y="80" width="80" height="170" fill="#4CAF50" opacity="0.7"/>
+        <rect x="350" y="120" width="80" height="130" fill="#4CAF50" opacity="0.7"/>
+        <rect x="450" y="60" width="80" height="190" fill="#4CAF50" opacity="0.7"/>
+        
+        <!-- 模擬座標軸 -->
+        <line x1="0" y1="250" x2="660" y2="250" stroke="#333" stroke-width="2"/>
+        <line x1="0" y1="0" x2="0" y2="250" stroke="#333" stroke-width="2"/>
+      </g>
+    </svg>
+    
+    <div class="code-hint">
+      <strong>💡 Margin Convention 程式碼模板：</strong><br>
+      <pre style="background: #263238; color: #aed581; padding: 15px; border-radius: 5px; overflow-x: auto;">
+// 1. 定義尺寸和邊界
+const margin = { top: 60, right: 60, bottom: 40, left: 80 };
+const width = 800 - margin.left - margin.right;
+const height = 400 - margin.top - margin.bottom;
+
+// 2. 創建 SVG
+const svg = d3.select("#chart")
+  .append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom);
+
+// 3. 創建繪圖群組 (應用 margin)
+const g = svg.append("g")
+  .attr("transform", `translate(${margin.left}, ${margin.top})`);
+
+// 4. 在 g 內繪製圖表元素
+g.append("rect")
+  .attr("x", 0)
+  .attr("y", 0)
+  .attr("width", width)
+  .attr("height", height);
+      </pre>
+    </div>
+  </div>
+
+  <!-- 總結 -->
+  <div class="section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <h2 style="color: white;">🎓 恭喜完成 SVG 座標系統與變換！</h2>
+    <p>
+      <strong>你已經掌握：</strong><br>
+      ✅ SVG 座標系統 (左上角原點，Y 軸向下)<br>
+      ✅ Transform 變換：translate, rotate, scale<br>
+      ✅ 組合變換與執行順序<br>
+      ✅ ViewBox 的響應式應用<br>
+      ✅ D3 Margin Convention (圖表邊界慣例)
+    </p>
+    <p>
+      <strong>🔥 這些是 D3 的核心基礎！</strong><br>
+      幾乎所有 D3 圖表都會用到 translate 來設定 margin，<br>
+      用 rotate 來旋轉標籤，用 viewBox 來實現響應式設計。
+    </p>
+    <p>
+      <strong>📌 下一步：</strong> 前往 <code>03-manual-bar-chart.html</code> 手寫你的第一個長條圖！
+    </p>
+  </div>
+
+  <script>
+    console.log('SVG 座標系統練習已載入！');
+    
+    // 互動式 viewBox 調整示範
+    console.log('提示：你可以在開發者工具中選取任何 SVG 元素，檢查其 transform 屬性');
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+# 依賴目錄
+node_modules
+npm-debug.log*
+
+# 構建輸出
+dist
+
+# 開發文件
+.vite
+.env*.local
+
+# 版本控制
+.git
+.gitignore
+
+# IDE 文件
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS 文件
+.DS_Store
+Thumbs.db
+
+# 日誌文件
+logs
+*.log
+
+# 測試覆蓋率
+coverage
+
+# 臨時文件
+*.tmp
+*.temp
+
+# Docker 文件（避免遞歸複製）
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# 文檔
+README.md
+API_GUIDE.md
+
+# 開發腳本
+start-dev.bat

@@ -1,0 +1,42 @@
+{
+  "name": "ym-dashboard",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test:api": "echo \"API 測試頁面位於 http://localhost:5176/api-test\""
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^7.1.0",
+    "@tiptap/extension-placeholder": "^3.4.5",
+    "@tiptap/starter-kit": "^3.4.5",
+    "@tiptap/vue-3": "^3.4.5",
+    "@tracespace/parser": "^5.0.0-next.0",
+    "@tracespace/plotter": "^5.0.0-alpha.0",
+    "@vuepic/vue-datepicker": "^11.0.2",
+    "@vueuse/core": "^13.6.0",
+    "axios": "^1.10.0",
+    "d3": "^7.9.0",
+    "express": "^4.18.2",
+    "lodash": "^4.17.21",
+    "material-symbols": "^0.40.2",
+    "pinia": "^3.0.3",
+    "vue": "^3.5.17",
+    "vue-router": "^4.5.1",
+    "ws": "^8.18.3",
+    "xlsx": "^0.18.5",
+    "xlsx-js-style": "^1.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.4",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19",
+    "typescript": "^6.0.2",
+    "vite": "^5.4.19",
+    "vue-tsc": "^3.2.6"
+  }
+}

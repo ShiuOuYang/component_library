@@ -1,0 +1,11 @@
+services:
+  ym-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ym-dashboard
+    ports:
+      - '5015:5000'
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
