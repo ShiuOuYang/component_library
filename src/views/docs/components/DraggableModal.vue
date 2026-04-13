@@ -98,6 +98,10 @@
             <span><strong>Teleport 掛載</strong>：渲染到 body 確保層級正確</span>
           </li>
           <li class="flex items-start">
+            <span class="text-amber-500 mr-2">★</span>
+            <span><strong>自動 z-index 管理</strong>：最新點擊的視窗自動提升到最上層，無需手動設定</span>
+          </li>
+          <li class="flex items-start">
             <span class="text-purple-500 mr-2">✓</span>
             <span><strong>可配置樣式</strong>：支援自定義標題欄、邊框、圓角、陰影等</span>
           </li>
@@ -129,7 +133,7 @@
         <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-8 border-2 border-amber-300">
           <h3 class="text-lg font-semibold text-gray-900 mb-2">多視窗口袋（重點功能）</h3>
           <p class="text-sm text-gray-600 mb-4">
-            同時打開多個 Modal，按「—」縮小到右下角口袋。口袋中可逐一還原或關閉。
+            同時打開多個 Modal，按「—」縮小到右下角口袋。口袋中可逐一還原或關閉。點擊任一視窗會自動提升到最上層。
           </p>
 
           <div class="flex flex-wrap gap-3">
@@ -163,9 +167,10 @@
             <p class="text-sm text-gray-600">
               <strong>操作步驟：</strong><br>
               1. 點擊上方按鈕打開多個視窗<br>
-              2. 在每個視窗的標題欄點擊「—」縮小<br>
-              3. 觀察右下角的口袋停靠區<br>
-              4. 點擊口袋中的標籤可以還原或關閉視窗
+              2. 點擊不同視窗，觀察 z-index 自動提升到最上層<br>
+              3. 在每個視窗的標題欄點擊「—」縮小<br>
+              4. 觀察右下角的口袋停靠區<br>
+              5. 黎擊口袋中的標籤可以還原或關閉視窗
             </p>
           </div>
 
@@ -498,8 +503,8 @@ import ModalDock from '@/components/common/ModalDock.vue'
             <tr class="hover:bg-gray-50">
               <td class="px-4 py-3 font-mono text-purple-600">zIndex</td>
               <td class="px-4 py-3 font-mono text-xs text-gray-600">Number</td>
-              <td class="px-4 py-3 font-mono text-xs text-gray-600">30</td>
-              <td class="px-4 py-3 text-gray-700">層級 z-index</td>
+              <td class="px-4 py-3 font-mono text-xs text-gray-600">自動管理</td>
+              <td class="px-4 py-3 text-gray-700">已由 useModalManager 自動管理，點擊視窗自動提升到最上層 <span class="text-amber-600 font-semibold">AUTO</span></td>
             </tr>
             <tr class="hover:bg-gray-50">
               <td class="px-4 py-3 font-mono text-purple-600">backdropOpacity</td>
@@ -823,6 +828,26 @@ import ModalDock from '@/components/common/ModalDock.vue'
               <td class="px-4 py-3 font-mono text-purple-600">closeAll()</td>
               <td class="px-4 py-3 font-mono text-xs text-gray-600">() =&gt; void</td>
               <td class="px-4 py-3 text-gray-700">關閉所有縮小中的 Modal</td>
+            </tr>
+            <tr class="hover:bg-amber-50 bg-amber-50/40">
+              <td class="px-4 py-3 font-mono text-purple-600">getZIndex(id)</td>
+              <td class="px-4 py-3 font-mono text-xs text-gray-600">(id: string) =&gt; number</td>
+              <td class="px-4 py-3 text-gray-700">取得指定 Modal 的當前 z-index <span class="text-amber-600 font-semibold">NEW</span></td>
+            </tr>
+            <tr class="hover:bg-amber-50 bg-amber-50/40">
+              <td class="px-4 py-3 font-mono text-purple-600">bringToFront(id)</td>
+              <td class="px-4 py-3 font-mono text-xs text-gray-600">(id: string) =&gt; void</td>
+              <td class="px-4 py-3 text-gray-700">將指定 Modal 提升到最上層 <span class="text-amber-600 font-semibold">NEW</span></td>
+            </tr>
+            <tr class="hover:bg-amber-50 bg-amber-50/40">
+              <td class="px-4 py-3 font-mono text-purple-600">registerZIndex(id)</td>
+              <td class="px-4 py-3 font-mono text-xs text-gray-600">(id: string) =&gt; void</td>
+              <td class="px-4 py-3 text-gray-700">註冊 Modal 的 z-index（內部自動呼叫） <span class="text-amber-600 font-semibold">NEW</span></td>
+            </tr>
+            <tr class="hover:bg-amber-50 bg-amber-50/40">
+              <td class="px-4 py-3 font-mono text-purple-600">unregisterZIndex(id)</td>
+              <td class="px-4 py-3 font-mono text-xs text-gray-600">(id: string) =&gt; void</td>
+              <td class="px-4 py-3 text-gray-700">移除 Modal 的 z-index 註冊（內部自動呼叫） <span class="text-amber-600 font-semibold">NEW</span></td>
             </tr>
           </tbody>
         </table>

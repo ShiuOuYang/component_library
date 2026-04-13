@@ -14,7 +14,7 @@
         v-show="!isMinimized"
         class="fixed inset-0"
         :class="{ 'pointer-events-none': props.backdropOpacity === 0 }"
-        :style="{ zIndex: props.zIndex }"
+        :style="{ zIndex: currentZIndex }"
       >
         <!-- 使用內聯樣式確保背景透明度正確 -->
         <div 
@@ -30,7 +30,7 @@
           class="relative bg-white overflow-hidden pointer-events-auto"
           :class="[props.roundedClass, props.shadowClass, props.borderClass]"
           :style="modalStyle"
-          @mousedown="handleModalClick"
+          @mousedown="handleBringToFront"
         >
           <!-- Modal 標題欄 -->
           <div
@@ -38,6 +38,7 @@
             class="flex items-center justify-between px-4 py-3 bg-gradient-to-r border-b border-gray-200 cursor-move select-none"
             :class="props.headerBgColor"
             @mousedown="startDrag"
+            
           >
             <div class="flex items-center gap-2" >
               <!-- 拖曳圖示 -->
@@ -209,9 +210,12 @@ const emit = defineEmits<{
   restore: []
 }>()
 
-// Modal 管理器（多視窗支援）
-const { registerMinimized, unregisterMinimized } = useModalManager()
+// Modal 管理器（多視窗支援 + z-index 自動管理）
+const { registerMinimized, unregisterMinimized, getZIndex, bringToFront, registerZIndex, unregisterZIndex } = useModalManager()
 const modalId = props.id ?? generateModalId()
+
+// 動態 z-index（點擊自動提升到最上層）
+const currentZIndex = computed(() => getZIndex(modalId))
 
 // 獲取插槽信息
 const slots = useSlots()
@@ -311,7 +315,7 @@ const modalStyle = computed<CSSProperties>(() => {
       width: '100vw',
       height: '100vh',
       transform: 'none',
-      zIndex: props.zIndex
+      zIndex: currentZIndex.value
     }
   }
   
@@ -323,7 +327,7 @@ const modalStyle = computed<CSSProperties>(() => {
       width: `${modalWidth.value}px`,
       height: 'auto',
       transform: 'none',
-      zIndex: props.zIndex
+      zIndex: currentZIndex.value
     }
   }
   
@@ -334,7 +338,7 @@ const modalStyle = computed<CSSProperties>(() => {
     width: `${modalWidth.value}px`,
     height: `${modalHeight.value}px`,
     transform: 'none',
-    zIndex: props.zIndex
+    zIndex: currentZIndex.value
   }
 })
 
@@ -359,6 +363,7 @@ function startDrag(event: MouseEvent): void {
   
   event.preventDefault()
   event.stopPropagation()
+  bringToFront(modalId)
   
   isDragging.value = true
   dragStartX.value = event.clientX
@@ -505,9 +510,9 @@ function handleBackdropClick(_event: MouseEvent): void {
   // }
 }
 
-// 處理 Modal 點擊 (防止冒泡)
-function handleModalClick(event: MouseEvent): void {
-  event.stopPropagation()
+// 處理 Modal 點擊 - 提升到最上層
+function handleBringToFront(): void {
+  bringToFront(modalId)
 }
 
 // 監聽鍵盤事件
@@ -528,11 +533,14 @@ function handleWindowResize(): void {
 watch(() => props.modelValue, (newVal) => {
   if (newVal) {
     nextTick(() => {
+      registerZIndex(modalId)
+      bringToFront(modalId)
       initializeModal()
       emit('open')
     })
   } else {
     // 重置狀態
+    unregisterZIndex(modalId)
     if (isMinimized.value) {
       unregisterMinimized(modalId)
     }
@@ -573,6 +581,8 @@ onMounted(() => {
   // 🔧 修正：如果 Modal 一開始就是顯示狀態，立即初始化
   if (props.modelValue) {
     nextTick(() => {
+      registerZIndex(modalId)
+      bringToFront(modalId)
       initializeModal()
       emit('open')
     })
@@ -580,7 +590,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  // 如果組件卸載時仍在口袋中，清理註冊
+  // 清理註冊
+  unregisterZIndex(modalId)
   if (isMinimized.value) {
     unregisterMinimized(modalId)
   }
