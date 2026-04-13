@@ -160,23 +160,26 @@ function getColor(type) {
   return props.colorMap[type] || TYPE_COLORS[type] || '#888'
 }
 
-// ===== 圖例 =====
-const legendEntries = computed(() => {
-  const allElements = getAllElements()
-  const types = [...new Set(allElements.map(e => e.type))]
-  return types
-    .filter(t => TYPE_LABELS[t])
-    .map(t => ({ label: TYPE_LABELS[t], color: getColor(t) }))
-})
-
-// ===== 取得所有 elements =====
-function getAllElements() {
+// ===== 取得所有 elements（快取）=====
+const cachedElements = computed(() => {
   if (!props.data) return []
   if (props.data.layers?.length) {
     return props.data.layers.flatMap(l => l.elements || [])
   }
   return props.data.elements || []
+})
+
+function getAllElements() {
+  return cachedElements.value
 }
+
+// ===== 圖例 =====
+const legendEntries = computed(() => {
+  const types = [...new Set(cachedElements.value.map(e => e.type))]
+  return types
+    .filter(t => TYPE_LABELS[t])
+    .map(t => ({ label: TYPE_LABELS[t], color: getColor(t) }))
+})
 
 // ===== 建立內部圖層 =====
 function buildLayers() {
@@ -193,7 +196,6 @@ function buildLayers() {
   } else if (props.data?.elements?.length) {
     // 無 layers：自動依 type 分組
     const grouped = d3.group(props.data.elements, d => d.type)
-    let idx = 0
     internalLayers.value = Array.from(grouped, ([type, elements]) => ({
       id: `layer-${type}`,
       name: TYPE_LABELS[type] || type,
@@ -370,153 +372,155 @@ function renderTraces(group, elements, color) {
     .on('click', handleClick)
 }
 
-/** 焊盤 */
+/** 焊盤 — 依 shape 分組批次渲染 */
 function renderPads(group, elements, color) {
-  for (const el of elements) {
-    const shape = el.shape || 'circle'
-    const w = el.width || props.defaultPadSize
-    const h = el.height || w
+  const byShape = d3.group(elements, d => d.shape || 'circle')
 
-    let node
-    if (shape === 'circle') {
-      node = group.append('circle')
-        .datum(el)
-        .attr('cx', el.x).attr('cy', el.y)
-        .attr('r', w / 2)
-        .attr('fill', color)
-    } else if (shape === 'rect') {
-      node = group.append('rect')
-        .datum(el)
-        .attr('x', el.x - w / 2).attr('y', el.y - h / 2)
-        .attr('width', w).attr('height', h)
-        .attr('fill', color)
-    } else if (shape === 'oblong') {
-      const r = Math.min(w, h) / 2
-      node = group.append('rect')
-        .datum(el)
-        .attr('x', el.x - w / 2).attr('y', el.y - h / 2)
-        .attr('width', w).attr('height', h)
-        .attr('rx', r).attr('ry', r)
-        .attr('fill', color)
-    }
-
-    if (node) {
-      node.style('cursor', 'pointer')
-        .on('mouseenter', handleHover)
-        .on('mouseleave', handleLeave)
-        .on('click', handleClick)
-    }
-
-    // 鑽孔
-    if (el.drill) {
-      group.append('circle')
-        .attr('cx', el.x).attr('cy', el.y)
-        .attr('r', el.drill / 2)
-        .attr('fill', props.backgroundColor)
-    }
-  }
-}
-
-/** 過孔 */
-function renderVias(group, elements, color) {
-  for (const el of elements) {
-    // 外圈
-    group.append('circle')
-      .datum(el)
-      .attr('cx', el.x).attr('cy', el.y)
-      .attr('r', (el.outerDia || 0.6) / 2)
+  // circle pads
+  const circles = byShape.get('circle') || []
+  if (circles.length) {
+    group.selectAll(null).data(circles).join('circle')
+      .attr('cx', d => d.x).attr('cy', d => d.y)
+      .attr('r', d => (d.width || props.defaultPadSize) / 2)
       .attr('fill', color)
       .style('cursor', 'pointer')
       .on('mouseenter', handleHover)
       .on('mouseleave', handleLeave)
       .on('click', handleClick)
-    // 內孔
-    group.append('circle')
-      .attr('cx', el.x).attr('cy', el.y)
-      .attr('r', (el.innerDia || 0.3) / 2)
+  }
+
+  // rect pads
+  const rects = byShape.get('rect') || []
+  if (rects.length) {
+    group.selectAll(null).data(rects).join('rect')
+      .attr('x', d => d.x - (d.width || props.defaultPadSize) / 2)
+      .attr('y', d => d.y - (d.height || d.width || props.defaultPadSize) / 2)
+      .attr('width', d => d.width || props.defaultPadSize)
+      .attr('height', d => d.height || d.width || props.defaultPadSize)
+      .attr('fill', color)
+      .style('cursor', 'pointer')
+      .on('mouseenter', handleHover)
+      .on('mouseleave', handleLeave)
+      .on('click', handleClick)
+  }
+
+  // oblong pads
+  const oblongs = byShape.get('oblong') || []
+  if (oblongs.length) {
+    group.selectAll(null).data(oblongs).join('rect')
+      .attr('x', d => d.x - (d.width || props.defaultPadSize) / 2)
+      .attr('y', d => d.y - (d.height || d.width || props.defaultPadSize) / 2)
+      .attr('width', d => d.width || props.defaultPadSize)
+      .attr('height', d => d.height || d.width || props.defaultPadSize)
+      .attr('rx', d => Math.min(d.width || props.defaultPadSize, d.height || d.width || props.defaultPadSize) / 2)
+      .attr('ry', d => Math.min(d.width || props.defaultPadSize, d.height || d.width || props.defaultPadSize) / 2)
+      .attr('fill', color)
+      .style('cursor', 'pointer')
+      .on('mouseenter', handleHover)
+      .on('mouseleave', handleLeave)
+      .on('click', handleClick)
+  }
+
+  // 鑽孔 — 批次渲染
+  const drilled = elements.filter(d => d.drill)
+  if (drilled.length) {
+    group.selectAll(null).data(drilled).join('circle')
+      .attr('cx', d => d.x).attr('cy', d => d.y)
+      .attr('r', d => d.drill / 2)
       .attr('fill', props.backgroundColor)
   }
 }
 
-/** 元件外框 */
-function renderComponents(group, elements, color) {
-  for (const el of elements) {
-    const w = el.width || 2
-    const h = el.height || 1
-    const rot = el.rotation || 0
+/** 過孔 — 批次渲染 */
+function renderVias(group, elements, color) {
+  // 外圈
+  group.selectAll(null).data(elements).join('circle')
+    .attr('cx', d => d.x).attr('cy', d => d.y)
+    .attr('r', d => (d.outerDia || 0.6) / 2)
+    .attr('fill', color)
+    .style('cursor', 'pointer')
+    .on('mouseenter', handleHover)
+    .on('mouseleave', handleLeave)
+    .on('click', handleClick)
+  // 內孔
+  group.selectAll(null).data(elements).join('circle')
+    .attr('cx', d => d.x).attr('cy', d => d.y)
+    .attr('r', d => (d.innerDia || 0.3) / 2)
+    .attr('fill', props.backgroundColor)
+}
 
-    const g = group.append('g')
-      .datum(el)
-      .attr('transform', `translate(${el.x},${el.y}) rotate(${rot})`)
+/** 元件外框 — 批次渲染 */
+function renderComponents(group, elements, color) {
+  const groups = group.selectAll(null).data(elements).join('g')
+    .attr('transform', d => `translate(${d.x},${d.y}) rotate(${d.rotation || 0})`)
+    .style('cursor', 'pointer')
+    .on('mouseenter', handleHover)
+    .on('mouseleave', handleLeave)
+    .on('click', handleClick)
+
+  // 外框
+  groups.append('rect')
+    .attr('x', d => -(d.width || 2) / 2).attr('y', d => -(d.height || 1) / 2)
+    .attr('width', d => d.width || 2).attr('height', d => d.height || 1)
+    .attr('rx', 0.1).attr('ry', 0.1)
+    .attr('fill', 'none')
+    .attr('stroke', color)
+    .attr('stroke-width', 0.1)
+    .attr('stroke-dasharray', '0.3,0.15')
+
+  // Pin 1 標記
+  groups.append('circle')
+    .attr('cx', d => -(d.width || 2) / 2 + 0.2)
+    .attr('cy', d => -(d.height || 1) / 2 + 0.2)
+    .attr('r', 0.08)
+    .attr('fill', color)
+
+  // refDes 標籤（翻轉 Y 因為 SVG 座標已翻轉）
+  if (props.showRefDes) {
+    groups.filter(d => d.refDes)
+      .append('text')
+      .attr('x', 0).attr('y', 0)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'middle')
+      .attr('transform', 'scale(1,-1)')
+      .style('font-size', d => `${Math.min(d.width || 2, d.height || 1) * 0.3}px`)
+      .style('fill', color)
+      .style('font-family', 'monospace')
+      .style('pointer-events', 'none')
+      .text(d => d.refDes)
+  }
+}
+
+/** 絲印圖形/文字 — 批次渲染 */
+function renderSilks(group, elements, color) {
+  // 絲印線條
+  const pathEls = elements.filter(d => d.path?.length)
+  if (pathEls.length) {
+    group.selectAll(null).data(pathEls).join('path')
+      .attr('d', d => pathToD(d.path, false))
+      .attr('fill', 'none')
+      .attr('stroke', color)
+      .attr('stroke-width', d => d.width || 0.1)
+      .attr('stroke-linecap', 'round')
       .style('cursor', 'pointer')
       .on('mouseenter', handleHover)
       .on('mouseleave', handleLeave)
       .on('click', handleClick)
-
-    // 外框
-    g.append('rect')
-      .attr('x', -w / 2).attr('y', -h / 2)
-      .attr('width', w).attr('height', h)
-      .attr('rx', 0.1).attr('ry', 0.1)
-      .attr('fill', 'none')
-      .attr('stroke', color)
-      .attr('stroke-width', 0.1)
-      .attr('stroke-dasharray', '0.3,0.15')
-
-    // Pin 1 標記
-    g.append('circle')
-      .attr('cx', -w / 2 + 0.2)
-      .attr('cy', -h / 2 + 0.2)
-      .attr('r', 0.08)
-      .attr('fill', color)
-
-    // refDes 標籤（翻轉 Y 因為 SVG 座標已翻轉）
-    if (props.showRefDes && el.refDes) {
-      g.append('text')
-        .attr('x', 0).attr('y', 0)
-        .attr('text-anchor', 'middle')
-        .attr('dominant-baseline', 'middle')
-        .attr('transform', `scale(1,-1)`) // 反轉回正
-        .style('font-size', `${Math.min(w, h) * 0.3}px`)
-        .style('fill', color)
-        .style('font-family', 'monospace')
-        .style('pointer-events', 'none')
-        .text(el.refDes)
-    }
   }
-}
 
-/** 絲印圖形/文字 */
-function renderSilks(group, elements, color) {
-  for (const el of elements) {
-    if (el.path?.length) {
-      // 絲印線條
-      group.append('path')
-        .datum(el)
-        .attr('d', pathToD(el.path, false))
-        .attr('fill', 'none')
-        .attr('stroke', color)
-        .attr('stroke-width', el.width || 0.1)
-        .attr('stroke-linecap', 'round')
-        .style('cursor', 'pointer')
-        .on('mouseenter', handleHover)
-        .on('mouseleave', handleLeave)
-        .on('click', handleClick)
-    }
-    if (el.text && el.x != null && el.y != null) {
-      // 絲印文字
-      group.append('text')
-        .datum(el)
-        .attr('x', el.x).attr('y', el.y)
-        .attr('text-anchor', 'middle')
-        .attr('dominant-baseline', 'middle')
-        .attr('transform', `translate(${el.x},${el.y}) scale(1,-1) translate(${-el.x},${-el.y})`)
-        .style('font-size', `${el.fontSize || 0.8}px`)
-        .style('fill', color)
-        .style('font-family', 'monospace')
-        .style('pointer-events', 'none')
-        .text(el.text)
-    }
+  // 絲印文字
+  const textEls = elements.filter(d => d.text && d.x != null && d.y != null)
+  if (textEls.length) {
+    group.selectAll(null).data(textEls).join('text')
+      .attr('x', d => d.x).attr('y', d => d.y)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'middle')
+      .attr('transform', d => `translate(${d.x},${d.y}) scale(1,-1) translate(${-d.x},${-d.y})`)
+      .style('font-size', d => `${d.fontSize || 0.8}px`)
+      .style('fill', color)
+      .style('font-family', 'monospace')
+      .style('pointer-events', 'none')
+      .text(d => d.text)
   }
 }
 
@@ -534,12 +538,12 @@ function pathToD(points, closed) {
 
 // ===== 互動事件 =====
 function handleHover(event, d) {
-  d3.select(this).attr('filter', 'brightness(1.5)')
+  d3.select(this).style('opacity', 0.7)
   emit('element-hover', { event, data: d })
 }
 
-function handleLeave(event, d) {
-  d3.select(this).attr('filter', null)
+function handleLeave() {
+  d3.select(this).style('opacity', null)
   emit('element-hover', null)
 }
 
@@ -632,10 +636,10 @@ onBeforeUnmount(() => {
   if (svgSelection) svgSelection.on('.zoom', null)
 })
 
-watch(() => props.data, () => renderChart(), { deep: true })
+watch(() => props.data, () => renderChart())
 watch(() => props.backgroundColor, () => renderChart())
 
-defineExpose({ zoomIn, zoomOut, resetView, toggleLayer })
+defineExpose({ zoomIn, zoomOut, resetView, toggleLayer, forceRender: renderChart })
 </script>
 
 <style scoped>

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useRouteGuard } from "../composables/useRouteGuard.js";
-import ComponentLibrary from "../views/ComponentLibrary.vue";
+// import ComponentLibrary from "../views/ComponentLibrary.vue";
 import BoxPlotTest from "../views/BoxPlotTest.vue";
 import BoxPlotTest2 from "../views/BoxPlotTest2.vue";
 import ScatterPlotTest from "../views/ScatterPlotTest.vue";
@@ -82,15 +82,6 @@ const routes = [
   //   path: '/DashBoard',
   //   redirect: '/dashboard'
   // },
-  {
-    path: "/component-library",
-    name: "ComponentLibrary",
-    component: ComponentLibrary,
-    meta: {
-      title: "組件庫",
-      requiresAuth: true,
-    },
-  },
   {
     path: "/jx-fixed-table-guide",
     name: "JxFixedTableGuide",

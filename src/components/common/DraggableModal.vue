@@ -11,12 +11,15 @@
     >
       <div
         v-if="modelValue"
+        v-show="!isMinimized"
         class="fixed inset-0"
+        :class="{ 'pointer-events-none': props.backdropOpacity === 0 }"
         :style="{ zIndex: props.zIndex }"
       >
         <!-- 使用內聯樣式確保背景透明度正確 -->
         <div 
           class="absolute inset-0"
+          :class="{ 'pointer-events-none': props.backdropOpacity === 0 }"
           :style="{ backgroundColor: `rgba(0, 0, 0, ${props.backdropOpacity})` }"
           @click="handleBackdropClick"
         ></div>
@@ -53,14 +56,16 @@
             <!-- 控制按鈕 -->
             <div class="flex items-center gap-1">
               <!-- 最小化按鈕 -->
-              <!-- <button
+              <button
                 v-if="minimizable"
                 @click="toggleMinimize"
-                class="w-6 h-6 flex items-center justify-center rounded hover:bg-gray-200 transition-colors text-gray-600 text-xs font-bold"
-                title="最小化"
+                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-amber-50 active:bg-amber-100 transition-all text-slate-500 hover:text-amber-600"
+                title="縮小到口袋"
               >
-                🗕
-              </button> -->
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                  <path stroke-linecap="round" d="M5 12h14"/>
+                </svg>
+              </button>
               
               <!-- 最大化/還原按鈕 -->
               <button
@@ -126,140 +131,87 @@
   </Teleport>
 </template>
 
-<script setup>
-import { ref, computed, watch, onMounted, onUnmounted, useSlots, nextTick } from 'vue'
+<script setup lang="ts">
+import { ref, computed, watch, onMounted, onUnmounted, useSlots, nextTick, type CSSProperties } from 'vue'
+import { useModalManager, generateModalId } from '../../composables/useModalManager'
 
-const props = defineProps({
-  // 控制 Modal 顯示/隱藏
-  modelValue: {
-    type: Boolean,
-    default: false
-  },
-  // Modal 標題
-  title: {
-    type: String,
-    default: 'Modal'
-  },
-  // 初始寬度
-  width: {
-    type: [String, Number],
-    default: 600
-  },
-  // 初始高度
-  height: {
-    type: [String, Number],
-    default: 400
-  },
-  // 最小寬度
-  minWidth: {
-    type: Number,
-    default: 300
-  },
-  // 最小高度
-  minHeight: {
-    type: Number,
-    default: 200
-  },
-  // 最大寬度
-  maxWidth: {
-    type: Number,
-    default: window.innerWidth - 40
-  },
-  // 最大高度
-  maxHeight: {
-    type: Number,
-    default: window.innerHeight - 40
-  },
-  // 初始位置 X
-  x: {
-    type: Number,
-    default: null
-  },
-  // 初始位置 Y
-  y: {
-    type: Number,
-    default: null
-  },
-  // 是否可拖曳
-  draggable: {
-    type: Boolean,
-    default: true
-  },
-  // 是否可調整大小
-  resizable: {
-    type: Boolean,
-    default: true
-  },
-  // 是否可關閉
-  closable: {
-    type: Boolean,
-    default: true
-  },
-  // 是否可最小化
-  minimizable: {
-    type: Boolean,
-    default: true
-  },
-  // 是否可最大化
-  maximizable: {
-    type: Boolean,
-    default: true
-  },
-  // z-index
-  zIndex: {
-    type: Number,
-    default: 30
-  },
-  //預設最大化
-  defaultMaximized: {
-    type: Boolean,
-    default: false
-  },
-  // 標題列背景色
-  headerBgColor: {
-    type: String,
-    default: 'from-blue-50 to-indigo-50'
-  },
-  // 標題文字顏色
-  headerTextColor: {
-    type: String,
-    default: 'text-gray-800'
-  },
-  // 邊框樣式
-  borderClass: {
-    type: String,
-    default: 'border border-gray-300'
-  },
-  // 圓角樣式
-  roundedClass: {
-    type: String,
-    default: 'rounded-lg'
-  },
-  // 陰影樣式
-  shadowClass: {
-    type: String,
-    default: 'shadow-2xl'
-  },
-  // 背景遮罩透明度 (0-1)
-  backdropOpacity: {
-    type: Number,
-    default: 0.5,
-    validator: (value) => value >= 0 && value <= 1
-  },
-  // 內容區 padding
-  contentPadding: {
-    type: String,
-    default: 'p-4'
-  },
-  // Footer 背景色
-  footerBgColor: {
-    type: String,
-    default: 'bg-gray-50'
-  }
+interface ModalState {
+  x: number
+  y: number
+  width: number
+  height: number
+}
 
+interface Props {
+  id?: string
+  modelValue?: boolean
+  title?: string
+  width?: string | number
+  height?: string | number
+  minWidth?: number
+  minHeight?: number
+  maxWidth?: number
+  maxHeight?: number
+  x?: number | null
+  y?: number | null
+  draggable?: boolean
+  resizable?: boolean
+  closable?: boolean
+  minimizable?: boolean
+  maximizable?: boolean
+  zIndex?: number
+  defaultMaximized?: boolean
+  headerBgColor?: string
+  headerTextColor?: string
+  borderClass?: string
+  roundedClass?: string
+  shadowClass?: string
+  backdropOpacity?: number
+  contentPadding?: string
+  footerBgColor?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  id: undefined,
+  modelValue: false,
+  title: 'Modal',
+  width: 600,
+  height: 400,
+  minWidth: 300,
+  minHeight: 200,
+  maxWidth: () => window.innerWidth - 40,
+  maxHeight: () => window.innerHeight - 40,
+  x: null,
+  y: null,
+  draggable: true,
+  resizable: true,
+  closable: true,
+  minimizable: true,
+  maximizable: true,
+  zIndex: 30,
+  defaultMaximized: false,
+  headerBgColor: 'from-blue-50 to-indigo-50',
+  headerTextColor: 'text-gray-800',
+  borderClass: 'border border-gray-300',
+  roundedClass: 'rounded-lg',
+  shadowClass: 'shadow-2xl',
+  backdropOpacity: 0.5,
+  contentPadding: 'p-4',
+  footerBgColor: 'bg-gray-50',
 })
 
-const emit = defineEmits(['update:modelValue', 'close', 'open', 'minimize', 'maximize', 'restore'])
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+  close: []
+  open: []
+  minimize: [value: boolean]
+  maximize: []
+  restore: []
+}>()
+
+// Modal 管理器（多視窗支援）
+const { registerMinimized, unregisterMinimized } = useModalManager()
+const modalId = props.id ?? generateModalId()
 
 // 獲取插槽信息
 const slots = useSlots()
@@ -268,7 +220,7 @@ const hasFooterSlot = computed(() => !!slots.footer)
 // Modal 狀態
 const visible = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+  set: (value: boolean) => emit('update:modelValue', value)
 })
 const isMinimized = ref(false)
 const isMaximized = ref(props.defaultMaximized)
@@ -294,19 +246,19 @@ const resizeStartWidth = ref(0)
 const resizeStartHeight = ref(0)
 
 // 保存最大化前的狀態
-const beforeMaximize = ref({
+const beforeMaximize = ref<ModalState>({
   x: 0,
   y: 0,
-  width: props.width,
-  height: props.height
+  width: typeof props.width === 'string' ? parseInt(props.width) : props.width,
+  height: typeof props.height === 'string' ? parseInt(props.height) : props.height
 })
 
 // 模板引用
-const modalRef = ref(null)
-const headerRef = ref(null)
+const modalRef = ref<HTMLDivElement | null>(null)
+const headerRef = ref<HTMLDivElement | null>(null)
 
 // 初始化 Modal 位置和大小
-function initializeModal() {
+function initializeModal(): void {
   // 設置初始大小
   modalWidth.value = typeof props.width === 'string' ? parseInt(props.width) : props.width
   modalHeight.value = typeof props.height === 'string' ? parseInt(props.height) : props.height
@@ -337,7 +289,7 @@ function initializeModal() {
 }
 
 // 限制 Modal 在視窗範圍內
-function constrainToViewport() {
+function constrainToViewport(): void {
   const maxX = window.innerWidth - modalWidth.value
   const maxY = window.innerHeight - modalHeight.value
   
@@ -350,7 +302,7 @@ function constrainToViewport() {
 }
 
 // Modal 樣式
-const modalStyle = computed(() => {
+const modalStyle = computed<CSSProperties>(() => {
   if (isMaximized.value) {
     return {
       position: 'fixed',
@@ -387,7 +339,7 @@ const modalStyle = computed(() => {
 })
 
 // 內容區域樣式
-const contentStyle = computed(() => {
+const contentStyle = computed<CSSProperties>(() => {
   if (isMaximized.value) {
     return {
       maxHeight: 'calc(100vh - 60px)', // 減去標題欄高度
@@ -402,7 +354,7 @@ const contentStyle = computed(() => {
 })
 
 // 開始拖曳
-function startDrag(event) {
+function startDrag(event: MouseEvent): void {
   if (!props.draggable || isMaximized.value) return
   
   event.preventDefault()
@@ -421,7 +373,7 @@ function startDrag(event) {
 }
 
 // 處理拖曳
-function handleDrag(event) {
+function handleDrag(event: MouseEvent): void {
   if (!isDragging.value) return
   
   const deltaX = event.clientX - dragStartX.value
@@ -434,7 +386,7 @@ function handleDrag(event) {
 }
 
 // 停止拖曳
-function stopDrag() {
+function stopDrag(): void {
   isDragging.value = false
   document.removeEventListener('mousemove', handleDrag)
   document.removeEventListener('mouseup', stopDrag)
@@ -443,7 +395,7 @@ function stopDrag() {
 }
 
 // 開始調整大小
-function startResize(event) {
+function startResize(event: MouseEvent): void {
   if (!props.resizable) return
   
   event.preventDefault()
@@ -462,7 +414,7 @@ function startResize(event) {
 }
 
 // 處理調整大小
-function handleResize(event) {
+function handleResize(event: MouseEvent): void {
   if (!isResizing.value) return
   
   const deltaX = event.clientX - resizeStartX.value
@@ -475,7 +427,7 @@ function handleResize(event) {
 }
 
 // 停止調整大小
-function stopResize() {
+function stopResize(): void {
   isResizing.value = false
   document.removeEventListener('mousemove', handleResize)
   document.removeEventListener('mouseup', stopResize)
@@ -483,14 +435,37 @@ function stopResize() {
   document.body.style.cursor = ''
 }
 
+// 縮小到口袋 (Dock)
+function doMinimize(): void {
+  isMinimized.value = true
+  registerMinimized({
+    id: modalId,
+    title: props.title,
+    headerBgColor: props.headerBgColor,
+    restore: doRestore,
+    close: handleClose,
+  })
+  emit('minimize', true)
+}
+
+// 從口袋還原
+function doRestore(): void {
+  isMinimized.value = false
+  unregisterMinimized(modalId)
+  emit('minimize', false)
+}
+
 // 切換最小化
-function toggleMinimize() {
-  isMinimized.value = !isMinimized.value
-  emit('minimize', isMinimized.value)
+function toggleMinimize(): void {
+  if (isMinimized.value) {
+    doRestore()
+  } else {
+    doMinimize()
+  }
 }
 
 // 切換最大化
-function toggleMaximize() {
+function toggleMaximize(): void {
   if (!isMaximized.value) {
     // 保存當前狀態
     beforeMaximize.value = {
@@ -513,13 +488,17 @@ function toggleMaximize() {
 }
 
 // 處理關閉
-function handleClose() {
+function handleClose(): void {
+  if (isMinimized.value) {
+    isMinimized.value = false
+    unregisterMinimized(modalId)
+  }
   emit('update:modelValue', false)
   emit('close')
 }
 
 // 處理背景點擊
-function handleBackdropClick(event) {
+function handleBackdropClick(_event: MouseEvent): void {
   // // 如果是遮罩點擊
   // if (event.target === event.currentTarget && props.maskClosable) {
   //   handleClose()
@@ -527,19 +506,19 @@ function handleBackdropClick(event) {
 }
 
 // 處理 Modal 點擊 (防止冒泡)
-function handleModalClick(event) {
+function handleModalClick(event: MouseEvent): void {
   event.stopPropagation()
 }
 
 // 監聽鍵盤事件
-function handleKeydown(event) {
+function handleKeydown(event: KeyboardEvent): void {
   if (event.key === 'Escape' && props.modelValue && props.closable) {
     handleClose()
   }
 }
 
 // 監聽視窗大小變化
-function handleWindowResize() {
+function handleWindowResize(): void {
   if (props.modelValue) {
     constrainToViewport()
   }
@@ -554,6 +533,9 @@ watch(() => props.modelValue, (newVal) => {
     })
   } else {
     // 重置狀態
+    if (isMinimized.value) {
+      unregisterMinimized(modalId)
+    }
     isMinimized.value = false
     // 只有當不是預設最大化時才重置 isMaximized
     if (!props.defaultMaximized) {
@@ -561,14 +543,14 @@ watch(() => props.modelValue, (newVal) => {
       beforeMaximize.value = {
         x: 0,
         y: 0,
-        width: props.width,
-        height: props.height
+        width: typeof props.width === 'string' ? parseInt(props.width) : props.width,
+        height: typeof props.height === 'string' ? parseInt(props.height) : props.height
       }
     }
   }
 })
 
-// 監聽 defaultMaximized 變化（保持現有邏輯）
+// 監聯 defaultMaximized 變化（保持現有邏輯）
 watch(() => props.defaultMaximized, (newVal) => {
   isMaximized.value = newVal
   if (newVal && props.modelValue) {
@@ -598,6 +580,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  // 如果組件卸載時仍在口袋中，清理註冊
+  if (isMinimized.value) {
+    unregisterMinimized(modalId)
+  }
   document.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('resize', handleWindowResize)
   document.removeEventListener('mousemove', handleDrag)
@@ -608,14 +594,12 @@ onUnmounted(() => {
 
 // 暴露方法
 defineExpose({
+  modalId,
   open: () => {
     emit('update:modelValue', true)
   },
   close: handleClose,
-  minimize: () => {
-    isMinimized.value = true
-    emit('minimize', true)
-  },
+  minimize: doMinimize,
   maximize: () => {
     if (!isMaximized.value) {
       toggleMaximize()
@@ -626,16 +610,15 @@ defineExpose({
       toggleMaximize()
     }
     if (isMinimized.value) {
-      isMinimized.value = false
-      emit('minimize', false)
+      doRestore()
     }
   },
-  setPosition: (x, y) => {
+  setPosition: (x: number, y: number) => {
     modalX.value = x
     modalY.value = y
     constrainToViewport()
   },
-  setSize: (width, height) => {
+  setSize: (width: number, height: number) => {
     modalWidth.value = width
     modalHeight.value = height
     constrainToViewport()

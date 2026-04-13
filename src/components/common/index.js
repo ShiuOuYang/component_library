@@ -10,6 +10,10 @@ export { default as DualAxisComboChart } from './DualAxisComboChart.vue';
 export { default as FacetedChart } from './FacetedChart.vue';
 export { default as GridFacetChart } from './GridFacetChart.vue';
 
+// ===== 通用 Modal =====
+export { default as DraggableModal } from './DraggableModal.vue';
+export { default as ModalDock } from './ModalDock.vue';
+
 /**
  * 使用指南：
  * 
