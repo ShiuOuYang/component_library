@@ -143,6 +143,19 @@
           </span>
         </router-link>
 
+        <!-- PCB Layout -->
+        <router-link
+          to="/docs/components/pcb-layout"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/pcb-layout') }"
+        >
+          <span class="nav-icon">🖥️</span>
+          <span class="nav-text">PCB Layout</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
         <!-- 工具類組件分類 -->
         <div class="mt-8 mb-3">
           <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">

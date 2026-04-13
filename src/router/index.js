@@ -184,6 +184,14 @@ const routes = [
         },
       },
       {
+        path: "components/pcb-layout",
+        name: "PcbLayoutDoc",
+        component: () => import("../views/docs/PcbLayoutDoc.vue"),
+        meta: {
+          title: "PCB Layout",
+        },
+      },
+      {
         path: "components/tooltip",
         name: "TooltipDoc",
         component: TooltipDoc,
