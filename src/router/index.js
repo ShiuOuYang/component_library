@@ -183,6 +183,14 @@ const routes = [
         },
       },
       {
+        path: "components/schematic-viewer",
+        name: "SchematicViewerDoc",
+        component: () => import("../components/SchematicViewer.vue"),
+        meta: {
+          title: "Schematic Viewer",
+        },
+      },
+      {
         path: "components/tooltip",
         name: "TooltipDoc",
         component: TooltipDoc,
@@ -263,6 +271,15 @@ const routes = [
         },
       },
     ],
+  },
+  {
+    path: "/schematic-viewer",
+    name: "SchematicViewer",
+    component: () => import("../views/SchematicViewerView.vue"),
+    meta: {
+      title: "Schematic Viewer",
+      requiresAuth: false,
+    },
   },
   {
     path: "/box-plot-test",
