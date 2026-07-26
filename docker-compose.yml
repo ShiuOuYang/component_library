@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ym-dashboard
+    container_name: component_library
     ports:
       - '5015:5000'
     environment:

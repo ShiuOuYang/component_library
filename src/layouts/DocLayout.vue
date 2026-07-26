@@ -228,6 +228,18 @@
           </span>
         </router-link>
 
+        <router-link
+          to="/docs/components/form-atoms"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/form-atoms') }"
+        >
+          <span class="nav-icon">🧩</span>
+          <span class="nav-text">基礎表單元件</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
         <!-- TagFilterDropdown -->
         <router-link
           to="/docs/components/tag-filter-dropdown"
@@ -249,6 +261,18 @@
         >
           <span class="nav-icon">🪟</span>
           <span class="nav-text">DraggableModal 可拖曳模態框</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
+        <router-link
+          to="/docs/components/whiteboard"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/whiteboard') }"
+        >
+          <span class="nav-icon">📝</span>
+          <span class="nav-text">Whiteboard 白板</span>
           <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
             完成
           </span>
@@ -334,11 +358,17 @@
         <router-link to="/docs/components/filter-select" class="p-2 hover:bg-gray-100 rounded-lg" title="FilterSelect 單選器">
           <span class="text-xl">📝</span>
         </router-link>
+        <router-link to="/docs/components/form-atoms" class="p-2 hover:bg-gray-100 rounded-lg" title="基礎表單元件">
+          <span class="text-xl">🧩</span>
+        </router-link>
         <router-link to="/docs/components/tag-filter-dropdown" class="p-2 hover:bg-gray-100 rounded-lg" title="TagFilterDropdown 標籤過濾">
           <span class="text-xl">🏷️</span>
         </router-link>
         <router-link to="/docs/components/draggable-modal" class="p-2 hover:bg-gray-100 rounded-lg" title="DraggableModal 可拖曳模態框">
           <span class="text-xl">🪟</span>
+        </router-link>
+        <router-link to="/docs/components/whiteboard" class="p-2 hover:bg-gray-100 rounded-lg" title="Whiteboard 白板">
+          <span class="text-xl">📝</span>
         </router-link>
       </nav>
 

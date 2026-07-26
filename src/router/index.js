@@ -231,6 +231,14 @@ const routes = [
         },
       },
       {
+        path: "components/form-atoms",
+        name: "FormAtomsDoc",
+        component: () => import("../views/docs/components/FormAtoms.vue"),
+        meta: {
+          title: "基礎表單元件",
+        },
+      },
+      {
         path: "components/tag-filter-dropdown",
         name: "TagFilterDropdownDoc",
         component: () => import("../views/docs/components/TagFilterDropdown.vue"),
@@ -244,6 +252,14 @@ const routes = [
         component: () => import("../views/docs/components/DraggableModal.vue"),
         meta: {
           title: "DraggableModal 可拖曳模態框",
+        },
+      },
+      {
+        path: "components/whiteboard",
+        name: "WhiteboardDoc",
+        component: () => import("../views/docs/WhiteboardDoc.vue"),
+        meta: {
+          title: "Whiteboard 白板",
         },
       },
       {

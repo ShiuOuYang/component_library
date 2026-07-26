@@ -292,6 +292,11 @@ PCB Gerber 檔案渲染器，含圖層切換面板（深色主題）。
 | `TabNavigation` | 頁籤導航列 |
 | `Pagination` / `PageSwitcher` | 獨立分頁控制元件 |
 | `JxButton` / `JxCheckBox` / `JxIcon` | 基礎 UI 原子元件 |
+| `JxInput` | 文字輸入框，支援 clearable、前綴圖示、錯誤訊息 |
+| `JxRadio` | 單選按鈕群組 |
+| `JxSwitch` | 開關切換元件 |
+| `JxSelect` | 通用單選下拉選單（非篩選用，無「全部」選項） |
+| `JxDatePicker` | 日期 / 日期時間選擇器 |
 
 ---
 
@@ -306,7 +311,8 @@ import {
   CommonTable, JxFixedTable,
   FilterDropdown, FilterBar, FilterSelect, TagFilterDropdown,
   DraggableModal, CommonTooltip,
-  ExcelExporter, ExcelUploader, CodeBlock
+  ExcelExporter, ExcelUploader, CodeBlock,
+  JxInput, JxRadio, JxSwitch, JxSelect, JxDatePicker
 } from '@/components/common'
 ```
 

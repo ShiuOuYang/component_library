@@ -344,6 +344,24 @@
             </p>
           </router-link>
 
+          <router-link
+            to="/docs/components/form-atoms"
+            class="block p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-200 border-2 border-transparent hover:border-slate-500 group"
+          >
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-4xl">🧩</span>
+              <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
+                完成
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-slate-600 transition-colors">
+              基礎表單元件
+            </h3>
+            <p class="text-sm text-gray-600">
+              JxInput、JxRadio、JxSwitch、JxSelect、JxDatePicker 一站式示範
+            </p>
+          </router-link>
+
           <!-- TagFilterDropdown 標籤過濾 -->
           <router-link
             to="/docs/components/tag-filter-dropdown"
@@ -379,6 +397,25 @@
             </h3>
             <p class="text-sm text-gray-600">
               拖曳、調整大小、最大化
+            </p>
+          </router-link>
+
+          <!-- Whiteboard 白板 -->
+          <router-link
+            to="/docs/components/whiteboard"
+            class="block p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-200 border-2 border-transparent hover:border-teal-500 group"
+          >
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-4xl">📝</span>
+              <span class="px-2 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
+                完成
+              </span>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-teal-600 transition-colors">
+              Whiteboard 白板
+            </h3>
+            <p class="text-sm text-gray-600">
+              多頁白板、筆刷、幾何圖形、匯出 PNG / SVG
             </p>
           </router-link>
 

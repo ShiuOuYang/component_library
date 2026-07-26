@@ -14,6 +14,13 @@ export { default as GridFacetChart } from './GridFacetChart.vue';
 export { default as DraggableModal } from './DraggableModal.vue';
 export { default as ModalDock } from './ModalDock.vue';
 
+// ===== 表單原子元件 =====
+export { default as JxInput } from './JxInput.vue';
+export { default as JxRadio } from './JxRadio.vue';
+export { default as JxSwitch } from './JxSwitch.vue';
+export { default as JxSelect } from './JxSelect.vue';
+export { default as JxDatePicker } from './JxDatePicker.vue';
+
 /**
  * 使用指南：
  * 
