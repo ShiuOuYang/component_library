@@ -2,7 +2,7 @@
   <div class="flex h-screen bg-gray-50">
     <!-- 左側導覽列 (Sidebar) -->
     <aside 
-      class="bg-white border-r border-gray-200 overflow-y-auto flex-shrink-0 transition-all duration-300"
+      class="bg-white border-r border-gray-200 flex flex-col flex-shrink-0 transition-all duration-300"
       :class="isSidebarCollapsed ? 'w-16' : 'w-72'"
     >
       <div class="sticky top-0 bg-white z-10 border-b border-gray-200">
@@ -12,21 +12,21 @@
             to="/docs" 
             class="flex items-center space-x-3 group"
           >
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <span class="text-white text-xl font-bold">D3</span>
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-sm shrink-0">
+              <span class="text-white text-xl">🧩</span>
             </div>
             <div>
-              <h1 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+              <h1 class="text-lg font-bold text-gray-900 leading-tight group-hover:text-blue-600 transition-colors">
                 組件庫文檔
               </h1>
-              <p class="text-xs text-gray-500">組件庫文檔</p>
+              <p class="text-xs text-gray-500">Vue 3 企業級組件</p>
             </div>
           </router-link>
           
           <!-- 收合按鈕 -->
           <button
             @click="toggleSidebar"
-            class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            class="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
             title="收合側邊欄"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,13 +41,13 @@
             to="/docs" 
             class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center group"
           >
-            <span class="text-white text-xl font-bold">D3</span>
+            <span class="text-white text-xl">🧩</span>
           </router-link>
         </div>
       </div>
 
       <!-- 導覽列表 (展開狀態) -->
-      <nav v-if="!isSidebarCollapsed" class="p-4 space-y-1">
+      <nav v-if="!isSidebarCollapsed" class="flex-1 overflow-y-auto p-4 space-y-1">
         <!-- 首頁 -->
         <router-link
           to="/docs"
@@ -60,10 +60,11 @@
 
         <!-- 各分類導覽項目（資料驅動） -->
         <template v-for="section in navSections" :key="section.title">
-          <div class="mt-8 mb-3">
-            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <div class="mt-6 mb-2 flex items-center gap-2">
+            <h3 class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
               {{ section.title }}
             </h3>
+            <div class="flex-1 h-px bg-gray-100"></div>
           </div>
 
           <router-link
@@ -75,22 +76,15 @@
           >
             <span class="nav-icon">{{ item.icon }}</span>
             <span class="nav-text">{{ item.label }}</span>
-            <span
-              v-if="item.status"
-              class="ml-auto px-2 py-0.5 text-xs font-medium rounded-full"
-              :class="statusBadge(item.status).cls"
-            >
-              {{ statusBadge(item.status).text }}
-            </span>
           </router-link>
         </template>
       </nav>
 
       <!-- 收合狀態的快捷圖標列表 -->
-      <nav v-if="isSidebarCollapsed" class="p-2 space-y-2 flex flex-col items-center mt-4">
+      <nav v-if="isSidebarCollapsed" class="flex-1 overflow-y-auto px-2 py-3 space-y-2 flex flex-col items-center">
         <button
           @click="toggleSidebar"
-          class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+          class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
           title="展開側邊欄"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -104,7 +98,8 @@
           v-for="shortcut in collapsedShortcuts"
           :key="shortcut.to"
           :to="shortcut.to"
-          class="p-2 hover:bg-gray-100 rounded-lg"
+          class="p-2 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+          :class="{ 'bg-blue-50 text-blue-600': isActiveRoute(shortcut.to) }"
           :title="shortcut.title"
         >
           <span class="text-xl">{{ shortcut.icon }}</span>
@@ -112,15 +107,21 @@
       </nav>
 
       <!-- 底部版本資訊 -->
-      <div v-if="!isSidebarCollapsed" class="p-4 mt-auto border-t border-gray-200 bg-gray-50">
-        <div class="text-xs text-gray-500 space-y-1">
-          <div class="flex items-center justify-between">
-            <span>版本</span>
-            <span class="font-mono font-semibold text-gray-700">v1.0.0</span>
+      <div v-if="!isSidebarCollapsed" class="mt-auto border-t border-gray-200 bg-white">
+        <div class="px-6 py-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-green-500"></span>
+            <span class="text-xs font-medium text-gray-600">文件系統</span>
           </div>
-          <div class="flex items-center justify-between">
-            <span>更新日期</span>
-            <span class="font-mono text-gray-600">2026-01-11</span>
+          <div class="text-xs text-gray-500 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400">版本</span>
+              <span class="font-mono font-semibold text-gray-700">v1.0.0</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-gray-400">更新日期</span>
+              <span class="font-mono text-gray-600">2026-01-11</span>
+            </div>
           </div>
         </div>
       </div>
@@ -150,41 +151,37 @@ const toggleSidebar = () => {
 };
 /**
  * 導覽分類與項目（資料驅動，統一維護）
- * status: 'done'（完成）| 'planned'（計畫中）| 省略（無標籤）
  */
 const navSections = [
   {
     title: '圖表組件',
     items: [
-      { to: '/docs/components/dual-axis-chart', icon: '📊', label: '雙軸組合圖', status: 'done' },
-      { to: '/docs/components/pareto', icon: '📈', label: '柏拉圖', status: 'done' },
-      { to: '/docs/components/gauge', icon: '⏱️', label: '儀表板', status: 'planned' },
-      { to: '/docs/components/heatmap', icon: '🔥', label: '熱力圖', status: 'done' },
-      { to: '/docs/components/gantt', icon: '📅', label: '甘特圖', status: 'planned' },
-      { to: '/docs/components/gerber-viewer', icon: '🔬', label: 'Gerber 檢視器', status: 'done' },
-      { to: '/docs/components/pcb-layout', icon: '🖥️', label: 'PCB Layout', status: 'done' },
+      { to: '/docs/components/dual-axis-chart', icon: '📊', label: '雙軸組合圖' },
+      { to: '/docs/components/pareto', icon: '📈', label: '柏拉圖' },
+      { to: '/docs/components/heatmap', icon: '🔥', label: '熱力圖' },
+      { to: '/docs/components/gerber-viewer', icon: '🔬', label: 'Gerber 檢視器' },
+      { to: '/docs/components/pcb-layout', icon: '🖥️', label: 'PCB Layout' },
     ],
   },
   {
     title: '工具組件',
     items: [
-      { to: '/docs/components/tooltip', icon: '💬', label: 'Tooltip 提示框', status: 'done' },
-      { to: '/docs/components/common-table', icon: '📋', label: 'CommonTable 表格', status: 'done' },
-      { to: '/docs/components/filter-dropdown', icon: '🔽', label: 'FilterDropdown 過濾器', status: 'done' },
-      { to: '/docs/components/filter-bar', icon: '🎛️', label: 'FilterBar 過濾橫列', status: 'done' },
-      { to: '/docs/components/filter-select', icon: '📝', label: 'FilterSelect 單選器', status: 'done' },
-      { to: '/docs/components/form-atoms', icon: '🧩', label: '基礎表單元件', status: 'done' },
-      { to: '/docs/components/feedback', icon: '🛎️', label: '反饋元件', status: 'done' },
-      { to: '/docs/components/interactive', icon: '🖱️', label: '互動元件', status: 'done' },
-      { to: '/docs/components/overlay', icon: '🗔', label: '浮層元件', status: 'done' },
-      { to: '/docs/components/layout-nav', icon: '🧱', label: '佈局與流程', status: 'done' },
-      { to: '/docs/components/data-filter', icon: '📊', label: '資料呈現與過濾元件', status: 'done' },
-      { to: '/docs/components/theme-tools', icon: '🌗', label: '主題與工具元件', status: 'done' },
-      { to: '/docs/components/excel-editor', icon: '📝', label: 'Excel 編輯器', status: 'done' },
-      { to: '/docs/components/tag-filter-dropdown', icon: '🏷️', label: 'TagFilterDropdown 標籤過濾', status: 'done' },
-      { to: '/docs/components/draggable-modal', icon: '🪟', label: 'DraggableModal 可拖曳模態框', status: 'done' },
-      { to: '/docs/components/whiteboard', icon: '📝', label: 'Whiteboard 白板', status: 'done' },
-      { to: '/docs/components/legend', icon: '🏷️', label: 'Legend 圖例', status: 'planned' },
+      { to: '/docs/components/tooltip', icon: '💬', label: 'Tooltip 提示框' },
+      { to: '/docs/components/common-table', icon: '📋', label: 'CommonTable 表格' },
+      { to: '/docs/components/filter-dropdown', icon: '🔽', label: 'FilterDropdown 過濾器' },
+      { to: '/docs/components/filter-bar', icon: '🎛️', label: 'FilterBar 過濾橫列' },
+      { to: '/docs/components/filter-select', icon: '📝', label: 'FilterSelect 單選器' },
+      { to: '/docs/components/form-atoms', icon: '🧩', label: '基礎表單元件' },
+      { to: '/docs/components/feedback', icon: '🛎️', label: '反饋元件' },
+      { to: '/docs/components/interactive', icon: '🖱️', label: '互動元件' },
+      { to: '/docs/components/overlay', icon: '🗔', label: '浮層元件' },
+      { to: '/docs/components/layout-nav', icon: '🧱', label: '佈局與流程' },
+      { to: '/docs/components/data-filter', icon: '📊', label: '資料呈現與過濾元件' },
+      { to: '/docs/components/theme-tools', icon: '🌗', label: '主題與工具元件' },
+      { to: '/docs/components/excel-editor', icon: '📝', label: 'Excel 編輯器' },
+      { to: '/docs/components/tag-filter-dropdown', icon: '🏷️', label: 'TagFilterDropdown 標籤過濾' },
+      { to: '/docs/components/draggable-modal', icon: '🪟', label: 'DraggableModal 可拖曳模態框' },
+      { to: '/docs/components/whiteboard', icon: '📝', label: 'Whiteboard 白板' },
     ],
   },
   {
@@ -221,14 +218,6 @@ const collapsedShortcuts = [
   { to: '/docs/components/whiteboard', icon: '📝', title: 'Whiteboard 白板' },
 ];
 
-/** 狀態標籤輔助函式 */
-const statusBadge = (status) => {
-  if (status === 'planned') {
-    return { text: '計畫中', cls: 'bg-gray-100 text-gray-500' };
-  }
-  return { text: '完成', cls: 'bg-green-100 text-green-700' };
-};
-
 /**
  * 判斷路由是否為啟用狀態
  * @param {string} path - 路由路徑
@@ -245,46 +234,62 @@ const isActiveRoute = (path, exact = false) => {
 <style scoped>
 /* 導覽項目基礎樣式 */
 .nav-item {
-  @apply flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg transition-all duration-150;
+  @apply relative flex items-center px-3 py-2.5 text-sm font-medium text-gray-700 rounded-lg transition-all duration-150;
   @apply hover:bg-blue-50 hover:text-blue-700;
 }
 
-/* 導覽項目啟用狀態 */
+/* 導覽項目啟用狀態：左側指示條 */
+.nav-item::before {
+  content: '';
+  @apply absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-transparent rounded-r transition-all duration-150;
+}
+
 .nav-item-active {
-  @apply bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md;
-  @apply hover:from-blue-600 hover:to-blue-700 hover:text-white;
+  @apply bg-blue-50 text-blue-700 font-semibold;
+}
+
+.nav-item-active::before {
+  @apply bg-blue-600 h-6;
 }
 
 /* 導覽圖示 */
 .nav-icon {
-  @apply mr-3 text-lg flex-shrink-0;
+  @apply mr-3 text-lg flex-shrink-0 transition-transform duration-150;
+}
+
+.nav-item:hover .nav-icon {
+  @apply scale-110;
+}
+
+.nav-item-active .nav-icon {
+  @apply scale-110;
 }
 
 /* 導覽文字 */
 .nav-text {
-  @apply flex-1;
+  @apply flex-1 truncate;
 }
 
-/* 滾動條樣式 */
-aside {
+/* 滾動條樣式：側邊欄導覽 */
+nav {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
-aside::-webkit-scrollbar {
+nav::-webkit-scrollbar {
   width: 6px;
 }
 
-aside::-webkit-scrollbar-track {
+nav::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
 
-aside::-webkit-scrollbar-thumb {
+nav::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
 }
 
-aside::-webkit-scrollbar-thumb:hover {
+nav::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
