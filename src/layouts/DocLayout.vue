@@ -58,354 +58,32 @@
           <span class="nav-text">首頁</span>
         </router-link>
 
-        <!-- 組件分類 -->
-        <div class="mt-8 mb-3">
-          <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            圖表組件
-          </h3>
-        </div>
+        <!-- 各分類導覽項目（資料驅動） -->
+        <template v-for="section in navSections" :key="section.title">
+          <div class="mt-8 mb-3">
+            <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              {{ section.title }}
+            </h3>
+          </div>
 
-        <!-- 雙軸組合圖 -->
-        <router-link
-          to="/docs/components/dual-axis-chart"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/dual-axis-chart') }"
-        >
-          <span class="nav-icon">📊</span>
-          <span class="nav-text">雙軸組合圖</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- 柏拉圖 -->
-        <router-link
-          to="/docs/components/pareto"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/pareto') }"
-        >
-          <span class="nav-icon">📈</span>
-          <span class="nav-text">柏拉圖</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- 儀表板 (預留) -->
-        <router-link
-          to="/docs/components/gauge"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/gauge') }"
-        >
-          <span class="nav-icon">⏱️</span>
-          <span class="nav-text">儀表板</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">
-            計畫中
-          </span>
-        </router-link>
-
-        <!-- 熱力圖 -->
-        <router-link
-          to="/docs/components/heatmap"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/heatmap') }"
-        >
-          <span class="nav-icon">🔥</span>
-          <span class="nav-text">熱力圖</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- 甘特圖 (預留) -->
-        <router-link
-          to="/docs/components/gantt"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/gantt') }"
-        >
-          <span class="nav-icon">📅</span>
-          <span class="nav-text">甘特圖</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">
-            計畫中
-          </span>
-        </router-link>
-
-        <!-- Gerber 檢視器 -->
-        <router-link
-          to="/docs/components/gerber-viewer"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/gerber-viewer') }"
-        >
-          <span class="nav-icon">🔬</span>
-          <span class="nav-text">Gerber 檢視器</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- PCB Layout -->
-        <router-link
-          to="/docs/components/pcb-layout"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/pcb-layout') }"
-        >
-          <span class="nav-icon">🖥️</span>
-          <span class="nav-text">PCB Layout</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- 工具類組件分類 -->
-        <div class="mt-8 mb-3">
-          <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            工具組件
-          </h3>
-        </div>
-
-        <!-- Tooltip -->
-        <router-link
-          to="/docs/components/tooltip"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/tooltip') }"
-        >
-          <span class="nav-icon">💬</span>
-          <span class="nav-text">Tooltip 提示框</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- CommonTable -->
-        <router-link
-          to="/docs/components/common-table"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/common-table') }"
-        >
-          <span class="nav-icon">📋</span>
-          <span class="nav-text">CommonTable 表格</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- FilterDropdown -->
-        <router-link
-          to="/docs/components/filter-dropdown"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/filter-dropdown') }"
-        >
-          <span class="nav-icon">🔽</span>
-          <span class="nav-text">FilterDropdown 過濾器</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- FilterBar -->
-        <router-link
-          to="/docs/components/filter-bar"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/filter-bar') }"
-        >
-          <span class="nav-icon">🎛️</span>
-          <span class="nav-text">FilterBar 過濾橫列</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- FilterSelect -->
-        <router-link
-          to="/docs/components/filter-select"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/filter-select') }"
-        >
-          <span class="nav-icon">📝</span>
-          <span class="nav-text">FilterSelect 單選器</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-                <router-link
-          to="/docs/components/form-atoms"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/form-atoms') }"
-        >
-          <span class="nav-icon">🧩</span>
-          <span class="nav-text">基礎表單元件</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-                <!-- 反饋元件 -->
-        <router-link
-          to="/docs/components/feedback"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/feedback') }"
-        >
-          <span class="nav-icon">🛎️</span>
-          <span class="nav-text">反饋元件</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- 互動元件 -->
-        <router-link
-          to="/docs/components/interactive"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/interactive') }"
-        >
-          <span class="nav-icon">🖱️</span>
-          <span class="nav-text">互動元件</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- 浮層元件 -->
-        <router-link
-          to="/docs/components/overlay"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/overlay') }"
-        >
-          <span class="nav-icon">🗔</span>
-          <span class="nav-text">浮層元件</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- 佈局與流程 -->
-        <router-link
-          to="/docs/components/layout-nav"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/layout-nav') }"
-        >
-          <span class="nav-icon">🧱</span>
-          <span class="nav-text">佈局與流程元件</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-                <!-- 資料呈現與過濾元件 -->
-        <router-link
-          to="/docs/components/data-filter"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/data-filter') }"
-        >
-          <span class="nav-icon">📊</span>
-          <span class="nav-text">資料呈現與過濾元件</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- 主題與工具元件 -->
-        <router-link
-          to="/docs/components/theme-tools"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/theme-tools') }"
-        >
-          <span class="nav-icon">🌗</span>
-          <span class="nav-text">主題與工具元件</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- Excel 編輯器 -->
-        <router-link
-          to="/docs/components/excel-editor"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/excel-editor') }"
-        >
-          <span class="nav-icon">📝</span>
-          <span class="nav-text">Excel 編輯器</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- TagFilterDropdown -->
-        <router-link
-          to="/docs/components/tag-filter-dropdown"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/tag-filter-dropdown') }"
-        >
-          <span class="nav-icon">🏷️</span>
-          <span class="nav-text">TagFilterDropdown 標籤過濾</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- DraggableModal -->
-        <router-link
-          to="/docs/components/draggable-modal"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/draggable-modal') }"
-        >
-          <span class="nav-icon">🪟</span>
-          <span class="nav-text">DraggableModal 可拖曳模態框</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <router-link
-          to="/docs/components/whiteboard"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/whiteboard') }"
-        >
-          <span class="nav-icon">📝</span>
-          <span class="nav-text">Whiteboard 白板</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-            完成
-          </span>
-        </router-link>
-
-        <!-- Legend (預留) -->
-        <router-link
-          to="/docs/components/legend"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/components/legend') }"
-        >
-          <span class="nav-icon">🏷️</span>
-          <span class="nav-text">Legend 圖例</span>
-          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-500 rounded-full">
-            計畫中
-          </span>
-        </router-link>
-
-        <!-- 指南分類 -->
-        <div class="mt-8 mb-3">
-          <h3 class="px-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            開發指南
-          </h3>
-        </div>
-
-        <router-link
-          to="/docs/guide/getting-started"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/guide/getting-started') }"
-        >
-          <span class="nav-icon">🚀</span>
-          <span class="nav-text">快速開始</span>
-        </router-link>
-
-        <router-link
-          to="/docs/guide/best-practices"
-          class="nav-item"
-          :class="{ 'nav-item-active': isActiveRoute('/docs/guide/best-practices') }"
-        >
-          <span class="nav-icon">✨</span>
-          <span class="nav-text">最佳實踐</span>
-        </router-link>
+          <router-link
+            v-for="item in section.items"
+            :key="item.to"
+            :to="item.to"
+            class="nav-item"
+            :class="{ 'nav-item-active': isActiveRoute(item.to) }"
+          >
+            <span class="nav-icon">{{ item.icon }}</span>
+            <span class="nav-text">{{ item.label }}</span>
+            <span
+              v-if="item.status"
+              class="ml-auto px-2 py-0.5 text-xs font-medium rounded-full"
+              :class="statusBadge(item.status).cls"
+            >
+              {{ statusBadge(item.status).text }}
+            </span>
+          </router-link>
+        </template>
       </nav>
 
       <!-- 收合狀態的快捷圖標列表 -->
@@ -422,53 +100,14 @@
         
         <div class="w-8 h-px bg-gray-200"></div>
         
-        <router-link to="/docs" class="p-2 hover:bg-gray-100 rounded-lg" title="首頁">
-          <span class="text-xl">🏠</span>
-        </router-link>
-        <router-link to="/docs/components/dual-axis-chart" class="p-2 hover:bg-gray-100 rounded-lg" title="雙軸組合圖">
-          <span class="text-xl">📊</span>
-        </router-link>
-        <router-link to="/docs/components/pareto" class="p-2 hover:bg-gray-100 rounded-lg" title="柏拉圖">
-          <span class="text-xl">📈</span>
-        </router-link>
-        <router-link to="/docs/components/heatmap" class="p-2 hover:bg-gray-100 rounded-lg" title="熱力圖">
-          <span class="text-xl">🔥</span>
-        </router-link>
-        <router-link to="/docs/components/tooltip" class="p-2 hover:bg-gray-100 rounded-lg" title="Tooltip">
-          <span class="text-xl">💬</span>
-        </router-link>
-        <router-link to="/docs/components/common-table" class="p-2 hover:bg-gray-100 rounded-lg" title="CommonTable 表格">
-          <span class="text-xl">📋</span>
-        </router-link>
-        <router-link to="/docs/components/filter-dropdown" class="p-2 hover:bg-gray-100 rounded-lg" title="FilterDropdown 過濾器">
-          <span class="text-xl">🔽</span>
-        </router-link>
-        <router-link to="/docs/components/filter-bar" class="p-2 hover:bg-gray-100 rounded-lg" title="FilterBar 過濾橫列">
-          <span class="text-xl">🎛️</span>
-        </router-link>
-        <router-link to="/docs/components/filter-select" class="p-2 hover:bg-gray-100 rounded-lg" title="FilterSelect 單選器">
-          <span class="text-xl">📝</span>
-        </router-link>
-                <router-link to="/docs/components/form-atoms" class="p-2 hover:bg-gray-100 rounded-lg" title="基礎表單元件">
-          <span class="text-xl">🧩</span>
-        </router-link>
-        <router-link to="/docs/components/data-filter" class="p-2 hover:bg-gray-100 rounded-lg" title="資料呈現與過濾元件">
-          <span class="text-xl">📊</span>
-        </router-link>
-        <router-link to="/docs/components/theme-tools" class="p-2 hover:bg-gray-100 rounded-lg" title="主題與工具元件">
-          <span class="text-xl">🌗</span>
-        </router-link>
-        <router-link to="/docs/components/excel-editor" class="p-2 hover:bg-gray-100 rounded-lg" title="Excel 編輯器">
-          <span class="text-xl">📝</span>
-        </router-link>
-        <router-link to="/docs/components/tag-filter-dropdown" class="p-2 hover:bg-gray-100 rounded-lg" title="TagFilterDropdown 標籤過濾">
-          <span class="text-xl">🏷️</span>
-        </router-link>
-        <router-link to="/docs/components/draggable-modal" class="p-2 hover:bg-gray-100 rounded-lg" title="DraggableModal 可拖曳模態框">
-          <span class="text-xl">🪟</span>
-        </router-link>
-        <router-link to="/docs/components/whiteboard" class="p-2 hover:bg-gray-100 rounded-lg" title="Whiteboard 白板">
-          <span class="text-xl">📝</span>
+        <router-link
+          v-for="shortcut in collapsedShortcuts"
+          :key="shortcut.to"
+          :to="shortcut.to"
+          class="p-2 hover:bg-gray-100 rounded-lg"
+          :title="shortcut.title"
+        >
+          <span class="text-xl">{{ shortcut.icon }}</span>
         </router-link>
       </nav>
 
@@ -508,6 +147,86 @@ const isSidebarCollapsed = ref(false);
  */
 const toggleSidebar = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value;
+};
+/**
+ * 導覽分類與項目（資料驅動，統一維護）
+ * status: 'done'（完成）| 'planned'（計畫中）| 省略（無標籤）
+ */
+const navSections = [
+  {
+    title: '圖表組件',
+    items: [
+      { to: '/docs/components/dual-axis-chart', icon: '📊', label: '雙軸組合圖', status: 'done' },
+      { to: '/docs/components/pareto', icon: '📈', label: '柏拉圖', status: 'done' },
+      { to: '/docs/components/gauge', icon: '⏱️', label: '儀表板', status: 'planned' },
+      { to: '/docs/components/heatmap', icon: '🔥', label: '熱力圖', status: 'done' },
+      { to: '/docs/components/gantt', icon: '📅', label: '甘特圖', status: 'planned' },
+      { to: '/docs/components/gerber-viewer', icon: '🔬', label: 'Gerber 檢視器', status: 'done' },
+      { to: '/docs/components/pcb-layout', icon: '🖥️', label: 'PCB Layout', status: 'done' },
+    ],
+  },
+  {
+    title: '工具組件',
+    items: [
+      { to: '/docs/components/tooltip', icon: '💬', label: 'Tooltip 提示框', status: 'done' },
+      { to: '/docs/components/common-table', icon: '📋', label: 'CommonTable 表格', status: 'done' },
+      { to: '/docs/components/filter-dropdown', icon: '🔽', label: 'FilterDropdown 過濾器', status: 'done' },
+      { to: '/docs/components/filter-bar', icon: '🎛️', label: 'FilterBar 過濾橫列', status: 'done' },
+      { to: '/docs/components/filter-select', icon: '📝', label: 'FilterSelect 單選器', status: 'done' },
+      { to: '/docs/components/form-atoms', icon: '🧩', label: '基礎表單元件', status: 'done' },
+      { to: '/docs/components/feedback', icon: '🛎️', label: '反饋元件', status: 'done' },
+      { to: '/docs/components/interactive', icon: '🖱️', label: '互動元件', status: 'done' },
+      { to: '/docs/components/overlay', icon: '🗔', label: '浮層元件', status: 'done' },
+      { to: '/docs/components/layout-nav', icon: '🧱', label: '佈局與流程', status: 'done' },
+      { to: '/docs/components/data-filter', icon: '📊', label: '資料呈現與過濾元件', status: 'done' },
+      { to: '/docs/components/theme-tools', icon: '🌗', label: '主題與工具元件', status: 'done' },
+      { to: '/docs/components/excel-editor', icon: '📝', label: 'Excel 編輯器', status: 'done' },
+      { to: '/docs/components/tag-filter-dropdown', icon: '🏷️', label: 'TagFilterDropdown 標籤過濾', status: 'done' },
+      { to: '/docs/components/draggable-modal', icon: '🪟', label: 'DraggableModal 可拖曳模態框', status: 'done' },
+      { to: '/docs/components/whiteboard', icon: '📝', label: 'Whiteboard 白板', status: 'done' },
+      { to: '/docs/components/legend', icon: '🏷️', label: 'Legend 圖例', status: 'planned' },
+    ],
+  },
+  {
+    title: '開發指南',
+    items: [
+      { to: '/docs/guide/getting-started', icon: '🚀', label: '快速開始' },
+      { to: '/docs/guide/best-practices', icon: '✨', label: '最佳實踐' },
+    ],
+  },
+];
+
+/**
+ * 收合側邊欄時顯示的快捷項目（首頁 + 各分類代表性項目）
+ */
+const collapsedShortcuts = [
+  { to: '/docs', icon: '🏠', title: '首頁' },
+  { to: '/docs/components/dual-axis-chart', icon: '📊', title: '雙軸組合圖' },
+  { to: '/docs/components/pareto', icon: '📈', title: '柏拉圖' },
+  { to: '/docs/components/heatmap', icon: '🔥', title: '熱力圖' },
+  { to: '/docs/components/tooltip', icon: '💬', title: 'Tooltip' },
+  { to: '/docs/components/common-table', icon: '📋', title: 'CommonTable 表格' },
+  { to: '/docs/components/filter-dropdown', icon: '🔽', title: 'FilterDropdown 過濾器' },
+  { to: '/docs/components/filter-bar', icon: '🎛️', title: 'FilterBar 過濾橫列' },
+  { to: '/docs/components/form-atoms', icon: '🧩', title: '基礎表單元件' },
+  { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件' },
+  { to: '/docs/components/interactive', icon: '🖱️', title: '互動元件' },
+  { to: '/docs/components/overlay', icon: '🗔', title: '浮層元件' },
+  { to: '/docs/components/layout-nav', icon: '🧱', title: '佈局與流程' },
+  { to: '/docs/components/data-filter', icon: '📊', title: '資料呈現與過濾元件' },
+  { to: '/docs/components/theme-tools', icon: '🌗', title: '主題與工具元件' },
+  { to: '/docs/components/excel-editor', icon: '📝', title: 'Excel 編輯器' },
+  { to: '/docs/components/tag-filter-dropdown', icon: '🏷️', title: 'TagFilterDropdown 標籤過濾' },
+  { to: '/docs/components/draggable-modal', icon: '🪟', title: 'DraggableModal 可拖曳模態框' },
+  { to: '/docs/components/whiteboard', icon: '📝', title: 'Whiteboard 白板' },
+];
+
+/** 狀態標籤輔助函式 */
+const statusBadge = (status) => {
+  if (status === 'planned') {
+    return { text: '計畫中', cls: 'bg-gray-100 text-gray-500' };
+  }
+  return { text: '完成', cls: 'bg-green-100 text-green-700' };
 };
 
 /**
