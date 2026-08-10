@@ -358,7 +358,7 @@
               基礎表單元件
             </h3>
             <p class="text-sm text-gray-600">
-              JxInput、JxRadio、JxSwitch、JxSelect、JxDatePicker 一站式示範
+              ChptInput、ChptRadio、ChptSwitch、ChptSelect、ChptDatePicker 一站式示範
             </p>
           </router-link>
 

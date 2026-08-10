@@ -7,7 +7,7 @@
         </div>
         <div>
           <h1 class="text-4xl font-bold text-gray-900">基礎表單元件</h1>
-          <p class="text-lg text-gray-600 mt-1">JxInput / JxRadio / JxSwitch / JxSelect / JxDatePicker</p>
+          <p class="text-lg text-gray-600 mt-1">ChptInput / ChptRadio / ChptSwitch / ChptSelect / ChptDatePicker</p>
         </div>
       </div>
 
@@ -27,8 +27,8 @@
 
       <div class="grid xl:grid-cols-2 gap-8">
         <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border-2 border-gray-200 space-y-5">
-          <h3 class="text-lg font-semibold text-gray-900">JxInput</h3>
-          <JxInput
+          <h3 class="text-lg font-semibold text-gray-900">ChptInput</h3>
+          <ChptInput
             v-model="form.keyword"
             label="關鍵字"
             placeholder="請輸入料號或站點"
@@ -40,8 +40,8 @@
         </div>
 
         <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border-2 border-gray-200 space-y-5">
-          <h3 class="text-lg font-semibold text-gray-900">JxSelect</h3>
-          <JxSelect
+          <h3 class="text-lg font-semibold text-gray-900">ChptSelect</h3>
+          <ChptSelect
             v-model="form.site"
             label="廠區"
             :options="siteOptions"
@@ -52,8 +52,8 @@
         </div>
 
         <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border-2 border-gray-200 space-y-5">
-          <h3 class="text-lg font-semibold text-gray-900">JxRadio</h3>
-          <JxRadio
+          <h3 class="text-lg font-semibold text-gray-900">ChptRadio</h3>
+          <ChptRadio
             v-model="form.priority"
             :items="priorityOptions"
             color="primary"
@@ -62,23 +62,23 @@
         </div>
 
         <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border-2 border-gray-200 space-y-5">
-          <h3 class="text-lg font-semibold text-gray-900">JxSwitch</h3>
+          <h3 class="text-lg font-semibold text-gray-900">ChptSwitch</h3>
           <div class="flex items-center gap-4">
-            <JxSwitch v-model="form.notify" label="啟用通知" color="success" />
+            <ChptSwitch v-model="form.notify" label="啟用通知" color="success" />
             <span class="text-sm text-gray-600">{{ form.notify ? 'On' : 'Off' }}</span>
           </div>
         </div>
 
         <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-6 border-2 border-gray-200 space-y-5 xl:col-span-2">
-          <h3 class="text-lg font-semibold text-gray-900">JxDatePicker</h3>
+          <h3 class="text-lg font-semibold text-gray-900">ChptDatePicker</h3>
           <div class="grid md:grid-cols-2 gap-4">
-            <JxDatePicker
+            <ChptDatePicker
               v-model="form.date"
               label="單日"
               placeholder="選擇日期"
               full-width
             />
-            <JxDatePicker
+            <ChptDatePicker
               v-model="form.range"
               label="區間"
               :range="true"
@@ -112,31 +112,31 @@
           </thead>
           <tbody class="divide-y divide-gray-200">
             <tr class="hover:bg-gray-50">
-              <td class="px-4 py-3 font-mono text-indigo-600">JxInput</td>
+              <td class="px-4 py-3 font-mono text-indigo-600">ChptInput</td>
               <td class="px-4 py-3 text-gray-700">文字輸入、前綴圖示、清除</td>
               <td class="px-4 py-3 font-mono text-gray-600">String | Number</td>
               <td class="px-4 py-3 font-mono text-gray-600">update:modelValue, clear, blur, focus</td>
             </tr>
             <tr class="hover:bg-gray-50">
-              <td class="px-4 py-3 font-mono text-indigo-600">JxRadio</td>
+              <td class="px-4 py-3 font-mono text-indigo-600">ChptRadio</td>
               <td class="px-4 py-3 text-gray-700">單選群組</td>
               <td class="px-4 py-3 font-mono text-gray-600">String | Number | Boolean</td>
               <td class="px-4 py-3 font-mono text-gray-600">update:modelValue</td>
             </tr>
             <tr class="hover:bg-gray-50">
-              <td class="px-4 py-3 font-mono text-indigo-600">JxSwitch</td>
+              <td class="px-4 py-3 font-mono text-indigo-600">ChptSwitch</td>
               <td class="px-4 py-3 text-gray-700">布林狀態切換</td>
               <td class="px-4 py-3 font-mono text-gray-600">Boolean</td>
               <td class="px-4 py-3 font-mono text-gray-600">update:modelValue, change</td>
             </tr>
             <tr class="hover:bg-gray-50">
-              <td class="px-4 py-3 font-mono text-indigo-600">JxSelect</td>
+              <td class="px-4 py-3 font-mono text-indigo-600">ChptSelect</td>
               <td class="px-4 py-3 text-gray-700">單選下拉、選項映射</td>
               <td class="px-4 py-3 font-mono text-gray-600">String | Number</td>
               <td class="px-4 py-3 font-mono text-gray-600">update:modelValue</td>
             </tr>
             <tr class="hover:bg-gray-50">
-              <td class="px-4 py-3 font-mono text-indigo-600">JxDatePicker</td>
+              <td class="px-4 py-3 font-mono text-indigo-600">ChptDatePicker</td>
               <td class="px-4 py-3 text-gray-700">日期、日期區間、時間選擇</td>
               <td class="px-4 py-3 font-mono text-gray-600">Date | String | Array</td>
               <td class="px-4 py-3 font-mono text-gray-600">update:modelValue, clear</td>
@@ -154,11 +154,11 @@
 
       <div class="bg-gray-900 rounded-lg p-5 overflow-x-auto">
         <pre class="text-green-400 text-sm font-mono"><code>import {
-  JxInput,
-  JxRadio,
-  JxSwitch,
-  JxSelect,
-  JxDatePicker
+  ChptInput,
+  ChptRadio,
+  ChptSwitch,
+  ChptSelect,
+  ChptDatePicker
 } from '@/components/common'</code></pre>
       </div>
     </section>
@@ -168,11 +168,11 @@
 <script setup>
 import { reactive } from 'vue'
 import {
-  JxInput,
-  JxRadio,
-  JxSwitch,
-  JxSelect,
-  JxDatePicker
+  ChptInput,
+  ChptRadio,
+  ChptSwitch,
+  ChptSelect,
+  ChptDatePicker
 } from '@/components/common'
 
 const form = reactive({

@@ -1,21 +1,15 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useRouteGuard } from "../composables/useRouteGuard.js";
 // import ComponentLibrary from "../views/ComponentLibrary.vue";
-import BoxPlotTest from "../views/BoxPlotTest.vue";
-import BoxPlotTest2 from "../views/BoxPlotTest2.vue";
-import ScatterPlotTest from "../views/ScatterPlotTest.vue";
-import BoxPlotLegendTest from "../views/BoxPlotLegendTest.vue";
 // import D3Practice from "../views/D3Practice.vue";
 import Login from "../views/Login.vue";
-import D3CalendarTimeLineTestView from "../views/D3CalendarTimeLineTestView.vue";
-import D3BarChartDemo from "../views/D3BarChartDemo.vue";
 import D3LearningView from "../views/D3Learning/D3LearningView.vue";
 import D3LearningIndex from "../views/D3Learning/D3LearningIndex.vue";
 import D3Week3_4View from "../views/D3Learning/D3Week3-4View.vue";
 import D3Week5_6View from "../components/D3Learning/Week5/D3Week5-6View.vue";
 import TestReusableBarChart from "../components/D3Learning/Week5/TestReusableBarChart.vue";
-import JxFixedTableGuide from "../views/JxFixedTableGuide.vue";
-import GridFacetChartTest from "../views/GridFacetChartTest.vue";
+
+import ChptTableGuide from "../views/ChptTableGuide.vue";
 
 // ========== 文檔系統 ==========
 import DocLayout from "../layouts/DocLayout.vue";
@@ -27,7 +21,7 @@ import TooltipDoc from "../views/docs/TooltipDoc.vue";
 import ComponentPlaceholder from "../views/docs/ComponentPlaceholder.vue";
 
 const routes = [
-  {
+    {
     path: "/login",
     name: "Login",
     component: Login,
@@ -41,62 +35,12 @@ const routes = [
     path: "/",
     redirect: "/docs",
   },
-  // {
-  //   path: "/navigation",
-  //   name: "NavigationHub",
-  //   component: NavigationHub,
-  //   meta: {
-  //     title: "系統導覽",
-  //     requiresAuth: false,
-  //     icon: "apps",
-  //   },
-  // },
-  // {
-  //   path: "/yield-monitor",
-  //   name: "YieldMonitor",
-  //   component: YieldMonitorV2,
-  //   meta: {
-  //     title: "Yield Monitor",
-  //     requiresAuth: true,
-  //   },
-  // },
-  // {
-  //   path: "/dashboard",
-  //   name: "Dashboard",
-  //   component: DashBoard,
-  //   meta: {
-  //     title: "儀表板",
-  //     requiresAuth: true,
-  //   },
-  // },
   {
-    path: "/d3-calendar-timeline-test",
-    name: "D3CalendarTimeLineTestView",
-    component: D3CalendarTimeLineTestView,
+    path: "/chpt-table-guide",
+    name: "ChptTableGuide",
+    component: ChptTableGuide,
     meta: {
-      title: "D3 日曆時間軸測試",
-      requiresAuth: true,
-    },
-  },
-  // {
-  //   path: '/DashBoard',
-  //   redirect: '/dashboard'
-  // },
-  {
-    path: "/jx-fixed-table-guide",
-    name: "JxFixedTableGuide",
-    component: JxFixedTableGuide,
-    meta: {
-      title: "JxFixedTable 使用指南",
-      requiresAuth: true,
-    },
-  },
-  {
-    path: "/grid-facet-chart-test",
-    name: "GridFacetChartTest",
-    component: GridFacetChartTest,
-    meta: {
-      title: "GridFacetChart 測試",
+      title: "ChptFixedTable 使用指南",
       requiresAuth: true,
     },
   },
@@ -230,7 +174,7 @@ const routes = [
           title: "FilterSelect 單選器",
         },
       },
-      {
+            {
         path: "components/form-atoms",
         name: "FormAtomsDoc",
         component: () => import("../views/docs/components/FormAtoms.vue"),
@@ -238,6 +182,62 @@ const routes = [
           title: "基礎表單元件",
         },
       },
+            {
+        path: "components/feedback",
+        name: "FeedbackDoc",
+        component: () => import("../views/docs/components/FeedbackDocs.vue"),
+        meta: {
+          title: "反饋元件",
+        },
+      },
+      {
+        path: "components/interactive",
+        name: "InteractiveDoc",
+        component: () => import("../views/docs/components/InteractiveDocs.vue"),
+        meta: {
+          title: "互動元件",
+        },
+      },
+      {
+        path: "components/overlay",
+        name: "OverlayDoc",
+        component: () => import("../views/docs/components/OverlayDocs.vue"),
+        meta: {
+          title: "浮層元件",
+        },
+      },
+            {
+              path: "components/layout-nav",
+              name: "LayoutNavDoc",
+              component: () => import("../views/docs/components/LayoutNavDocs.vue"),
+              meta: {
+                title: "佈局與流程元件",
+              },
+            },
+            {
+              path: "components/data-filter",
+              name: "DataFilterDoc",
+              component: () => import("../views/docs/components/DataFilterDocs.vue"),
+              meta: {
+                title: "資料呈現與過濾元件",
+              },
+            },
+            {
+              path: "components/theme-tools",
+              name: "ThemeToolsDoc",
+              component: () => import("../views/docs/components/ThemeToolsDocs.vue"),
+              meta: {
+                title: "主題與工具元件",
+              },
+            },
+            {
+              path: "components/excel-editor",
+              name: "ExcelEditorDoc",
+              component: () => import("../views/docs/components/ExcelEditorDocs.vue"),
+              meta: {
+                title: "Excel 編輯器",
+              },
+            },
       {
         path: "components/tag-filter-dropdown",
         name: "TagFilterDropdownDoc",
@@ -287,62 +287,6 @@ const routes = [
         },
       },
     ],
-  },
-  {
-    path: "/schematic-viewer",
-    name: "SchematicViewer",
-    component: () => import("../views/SchematicViewerView.vue"),
-    meta: {
-      title: "Schematic Viewer",
-      requiresAuth: false,
-    },
-  },
-  {
-    path: "/box-plot-test",
-    name: "BoxPlotTest",
-    component: BoxPlotTest,
-    meta: {
-      title: "盒鬚圖測試",
-      requiresAuth: true,
-    },
-  },
-  {
-    path: "/scatter-plot-test",
-    name: "ScatterPlotTest",
-    component: ScatterPlotTest,
-    meta: {
-      title: "散點圖測試",
-      requiresAuth: true,
-    },
-  },
-  {
-    path: "/box-plot-legend-test",
-    name: "BoxPlotLegendTest",
-    component: BoxPlotLegendTest,
-    meta: {
-      title: "盒鬚圖圖例測試",
-      requiresAuth: true,
-    },
-  },
-  {
-    path: "/box-plot-test-2",
-    name: "BoxPlotTest2",
-    component: BoxPlotTest2,
-    meta: {
-      title: "BoxPlot 組件測試頁面",
-      requiresAuth: true,
-    },
-  },
-  
-  {
-    path: "/d3-bar-chart-demo",
-    name: "D3BarChartDemo",
-    component: D3BarChartDemo,
-    meta: {
-      title: "D3 條狀圖範圍選取示範",
-      requiresAuth: true,
-      hideInMenu: false,
-    },
   },
   {
     path: "/d3-learning",

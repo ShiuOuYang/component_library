@@ -284,10 +284,55 @@ PCB Gerber 檔案渲染器，含圖層切換面板（深色主題）。
 
 ## 其他工具元件
 
+### ExcelEditor
+
+仿原生 Excel 的完整試算表元件，支援多工作表、公式引擎、就地編輯、格式化、合併儲存格、插入/刪除列欄、複製貼上、復原/重做與匯出 `.xlsx`。
+
+```vue
+<ChptExcelEditor
+  ref="editorRef"
+  default-filename="銷售報表"
+  default-sheet-name="銷售"
+  @export-complete="handleExport"
+/>
+```
+
+| Prop | 類型 | 說明 |
+|---|---|---|
+| `modelValue` | `Array` | 初始資料陣列（v-model） |
+| `showToolbar` / `showSheetTabs` | `Boolean` | 顯示工具列 / 工作表頁籤 |
+| `rowCount` / `colCount` | `Number` | 列數 / 欄數 |
+| `editable` | `Boolean` | 是否可編輯（預設 `true`） |
+| `enableFormula` | `Boolean` | 是否啟用公式（預設 `true`） |
+| `defaultFilename` / `defaultSheetName` | `String` | 匯出檔案 / 預設工作表名稱 |
+
+**功能：**
+- 📑 多工作表（新增 / 重新命名 / 刪除）
+- 🧮 公式引擎：`SUM` / `AVERAGE` / `MIN` / `MAX` / `COUNT` / `IF`、四則運算、儲存格參照
+  - 公式列輸入 `=` 自動完成函式建議（方向鍵選取、Tab 插入）
+  - 工具列「fx」按鈕開啟函式面板，點選即插入公式
+- 🎨 格式化：粗體 / 斜體 / 底線、對齊、數字格式
+- 🖱️ 範圍選取、整列/整欄選取、`Shift+點擊` 延伸、**滑鼠拖曳多選**
+  - **拖曳填充**：拖選取範圍右下角綠色把手向下/向右填滿
+- ➕ 插入 / 刪除列欄、合併儲存格、排序、**清除內容**（`Delete` 或 🗑）
+- 📋 剪下 / 複製 / 貼上、復原 / 重做
+  - 複製同步寫入**系統剪貼簿**（TSV + HTML），可貼到 Excel / Word
+  - 支援從系統剪貼簿貼上（`Ctrl+V`）
+- ⌨️ 方向鍵、Enter/Tab、`F2` 編輯、`Delete` 清除、`Ctrl+Z/Y/C/X/V/B/I/U`
+- 📤 匯出 `.xlsx`（保留樣式、合併、欄寬）
+
+**Emits:** `update:modelValue`、`cell-change`、`selection-change`、`sheet-add`、`sheet-remove`、`export-start`、`export-complete`、`export-error`  
+**Ref 方法:** `exportExcel()`、`getData()`、`getCell(r,c)`、`undo()`、`redo()`、`addSheet()`、`switchSheet()`、`clear()`
+
+也可用相容別名 `ExcelEditor` 引入。
+
+---
+
 | 元件 | 說明 |
 |---|---|
 | `ExcelExporter` | 將資料陣列匯出為 `.xlsx` 檔案 |
 | `ExcelUploader` | 上傳並解析 Excel 檔案 |
+| `ExcelEditor` | 可編輯的試算表元件（就地編輯、新增/刪除列、匯出 `.xlsx`） |
 | `CodeBlock` | 語法高亮程式碼片段展示 |
 | `TabNavigation` | 頁籤導航列 |
 | `Pagination` / `PageSwitcher` | 獨立分頁控制元件 |
@@ -311,7 +356,7 @@ import {
   CommonTable, JxFixedTable,
   FilterDropdown, FilterBar, FilterSelect, TagFilterDropdown,
   DraggableModal, CommonTooltip,
-  ExcelExporter, ExcelUploader, CodeBlock,
+  ExcelExporter, ExcelUploader, ExcelEditor, CodeBlock,
   JxInput, JxRadio, JxSwitch, JxSelect, JxDatePicker
 } from '@/components/common'
 ```

@@ -1,5 +1,4 @@
 import api from "./index.js";
-import { mockDataManager, isMockEnabled } from "./mockData.js";
 
 // 認證相關 API
 export const authApi = {

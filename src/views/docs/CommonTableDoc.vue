@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8 px-8">
     <div class="w-full">
       
@@ -6,7 +6,7 @@
       <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
         <div class="border-l-4 border-blue-600 pl-6">
           <h1 class="text-4xl font-bold text-gray-900 mb-4">
-            CommonTable
+            ChptTable
           </h1>
           <p class="text-lg text-gray-600 leading-relaxed">
             一個功能完整的 <span class="font-semibold text-blue-600">Vue 3 表格組件</span>，
@@ -36,7 +36,7 @@
         <div class="grid lg:grid-cols-3 gap-6">
           <!-- 表格區域 (左側 2/3) -->
           <div class="lg:col-span-2">
-            <CommonTable
+            <ChptTable
               :data="playgroundData"
               :columns="playgroundColumns"
               :searchPlaceholder="searchPlaceholder"
@@ -68,7 +68,7 @@
                   </td>
                 </tr>
               </template>
-            </CommonTable>
+            </ChptTable>
           </div>
 
           <!-- 控制面板 (右側 1/3) -->
@@ -165,7 +165,7 @@
           <h3 class="text-2xl font-semibold text-gray-800 mb-4">基礎用法</h3>
           <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
             <pre class="text-sm text-gray-800 overflow-x-auto"><code>&lt;template&gt;
-  &lt;CommonTable
+  &lt;ChptTable
     :data="tableData"
     :columns="tableColumns"
     :defaultPageSize="10"
@@ -175,7 +175,7 @@
 
 &lt;script setup&gt;
 import { ref } from 'vue'
-import CommonTable from '@/components/common/CommonTable.vue'
+import ChptTable from '@/components/common/ChptTable.vue'
 
 const tableData = ref([
   { id: 1, name: '張三', age: 25, department: '工程部' },
@@ -198,7 +198,7 @@ const tableColumns = [
           <h3 class="text-2xl font-semibold text-gray-800 mb-4">自定義欄位內容</h3>
           <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
             <pre class="text-sm text-gray-800 overflow-x-auto"><code>&lt;template&gt;
-  &lt;CommonTable :data="data" :columns="columns"&gt;
+  &lt;ChptTable :data="data" :columns="columns"&gt;
     &lt;!-- 自定義表格行 --&gt;
     &lt;template #table-row="{ item }"&gt;
       &lt;tr&gt;
@@ -217,7 +217,7 @@ const tableColumns = [
         &lt;/td&gt;
       &lt;/tr&gt;
     &lt;/template&gt;
-  &lt;/CommonTable&gt;
+  &lt;/ChptTable&gt;
 &lt;/template&gt;
 
 &lt;script setup&gt;
@@ -238,7 +238,7 @@ function getStatusClass(status) {
           <h3 class="text-2xl font-semibold text-gray-800 mb-4">自定義過濾邏輯</h3>
           <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
             <pre class="text-sm text-gray-800 overflow-x-auto"><code>&lt;template&gt;
-  &lt;CommonTable
+  &lt;ChptTable
     :data="data"
     :columns="columns"
     :customFilter="customSearchFilter"
@@ -265,7 +265,7 @@ const customSearchFilter = (data, query) => {
           <h3 class="text-2xl font-semibold text-gray-800 mb-4">排序功能</h3>
           <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
             <p class="text-sm text-gray-700 mb-4">
-              CommonTable 支援自動排序類型檢測，會根據數據類型自動選擇適當的排序方式：
+              ChptTable 支援自動排序類型檢測，會根據數據類型自動選擇適當的排序方式：
             </p>
             <ul class="list-disc list-inside text-sm text-gray-700 mb-4 space-y-1">
               <li><strong>數字排序</strong>：自動檢測數字欄位並進行數值排序</li>
@@ -273,7 +273,7 @@ const customSearchFilter = (data, query) => {
               <li><strong>字串排序</strong>：預設使用不分大小寫的字串排序</li>
             </ul>
             <pre class="text-sm text-gray-800 overflow-x-auto"><code>&lt;template&gt;
-  &lt;CommonTable
+  &lt;ChptTable
     :data="data"
     :columns="columns"
     :defaultSort="{ column: 'age', direction: 'desc' }"
@@ -426,7 +426,7 @@ const handleSort = ({ column, direction }) => {
 
 <script setup>
 import { ref } from 'vue'
-import CommonTable from '../../components/common/CommonTable.vue'
+import ChptTable from '../../components/common/ChptTable.vue'
 
 // ========== 互動操場狀態 ==========
 const searchPlaceholder = ref('搜尋資料...')

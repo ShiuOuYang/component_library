@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="flex h-screen bg-gray-50">
     <!-- 左側導覽列 (Sidebar) -->
     <aside 
@@ -19,7 +19,7 @@
               <h1 class="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                 組件庫文檔
               </h1>
-              <p class="text-xs text-gray-500">Component Library</p>
+              <p class="text-xs text-gray-500">組件庫文檔</p>
             </div>
           </router-link>
           
@@ -228,13 +228,104 @@
           </span>
         </router-link>
 
-        <router-link
+                <router-link
           to="/docs/components/form-atoms"
           class="nav-item"
           :class="{ 'nav-item-active': isActiveRoute('/docs/components/form-atoms') }"
         >
           <span class="nav-icon">🧩</span>
           <span class="nav-text">基礎表單元件</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
+                <!-- 反饋元件 -->
+        <router-link
+          to="/docs/components/feedback"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/feedback') }"
+        >
+          <span class="nav-icon">🛎️</span>
+          <span class="nav-text">反饋元件</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
+        <!-- 互動元件 -->
+        <router-link
+          to="/docs/components/interactive"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/interactive') }"
+        >
+          <span class="nav-icon">🖱️</span>
+          <span class="nav-text">互動元件</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
+        <!-- 浮層元件 -->
+        <router-link
+          to="/docs/components/overlay"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/overlay') }"
+        >
+          <span class="nav-icon">🗔</span>
+          <span class="nav-text">浮層元件</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
+        <!-- 佈局與流程 -->
+        <router-link
+          to="/docs/components/layout-nav"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/layout-nav') }"
+        >
+          <span class="nav-icon">🧱</span>
+          <span class="nav-text">佈局與流程元件</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
+                <!-- 資料呈現與過濾元件 -->
+        <router-link
+          to="/docs/components/data-filter"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/data-filter') }"
+        >
+          <span class="nav-icon">📊</span>
+          <span class="nav-text">資料呈現與過濾元件</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
+        <!-- 主題與工具元件 -->
+        <router-link
+          to="/docs/components/theme-tools"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/theme-tools') }"
+        >
+          <span class="nav-icon">🌗</span>
+          <span class="nav-text">主題與工具元件</span>
+          <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+            完成
+          </span>
+        </router-link>
+
+        <!-- Excel 編輯器 -->
+        <router-link
+          to="/docs/components/excel-editor"
+          class="nav-item"
+          :class="{ 'nav-item-active': isActiveRoute('/docs/components/excel-editor') }"
+        >
+          <span class="nav-icon">📝</span>
+          <span class="nav-text">Excel 編輯器</span>
           <span class="ml-auto px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">
             完成
           </span>
@@ -358,8 +449,17 @@
         <router-link to="/docs/components/filter-select" class="p-2 hover:bg-gray-100 rounded-lg" title="FilterSelect 單選器">
           <span class="text-xl">📝</span>
         </router-link>
-        <router-link to="/docs/components/form-atoms" class="p-2 hover:bg-gray-100 rounded-lg" title="基礎表單元件">
+                <router-link to="/docs/components/form-atoms" class="p-2 hover:bg-gray-100 rounded-lg" title="基礎表單元件">
           <span class="text-xl">🧩</span>
+        </router-link>
+        <router-link to="/docs/components/data-filter" class="p-2 hover:bg-gray-100 rounded-lg" title="資料呈現與過濾元件">
+          <span class="text-xl">📊</span>
+        </router-link>
+        <router-link to="/docs/components/theme-tools" class="p-2 hover:bg-gray-100 rounded-lg" title="主題與工具元件">
+          <span class="text-xl">🌗</span>
+        </router-link>
+        <router-link to="/docs/components/excel-editor" class="p-2 hover:bg-gray-100 rounded-lg" title="Excel 編輯器">
+          <span class="text-xl">📝</span>
         </router-link>
         <router-link to="/docs/components/tag-filter-dropdown" class="p-2 hover:bg-gray-100 rounded-lg" title="TagFilterDropdown 標籤過濾">
           <span class="text-xl">🏷️</span>
