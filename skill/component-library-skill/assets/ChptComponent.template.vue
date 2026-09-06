@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ChptIcon from './ChptIcon.vue'
-import type { ComponentSize, ColorVariant } from './types/ui.types'
+import type { ComponentSize, ColorVariant } from '@/components/library/shared/types/ui.types'
 
 /**
  * ChptXxx（CHPT 主題） - 一句話說明用途

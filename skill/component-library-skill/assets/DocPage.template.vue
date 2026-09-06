@@ -52,7 +52,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { ChptXxx } from '@/components/common'
+import { ChptXxx } from '@/components/library'
 
 // 範例互動狀態
 const value = ref('')
