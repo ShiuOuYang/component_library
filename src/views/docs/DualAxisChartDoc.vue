@@ -10,7 +10,7 @@
       </div>
 
       <!-- 基本示範 -->
-      <section class="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <section id="basic" class="bg-white rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-neutral-800 mb-2">基本示範</h2>
         <p class="text-sm text-neutral-600 mb-4">
           layers 陣列定義多個圖層；每個圖層可為 stacked-bar / line，指定左（left）或右（right）軸。
@@ -33,7 +33,7 @@
       </section>
 
       <!-- 進階範例 -->
-      <section class="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <section id="examples" class="bg-white rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-neutral-800 mb-2">進階範例</h2>
         <p class="text-sm text-neutral-600 mb-4">SalesReport／ProductionMonitor／ControlChart／TimeSeries／ScatterPlot／ResponsiveDashboard／FacetedChart 等組合示範。</p>
         <SalesReportExample />

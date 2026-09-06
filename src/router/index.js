@@ -142,38 +142,6 @@ const routes = [
           title: "Tooltip 提示框",
         },
       },
-      {
-        path: "components/common-table",
-        name: "CommonTableDoc",
-        component: () => import("../views/docs/CommonTableDoc.vue"),
-        meta: {
-          title: "CommonTable 表格",
-        },
-      },
-      {
-        path: "components/filter-dropdown",
-        name: "FilterDropdownDoc",
-        component: () => import("../views/docs/components/FilterDropdown.vue"),
-        meta: {
-          title: "FilterDropdown 過濾器",
-        },
-      },
-      {
-        path: "components/filter-bar",
-        name: "FilterBarDoc",
-        component: () => import("../views/docs/components/FilterBar.vue"),
-        meta: {
-          title: "FilterBar 過濾橫列",
-        },
-      },
-      {
-        path: "components/filter-select",
-        name: "FilterSelectDoc",
-        component: () => import("../views/docs/components/FilterSelect.vue"),
-        meta: {
-          title: "FilterSelect 單選器",
-        },
-      },
             {
         path: "components/form-atoms",
         name: "FormAtomsDoc",
@@ -238,22 +206,6 @@ const routes = [
                 title: "Excel 編輯器",
               },
             },
-      {
-        path: "components/tag-filter-dropdown",
-        name: "TagFilterDropdownDoc",
-        component: () => import("../views/docs/components/TagFilterDropdown.vue"),
-        meta: {
-          title: "TagFilterDropdown 標籤過濾",
-        },
-      },
-      {
-        path: "components/draggable-modal",
-        name: "DraggableModalDoc",
-        component: () => import("../views/docs/components/DraggableModal.vue"),
-        meta: {
-          title: "DraggableModal 可拖曳模態框",
-        },
-      },
       {
         path: "components/whiteboard",
         name: "WhiteboardDoc",
