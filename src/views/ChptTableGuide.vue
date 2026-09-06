@@ -1,47 +1,47 @@
-<template>
-  <div class="min-h-screen bg-gray-50 p-8">
+﻿<template>
+  <div class="min-h-screen bg-neutral-50 p-8">
     <div class="max-w-7xl mx-auto">
-      <!-- 標題區 -->
+      <!-- 標題 -->
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">ChptFixedTable 使用指南</h1>
-        <p class="text-lg text-gray-600">
-          一個功能強大的 Vue 3 表格元件，支援欄位固定、過濾和搜尋功能
+        <h1 class="text-4xl font-bold text-neutral-900 mb-2">ChptFixedTable 使用指南</h1>
+        <p class="text-lg text-neutral-600">
+          企業級固定欄位表格：欄位固定、欄位篩選、全文搜尋與自訂格式。
         </p>
       </div>
 
-      <!-- 目錄導航 -->
+      <!-- 章節索引 -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">快速導航</h2>
+        <h2 class="text-2xl font-semibold text-neutral-800 mb-4">章節目錄</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <a
             v-for="section in sections"
             :key="section.id"
             @click="scrollToSection(section.id)"
-            class="p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 cursor-pointer transition-all"
+            class="p-4 border border-neutral-200 rounded-lg hover:bg-primary-50 hover:border-primary-300 cursor-pointer transition-all"
           >
             <div class="flex items-center gap-2">
               <ChptIcon :color="section.color" size="24">{{ section.icon }}</ChptIcon>
-              <span class="font-medium text-gray-700">{{ section.title }}</span>
+              <span class="font-medium text-neutral-700">{{ section.title }}</span>
             </div>
           </a>
         </div>
       </div>
 
-      <!-- 基本用法 -->
+      <!-- 基本使用 -->
       <section id="basic-usage" class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <ChptIcon color="blue-500" size="28">rocket_launch</ChptIcon>
-          基本用法
+        <h2 class="text-2xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <ChptIcon color="primary-500" size="28">rocket_launch</ChptIcon>
+          基本使用
         </h2>
         <div class="mb-6">
-          <h3 class="text-lg font-medium text-gray-700 mb-3">簡單範例</h3>
-          <div class="bg-gray-50 rounded p-4 mb-4">
-            <pre class="text-sm overflow-x-auto"><code>&lt;ChptFixedTable
+          <h3 class="text-lg font-medium text-neutral-700 mb-3">最小範例</h3>
+          <div class="bg-neutral-50 rounded p-4 mb-4">
+            <pre class="text-sm overflow-x-auto"><code><ChptFixedTable
   :columns="columns"
   :data="data"
   :is-fixed="true"
   :viewport-offset="200"
-/&gt;</code></pre>
+/></code></pre>
           </div>
           <ChptFixedTable
             :columns="basicColumns"
@@ -52,15 +52,16 @@
         </div>
       </section>
 
-      <!-- 欄位固定功能 -->
+      <!-- 欄位固定 -->
       <section id="column-fixing" class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <ChptIcon color="green-500" size="28">push_pin</ChptIcon>
-          欄位固定功能
+        <h2 class="text-2xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <ChptIcon color="success-500" size="28">push_pin</ChptIcon>
+          欄位固定
         </h2>
-        <div class="mb-4 p-4 bg-blue-50 rounded-lg">
-          <p class="text-gray-700">
-            <strong>💡 提示：</strong>將滑鼠移到表頭，點擊右上角的圖釘圖示即可固定/取消固定欄位
+        <div class="mb-4 p-4 bg-primary-50 rounded-lg">
+          <p class="text-neutral-700">
+            <strong>提示：</strong>開啟 <code class="bg-white px-2 py-1 rounded">is-keep</code>
+            後，欄位表頭會出現固定／取消固定按鈕，可動態釘住任一欄。
           </p>
         </div>
         <ChptFixedTable
@@ -71,22 +72,23 @@
           :viewport-offset="200"
           v-model:fixed-columns="fixedCols"
         />
-        <div class="mt-4 p-4 bg-gray-50 rounded">
-          <p class="text-sm text-gray-600">
-            目前固定欄位：<span class="font-mono font-semibold">{{ fixedCols.join(', ') }}</span>
+        <div class="mt-4 p-4 bg-neutral-50 rounded">
+          <p class="text-sm text-neutral-600">
+            目前固定的欄位：<span class="font-mono font-semibold">{{ fixedCols.join(', ') }}</span>
           </p>
         </div>
       </section>
 
-      <!-- 過濾功能 -->
+      <!-- 欄位篩選 -->
       <section id="filtering" class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <ChptIcon color="purple-500" size="28">filter_alt</ChptIcon>
-          過濾功能
+        <h2 class="text-2xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <ChptIcon color="info-500" size="28">filter_alt</ChptIcon>
+          欄位篩選
         </h2>
-        <div class="mb-4 p-4 bg-blue-50 rounded-lg">
-          <p class="text-gray-700">
-            <strong>💡 提示：</strong>點擊表頭右下角的下拉箭頭圖示，可以選擇要顯示的資料
+        <div class="mb-4 p-4 bg-primary-50 rounded-lg">
+          <p class="text-neutral-700">
+            <strong>提示：</strong>開啟 <code class="bg-white px-2 py-1 rounded">is-filter</code>
+            後，各欄右下角出現篩選圖示，可依欄位值多選過濾。
           </p>
         </div>
         <ChptFixedTable
@@ -98,32 +100,33 @@
           :filter-columns="activeFilters"
           @update:filter-columns="handleFilterUpdate"
         />
-        <div class="mt-4 p-4 bg-gray-50 rounded">
-          <p class="text-sm text-gray-600 mb-2">目前過濾條件：</p>
+        <div class="mt-4 p-4 bg-neutral-50 rounded">
+          <p class="text-sm text-neutral-600 mb-2">已套用篩選：</p>
           <div class="flex flex-wrap gap-2">
             <span
               v-for="(values, column) in displayFilters"
               :key="column"
-              class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs"
+              class="px-3 py-1 bg-info-100 text-info-700 rounded-full text-xs"
             >
               {{ column }}: {{ values.join(', ') }}
             </span>
-            <span v-if="Object.keys(displayFilters).length === 0" class="text-gray-400 text-xs"
-              >無過濾條件</span
-            >
+            <span v-if="Object.keys(displayFilters).length === 0" class="text-neutral-400 text-xs">
+              尚未套用任何篩選
+            </span>
           </div>
         </div>
       </section>
 
-      <!-- 搜尋功能 -->
+      <!-- 全文搜尋 -->
       <section id="searching" class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <ChptIcon color="orange-500" size="28">search</ChptIcon>
-          搜尋功能
+        <h2 class="text-2xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <ChptIcon color="warning-500" size="28">search</ChptIcon>
+          全文搜尋
         </h2>
-        <div class="mb-4 p-4 bg-blue-50 rounded-lg">
-          <p class="text-gray-700">
-            <strong>💡 提示：</strong>在搜尋框中輸入關鍵字，即可即時搜尋所有欄位
+        <div class="mb-4 p-4 bg-primary-50 rounded-lg">
+          <p class="text-neutral-700">
+            <strong>提示：</strong>開啟 <code class="bg-white px-2 py-1 rounded">show-search</code>
+            並以 <code class="bg-white px-2 py-1 rounded">v-model:search-text</code> 綁定即可全文搜尋。
           </p>
         </div>
         <ChptFixedTable
@@ -134,23 +137,23 @@
           :viewport-offset="200"
           v-model:search-text="searchText"
         />
-        <div class="mt-4 p-4 bg-gray-50 rounded">
-          <p class="text-sm text-gray-600">
-            搜尋關鍵字：<span class="font-mono font-semibold">{{ searchText || '(空)' }}</span>
+        <div class="mt-4 p-4 bg-neutral-50 rounded">
+          <p class="text-sm text-neutral-600">
+            目前關鍵字：<span class="font-mono font-semibold">{{ searchText || '(空)' }}</span>
           </p>
         </div>
       </section>
 
       <!-- 自訂格式 -->
       <section id="custom-format" class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <ChptIcon color="red-500" size="28">palette</ChptIcon>
-          自訂格式與插槽
+        <h2 class="text-2xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <ChptIcon color="danger-500" size="28">palette</ChptIcon>
+          自訂格式（Slot）
         </h2>
-        <div class="mb-4 p-4 bg-blue-50 rounded-lg">
-          <p class="text-gray-700 mb-2">
-            <strong>💡 提示：</strong>使用 <code class="bg-white px-2 py-1 rounded">format</code>
-            函數或具名插槽來自訂儲存格顯示
+        <div class="mb-4 p-4 bg-primary-50 rounded-lg">
+          <p class="text-neutral-700 mb-2">
+            <strong>提示：</strong>以 <code class="bg-white px-2 py-1 rounded">#td- 前綴插槽（例如 #td-status）</code>
+            自訂欄位內容（例如狀態標籤、進度條）。
           </p>
         </div>
         <ChptFixedTable
@@ -164,11 +167,11 @@
               <span
                 :class="[
                   'px-3 py-1 rounded-full text-xs font-medium',
-                  row.status === '已完成'
-                    ? 'bg-green-100 text-green-800'
-                    : row.status === '進行中'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800'
+                  row.status === '啟用'
+                    ? 'bg-success-100 text-success-800'
+                    : row.status === '審核中'
+                      ? 'bg-warning-100 text-warning-800'
+                      : 'bg-neutral-100 text-neutral-800',
                 ]"
               >
                 {{ row.status }}
@@ -178,31 +181,31 @@
           <template #td-progress="{ row }">
             <div class="px-2 py-2">
               <div class="flex items-center gap-2">
-                <div class="flex-1 bg-gray-200 rounded-full h-2">
+                <div class="flex-1 bg-neutral-200 rounded-full h-2">
                   <div
-                    class="bg-blue-500 h-2 rounded-full transition-all"
+                    class="bg-primary-500 h-2 rounded-full transition-all"
                     :style="{ width: row.progress + '%' }"
                   ></div>
                 </div>
-                <span class="text-xs text-gray-600 w-12 text-right">{{ row.progress }}%</span>
+                <span class="text-xs text-neutral-600 w-12 text-right">{{ row.progress }}%</span>
               </div>
             </div>
           </template>
         </ChptFixedTable>
       </section>
 
-      <!-- Props 參數說明 -->
+      <!-- Props 屬性表 -->
       <section id="props" class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <ChptIcon color="indigo-500" size="28">settings</ChptIcon>
-          Props 參數說明
+        <h2 class="text-2xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <ChptIcon color="secondary-500" size="28">settings</ChptIcon>
+          Props 屬性表
         </h2>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-gray-100">
+            <thead class="bg-neutral-100">
               <tr>
-                <th class="px-4 py-2 text-left font-semibold">參數名稱</th>
-                <th class="px-4 py-2 text-left font-semibold">類型</th>
+                <th class="px-4 py-2 text-left font-semibold">屬性名稱</th>
+                <th class="px-4 py-2 text-left font-semibold">型別</th>
                 <th class="px-4 py-2 text-left font-semibold">預設值</th>
                 <th class="px-4 py-2 text-left font-semibold">說明</th>
               </tr>
@@ -210,24 +213,24 @@
             <tbody class="divide-y">
               <tr v-for="prop in propsList" :key="prop.name">
                 <td class="px-4 py-3 font-mono text-xs">{{ prop.name }}</td>
-                <td class="px-4 py-3 text-gray-600">{{ prop.type }}</td>
-                <td class="px-4 py-3 font-mono text-xs text-gray-600">{{ prop.default }}</td>
-                <td class="px-4 py-3 text-gray-700">{{ prop.description }}</td>
+                <td class="px-4 py-3 text-neutral-600">{{ prop.type }}</td>
+                <td class="px-4 py-3 font-mono text-xs text-neutral-600">{{ prop.default }}</td>
+                <td class="px-4 py-3 text-neutral-700">{{ prop.description }}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      <!-- Events 事件說明 -->
+      <!-- Events 事件表 -->
       <section id="events" class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <ChptIcon color="pink-500" size="28">bolt</ChptIcon>
-          Events 事件說明
+        <h2 class="text-2xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <ChptIcon color="danger-500" size="28">bolt</ChptIcon>
+          Events 事件表
         </h2>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-gray-100">
+            <thead class="bg-neutral-100">
               <tr>
                 <th class="px-4 py-2 text-left font-semibold">事件名稱</th>
                 <th class="px-4 py-2 text-left font-semibold">參數</th>
@@ -237,34 +240,34 @@
             <tbody class="divide-y">
               <tr v-for="event in eventsList" :key="event.name">
                 <td class="px-4 py-3 font-mono text-xs">{{ event.name }}</td>
-                <td class="px-4 py-3 font-mono text-xs text-gray-600">{{ event.params }}</td>
-                <td class="px-4 py-3 text-gray-700">{{ event.description }}</td>
+                <td class="px-4 py-3 font-mono text-xs text-neutral-600">{{ event.params }}</td>
+                <td class="px-4 py-3 text-neutral-700">{{ event.description }}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      <!-- Slots 插槽說明 -->
+      <!-- Slots 插槽表 -->
       <section id="slots" class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <ChptIcon color="teal-500" size="28">widgets</ChptIcon>
-          Slots 插槽說明
+        <h2 class="text-2xl font-semibold text-neutral-800 mb-4 flex items-center gap-2">
+          <ChptIcon color="success-500" size="28">widgets</ChptIcon>
+          Slots 插槽表
         </h2>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-gray-100">
+            <thead class="bg-neutral-100">
               <tr>
                 <th class="px-4 py-2 text-left font-semibold">插槽名稱</th>
-                <th class="px-4 py-2 text-left font-semibold">作用域參數</th>
+                <th class="px-4 py-2 text-left font-semibold">作用域</th>
                 <th class="px-4 py-2 text-left font-semibold">說明</th>
               </tr>
             </thead>
             <tbody class="divide-y">
               <tr v-for="slot in slotsList" :key="slot.name">
                 <td class="px-4 py-3 font-mono text-xs">{{ slot.name }}</td>
-                <td class="px-4 py-3 font-mono text-xs text-gray-600">{{ slot.params }}</td>
-                <td class="px-4 py-3 text-gray-700">{{ slot.description }}</td>
+                <td class="px-4 py-3 font-mono text-xs text-neutral-600">{{ slot.params }}</td>
+                <td class="px-4 py-3 text-neutral-700">{{ slot.description }}</td>
               </tr>
             </tbody>
           </table>
@@ -276,39 +279,38 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import ChptFixedTable from '../components/common/ChptFixedTable.vue'
-import ChptIcon from '../components/common/ChptIcon.vue'
+import { ChptFixedTable, ChptIcon } from '@/components/library'
 
-// 導航區段
+// 章節索引
 const sections = [
-  { id: 'basic-usage', title: '基本用法', icon: 'rocket_launch', color: 'blue-500' },
-  { id: 'column-fixing', title: '欄位固定', icon: 'push_pin', color: 'green-500' },
-  { id: 'filtering', title: '過濾功能', icon: 'filter_alt', color: 'purple-500' },
-  { id: 'searching', title: '搜尋功能', icon: 'search', color: 'orange-500' },
-  { id: 'custom-format', title: '自訂格式', icon: 'palette', color: 'red-500' },
-  { id: 'props', title: 'Props 參數', icon: 'settings', color: 'indigo-500' },
-  { id: 'events', title: 'Events 事件', icon: 'bolt', color: 'pink-500' },
-  { id: 'slots', title: 'Slots 插槽', icon: 'widgets', color: 'teal-500' }
+  { id: 'basic-usage', title: '基本使用', icon: 'rocket_launch', color: 'primary-500' },
+  { id: 'column-fixing', title: '欄位固定', icon: 'push_pin', color: 'success-500' },
+  { id: 'filtering', title: '欄位篩選', icon: 'filter_alt', color: 'info-500' },
+  { id: 'searching', title: '全文搜尋', icon: 'search', color: 'warning-500' },
+  { id: 'custom-format', title: '自訂格式', icon: 'palette', color: 'danger-500' },
+  { id: 'props', title: 'Props', icon: 'settings', color: 'secondary-500' },
+  { id: 'events', title: 'Events', icon: 'bolt', color: 'danger-500' },
+  { id: 'slots', title: 'Slots', icon: 'widgets', color: 'success-500' },
 ]
 
 function scrollToSection(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
 }
 
-// 基本範例資料
+// 基本使用範例
 const basicColumns = [
   { title: 'ID', dataIndex: 'id', width: 80, defaultFixed: true },
   { title: '姓名', dataIndex: 'name', width: 120 },
   { title: '部門', dataIndex: 'department', width: 150 },
-  { title: '職位', dataIndex: 'position', width: 150 }
+  { title: '職稱', dataIndex: 'position', width: 150 },
 ]
 
 const basicData = [
-  { id: 1, name: '張小明', department: '研發部', position: '工程師' },
-  { id: 2, name: '王美麗', department: '行銷部', position: '經理' },
-  { id: 3, name: '李大華', department: '財務部', position: '專員' },
-  { id: 4, name: '陳志明', department: '人資部', position: '主管' },
-  { id: 5, name: '林美美', department: '客服部', position: '專員' }
+  { id: 1, name: '張三', department: '研發部', position: '前端工程師' },
+  { id: 2, name: '李四', department: '品保部', position: '測試工程師' },
+  { id: 3, name: '王五', department: '製造部', position: '製程工程師' },
+  { id: 4, name: '趙六', department: '資訊部', position: '後端工程師' },
+  { id: 5, name: '陳七', department: '設備部', position: '設備工程師' },
 ]
 
 // 欄位固定範例
@@ -316,183 +318,79 @@ const fixingColumns = [
   { title: 'ID', dataIndex: 'id', width: 80, defaultFixed: true },
   { title: '姓名', dataIndex: 'name', width: 120 },
   { title: '部門', dataIndex: 'department', width: 150 },
-  { title: '職位', dataIndex: 'position', width: 150 },
-  { title: '電子郵件', dataIndex: 'email', width: 200 }
+  { title: '職稱', dataIndex: 'position', width: 150 },
+  { title: 'Email', dataIndex: 'email', width: 200 },
 ]
 
 const fixedCols = ref(['id'])
 
-// 過濾功能範例
+// 欄位篩選範例
 const filterColumns = [
   { title: 'ID', dataIndex: 'id', width: 80, defaultFixed: true },
   { title: '姓名', dataIndex: 'name', width: 120 },
   { title: '部門', dataIndex: 'department', width: 150 },
-  { title: '職位', dataIndex: 'position', width: 150 },
-  { title: '狀態', dataIndex: 'status', width: 120 }
+  { title: '職稱', dataIndex: 'position', width: 150 },
+  { title: '狀態', dataIndex: 'status', width: 120 },
 ]
 
 const filterData = [
-  { id: 1, name: '張小明', department: '研發部', position: '工程師', status: '在職' },
-  { id: 2, name: '王美麗', department: '行銷部', position: '經理', status: '在職' },
-  { id: 3, name: '李大華', department: '財務部', position: '專員', status: '休假' },
-  { id: 4, name: '陳志明', department: '人資部', position: '主管', status: '在職' },
-  { id: 5, name: '林美美', department: '客服部', position: '專員', status: '休假' },
-  { id: 6, name: '黃建國', department: '研發部', position: '工程師', status: '在職' },
-  { id: 7, name: '吳雅婷', department: '行銷部', position: '專員', status: '在職' }
+  { id: 1, name: '張三', department: '研發部', position: '前端工程師', status: '啟用' },
+  { id: 2, name: '李四', department: '品保部', position: '測試工程師', status: '啟用' },
+  { id: 3, name: '王五', department: '製造部', position: '製程工程師', status: '停用' },
+  { id: 4, name: '趙六', department: '資訊部', position: '後端工程師', status: '啟用' },
+  { id: 5, name: '陳七', department: '設備部', position: '設備工程師', status: '停用' },
+  { id: 6, name: '吳九', department: '研發部', position: 'UI 設計師', status: '啟用' },
 ]
 
-const activeFilters = ref([])
-const filterMap = ref({})
-
-function handleFilterUpdate({ value, status }) {
-  const { column, value: filterValue } = value
-
-  if (status === 'add') {
-    if (!filterMap.value[column]) {
-      filterMap.value[column] = []
-    }
-    filterMap.value[column].push(...filterValue)
-  } else if (status === 'remove') {
-    if (filterMap.value[column]) {
-      filterMap.value[column] = filterMap.value[column].filter((v) => !filterValue.includes(v))
-      if (filterMap.value[column].length === 0) {
-        delete filterMap.value[column]
-      }
-    }
-  }
+const activeFilters = ref({})
+function handleFilterUpdate(filters) {
+  activeFilters.value = filters
 }
+const displayFilters = computed(() => activeFilters.value || {})
 
-const displayFilters = computed(() => filterMap.value)
-
-// 搜尋功能範例
+// 全文搜尋範例
 const searchColumns = [
   { title: 'ID', dataIndex: 'id', width: 80, defaultFixed: true },
-  { title: '產品名稱', dataIndex: 'product', width: 200 },
-  { title: '類別', dataIndex: 'category', width: 120 },
-  { title: '價格', dataIndex: 'price', width: 100, format: (val) => `$${val}` }
+  { title: '姓名', dataIndex: 'name', width: 120 },
+  { title: '部門', dataIndex: 'department', width: 150 },
+  { title: '職稱', dataIndex: 'position', width: 150 },
+  { title: '狀態', dataIndex: 'status', width: 120 },
 ]
-
-const searchData = [
-  { id: 1, product: 'iPhone 15 Pro', category: '手機', price: 35900 },
-  { id: 2, product: 'MacBook Air M2', category: '筆電', price: 37900 },
-  { id: 3, product: 'iPad Pro', category: '平板', price: 29900 },
-  { id: 4, product: 'AirPods Pro', category: '耳機', price: 7490 },
-  { id: 5, product: 'Apple Watch Series 9', category: '手錶', price: 13900 }
-]
-
+const searchData = filterData.map((row) => ({ ...row }))
 const searchText = ref('')
 
 // 自訂格式範例
 const customColumns = [
   { title: 'ID', dataIndex: 'id', width: 80, defaultFixed: true },
-  { title: '任務名稱', dataIndex: 'task', width: 200 },
+  { title: '專案', dataIndex: 'name', width: 160 },
   { title: '狀態', dataIndex: 'status', width: 120 },
   { title: '進度', dataIndex: 'progress', width: 200 },
-  {
-    title: '截止日期',
-    dataIndex: 'deadline',
-    width: 150,
-    format: (val) => new Date(val).toLocaleDateString('zh-TW')
-  }
 ]
-
 const customData = [
-  { id: 1, task: '完成專案文件', status: '已完成', progress: 100, deadline: '2025-12-20' },
-  { id: 2, task: '開發新功能', status: '進行中', progress: 65, deadline: '2025-12-25' },
-  { id: 3, task: '測試與修正', status: '進行中', progress: 40, deadline: '2025-12-28' },
-  { id: 4, task: '部署上線', status: '待處理', progress: 0, deadline: '2025-12-30' }
+  { id: 1, name: '元件庫重構', status: '啟用', progress: 80 },
+  { id: 2, name: '報表系統', status: '審核中', progress: 45 },
+  { id: 3, name: '資料看板', status: '停用', progress: 20 },
 ]
 
-// Props 參數列表
+// 靜態文件表
 const propsList = [
-  {
-    name: 'columns',
-    type: 'Array',
-    default: '[]',
-    description: '欄位設定陣列，每個欄位包含 title、dataIndex、width、defaultFixed 等屬性'
-  },
-  { name: 'data', type: 'Array', default: '[]', description: '表格資料陣列' },
-  { name: 'isKeep', type: 'Boolean', default: 'true', description: '是否啟用欄位固定功能' },
-  { name: 'isFilter', type: 'Boolean', default: 'true', description: '是否啟用過濾功能' },
-  {
-    name: 'filterColumns',
-    type: 'Array',
-    default: '[]',
-    description: '目前已套用過濾的欄位陣列'
-  },
-  { name: 'isFixed', type: 'Boolean', default: 'true', description: '是否固定表頭' },
-  {
-    name: 'viewportOffset',
-    type: 'Number/String',
-    default: '0',
-    description: '視窗偏移量，用於計算表格最大高度'
-  },
-  {
-    name: 'fixedColumns',
-    type: 'Array',
-    default: '[]',
-    description: '固定欄位的 dataIndex 陣列（支援 v-model）'
-  },
-  { name: 'showSearch', type: 'Boolean', default: 'true', description: '是否顯示搜尋框' },
-  {
-    name: 'searchText',
-    type: 'String',
-    default: "''",
-    description: '搜尋關鍵字（支援 v-model）'
-  },
-  { name: 'headerFontSize', type: 'String', default: "'sm'", description: '表頭字體大小' },
-  { name: 'cellFontSize', type: 'String', default: "'xs'", description: '儲存格字體大小' },
-  { name: 'divideColor', type: 'String', default: "'black'", description: '分隔線顏色' },
-  { name: 'divideOpacity', type: 'String', default: "'30'", description: '分隔線不透明度' },
-  {
-    name: 'divideDirection',
-    type: 'String',
-    default: "'y'",
-    description: "分隔線方向 ('x', 'y', 'xy')"
-  },
-  { name: 'divideSize', type: 'String', default: "'1'", description: '分隔線粗細' }
+  { name: 'columns', type: 'Array', default: '[]', description: '欄位定義（title / dataIndex / width / defaultFixed）' },
+  { name: 'data', type: 'Array', default: '[]', description: '資料列' },
+  { name: 'isKeep', type: 'Boolean', default: 'false', description: '是否啟用欄位固定' },
+  { name: 'isFilter', type: 'Boolean', default: 'false', description: '是否啟用欄位篩選' },
+  { name: 'showSearch', type: 'Boolean', default: 'false', description: '是否顯示全文搜尋框' },
+  { name: 'isPagination', type: 'Boolean', default: 'false', description: '是否顯示分頁' },
+  { name: 'fixedColumns', type: 'Array', default: '—', description: '已固定欄位（v-model:fixed-columns）' },
+  { name: 'filterColumns', type: 'Object', default: '—', description: '已套用篩選（v-model:filter-columns）' },
+  { name: 'searchText', type: 'String', default: '—', description: '搜尋文字（v-model:search-text）' },
 ]
-
-// Events 事件列表
 const eventsList = [
-  {
-    name: 'update:fixedColumns',
-    params: 'Array',
-    description: '當固定欄位變更時觸發，回傳固定欄位的 dataIndex 陣列'
-  },
-  {
-    name: 'update:searchText',
-    params: 'String',
-    description: '當搜尋文字變更時觸發，回傳搜尋關鍵字'
-  },
-  {
-    name: 'update:filterColumns',
-    params: '{ value, status }',
-    description:
-      "當過濾條件變更時觸發，value 包含 column 和 value，status 為 'add' 或 'remove'"
-  }
+  { name: 'update:fixed-columns', params: 'string[]', description: '固定欄位變更' },
+  { name: 'update:filter-columns', params: 'Record', description: '篩選條件變更' },
+  { name: 'update:search-text', params: 'string', description: '搜尋文字變更' },
 ]
-
-// Slots 插槽列表
 const slotsList = [
-  { name: 'header', params: '-', description: '自訂表格頂部區域，預設顯示搜尋框' },
-  {
-    name: 'td-{dataIndex}',
-    params: '{ column, row, rowIndex }',
-    description: '自訂特定欄位的儲存格內容'
-  },
-  { name: 'tooltip', params: '-', description: '自訂過濾選單的內容' }
+  { name: 'td-<dataIndex>', params: '{ row }', description: '自訂欄位內容' },
+  { name: 'header', params: '—', description: '自訂上方工具列（預設顯示搜尋框）' },
 ]
 </script>
-
-<style scoped>
-code {
-  font-family: 'Courier New', monospace;
-  font-size: 0.875rem;
-}
-
-pre {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-</style>

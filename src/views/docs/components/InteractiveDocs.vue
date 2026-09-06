@@ -1,108 +1,65 @@
-<template>
+﻿<template>
   <div class="w-full px-8 py-12">
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
-        <div class="w-16 h-16 bg-gradient-to-br from-lime-500 to-green-600 rounded-xl flex items-center justify-center">
-          <span class="text-3xl">🖱️</span>
-        </div>
-        <div>
-          <h1 class="text-4xl font-bold text-gray-900">互動元件</h1>
-          <p class="text-lg text-gray-600 mt-1">ChptTabs / ChptToast</p>
-        </div>
+        <span class="text-3xl">🖱️</span>
+        <h1 class="text-4xl font-bold text-neutral-900">互動元件</h1>
       </div>
-
-      <div class="flex flex-wrap gap-2 mt-6">
-        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">✓ 完成</span>
-        <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">Vue 3</span>
-        <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">Composable</span>
-      </div>
+      <p class="text-neutral-600 text-lg max-w-3xl">
+        ChptTabs（頁籤）、ChptToast（全域提示）、ChptButton、ChptProgress、ChptAlert 等互動/回饋元件。
+      </p>
     </div>
 
     <!-- ChptTabs -->
-    <section class="mb-12 bg-white rounded-xl shadow-md p-8 border border-gray-200">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-        <span class="mr-3">📑</span>ChptTabs 選項卡
-      </h2>
-
-      <ChptTabs v-model="activeTab" :tabs="tabs" @change="onTabChange">
-        <template #panel-0>
-          <p class="text-sm text-gray-600">這是第一個面板的內容。</p>
-        </template>
-        <template #panel-1>
-          <div class="flex items-center gap-4">
-            <ChptProgress :model-value="80" status="success" class="flex-1" />
-            <span class="text-sm text-gray-500">進度 80%</span>
-          </div>
-        </template>
-        <template #panel-2>
-          <ChptAlert type="info" message="此面板展示 ChptAlert 元件" />
-        </template>
-      </ChptTabs>
-
-      <div class="mt-8 bg-gray-900 rounded-lg p-5 overflow-x-auto">
-        <pre class="text-green-400 text-sm font-mono"><code>const tabs = [
-  { label: '總覽', icon: 'dashboard' },
-  { label: '進度', icon: 'trending_up', badge: 3 },
-  { label: '設定', icon: 'settings' }
-]
-
-&lt;ChptTabs v-model="activeTab" :tabs="tabs"&gt;
-  &lt;template #panel-0&gt;第一個面板&lt;/template&gt;
-  &lt;template #panel-1&gt;第二個面板&lt;/template&gt;
-&lt;/ChptTabs&gt;</code></pre>
-      </div>
-      <p class="mt-4 text-sm text-gray-500">
-        <strong>Props：</strong><code>tabs</code>（<code>label</code>/<code>icon</code>/<code>badge</code>）、<code>modelValue</code>、<code>centered</code>。
-        <strong>插槽：</strong><code>#panel-0</code> 等逐項對應面板。
+    <section class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200">
+      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptTabs 頁籤</h2>
+      <p class="text-sm text-neutral-600 mb-4">
+        以 tabs 陣列定義（label / icon / badge），支援 panel-N 插槽自訂每個面板內容。
       </p>
+
+      <ChptTabs v-model="activeTab" :tabs="tabs" />
+
+      <div class="mt-6 bg-neutral-900 rounded-lg p-5 overflow-x-auto">
+        <pre class="text-success-400 text-sm font-mono"><code><ChptTabs v-model="activeTab" :tabs="tabs">
+  <template #panel-0>頁籤一面板</template>
+</ChptTabs></code></pre>
+      </div>
     </section>
 
     <!-- ChptToast -->
-    <section class="mb-12 bg-white rounded-xl shadow-md p-8 border border-gray-200">
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-2xl font-bold text-gray-900 flex items-center">
-          <span class="mr-3">🔔</span>ChptToast 輕提示
-        </h2>
-        <div class="flex gap-2">
-          <ChptButton size="sm" color="success" @click="toast.success('儲存成功！')">成功</ChptButton>
-          <ChptButton size="sm" color="warning" @click="toast.info('這是一則資訊')">資訊</ChptButton>
-          <ChptButton size="sm" color="danger" @click="toast.error('發生錯誤')">錯誤</ChptButton>
-        </div>
+    <section class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200">
+      <h2 class="text-2xl font-bold text-neutral-900 mb-6 flex items-center">
+        <span class="mr-3">🛎️</span>ChptToast 全域提示
+      </h2>
+      <div class="flex flex-wrap gap-3">
+        <ChptButton color="success" size="sm" @click="toast.success('操作成功')">Success</ChptButton>
+        <ChptButton color="info" size="sm" @click="toast.info('此為資訊提示')">Info</ChptButton>
+        <ChptButton color="warning" size="sm" @click="toast.warning('請留意此警告')">Warning</ChptButton>
+        <ChptButton color="danger" size="sm" @click="toast.error('操作失敗')">Error</ChptButton>
       </div>
-
-      <p class="text-sm text-gray-500 mb-4">
-        使用 <code>useToast</code> composable 觸發頂部浮動提示。先在全域（例如 App.vue）掛載 <code>&lt;ChptToast /&gt;</code>。
+      <p class="text-sm text-neutral-500 mt-4">
+        於 App 根層掛載一次 <code><ChptToast /></code>，即可由任一頁面呼叫 <code>useToast()</code>。
       </p>
 
-      <div class="bg-gray-900 rounded-lg p-5 overflow-x-auto">
-        <pre class="text-green-400 text-sm font-mono"><code>// App.vue 掛載一次
-import ChptToast from '@/components/common/ChptToast.vue'
-
-&lt;template&gt;
-  &lt;router-view /&gt;
-  &lt;ChptToast /&gt;
-&lt;/template&gt;
-
-// 任意頁面觸發
-import { useToast } from '@/components/common'
+      <div class="mt-4 bg-neutral-900 rounded-lg p-5 overflow-x-auto">
+        <pre class="text-success-400 text-sm font-mono"><code>import { ChptToast, useToast } from '@/components/library'
 const toast = useToast()
-
-toast.success('儲存成功')   // 綠
-toast.info('資訊')          // 藍
-toast.warning('警告')       // 黃
-toast.error('錯誤')         // 紅</code></pre>
+toast.success('操作成功')</code></pre>
       </div>
-
-      <!-- 掛載 Toast -->
-      <ChptToast />
     </section>
 
-    <section class="bg-white rounded-xl shadow-md p-8 border border-gray-200">
-      <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-        <span class="mr-3">💻</span>引入方式
+    <!-- 其他 -->
+    <section class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200">
+      <h2 class="text-2xl font-bold text-neutral-900 mb-6 flex items-center">
+        <span class="mr-3">🧩</span>Button / Progress / Alert
       </h2>
-      <div class="bg-gray-900 rounded-lg p-5 overflow-x-auto">
-        <pre class="text-green-400 text-sm font-mono"><code>import { ChptTabs, ChptToast, useToast } from '@/components/common'</code></pre>
+      <div class="space-y-6">
+        <div class="flex items-center gap-3">
+          <ChptButton color="primary" size="sm" @click="progress = Math.min(100, progress + 10)">+10%</ChptButton>
+          <ChptProgress v-model="progress" status="primary" style="max-width: 260px" />
+        </div>
+        <ChptAlert show type="success" title="完成" message="此區示範 Button / Progress / Alert 的組合運用。" />
+        <ChptAlert show type="info" title="提示" message="設計 token 色票讓各元件外觀一致。" />
       </div>
     </section>
   </div>
@@ -116,19 +73,16 @@ import {
   useToast,
   ChptButton,
   ChptProgress,
-  ChptAlert
-} from '@/components/common'
+  ChptAlert,
+} from '@/components/library'
 
 const activeTab = ref(0)
 const tabs = [
-  { label: '總覽', icon: 'dashboard' },
-  { label: '進度', icon: 'trending_up', badge: 3 },
-  { label: '設定', icon: 'settings' }
+  { label: '儀表板', icon: 'dashboard' },
+  { label: '趨勢', icon: 'trending_up', badge: 3 },
+  { label: '設定', icon: 'settings' },
 ]
 
 const toast = useToast()
-
-function onTabChange(index) {
-  console.log('切換到頁籤', index)
-}
+const progress = ref(30)
 </script>

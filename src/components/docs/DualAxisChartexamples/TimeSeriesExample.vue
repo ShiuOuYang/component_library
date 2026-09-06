@@ -30,8 +30,8 @@
 </template>
 
 <script setup>
-import DualAxisComboChart from '../../common/DualAxisComboChart.vue';
-import CodeBlock from '../../common/CodeBlock.vue';
+import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
+import CodeBlock from '@/components/library/ui/CodeBlock.vue';
 import * as d3 from 'd3';
 
 // 時間軸圖表數據

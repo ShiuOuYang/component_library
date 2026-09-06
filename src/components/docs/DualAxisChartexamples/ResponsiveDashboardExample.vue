@@ -38,8 +38,8 @@
 
 <script setup>
 import { ref } from 'vue';
-import DualAxisComboChart from '../../common/DualAxisComboChart.vue';
-import CodeBlock from '../../common/CodeBlock.vue';
+import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
+import CodeBlock from '@/components/library/ui/CodeBlock.vue';
 
 // 響應式圖表數據
 const responsiveLayers = [

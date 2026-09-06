@@ -1,4 +1,4 @@
-name: Deploy Vue.js ym-dashboard
+name: Deploy Vue.js -dashboard
 
 on:
   # push:
@@ -48,9 +48,9 @@ jobs:
         }
       shell: powershell
     
-    - name: Deploy Vue.js YM YIP Dashboard
+    - name: Deploy Vue.js Dashboard
       run: |
-        Write-Host "Deploying Vue.js 3 + Composition API YM YIP Dashboard..."
+        Write-Host "Deploying Vue.js 3 + Composition API Dashboard..."
         
         # 停止現有容器
         docker-compose down --remove-orphans --timeout 30
@@ -59,18 +59,18 @@ jobs:
         docker-compose build --no-cache
         docker-compose up -d
         
-        Write-Host "Vue.js YM YIP Dashboard deployment completed"
+        Write-Host "Vue.js Dashboard deploent completed"
       shell: powershell
     
     - name: Verify Vue.js Dashboard
       run: |
-        Write-Host "Verifying Vue.js YM YIP Dashboard..."
+        Write-Host "Verifying Vue.js Dashboard..."
         Start-Sleep -Seconds 30
         
         try {
           $response = Invoke-WebRequest -Uri "http://localhost:5015" -UseBasicParsing -TimeoutSec 15
           if ($response.StatusCode -eq 200) {
-            Write-Host "SUCCESS: Vue.js 3 YM YIP Dashboard is running!"
+            Write-Host "SUCCESS: Vue.js 3 Dashboard is running!"
             Write-Host "Dashboard URL: http://localhost:5015"
             Write-Host "Tech Stack: Vue.js 3 + Composition API + Vue Router 4 + Vite + Tailwind CSS"
           }

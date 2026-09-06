@@ -7,7 +7,7 @@
         </div>
         <div>
           <h1 class="text-4xl font-bold text-gray-900">Excel 編輯器</h1>
-          <p class="text-lg text-gray-600 mt-1">ChptExcelEditor / ExcelEditor — 仿原生 Excel 試算表</p>
+          <p class="text-lg text-neutral-600 mt-1">ChptExcelEditor — 仿原生 Excel 試算表</p>
         </div>
       </div>
 
@@ -91,7 +91,7 @@
         <span class="mr-3">💻</span>引入方式與 API
       </h2>
       <ChptCodeBlock
-        code='import { ChptExcelEditor, ExcelEditor } from "@/components/common"'
+        code='import { ChptExcelEditor } from "@/components/library/excel"'
         language="js"
         class="mb-4"
       />
@@ -124,7 +124,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { ChptExcelEditor, ChptCodeBlock } from '@/components/common'
+import { ChptExcelEditor, ChptCodeBlock } from '@/components/library'
 
 const editorRef = ref<InstanceType<typeof ChptExcelEditor> | null>(null)
 

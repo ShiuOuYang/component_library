@@ -40,8 +40,8 @@
 
 <script setup>
 import { computed } from 'vue';
-import DualAxisComboChart from '../../common/DualAxisComboChart.vue';
-import CodeBlock from '../../common/CodeBlock.vue';
+import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
+import CodeBlock from '@/components/library/ui/CodeBlock.vue';
 
 // 定義管制界線
 const UCL = 103;

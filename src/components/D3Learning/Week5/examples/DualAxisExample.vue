@@ -129,7 +129,7 @@
 <script setup>
 import { ref, computed, reactive } from 'vue';
 import * as d3 from 'd3';
-import DualAxisComboChart from '../../../common/DualAxisComboChart.vue';
+import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
 
 // === 數據狀態 ===
 const showSeries = reactive({

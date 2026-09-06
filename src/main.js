@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import './style.css'
+import '@/styles/index.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import 'material-symbols/outlined.css'
 import App from './App.vue'
@@ -28,3 +28,4 @@ app.directive('click-outside', {
 })
 
 app.mount('#app')
+

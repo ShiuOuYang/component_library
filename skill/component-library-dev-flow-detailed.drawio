@@ -1,0 +1,229 @@
+<mxfile host="app.diagrams.net" modified="2026-08-20T00:00:00.000Z" agent="Claude" version="24.0.0" type="device">
+  <diagram id="dev-flow" name="開發流程">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- 標題 -->
+        <mxCell id="title" value="前端共用組件庫｜Agent 開發流程（Skill + 設計稿 + 系統規劃 md）" style="text;html=1;align=center;verticalAlign=middle;fontSize=22;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+          <mxGeometry x="40" y="10" width="1520" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ===== band 1 ===== -->
+        <mxCell id="band1" value="① 輸入資產（開工前必須齊備）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontSize=14;fontStyle=1;fontColor=#374151;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="1520" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="in1" value="&lt;b&gt;Skill：component-library&lt;/b&gt;&lt;br&gt;SKILL.md（規範／工作流程）&lt;br&gt;references/component-inventory.md&lt;br&gt;references/chart-patterns.md&lt;br&gt;references/architecture.md" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;align=left;spacingLeft=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="130" y="115" width="420" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="in2" value="&lt;b&gt;設計稿（Figma / 圖檔）&lt;/b&gt;&lt;br&gt;畫面版面、元件狀態、色彩與字級&lt;br&gt;互動行為（hover／loading／空狀態）&lt;br&gt;RWD 斷點" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE7F3;strokeColor=#DB2777;align=left;spacingLeft=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="590" y="115" width="420" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="in3" value="&lt;b&gt;系統規劃 .md&lt;/b&gt;&lt;br&gt;功能範圍、頁面／路由清單&lt;br&gt;API 端點與資料結構&lt;br&gt;權限（requiresAuth）、驗收條件" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;align=left;spacingLeft=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="115" width="420" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ===== band 2 ===== -->
+        <mxCell id="band2" value="② 讀取與解析（先讀完再動手，不要邊寫邊猜）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontSize=14;fontStyle=1;fontColor=#374151;" vertex="1" parent="1">
+          <mxGeometry x="40" y="290" width="1520" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="r1" value="&lt;b&gt;2-1 讀 SKILL.md&lt;/b&gt;&lt;br&gt;取得命名（Chpt*）、TS 寫法、&lt;br&gt;Tailwind 完整類名規則、&lt;br&gt;三處註冊流程" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="345" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" value="&lt;b&gt;2-2 讀組件清單&lt;/b&gt;&lt;br&gt;component-inventory.md&lt;br&gt;掌握既有 props／emits／slots&lt;br&gt;辨識「相容別名檔」" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#2563EB;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="470" y="345" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" value="&lt;b&gt;2-3 解析設計稿&lt;/b&gt;&lt;br&gt;拆出「原子元件 / 版面 / 頁面」&lt;br&gt;抽出色彩、字級、間距、狀態&lt;br&gt;※ 對齊原生 Tailwind 調色盤" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DB2777;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="840" y="345" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" value="&lt;b&gt;2-4 解析系統規劃 md&lt;/b&gt;&lt;br&gt;頁面 → 路由 meta&lt;br&gt;API → api/services.js&lt;br&gt;跨頁狀態 → Pinia store" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#16A34A;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="345" width="330" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ===== band 3 ===== -->
+        <mxCell id="band3" value="③ 對照與決策" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontSize=14;fontStyle=1;fontColor=#374151;" vertex="1" parent="1">
+          <mxGeometry x="40" y="520" width="1520" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="m1" value="&lt;b&gt;3-1 建立「設計稿元素 ↔ 既有組件」對照表&lt;/b&gt;&lt;br&gt;例：主按鈕→ChptButton／表格→ChptTable&lt;br&gt;篩選列→ChptFilterBar／彈窗→ChptModal&lt;br&gt;逐項標記：可直接用／需擴充／需新建" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF9C3;strokeColor=#CA8A04;align=left;spacingLeft=12;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="160" y="570" width="470" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="d1" value="既有組件&lt;br&gt;能否覆蓋此需求？" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="760" y="565" width="300" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="note3" value="&lt;b&gt;決策原則&lt;/b&gt;&lt;br&gt;優先擴充既有 props／slot，&lt;br&gt;不要 fork 出第二份相似組件。&lt;br&gt;（Table／Modal／Filter 已各有 2~3 版）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF7ED;strokeColor=#F59E0B;dashed=1;align=left;spacingLeft=10;fontSize=11;fontColor=#92400E;" vertex="1" parent="1">
+          <mxGeometry x="1150" y="570" width="360" height="115" as="geometry" />
+        </mxCell>
+
+        <!-- ===== band 4 ===== -->
+        <mxCell id="band4" value="④ 實作（三種路徑，可並行）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontSize=14;fontStyle=1;fontColor=#374151;" vertex="1" parent="1">
+          <mxGeometry x="40" y="760" width="1520" height="420" as="geometry" />
+        </mxCell>
+
+        <mxCell id="o1" value="否 → 新建組件" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEE2E2;strokeColor=#DC2626;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="810" width="420" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="imA" value="&lt;b&gt;A. 新增共用組件&lt;/b&gt;&lt;br&gt;&lt;br&gt;1. 以 assets/ChptComponent.template.vue 起手&lt;br&gt;2. 建立 src/components/common/&lt;b&gt;ChptXxx.vue&lt;/b&gt;&lt;br&gt;　 &lt;script setup lang=&quot;ts&quot;&gt; + interface Props&lt;br&gt;　 + withDefaults；型別取自 types/ui.types.ts&lt;br&gt;3. 樣式：Tailwind 對照表（完整類名、有 fallback）&lt;br&gt;4. &lt;b&gt;index.js 對應分類加 export&lt;/b&gt;（勿整檔重寫，有 BOM）&lt;br&gt;5. 需相容舊名 → 另建 4 行 re-export 別名檔&lt;br&gt;6. 撰寫文檔頁（見 D 步驟）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#DC2626;align=left;spacingLeft=12;verticalAlign=top;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="875" width="420" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="o2" value="部分符合 → 擴充既有" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="570" y="810" width="420" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="imB" value="&lt;b&gt;B. 擴充既有組件&lt;/b&gt;&lt;br&gt;&lt;br&gt;1. 確認要改的是&lt;b&gt;本尊&lt;/b&gt;而非別名檔&lt;br&gt;　 （CommonTable → ChptTable 等）&lt;br&gt;2. 新 prop 一律給 default，保持向後相容&lt;br&gt;3. 變化點優先用 slot／prop，避免 if-else 疊加&lt;br&gt;4. 大型檔（ChptExcelEditor 2089 行、&lt;br&gt;　 DualAxisComboChart 1761 行）用局部編輯&lt;br&gt;5. 圖表類先讀 chart-patterns.md，&lt;br&gt;　 沿用 useChartScales／useD3Brush&lt;br&gt;6. 同步更新該組件的文檔頁範例" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#D97706;align=left;spacingLeft=12;verticalAlign=top;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="570" y="875" width="420" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="o3" value="是 → 直接組裝頁面" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="810" width="420" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="imC" value="&lt;b&gt;C. 組裝頁面／功能&lt;/b&gt;&lt;br&gt;&lt;br&gt;1. 頁面放 src/views/，統一從&lt;br&gt;　 @/components/common 匯入組件&lt;br&gt;2. API 加在 api/services.js（依領域分物件）&lt;br&gt;3. 跨頁狀態 → stores/xxx.js，&lt;b&gt;並補 stores/index.js&lt;/b&gt;&lt;br&gt;4. 邏輯抽 composables/，純函式抽 utils/&lt;br&gt;　 （勿放 utils/utils/）&lt;br&gt;5. 註冊路由；非文檔頁預設需登入，&lt;br&gt;　 公開頁要顯式 requiresAuth: false" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#16A34A;align=left;spacingLeft=12;verticalAlign=top;spacingTop=8;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="875" width="420" height="260" as="geometry" />
+        </mxCell>
+
+        <!-- ===== band 5 ===== -->
+        <mxCell id="band5" value="⑤ 文檔註冊（新增／變更共用組件時必做）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontSize=14;fontStyle=1;fontColor=#374151;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1220" width="1520" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="doc1" value="&lt;b&gt;D-1 文檔頁&lt;/b&gt;&lt;br&gt;views/docs/components/XxxDocs.vue&lt;br&gt;（以 DocPage.template.vue 起手）&lt;br&gt;展示 → 程式碼片段 → Props／事件說明" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7C3AED;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1275" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="doc2" value="&lt;b&gt;D-2 註冊路由&lt;/b&gt;&lt;br&gt;src/router/index.js&lt;br&gt;掛在 /docs 的 children 下&lt;br&gt;新頁一律 lazy import" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7C3AED;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="470" y="1275" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="doc3" value="&lt;b&gt;D-3 側邊欄 navSections&lt;/b&gt;&lt;br&gt;src/layouts/DocLayout.vue&lt;br&gt;加入對應分類的 items&lt;br&gt;（漏掉＝側邊欄看不到）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7C3AED;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="840" y="1275" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="doc4" value="&lt;b&gt;D-4 收合捷徑&lt;/b&gt;&lt;br&gt;src/layouts/DocLayout.vue&lt;br&gt;collapsedShortcuts 補一筆&lt;br&gt;（與 D-3 成對，別漏）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#7C3AED;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="1275" width="330" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ===== band 6 ===== -->
+        <mxCell id="band6" value="⑥ 驗證與交付" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3F4F6;strokeColor=#9CA3AF;dashed=1;verticalAlign=top;align=left;spacingLeft=12;spacingTop=8;fontSize=14;fontStyle=1;fontColor=#374151;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1450" width="1520" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="v1" value="&lt;b&gt;6-1 目視比對設計稿&lt;/b&gt;&lt;br&gt;npm run dev → localhost:4000&lt;br&gt;檢查間距／狀態／RWD&lt;br&gt;（無全域深色模式，勿假設）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0891B2;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1505" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="v2" value="&lt;b&gt;6-2 型別與建置&lt;/b&gt;&lt;br&gt;npx vue-tsc --noEmit&lt;br&gt;npm run build&lt;br&gt;（strict／noUnusedLocals）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0891B2;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="470" y="1505" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="v3" value="&lt;b&gt;6-3 自檢清單&lt;/b&gt;&lt;br&gt;□ index.js 有 export&lt;br&gt;□ 路由＋navSections＋捷徑三處&lt;br&gt;□ 無動態拼接 Tailwind class&lt;br&gt;□ 沒改到別名檔" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0891B2;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="840" y="1505" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="v4" value="&lt;b&gt;6-4 交付&lt;/b&gt;&lt;br&gt;commit → PR&lt;br&gt;merge 進 dev 觸發&lt;br&gt;GitHub Actions（npm ci → build）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F2FE;strokeColor=#0369A1;align=left;spacingLeft=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="1505" width="330" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- ===== edges ===== -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#2563EB;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="in1" target="r1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#2563EB;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="in1" target="r2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#DB2777;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="in2" target="r3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#16A34A;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="in3" target="r4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="r1" target="m1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="r2" target="m1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="r3" target="m1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#6B7280;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="r4" target="m1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#CA8A04;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="m1" target="d1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e10" value="無對應" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#DC2626;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=11;fontColor=#DC2626;" edge="1" parent="1" source="d1" target="o1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="部分符合" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#D97706;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=11;fontColor=#D97706;" edge="1" parent="1" source="d1" target="o2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="完全符合" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#16A34A;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontSize=11;fontColor=#16A34A;" edge="1" parent="1" source="d1" target="o3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#DC2626;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="o1" target="imA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#D97706;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="o2" target="imB">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e15" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#16A34A;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="o3" target="imC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e16" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#7C3AED;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="imA" target="doc1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#7C3AED;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="imB" target="doc2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e18" value="頁面不需文檔註冊&#10;可直接進驗證" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#16A34A;strokeWidth=2;endArrow=block;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fontSize=10;fontColor=#16A34A;" edge="1" parent="1" source="imC" target="v4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1600" y="1005" />
+              <mxPoint x="1600" y="1560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e19" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#7C3AED;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="doc1" target="doc2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#7C3AED;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="doc2" target="doc3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e21" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#7C3AED;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="doc3" target="doc4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e22" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0891B2;strokeWidth=2;endArrow=block;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="doc4" target="v1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1375" y="1430" />
+              <mxPoint x="265" y="1430" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e23" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0891B2;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="v1" target="v2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e24" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0891B2;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="v2" target="v3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e25" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#0891B2;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="v3" target="v4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e26" value="失敗 / 與設計稿不符 → 回到實作" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;strokeColor=#EF4444;strokeWidth=2;endArrow=block;dashed=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11;fontColor=#EF4444;" edge="1" parent="1" source="v3" target="imB">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="20" y="1560" />
+              <mxPoint x="20" y="1005" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 地雷備註 -->
+        <mxCell id="warn" value="&lt;b&gt;⚠ 常見地雷（Agent 最容易踩）&lt;/b&gt;&lt;br&gt;• README.md 已過時：Jx*／GantChart／BoxPlotChart／UniversalStackedChart 皆不存在 → 一律以 index.js 與實際檔案為準&lt;br&gt;• 動態拼接 Tailwind class（bg-${color}-500）會被 purge → 必須用完整類名對照表；theme.extend 已整段註解，無自訂 token&lt;br&gt;• 改到 4 行 re-export 別名檔（CommonTable／ExcelEditor…）等於白改，本尊是 Chpt* 版本&lt;br&gt;• 新增 store 忘了補 stores/index.js；新增 util 誤放 src/utils/utils/（重複目錄）&lt;br&gt;• 專案無測試框架／無 ESLint → 驗證只能靠 vue-tsc + build + 目視" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF2F2;strokeColor=#EF4444;align=left;spacingLeft=14;verticalAlign=middle;fontSize=11;fontColor=#7F1D1D;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1670" width="1520" height="130" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

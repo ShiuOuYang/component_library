@@ -30,8 +30,8 @@
 </template>
 
 <script setup>
-import DualAxisComboChart from '../../common/DualAxisComboChart.vue';
-import CodeBlock from '../../common/CodeBlock.vue';
+import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
+import CodeBlock from '@/components/library/ui/CodeBlock.vue';
 
 // 散點圖數據
 const scatterData = Array.from({ length: 20 }, () => ({

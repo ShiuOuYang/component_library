@@ -155,7 +155,7 @@
       </ChptModal>
 
       <!-- 口袋列（顯示被最小化的 window） -->
-      <ModalDock />
+      <ChptModalDock />
     </section>
 
     <!-- ChptDrawer -->
@@ -244,7 +244,7 @@
         <span class="mr-3">💻</span>引入方式
       </h2>
       <div class="bg-gray-900 rounded-lg p-5 overflow-x-auto">
-        <pre class="text-green-400 text-sm font-mono"><code>import { ChptModal, ChptDrawer, ChptPopconfirm } from '@/components/common'</code></pre>
+        <pre class="text-green-400 text-sm font-mono"><code>import { ChptModal, ChptDrawer, ChptPopconfirm, ChptModalDock } from '@/components/library'</code></pre>
       </div>
     </section>
   </div>
@@ -254,7 +254,7 @@
 import { ref } from 'vue'
 import {
   ChptModal,
-  ModalDock,
+  ChptModalDock,
   ChptDrawer,
   ChptPopconfirm,
   ChptButton,
@@ -262,7 +262,7 @@ import {
   ChptTextarea,
   ChptProgress,
   ChptTag
-} from '@/components/common'
+} from '@/components/library'
 import { useModalManager } from '@/composables/useModalManager'
 
 const modalOpen = ref(false)

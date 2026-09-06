@@ -28,8 +28,8 @@
 </template>
 
 <script setup>
-import DualAxisComboChart from '../../common/DualAxisComboChart.vue';
-import CodeBlock from '../../common/CodeBlock.vue';
+import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
+import CodeBlock from '@/components/library/ui/CodeBlock.vue';
 
 // 生產監控數據
 const productionLayers = [
