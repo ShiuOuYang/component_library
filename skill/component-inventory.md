@@ -1,10 +1,13 @@
-# 組件清單（src/components/common/）
+# 組件清單（src/components/library/）
 
-> 此清單由實際原始碼萃取，**以此為準，不要相信 README.md**（README 提到的 `Jx*`、`GantChart`、`BoxPlotChart`、`UniversalStackedChart`、`D3LineChart`、`D3BarChartWithBrush`、`JxFixedTable` 在 repo 內不存在）。
-> 統一引入方式：`import { ChptButton, ChptTable } from '@/components/common'`
+> 此清單由實際原始碼萃取，**以此為準，不要相信舊 README**（舊 README 提到的 `Jx*`、`GantChart`、
+> `BoxPlotChart`、`UniversalStackedChart` 等從未存在於 repo）。
+> 統一引入方式：`import { ChptButton, ChptTable } from '@/components/library'`
+> `@/components/common` 只是 @deprecated 相容 facade（re-export library），新程式不要用。
 
 ## 目錄
-- [相容別名對照](#相容別名對照)
+- [存放位置與入口](#存放位置與入口)
+- [相容別名 / 已收斂元件對照](#相容別名--已收斂元件對照)
 - [基礎表單原子元件（TS）](#基礎表單原子元件ts)
 - [資料呈現](#資料呈現)
 - [Modal / 浮層](#modal--浮層)
@@ -14,30 +17,55 @@
 - [圖表（JS + D3）](#圖表js--d3)
 - [Excel / 匯出上傳](#excel--匯出上傳)
 - [主題 / 其他](#主題--其他)
+- [非 library 元件](#非-library-元件)
 - [文檔路由對照](#文檔路由對照)
 
 ---
 
-## 相容別名對照
+## 存放位置與入口
 
-以下檔案只是 3~6 行的 re-export shim，**改樣式或邏輯請改右邊的本尊**：
+```
+@/components/library
+  ui/       通用 UI（Chpt*：表單/資料/反饋/浮層/導覽/主題工具）  → ui/index.js
+  charts/   D3 圖表（雙軸/柏拉圖/熱力/分面）                    → charts/index.js
+  viewer/   領域檢視器（Gerber / PCB）                          → viewer/index.js
+  excel/    Excel 編輯/匯出/匯入                                → excel/index.js
+  shared/   types/ui.types.ts、useToast.ts
+  index.js  正式公開 API（new code 一律由此 import）
+```
 
-| 別名檔 | 實體 |
+新增組件 → 放對應資料夾、在**該資料夾 index.js** 匯出；需要對外公開再補到 `library/index.js`。
+
+## 相容別名 / 已收斂元件對照
+
+**A. 3~6 行 re-export alias（改樣式/邏輯請改右邊 Chpt* 本尊）**：
+
+| 別名檔（放同資料夾） | 實體 |
 |---|---|
-| `CommonTable.vue` | `ChptTable.vue` |
-| `ExcelEditor.vue` | `ChptExcelEditor.vue` |
-| `ExcelExporter.vue` | `ChptExcelExporter.vue` |
-| `ExcelUploader.vue` | `ChptExcelUploader.vue` |
-| `TabNavigation.vue` | `ChptTabNavigation.vue` |
-| `PageSwitcher.vue` | `ChptPageSwitcher.vue` |
-| `ModalDock.vue` | `ChptModalDock.vue` |
-| `HeaderLogoutButton.vue` | `ChptHeaderLogoutButton.vue` |
-| `FixedTable`（僅 index.js 匯出名） | `ChptFixedTable.vue` |
+| `CommonTable.vue`（ui） | `ChptTable.vue` |
+| `Pagination.vue` / `PaginationControls.vue`（ui） | `ChptPagination.vue` |
+| `CodeBlock.vue`（ui） | `ChptCodeBlock.vue` |
+| `TabNavigation.vue`（ui） | `ChptTabNavigation.vue` |
+| `PageSwitcher.vue`（ui） | `ChptPageSwitcher.vue` |
+| `ModalDock.vue`（ui） | `ChptModalDock.vue` |
+| `HeaderLogoutButton.vue`（ui） | `ChptHeaderLogoutButton.vue` |
+| `SimpleDarkModeToggle.vue`（ui） | `ChptDarkModeToggle.vue` |
+| `ExcelEditor.vue` / `ExcelExporter.vue` / `ExcelUploader.vue`（excel） | `ChptExcelEditor.vue` / `ChptExcelExporter.vue` / `ChptExcelUploader.vue` |
 
-**非別名、真的是獨立實作**（新舊兩套並存，功能重疊，選一套用即可）：
-`FilterBar.vue`、`FilterSelect.vue`、`FilterDropdown.vue`、`TagFilterDropdown.vue`、`Pagination.vue`、`PaginationControls.vue`、`CodeBlock.vue`、`CommonTooltip.vue`、`DraggableModal.vue`、`ParetoChart.vue`、`SimpleDarkModeToggle.vue`。
+**B. 舊獨立實作（功能已被 Chpt* 收斂，新程式改用 Chpt*；檔案保留過渡）**：
 
-選用建議：新頁面優先用 `Chpt*`（TS、型別完整）；`DraggableModal` 與 `ChptModal`（`mode="window"`）功能重疊，新程式碼用 `ChptModal`。
+| 舊元件 | 改用 |
+|---|---|
+| `DraggableModal.vue`（ui） | `ChptModal`（`mode="dialog"/"window"` 一體涵蓋）＋`ChptModalDock` |
+| `FilterBar.vue`（ui） | `ChptFilterBar` |
+| `FilterSelect.vue` / `FilterDropdown.vue` / `TagFilterDropdown.vue`（ui） | `ChptFilter`（`type="select/dropdown/tag"`） |
+| `ParetoChart.vue`（charts，含統計區塊） | `EnterprisePareto`（新專案優先） |
+| `CommonTooltip.vue`（ui，受控式） | 新增優先 `ChptTooltip`；**圖表 tooltip 仍用受控式 CommonTooltip**，勿改 |
+
+> 2026-09-06 已刪除這些舊版的**文檔路由**（`common-table`、`draggable-modal`、
+> `filter-select`、`filter-dropdown`、`filter-bar`、`tag-filter-dropdown`），內容由
+> `DataFilterDocs`（ChptTable/ChptFixedTable/ChptPagination/ChptFilter/ChptFilterBar）與
+> `OverlayDocs`（ChptModal/ChptDrawer/ChptPopconfirm/ChptModalDock）覆蓋。
 
 ---
 
@@ -61,65 +89,60 @@
 
 | 組件 | Props（重點） | Emits | Slots / Ref |
 |---|---|---|---|
-| `ChptTable` | data, columns, searchPlaceholder, noDataText, defaultPageSize, customFilter, defaultSort, paginationPosition(`top`/`bottom`/`both`), 以及一整組外觀 props（containerBgColor, headerBgGradient, evenRowBgColor, hoverRowBgColor, fontSize…） | search, sort, update:page, update:pageSize | slots: `left-controls`, `right-controls`, `bottom-left-controls`, `bottom-right-controls`, `table-row`, `footer`, `modals`；ref: `refresh()`, `resetPage()`, `resetSort()`, `enableColumnSort()` |
-| `ChptFixedTable` | columns, data, isFixed, fixedColumns, isFilter, filterColumns, isKeep, viewportOffset, showSearch, searchText, headerFontSize, cellFontSize, divideColor/Opacity/Direction/Size, isPagination, defaultPageSize | update:fixedColumns, update:filterColumns, update:searchText | slot: `header` |
-| `ChptPagination` | variant, currentPage, itemsPerPage, totalItems, pageSizeOptions, showSummary, showPageSize, bgColor | change, update:currentPage, update:itemsPerPage | – |
-| `PaginationControls` | currentPage, totalPages, pageSize, total, bgColor | – | 精簡版，`ChptTable` 內部使用 |
-| `Pagination` | totalItems, itemsPerPage, currentPage, pageSizeOptions | change, update:currentPage, update:itemsPerPage | 舊版獨立實作 |
-| `ChptCodeBlock` / `CodeBlock` | code, language, trimIndent, tip, tipType, tipTitle | – | slot: `tip` |
+| `ChptTable` | data, columns, searchPlaceholder, noDataText, defaultPageSize, customFilter, defaultSort, paginationPosition(`top`/`bottom`/`both`), 以及整組外觀 props（containerBgColor, headerBgGradient, evenRowBgColor, hoverRowBgColor, fontSize…） | search, sort, update:page, update:pageSize | slots: `left-controls`, `right-controls`, `bottom-left-controls`, `bottom-right-controls`, `table-row`, `footer`, `modals`；ref: `refresh()`, `resetPage()`, `resetSort()`, `enableColumnSort()` |
+| `ChptFixedTable` | columns, data, isFixed, fixedColumns, isFilter, filterColumns, isKeep, viewportOffset, showSearch, searchText, headerFontSize, cellFontSize, divideColor/Opacity/Direction/Size, isPagination, defaultPageSize | update:fixedColumns, update:filterColumns, update:searchText | slot: `td-{dataIndex}`（`{ row, value }`）、`header` |
+| `ChptPagination` | variant(`full`/`compact`), currentPage, itemsPerPage, totalItems, pageSizeOptions, showSummary, showPageSize, bgColor | change, update:currentPage, update:itemsPerPage | – |
+| `ChptCodeBlock` | code, language, trimIndent, tip, tipType, tipTitle | – | slot: `tip` |
 | `ChptTabNavigation` | tabs, fontSize | – | – |
 | `ChptPageSwitcher` | title, pages, footerHint | – | – |
 
-`Column` 型別：`{ key?, title, sortable?, sortType?: 'string'|'number'|'date', style? }`
+`Column` 型別：`{ key?, title, sortable?, sortType?: 'string'|'number'|'date', style? }`；`ChptFixedTable` 欄位另含 `dataIndex/width/defaultFixed`。
 
 ## Modal / 浮層
 
 | 組件 | Props（重點） | Emits | Ref 方法 |
 |---|---|---|---|
-| `ChptModal` | modelValue, mode(`dialog`/`window`), title, id, width, height, size, closable, maskClosable, backdropOpacity, bodyHeight, draggable, resizable, minimizable, maximizable, x, y, minWidth, minHeight, defaultMaximized, headerBgColor, headerTextColor, borderClass | update:modelValue, open, close, minimize, maximize, restore | modalId, open, close, minimize, maximize, restore |
-| `DraggableModal` | 同上一組（26 個），偏 window 模式 | update:modelValue | modalId, open, close, minimize, maximize, restore |
-| `ChptDrawer` | modelValue, title, placement, size, closable, maskClosable, backdropOpacity | update:modelValue, close | slot: `footer` |
+| `ChptModal` | modelValue, mode(`dialog`/`window`), title, id, width, height, size(sm~xl), fullWidth, closable, maskClosable, backdropOpacity, bodyHeight, draggable, resizable, minimizable, maximizable, x, y, minWidth, minHeight, defaultMaximized, headerBgColor, headerTextColor, borderClass | update:modelValue, open, close, minimize, maximize, restore | modalId, open, close, minimize, maximize, restore |
+| `ChptDrawer` | modelValue, title, placement(`left/right/top/bottom`), size, closable, maskClosable, backdropOpacity | update:modelValue, close | slot: `footer` |
 | `ChptPopconfirm` | message, confirmText, cancelText, color | confirm, cancel | slot: `message` |
-| `ChptModalDock` | zIndex | – | 最小化視窗停靠列，配合 `useModalManager` |
-| `ChptTooltip` | content, placement, theme, showArrow, maxWidth, disabled | show, hide | slot: `content`（包裹式，hover 觸發） |
-| `CommonTooltip` | visible, position, data, theme, placement, showArrow, offset, maxWidth, interactive, strategy, autoAdjustPosition, persistent, clickToClose | close | 受控式（自行管理 visible/position），圖表 tooltip 常用 |
+| `ChptModalDock` | zIndex | – | 最小化視窗停靠列，配 `useModalManager` |
+| `ChptTooltip` | content, placement(top/bottom/left/right), theme(dark/light/info/warning/error), showArrow, maxWidth, disabled | show, hide | slot: default（觸發元素）、`content` |
+
+`ChptModal` 同時提供 dialog（置中確認/表單）與 window（多視窗：拖曳/縮放/最大化/最小化）兩種模式；多視窗需搭配 `ChptModalDock`。
 
 ## 顯示 / 反饋
 
 | 組件 | Props | Emits |
 |---|---|---|
 | `ChptAlert` | show, type(`success`/`info`/`warning`/`danger`), title, message, showIcon, closable, fullWidth | close |
-| `ChptTag` | label, color, isOutline, size, icon, closable | close |
+| `ChptTag` | label, color(含 dark/light), isOutline, size, icon, closable | close |
 | `ChptBadge` | count, isDot, max, showZero, status, position, offset, color | – |
-| `ChptAvatar` | src, icon, name, alt, size, backgroundColor | – |
+| `ChptAvatar` | src, icon, name, alt, size, backgroundColor（真實 Avatar） | – |
 | `ChptSpinner` | loading, size, text, color, fullWidth, center | – |
 | `ChptSkeleton` | loading, rows, rowWidth, rowHeight, color, fullWidth | – |
 | `ChptEmpty` | icon, title, description, iconSize, iconColor, fullWidth | slot: `action` |
 | `ChptProgress` | modelValue, status, strokeWidth, trackColor, showLabel | update:modelValue |
-| `ChptToast` | 無 props | 需全域掛載一次，搭配 `useToast()` |
+| `ChptToast` | 無 props | 需全域掛載一次，配 `useToast()` |
 
-`useToast()` → `success / info / warning / error / show / remove`，型別 `'success'|'info'|'warning'|'danger'`。
+`useToast()` → `success / info / warning / error`；型別 `'success'|'info'|'warning'|'danger'`。
 
 ## 佈局 / 導覽 / 流程
 
 | 組件 | Props | Emits | Slots |
 |---|---|---|---|
-| `ChptCard` | title, icon, padding, fullWidth, hoverable | click | `header`, `extra`, `footer`, default |
-| `ChptDivider` | direction, text, color | – | – |
-| `ChptTabs` | tabs, modelValue, centered | update:modelValue, change | `panel` |
-| `ChptSteps` | steps, showLabel | – | – |
-| `ChptBreadcrumb` | items, separator | select | – |
-| `ChptCollapse` | items, modelValue, multiple | update:modelValue | – |
+| `ChptCard` | title, icon, padding(none/sm/md/lg), fullWidth, hoverable | click | `header`, `extra`, `footer`, default |
+| `ChptDivider` | direction(`horizontal`/`vertical`), text, color | – | default（中間內容） |
+| `ChptTabs` | tabs, modelValue, centered | update:modelValue, change | `panel-<index>`、default |
+| `ChptSteps` | steps(`{title,status:pending/process/done}`), showLabel | – | – |
+| `ChptBreadcrumb` | items(`{label,to?}`), separator | select | `item-<index>` |
+| `ChptCollapse` | items(`{title,content?}`), modelValue(`number[]`), multiple | update:modelValue | `content-<index>` |
 
 ## 過濾器
 
 | 組件 | Props | Emits | 備註 |
 |---|---|---|---|
-| `ChptFilter` | type, modelValue, label, options, placeholder, allValue, showAllOption, disabled, size, fullWidth, valueKey, labelKey, selectClass, labelClass | update:modelValue | 統一入口，`type` 決定形態 |
-| `ChptFilterBar` / `FilterBar` | filters, modelValue, showCount, count, countLabel | update:modelValue | 水平多篩選列 |
-| `FilterSelect` | modelValue, options, label, placeholder, allValue, disabled, size, fullWidth, valueKey, labelKey, showAllOption, numberValue | update:modelValue | 單選 + 「全部」 |
-| `FilterDropdown` | label, options, modelValue, placeholder | update:modelValue | 多選 checkbox 下拉 |
-| `TagFilterDropdown` | label, options, modelValue, placeholder, isUnselectAll | update:modelValue | 標籤式多選 + 搜尋 |
+| `ChptFilter` | type(`select`/`dropdown`/`tag`), modelValue, label, options, placeholder, allValue, showAllOption, disabled, size, fullWidth, valueKey, labelKey, selectClass, labelClass | update:modelValue | 統一入口，`type` 決定形態 |
+| `ChptFilterBar` | filters(`{key,label,options,allLabel?,allCount?}`), modelValue(`Record`), showCount, count, countLabel | update:modelValue | 水平多篩選列 |
 
 ## 圖表（JS + D3）
 
@@ -127,14 +150,18 @@
 
 | 組件 | 關鍵 Props | Emits | Slot / Ref |
 |---|---|---|---|
-| `DualAxisComboChart` | layers(必填), width, height, autoResize, debounceDelay, margin, xScaleType(`band`/`linear`/`time`), xDomain, xAxisLabel, xAxisFormat, xAxisLabelRotate, yLeft*/yRight*(ScaleType/Domain/AxisLabel/AxisFormat), title, showGrid, animationDuration, enableBrush, brushMode, triggerLines, showResetButton | layer-click, layer-hover, tooltip-show, tooltip-hide, selection-change, zoom-reset, chart-ready, chart-resize, axis-drag | slot `tooltip`（`tooltipData`, `tooltipVisible`） |
+| `DualAxisComboChart` | layers(必填), width, height, autoResize, debounceDelay, margin, xScaleType(`band`/`linear`/`time`), xDomain, xAxisLabel, xAxisFormat, xAxisLabelRotate, yLeft*/yRight*, title, showGrid, animationDuration, enableBrush, brushMode, triggerLines, showResetButton | layer-click, layer-hover, tooltip-show, tooltip-hide, selection-change, zoom-reset, chart-ready, chart-resize, axis-drag | slot `tooltip`（`tooltipData`, `tooltipVisible`） |
 | `EnterpriseHeatmap` | data, xField, yField, valueField, colorScheme, colorRange, valueDomain, reverseColorScale, cellPadding/BorderRadius/BorderWidth/BorderColor, xAxisAngle, autoResize, enableBrush, colorLegendPosition | cell-click, cell-hover, tooltip-show/hide, selection-change, zoom-reset, chart-ready, chart-resize | slot `tooltip` |
-| `EnterprisePareto` | data, categoryField, valueField, autoSort, sortOrder, barColor, barHoverColor, barPadding, showValuesOnBars, yAxisLeft*/yAxisRight*, xAxisAngle（共 44 個 props） | bar-click, bar-hover, tooltip-show/hide, chart-ready, chart-resize | slot `tooltip`；ref `render()`, `forceRerender()` |
-| `ParetoChart` | paretoInputData, cumulativeThreshold, chartWidth, chartHeight, showStatistics, colorScheme, 各種 label | update:paretoData, chartRendered, error | 舊版柏拉圖，含統計區塊 |
+| `EnterprisePareto` | data, categoryField, valueField, autoSort, sortOrder, barColor, barHoverColor, barPadding, showValuesOnBars, yAxisLeft*/yAxisRight*, xAxisAngle（共 44 props） | bar-click, bar-hover, tooltip-show/hide, chart-ready, chart-resize | slot `tooltip`；ref `render()`, `forceRerender()` |
 | `FacetedChart` | facets, title, width, totalHeight, autoResize, margin, facetSpacing, xScaleType, xDomain, xAxisFormat, enableBrush, brushMode, syncBrush, enableAxisDragging, lastFacetExtraHeight | selection-change, zoom-reset, chart-resize, axis-drag | 垂直堆疊多面板，共用 X 軸 |
 | `GridFacetChart` | data, xFacetVar, yFacetVar, xFacetLabel, yFacetLabel, headerHeight, headerWidth, xScaleType, enableBrush, syncMode, enableAxisDrag | selection-change, zoom-reset, chart-resize, axis-drag | 2D 行×列分面 |
-| `GerberViewer` | src, gerberText, fillColor, layers, backgroundColor, showInfo, showControls, showLayerPanel, autoResize, padding, maxZoom, minZoom, showMovePath | loaded, error, zoom-change | ref `zoomIn/zoomOut/resetView/reload/toggleLayer` |
-| `PcbLayout` | data, backgroundColor, colorMap, showInfo, showControls, showLayerPanel, autoResize, padding, maxZoom, minZoom, defaultTraceWidth, defaultPadSize, showRefDes | loaded, error, element-click, element-hover, zoom-change | ref `zoomIn/zoomOut/resetView/toggleLayer/forceRender` |
+
+檢視器與白板不屬 charts：
+
+| 組件 | 關鍵 Props | Emits | Ref |
+|---|---|---|---|
+| `GerberViewer`（viewer/） | src, gerberText, fillColor, layers, backgroundColor, showInfo, showControls, showLayerPanel, autoResize, padding, maxZoom, minZoom, showMovePath | loaded, error, zoom-change | zoomIn/zoomOut/resetView/reload/toggleLayer |
+| `PcbLayout`（viewer/） | data, backgroundColor, colorMap, showInfo, showControls, showLayerPanel, autoResize, padding, maxZoom, minZoom, defaultTraceWidth, defaultPadSize, showRefDes | loaded, error, element-click, element-hover, zoom-change | zoomIn/zoomOut/resetView/toggleLayer/forceRender |
 
 ## Excel / 匯出上傳
 
@@ -150,34 +177,43 @@
 
 | 組件 | Props | Emits | Ref |
 |---|---|---|---|
-| `ChptDarkModeToggle` | variant, initialDarkMode, showControls, syncBodyByDefault, darkMode | toggle, update:darkMode | toggle, isDarkMode |
-| `SimpleDarkModeToggle` | initialDarkMode, showControls, syncBodyByDefault | toggle, update:darkMode | toggle, isDarkMode |
-| `ChptHeaderLogoutButton` | size, variant, label, customClass | – | – |
+| `ChptDarkModeToggle` | variant(`fancy`/`simple`), initialDarkMode, showControls, syncBodyByDefault, darkMode | toggle, update:darkMode | toggle, isDarkMode |
+| `ChptHeaderLogoutButton` | size(sm/md), variant(soft-red/solid-red/outline-gray/ghost/primary), label, customClass | – | – |
 
-其他非 common 目錄組件：`src/components/SchematicViewer.vue`、`src/components/GlobalNotifications.vue`、`src/components/whiteboard/*`（WhiteboardCanvas / Toolbar / PageRail）。
+## 非 library 元件
+
+`src/components/SchematicViewer.vue`、`src/components/GlobalNotifications.vue`、
+`src/components/whiteboard/*`（WhiteboardCanvas / WhiteboardToolbar / WhiteboardPageRail）。
 
 ---
 
-## 文檔路由對照
+## 文檔路由對照（2026-09-06 現況）
 
-| 路由 | 檔案 |
-|---|---|
-| `/docs` | `views/docs/Home.vue` |
-| `/docs/components/dual-axis-chart` | `views/docs/DualAxisChartDoc.vue` |
-| `/docs/components/pareto` | `views/docs/ParetoDoc.vue` |
-| `/docs/components/heatmap` | `views/docs/HeatmapDoc.vue` |
-| `/docs/components/tooltip` | `views/docs/TooltipDoc.vue` |
-| `/docs/components/common-table` | `views/docs/CommonTableDoc.vue` |
-| `/docs/components/gerber-viewer` | `views/docs/GerberViewerDoc.vue` |
-| `/docs/components/pcb-layout` | `views/docs/PcbLayoutDoc.vue` |
-| `/docs/components/whiteboard` | `views/docs/WhiteboardDoc.vue` |
-| `/docs/components/form-atoms` | `views/docs/components/FormAtoms.vue` |
-| `/docs/components/feedback` | `views/docs/components/FeedbackDocs.vue` |
-| `/docs/components/interactive` | `views/docs/components/InteractiveDocs.vue` |
-| `/docs/components/overlay` | `views/docs/components/OverlayDocs.vue` |
-| `/docs/components/layout-nav` | `views/docs/components/LayoutNavDocs.vue` |
-| `/docs/components/data-filter` | `views/docs/components/DataFilterDocs.vue` |
-| `/docs/components/theme-tools` | `views/docs/components/ThemeToolsDocs.vue` |
-| `/docs/components/excel-editor` | `views/docs/components/ExcelEditorDocs.vue` |
-| `/docs/components/filter-dropdown` `/filter-bar` `/filter-select` `/tag-filter-dropdown` `/draggable-modal` | `views/docs/components/` 同名檔 |
-| `/docs/components/pie-chart` `/gauge` `/gantt` `/legend` `/guide/*` | `ComponentPlaceholder.vue`（**尚未實作，可接手補**） |
+| 路由 | 檔案 | 側欄群組（anchors 子項） |
+|---|---|---|
+| `/docs` | `views/docs/Home.vue` | – |
+| `/docs/components/form-atoms` | `views/docs/components/FormAtoms.vue` | UI 組件（chpt-input/select/radio/switch/datepicker） |
+| `/docs/components/data-filter` | `views/docs/components/DataFilterDocs.vue` | UI 組件（chpt-table/fixedtable/pagination/filter/filterbar） |
+| `/docs/components/feedback` | `views/docs/components/FeedbackDocs.vue` | UI 組件（alert/tag/badge/toast/progress/spinner/empty/skeleton） |
+| `/docs/components/interactive` | `views/docs/components/InteractiveDocs.vue` | UI 組件（tabs/toast/button/progress/alert） |
+| `/docs/components/overlay` | `views/docs/components/OverlayDocs.vue` | UI 組件（modal/drawer/popconfirm/modaldock） |
+| `/docs/components/tooltip` | `views/docs/TooltipDoc.vue` | UI 組件（theme/placement/content） |
+| `/docs/components/layout-nav` | `views/docs/components/LayoutNavDocs.vue` | UI 組件（card/collapse/breadcrumb/steps/divider） |
+| `/docs/components/theme-tools` | `views/docs/components/ThemeToolsDocs.vue` | UI 組件（darkmodetoggle/headerlogout） |
+| `/docs/components/dual-axis-chart` | `views/docs/DualAxisChartDoc.vue` | 圖表（basic/examples） |
+| `/docs/components/pareto` | `views/docs/ParetoDoc.vue` | 圖表（無子項） |
+| `/docs/components/heatmap` | `views/docs/HeatmapDoc.vue` | 圖表（無子項） |
+| `/docs/components/gerber-viewer` | `views/docs/GerberViewerDoc.vue` | 檢視器 |
+| `/docs/components/pcb-layout` | `views/docs/PcbLayoutDoc.vue` | 檢視器 |
+| `/docs/components/schematic-viewer` | `src/components/SchematicViewer.vue` | 檢視器 |
+| `/docs/components/excel-editor` | `views/docs/components/ExcelEditorDocs.vue` | Excel |
+| `/docs/components/whiteboard` | `views/docs/WhiteboardDoc.vue` | 進階範例 |
+| `/docs/guide/getting-started`、`best-practices` | `ComponentPlaceholder.vue` | 開發指南 |
+| `/docs/components/pie-chart` `/gauge` `/gantt` `/legend` | `ComponentPlaceholder.vue` | **尚未實作（未在側欄）** |
+
+> 已移除（2026-09-06）：`common-table`、`draggable-modal`、`filter-select`、`filter-dropdown`、
+> `filter-bar`、`tag-filter-dropdown`——內容由 data-filter／overlay 覆蓋；對應 .vue 檔案若未刪，
+> 屬未被引用的殘留，可 `git rm`。
+
+`DocLayout.vue` 側欄規則：有 `anchors` 的 item 會顯示成「可展開→點子項捲動到頁面 `<section :id>`」；
+無 `anchors` 的 item 為普通跳頁。新頁面要加子項跳轉＝「navSections 加 anchors + 頁面放對應 section id」。
