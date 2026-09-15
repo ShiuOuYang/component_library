@@ -4,6 +4,7 @@ import type {
   ChartDatum,
   ChartLayer,
   ChartMargin,
+  ContinuousScaleType,
   XDomain,
   XScaleType,
   YDomain,
@@ -20,6 +21,18 @@ import type {
 
 // ===== 共用型別 =====
 
+/** 參考線（例如良率門檻、規格上下限） */
+export interface TriggerLine {
+  /** 落在哪個值 */
+  value: number
+  /** 掛在哪一側的 Y 軸 */
+  yAxis?: 'left' | 'right'
+  label?: string
+  color?: string
+  /** 虛線樣式，對應 SVG 的 stroke-dasharray */
+  dash?: string
+}
+
 /** 單一分面的設定 */
 export interface FacetConfig<T = ChartDatum> {
   /** 分面標題 */
@@ -28,10 +41,22 @@ export interface FacetConfig<T = ChartDatum> {
   height?: number
   /** 此分面的圖層 */
   layers?: ChartLayer<T>[]
+
   /** 明確指定的 domain；未提供時由 layers 的資料推算 */
   xDomain?: XDomain
   yLeftDomain?: YDomain
   yRightDomain?: YDomain
+
+  /** 此分面的 Y 軸比例尺種類（未指定時由使用端決定預設） */
+  yLeftScaleType?: ContinuousScaleType
+  yRightScaleType?: ContinuousScaleType
+
+  /** Y 軸刻度格式化函式 */
+  yLeftAxisFormat?: (value: number) => string
+  yRightAxisFormat?: (value: number) => string
+
+  /** 此分面要畫的參考線 */
+  triggerLines?: TriggerLine[]
 }
 
 /** useFacetLayout 讀取的 props 子集 */

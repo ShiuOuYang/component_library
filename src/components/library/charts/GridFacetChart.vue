@@ -49,10 +49,10 @@
         :height="cellHeight"
         :auto-resize="false"
         :margin="getCellMargin(facetData.row, facetData.col)"
-        :layers="facetData.layers"
+        :layers="facetData.layers || []"
         :x-scale-type="xScaleType"
         :x-domain="getFacetXDomain(facetData)"
-        :x-axis-format="xAxisFormat"
+        :x-axis-format="xAxisFormat || undefined"
         :x-axis-label-rotate="xAxisLabelRotate"
         :y-left-scale-type="facetData.yLeftScaleType || 'linear'"
         :y-left-domain="getFacetYLeftDomain(facetData)"
@@ -72,25 +72,31 @@
         @axis-drag="handleAxisDrag($event, facetData.id)"
         @zoom-reset="handleResetZoom"
       >
-        <!-- Tooltip 插槽 -->
-        <template #tooltip="{ tooltipData, tooltipVisible }">
-          <slot 
-            name="tooltip" 
-            :tooltip-data="tooltipData" 
-            :tooltip-visible="tooltipVisible" 
+        <!--
+          Tooltip 插槽
+
+          ⚠️ 子元件 DualAxisComboChart 目前仍是 JS，Vue 推不出它的 slot payload
+             型別（會變成 never），因此這裡以 asTooltipPayload() 明確標註。
+             等 DualAxisComboChart 轉為 TS 後，這個轉型可以直接移除。
+        -->
+        <template #tooltip="slotProps">
+          <slot
+            name="tooltip"
+            :tooltip-data="asTooltipPayload(slotProps).tooltipData"
+            :tooltip-visible="asTooltipPayload(slotProps).tooltipVisible"
             :facet="facetData"
           >
             <div
-              v-if="tooltipVisible && tooltipData"
+              v-if="asTooltipPayload(slotProps).tooltipVisible && asTooltipPayload(slotProps).tooltipData"
               class="default-tooltip"
-              :style="getTooltipStyle(tooltipData)"
+              :style="getTooltipStyle(asTooltipPayload(slotProps).tooltipData!)"
             >
               <div class="tooltip-title">
                 {{ xFacetLabel }}: {{ facetData.xValue }} | 
                 {{ yFacetLabel }}: {{ facetData.yValue }}
               </div>
-              <div v-if="tooltipData.data" class="tooltip-content">
-                {{ formatTooltipValue(tooltipData.data, facetData) }}
+              <div v-if="asTooltipPayload(slotProps).tooltipData?.data" class="tooltip-content">
+                {{ formatTooltipValue(asTooltipPayload(slotProps).tooltipData?.data, facetData) }}
               </div>
             </div>
           </slot>
@@ -109,113 +115,88 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import type { CSSProperties } from 'vue'
 import DualAxisComboChart from './DualAxisComboChart.vue';
-import { useFacetLayout, useGridFacetLayout } from './composables/faceChart/useFacetLayout';
+import { useFacetLayout, useGridFacetLayout } from './composables/faceChart/useFacetLayout'
+import type { GridFacet, GridFacetDatum } from './composables/faceChart/useFacetLayout'
+import type {
+  FacetAxisDragEvent,
+  FacetBrushEvent,
+  FacetSyncMode,
+} from './composables/faceChart/useFacetBrush'
+import type { BrushMode, ChartDatum, XScaleType } from './types/chart.types'
 import { useFacetBrush } from './composables/faceChart/useFacetBrush';
 
-const props = defineProps({
-  // ===== 數據配置 =====
-  data: {
-    type: Array,
-    required: true,
-    // 期望格式：
-    // [
-    //   { 
-    //     [xFacetVar]: 'A', 
-    //     [yFacetVar]: '1', 
-    //     layers: [...],
-    //     xDomain: [...],
-    //     yLeftDomain: [...],
-    //     yRightDomain: [...]
-    //   },
-    //   ...
-    // ]
-  },
-  xFacetVar: {
-    type: String,
-    required: true, // 例如 'region'
-  },
-  yFacetVar: {
-    type: String,
-    required: true, // 例如 'product'
-  },
-  xFacetLabel: {
-    type: String,
-    default: 'X Facet'
-  },
-  yFacetLabel: {
-    type: String,
-    default: 'Y Facet'
-  },
+interface GridFacetChartProps {
+  // === 數據配置 ===
+  /**
+   * 網格分面資料。每一筆代表一格，需含 xFacetVar / yFacetVar 指定的欄位，
+   * 以及該格的 layers；domain 未提供時由 layers 的資料自動推算。
+   */
+  data: GridFacetDatum[]
+  /** 決定欄的欄位名稱（例如 'region'） */
+  xFacetVar: string
+  /** 決定列的欄位名稱（例如 'product'） */
+  yFacetVar: string
+  /** 欄方向的標題 */
+  xFacetLabel?: string
+  /** 列方向的標題 */
+  yFacetLabel?: string
 
-  // ===== 尺寸配置 =====
-  width: {
-    type: Number,
-    default: 1200,
-  },
-  height: {
-    type: Number,
-    default: 800,
-  },
-  autoResize: {
-    type: Boolean,
-    default: true,
-  },
-  headerHeight: {
-    type: Number,
-    default: 40,
-  },
-  headerWidth: {
-    type: Number,
-    default: 80,
-  },
+  // === 尺寸配置 ===
+  width?: number
+  height?: number
+  /** 是否隨容器自動調整大小 */
+  autoResize?: boolean
+  /** 欄表頭高度 */
+  headerHeight?: number
+  /** 列表頭寬度 */
+  headerWidth?: number
 
-  // ===== 圖表配置 =====
-  title: {
-    type: String,
-    default: '',
-  },
-  xScaleType: {
-    type: String,
-    default: 'time',
-  },
-  xAxisFormat: {
-    type: Function,
-    default: null,
-  },
-  xAxisLabelRotate: {
-    type: Number,
-    default: -45,
-  },
-  showGrid: {
-    type: Boolean,
-    default: true,
-  },
+  // === 圖表配置 ===
+  title?: string
+  /** X 軸比例尺種類 */
+  xScaleType?: XScaleType
+  /** X 軸刻度格式化函式 */
+  xAxisFormat?: ((value: unknown) => string) | null
+  /** X 軸標籤旋轉角度 */
+  xAxisLabelRotate?: number
+  /** 是否顯示格線 */
+  showGrid?: boolean
 
-  // ===== 互動配置 =====
-  enableBrush: {
-    type: Boolean,
-    default: true,
-  },
-  brushMode: {
-    type: String,
-    default: 'xy', // 'xy' | 'x'
-  },
-  syncMode: {
-    type: String,
-    default: 'both', // 'all' | 'row' | 'col' | 'both' | 'none'
-    validator: (value) => ['all', 'row', 'col', 'both', 'none'].includes(value)
-  },
-  enableAxisDrag: {
-    type: Boolean,
-    default: false,
-  },
-  showResetButton: {
-    type: Boolean,
-    default: true,
-  }
-});
+  // === 互動配置 ===
+  /** 是否啟用框選縮放 */
+  enableBrush?: boolean
+  /** 框選模式 */
+  brushMode?: BrushMode
+  /** 分面之間的同步模式 */
+  syncMode?: FacetSyncMode
+  /** 是否可拖曳座標軸平移 */
+  enableAxisDrag?: boolean
+  /** 是否顯示重置縮放按鈕 */
+  showResetButton?: boolean
+}
+
+const props = withDefaults(defineProps<GridFacetChartProps>(), {
+  xFacetLabel: 'X Facet',
+  yFacetLabel: 'Y Facet',
+  width: 1200,
+  height: 800,
+  autoResize: true,
+  headerHeight: 40,
+  headerWidth: 80,
+  title: '',
+  xScaleType: 'time',
+  xAxisFormat: null,
+  xAxisLabelRotate: -45,
+  showGrid: true,
+  enableBrush: true,
+  brushMode: 'xy',
+  syncMode: 'both',
+  enableAxisDrag: false,
+  showResetButton: true,
+})
 
 const emit = defineEmits(['selection-change', 'axis-drag', 'zoom-reset', 'chart-resize']);
 
@@ -254,44 +235,63 @@ const {
 } = useFacetBrush();
 
 // ===== 計算每個圖表的 Domain =====
-const getFacetXDomain = (facet) => {
+const getFacetXDomain = (facet: GridFacet) => {
   return getXDomain(props.syncMode, facet.col, facet.xDomain);
 };
 
-const getFacetYLeftDomain = (facet) => {
+const getFacetYLeftDomain = (facet: GridFacet) => {
   return getYLeftDomain(props.syncMode, facet.row, facet.yLeftDomain);
 };
 
-const getFacetYRightDomain = (facet) => {
+const getFacetYRightDomain = (facet: GridFacet) => {
   return getYRightDomain(props.syncMode, facet.row, facet.yRightDomain);
 };
 
 // ===== 事件處理（包裝 Composable 函數） =====
-const handleSelectionChange = (event, facetId) => {
+const handleSelectionChange = (event: FacetBrushEvent, facetId: string): void => {
   const facet = gridFacets.value.find(f => f.id === facetId);
   if (facet) {
     handleSelection(event, facetId, props.syncMode, facet.row, facet.col, emit);
   }
 };
 
-const handleAxisDrag = (event, facetId) => {
+const handleAxisDrag = (event: FacetAxisDragEvent, facetId: string): void => {
   const facet = gridFacets.value.find(f => f.id === facetId);
   if (facet) {
     handleDrag(event, facetId, props.syncMode, facet.row, facet.col, emit);
   }
 };
 
-const handleResetZoom = () => {
+const handleResetZoom = (): void => {
   handleReset(emit);
 };
 
 // ===== Tooltip 樣式 =====
-const getTooltipStyle = (tooltipData) => ({
-  left: `${tooltipData.position?.pageX + 10}px`,
-  top: `${tooltipData.position?.pageY - 10}px`,
+/** 子圖表的 tooltip slot 傳上來的 payload */
+interface FacetTooltipPayload {
+  position?: { pageX: number; pageY: number }
+  data?: ChartDatum
+}
+
+/** 子元件的 tooltip slot 作用域 */
+interface FacetTooltipSlotProps {
+  tooltipData?: FacetTooltipPayload
+  tooltipVisible?: boolean
+}
+
+/**
+ * 把來源不明的 slot payload 標成已知形狀。
+ * 子元件轉為 TS 之後 Vue 就能自行推論，這個函式可以移除。
+ */
+const asTooltipPayload = (slotProps: unknown): FacetTooltipSlotProps =>
+  (slotProps ?? {}) as FacetTooltipSlotProps
+
+const getTooltipStyle = (tooltipData: FacetTooltipPayload): CSSProperties => ({
+  left: `${(tooltipData.position?.pageX ?? 0) + 10}px`,
+  top: `${(tooltipData.position?.pageY ?? 0) - 10}px`,
 });
 
-const formatTooltipValue = (data, facet) => {
+const formatTooltipValue = (data: ChartDatum | undefined, facet: GridFacet): string => {
   if (!data) return '';
   
   const layer = facet.layers?.[0];
@@ -300,11 +300,14 @@ const formatTooltipValue = (data, facet) => {
     if (facet.yLeftAxisFormat) {
       return facet.yLeftAxisFormat(value);
     }
-    return value;
+    return String(value);
   }
   
   return JSON.stringify(data);
 };
+
+// 容器元素對外開放，方便呼叫端量測尺寸或截圖
+defineExpose({ containerRef })
 </script>
 
 <style lang="scss" scoped>

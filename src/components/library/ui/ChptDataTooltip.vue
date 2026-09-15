@@ -61,7 +61,7 @@
   </Teleport>
 </template>
 
-<script setup>
+<script setup lang="ts">
 /**
  * ChptDataTooltip（CHPT 主題） - 受控的資料型提示框
  *
@@ -81,76 +81,114 @@
 
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
 
-const props = defineProps({
-  visible: {
-    type: Boolean,
-    default: false
-  },
-  position: {
-    type: Object,
-    default: () => ({ x: 0, y: 0 })
-  },
-  data: {
-    type: Object,
-    default: () => ({
-      title: '',
-      items: [], // 接收已格式化的項目陣列
-      extra: ''
-    })
-  },
-  theme: {
-    type: String,
-    default: 'info', // dark, light, info, warning, error
-    validator: (value) => ['dark', 'light', 'info', 'warning', 'error'].includes(value)
-  },
-  placement: {
-    type: String,
-    default: 'top-right', // top, bottom, left, right, top-left, top-right, etc.
-  },
-  showArrow: {
-    type: Boolean,
-    default: true
-  },
-  offset: {
-    type: Object,
-    default: () => ({ x: 15, y: -40 })
-  },
-  maxWidth: {
-    type: String,
-    default: 'sm' // xs, sm, md, lg, xl, 2xl, none
-  },
-  interactive: {
-    type: Boolean,
-    default: false
-  },
-  strategy: {
-    type: String,
-    default: 'absolute', // 'fixed' | 'absolute'
-    validator: (val) => ['fixed', 'absolute'].includes(val)
-  },
-  autoAdjustPosition: {
-    type: Boolean,
-    default: true  // 啟用自動邊界檢測與位置修正
-  },
-  persistent: {
-    type: Boolean,
-    default: false  // 點擊後固定顯示，不會因 mouseleave 而關閉
-  },
-  clickToClose: {
-    type: Boolean,
-    default: true  // persistent 模式下，是否允許點擊關閉
-  }
+/** tooltip 主題 */
+type DataTooltipTheme = 'dark' | 'light' | 'info' | 'warning' | 'error'
+
+/** tooltip 相對游標的擺放方向 */
+type DataTooltipPlacement =
+  | 'top'
+  | 'bottom'
+  | 'left'
+  | 'right'
+  | 'top-left'
+  | 'top-right'
+  | 'bottom-left'
+  | 'bottom-right'
+
+/** 最大寬度級別 */
+type DataTooltipMaxWidth = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'none'
+
+/** 定位策略：absolute 跟著文件流、fixed 跟著視窗 */
+type DataTooltipStrategy = 'absolute' | 'fixed'
+
+/** 游標座標 */
+interface TooltipPosition {
+  x: number
+  y: number
+}
+
+/** tooltip 內的一列資料 */
+interface TooltipItem {
+  /** 欄位名稱 */
+  label?: string
+  /** 已格式化好的值（元件不負責格式化） */
+  value?: string | number
+  /** 色塊顏色 */
+  color?: string
+  /** 覆寫這一列標籤的 class */
+  labelClass?: string
+  /** 覆寫這一列數值的 class */
+  valueClass?: string
+}
+
+/** tooltip 要顯示的結構化內容 */
+interface TooltipData {
+  title?: string
+  /** 已格式化的項目陣列 */
+  items?: TooltipItem[]
+  /** 補充說明 */
+  extra?: string
+}
+
+interface ChptDataTooltipProps {
+  // === 顯示控制 ===
+  /** 是否顯示（由外部控制） */
+  visible?: boolean
+  /** 游標座標 */
+  position?: TooltipPosition
+  /** 要顯示的結構化內容 */
+  data?: TooltipData
+
+  // === 外觀 ===
+  /** 配色主題 */
+  theme?: DataTooltipTheme
+  /** 相對游標的擺放方向 */
+  placement?: DataTooltipPlacement
+  /** 是否顯示指向箭頭 */
+  showArrow?: boolean
+  /** 相對游標的偏移量 */
+  offset?: TooltipPosition
+  /** 最大寬度級別 */
+  maxWidth?: DataTooltipMaxWidth
+
+  // === 行為 ===
+  /** 是否可用滑鼠移入（例如內含可點的連結） */
+  interactive?: boolean
+  /** 定位策略 */
+  strategy?: DataTooltipStrategy
+  /** 超出視窗邊界時自動修正位置 */
+  autoAdjustPosition?: boolean
+  /** 點擊後固定顯示，不因 mouseleave 關閉 */
+  persistent?: boolean
+  /** persistent 模式下是否允許點擊關閉 */
+  clickToClose?: boolean
+}
+
+const props = withDefaults(defineProps<ChptDataTooltipProps>(), {
+  visible: false,
+  position: () => ({ x: 0, y: 0 }),
+  data: () => ({ title: '', items: [], extra: '' }),
+  theme: 'info',
+  placement: 'top-right',
+  showArrow: true,
+  offset: () => ({ x: 15, y: -40 }),
+  maxWidth: 'sm',
+  interactive: false,
+  strategy: 'absolute',
+  autoAdjustPosition: true,
+  persistent: false,
+  clickToClose: true,
 })
 
 const emit = defineEmits(['close'])
 
-const tooltipEl = ref(null)
+const tooltipEl = ref<HTMLElement | null>(null)
 const actualSize = ref({ width: 0, height: 0 })
 const adjustedPosition = ref({ left: 0, top: 0 })
-let resizeObserver = null
+let resizeObserver: ResizeObserver | null = null
 
 // 處理點擊關閉
-const handleTooltipClick = (event) => {
+const handleTooltipClick = (event: MouseEvent): void => {
   if (props.persistent && props.clickToClose) {
     event.stopPropagation()
     emit('close')
@@ -158,8 +196,8 @@ const handleTooltipClick = (event) => {
 }
 
 // 處理外部點擊關閉
-const handleClickOutside = (event) => {
-  if (props.persistent && tooltipEl.value && !tooltipEl.value.contains(event.target)) {
+const handleClickOutside = (event: MouseEvent): void => {
+  if (props.persistent && tooltipEl.value && !tooltipEl.value.contains(event.target as Node)) {
     emit('close')
   }
 }

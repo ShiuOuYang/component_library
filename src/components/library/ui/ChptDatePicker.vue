@@ -47,7 +47,7 @@ export type ChptDatePickerValue = string | Date | [Date | string, Date | string]
 
 interface ChptDatePickerProps {
   /** v-model 值 */
-  modelValue?: ChptDatePickerValue
+  modelValue?: ChptDatePickerValue | null
   /** Label */
   label?: string
   /** 佔位符 */
