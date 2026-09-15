@@ -316,17 +316,17 @@ const duration = {
 // ===== z-index 層級 =====
 // 🔧 修正原本兩份檔案互相衝突的問題，統一為以下語意順序。
 //    排序依據本元件庫的實際堆疊需求：
-//    JxFixedTable 固定表頭(sticky) < Teleport 下拉(dropdown)
-//    < 遮罩 < DraggableModal < popover < CommonTooltip < Toast
+//    ChptFixedTable 固定表頭(sticky) < Teleport 下拉(dropdown)
+//    < 遮罩 < modal < popover < ChptDataTooltip < Toast
 const zIndex = {
   base: '0',
   raised: '10',
-  sticky: '100',   // JxFixedTable 固定表頭 / 固定欄
-  dropdown: '200', // FilterDropdown / TagFilterDropdown / JxSelect（Teleport）
+  sticky: '100',   // ChptFixedTable 固定表頭 / 固定欄
+  dropdown: '200', // ChptFilter / ChptSelect（Teleport）
   backdrop: '300', // Modal 遮罩
-  modal: '400',    // DraggableModal
+  modal: '400',    // ChptModal / ChptDrawer
   popover: '500',
-  tooltip: '600',  // CommonTooltip —— 必須高於 modal，否則彈窗內的 tooltip 會被吃掉
+  tooltip: '600',  // ChptDataTooltip —— 必須高於 modal，否則彈窗內的 tooltip 會被吃掉
   toast: '700',
 }
 

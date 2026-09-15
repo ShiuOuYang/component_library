@@ -51,7 +51,7 @@
         <h3 class="text-xs font-medium text-neutral-800">{{ label || '篩選' }}</h3>
         <div class="flex items-center gap-1">
           <span v-if="arrayValue.length > 0" class="px-1 py-0.5 bg-primary-100 text-primary-800 text-[10px] rounded">{{ arrayValue.length }}</span>
-          <button v-if="arrayValue.length > 0" @click="clearAll" class="w-4 h-4 text-[9px] text-danger-600 hover:bg-danger-50 rounded leading-none">×</button>
+          <button v-if="showClearAll && arrayValue.length > 0" type="button" aria-label="清空篩選" @click="clearAll" class="w-4 h-4 text-[9px] text-danger-600 hover:bg-danger-50 rounded leading-none">×</button>
         </div>
       </div>
     </div>
@@ -131,11 +131,17 @@ interface ChptFilterProps {
   labelKey?: string
   selectClass?: string
   labelClass?: string
+  /**
+   * tag 模式：是否顯示「清空」按鈕。
+   * 對應 legacy TagFilterDropdown 的 isUnselectAll（該元件預設不顯示）。
+   */
+  showClearAll?: boolean
 }
 
 const props = withDefaults(defineProps<ChptFilterProps>(), {
   type: 'select',
   modelValue: undefined,
+  showClearAll: true,
   label: '',
   options: () => [],
   placeholder: '全部',

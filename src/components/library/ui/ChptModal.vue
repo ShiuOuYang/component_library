@@ -259,6 +259,13 @@ interface ChptModalProps {
   y?: number | null
   minWidth?: number
   minHeight?: number
+  /**
+   * window：最大寬度（px）。預設為視窗寬度減 40。
+   * 自 DraggableModal 移植 —— 原本 ChptModal 把這個上限寫死在 constrainToViewport()。
+   */
+  maxWidth?: number
+  /** window：最大高度（px）。預設為視窗高度減 40 */
+  maxHeight?: number
   defaultMaximized?: boolean
   headerBgColor?: string
   headerTextColor?: string
@@ -292,6 +299,8 @@ const props = withDefaults(defineProps<ChptModalProps>(), {
   y: null,
   minWidth: 300,
   minHeight: 200,
+  maxWidth: undefined,
+  maxHeight: undefined,
   defaultMaximized: false,
   headerBgColor: 'from-primary-50 to-primary-100',
   headerTextColor: 'text-neutral-800',
@@ -404,8 +413,13 @@ function constrainToViewport(): void {
   const maxY = window.innerHeight - modalHeight.value
   modalX.value = Math.max(0, Math.min(modalX.value, maxX))
   modalY.value = Math.max(0, Math.min(modalY.value, maxY))
-  modalWidth.value = Math.max(props.minWidth, Math.min(modalWidth.value, window.innerWidth - 40))
-  modalHeight.value = Math.max(props.minHeight, Math.min(modalHeight.value, window.innerHeight - 40))
+
+  // 上限原本寫死為視窗尺寸減 40；改為可由 maxWidth / maxHeight 覆寫，
+  // 未提供時維持原本的預設值。
+  const limitWidth = props.maxWidth ?? window.innerWidth - 40
+  const limitHeight = props.maxHeight ?? window.innerHeight - 40
+  modalWidth.value = Math.max(props.minWidth, Math.min(modalWidth.value, limitWidth))
+  modalHeight.value = Math.max(props.minHeight, Math.min(modalHeight.value, limitHeight))
 }
 
 // ===== window 樣式 =====

@@ -8,7 +8,8 @@
 // ===== ui：canonical 通用 UI =====
 export {
   ChptAlert, ChptAvatar, ChptBadge, ChptBreadcrumb, ChptButton, ChptCard,
-  ChptCheckbox, ChptCodeBlock, ChptCollapse, ChptDarkModeToggle, ChptDatePicker,
+  ChptCheckbox, ChptCodeBlock, ChptCollapse, ChptDarkModeToggle, ChptDataTooltip,
+  ChptDatePicker,
   ChptDivider, ChptDrawer, ChptEmpty, ChptFilter, ChptFilterBar, ChptFixedTable,
   ChptHeaderLogoutButton, ChptIcon, ChptInput, ChptModal, ChptModalDock,
   ChptPageSwitcher, ChptPagination, ChptPopconfirm, ChptProgress, ChptRadio,
@@ -35,3 +36,5 @@ export { useToast } from './shared/useToast'
 export { useDarkMode, initDarkMode, THEME_STORAGE_KEY } from './shared/useDarkMode'
 export { useModalManager, generateModalId } from './shared/useModalManager'
 export { useOptionalRouter } from './shared/useOptionalRouter'
+export { useOverlay } from './shared/useOverlay'
+export { warnDeprecated } from './shared/warnDeprecated'

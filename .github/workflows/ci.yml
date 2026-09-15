@@ -48,6 +48,10 @@ jobs:
       - name: Library boundary
         run: npm run check:boundary
 
+      # legacy 相容元件必須維持薄包裝，不得又長回第二份實作
+      - name: Legacy shims stay thin
+        run: npm run check:legacy
+
       - name: Lint
         run: npm run lint
 

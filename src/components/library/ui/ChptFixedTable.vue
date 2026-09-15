@@ -112,7 +112,7 @@
       </div>
     </div>
 
-    <CommonTooltip
+    <ChptDataTooltip
       :visible="tooltipInfo.opacity > 0"
       :position="{ x: tooltipInfo.x, y: tooltipInfo.y }"
       :data="{ items: [] }"
@@ -161,7 +161,7 @@
           </div>
         </div>
       </template>
-    </CommonTooltip>
+    </ChptDataTooltip>
 
     <!-- 分頁組件 -->
     <ChptPagination
@@ -179,7 +179,7 @@ import type { CSSProperties } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import ChptCheckbox from './ChptCheckbox.vue'
 import ChptPagination from './ChptPagination.vue'
-import CommonTooltip from './CommonTooltip.vue'
+import ChptDataTooltip from './ChptDataTooltip.vue'
 
 /**
  * ChptFixedTable（CHPT 主題）- 固定欄位資料表格元件

@@ -1,10 +1,14 @@
 /**
  * library/ui — 通用 UI 元件（表單 / 資料 / 浮層 / 反饋 / 導覽）
  *
- * 這是正式入口之一。檔末的 legacy 項目（CodeBlock、CommonTooltip、DraggableModal、
- * FilterBar、FilterDropdown、FilterSelect、TagFilterDropdown、Pagination、
- * PaginationControls、SimpleDarkModeToggle 與各相容 alias stub）僅為過渡期相容，
- * 建議改用對應 canonical（Chpt*），於 Phase 3 移除。
+ * 這是正式入口之一。
+ *
+ * 檔末的 legacy 項目全部已收斂為薄包裝 —— 每一個都只是把 props / emits / slots
+ * 轉發給對應的 canonical 元件，不再有第二份實作需要維護（原本合計 1830 行的
+ * 重複實作，收斂後剩 455 行的轉發層）。
+ *
+ * 它們在開發模式會印一次 deprecation 警告（見 shared/warnDeprecated.ts），
+ * 並預定於下一個主要版本移除。對照表見 README 的「Legacy 對照表」。
  */
 
 // ===== canonical（Chpt*，TypeScript、設計 token） =====
@@ -18,6 +22,7 @@ export { default as ChptCheckbox } from './ChptCheckbox.vue'
 export { default as ChptCodeBlock } from './ChptCodeBlock.vue'
 export { default as ChptCollapse } from './ChptCollapse.vue'
 export { default as ChptDarkModeToggle } from './ChptDarkModeToggle.vue'
+export { default as ChptDataTooltip } from './ChptDataTooltip.vue'
 export { default as ChptDatePicker } from './ChptDatePicker.vue'
 export { default as ChptDivider } from './ChptDivider.vue'
 export { default as ChptDrawer } from './ChptDrawer.vue'
@@ -48,22 +53,23 @@ export { default as ChptTextarea } from './ChptTextarea.vue'
 export { default as ChptToast } from './ChptToast.vue'
 export { default as ChptTooltip } from './ChptTooltip.vue'
 
-// ===== legacy / 相容（@deprecated — 建議改用 canonical） =====
-export { default as CodeBlock } from './CodeBlock.vue'
-export { default as CommonTooltip } from './CommonTooltip.vue'
-export { default as DraggableModal } from './DraggableModal.vue'
-export { default as FilterBar } from './FilterBar.vue'
-export { default as FilterDropdown } from './FilterDropdown.vue'
-export { default as FilterSelect } from './FilterSelect.vue'
-export { default as TagFilterDropdown } from './TagFilterDropdown.vue'
-export { default as Pagination } from './Pagination.vue'
-export { default as PaginationControls } from './PaginationControls.vue'
-export { default as SimpleDarkModeToggle } from './SimpleDarkModeToggle.vue'
-
-// ===== 相容 alias stub（@deprecated — 直接使用 canonical） =====
-export { default as CommonTable } from './CommonTable.vue'
-export { default as ModalDock } from './ModalDock.vue'
-export { default as PageSwitcher } from './PageSwitcher.vue'
-export { default as TabNavigation } from './TabNavigation.vue'
-export { default as HeaderLogoutButton } from './HeaderLogoutButton.vue'
-export { default as FixedTable } from './ChptFixedTable.vue'
+// ===== legacy 相容層（@deprecated — 全部為轉發用的薄包裝） =====
+//
+// 每一項後面標的是它實際轉發到的 canonical 元件。
+// 開發模式下使用時會在 console 印一次 deprecation 警告。
+export { default as CodeBlock } from './CodeBlock.vue'                       // → ChptCodeBlock
+export { default as CommonTooltip } from './CommonTooltip.vue'               // → ChptDataTooltip
+export { default as DraggableModal } from './DraggableModal.vue'             // → ChptModal mode="window"
+export { default as FilterBar } from './FilterBar.vue'                       // → ChptFilterBar
+export { default as FilterDropdown } from './FilterDropdown.vue'             // → ChptFilter type="dropdown"
+export { default as FilterSelect } from './FilterSelect.vue'                 // → ChptFilter type="select"
+export { default as TagFilterDropdown } from './TagFilterDropdown.vue'       // → ChptFilter type="tag"
+export { default as Pagination } from './Pagination.vue'                     // → ChptPagination variant="full"
+export { default as PaginationControls } from './PaginationControls.vue'     // → ChptPagination variant="compact"
+export { default as SimpleDarkModeToggle } from './SimpleDarkModeToggle.vue' // → ChptDarkModeToggle variant="simple"
+export { default as CommonTable } from './CommonTable.vue'                   // → ChptTable
+export { default as ModalDock } from './ModalDock.vue'                       // → ChptModalDock
+export { default as PageSwitcher } from './PageSwitcher.vue'                 // → ChptPageSwitcher
+export { default as TabNavigation } from './TabNavigation.vue'               // → ChptTabNavigation
+export { default as HeaderLogoutButton } from './HeaderLogoutButton.vue'     // → ChptHeaderLogoutButton
+export { default as FixedTable } from './ChptFixedTable.vue'                 // → ChptFixedTable
