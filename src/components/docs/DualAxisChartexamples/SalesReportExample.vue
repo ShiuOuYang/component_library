@@ -13,8 +13,8 @@
           :height="400"
           :layers="salesLayers"
           title="月度銷售與利潤率分析"
-          :showGrid="true"
-          :enableBrush="true"
+          :show-grid="true"
+          :enable-brush="true"
         />
       </div>
       

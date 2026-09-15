@@ -174,7 +174,7 @@ Material Symbols（`<ChptIcon>{{ 'settings' }}</ChptIcon>`）為主；FontAwesom
 | `references/architecture.md` | API / store / 認證 / 路由守衛 / 部署（Docker、GitHub Actions）/ 設計令牌 |
 | `assets/ChptComponent.template.vue` | 新增 TS 原子組件的起手式 |
 | `assets/DocPage.template.vue` | 新增文檔頁的起手式 |
-| `../style/DESIGN_SYSTEM.md` | 設計令牌用法（Tailwind class / CSS 變數 / D3 色階） |
+| `../docs/DESIGN_SYSTEM.md` | 設計令牌用法（Tailwind class / CSS 變數 / D3 色階） |
 
 ## 常見地雷
 

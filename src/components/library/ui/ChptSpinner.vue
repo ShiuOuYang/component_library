@@ -71,8 +71,11 @@ const props = withDefaults(defineProps<ChptSpinnerProps>(), {
   center: false,
 })
 
+/** size 允許 number 或 string（例如 "32"），比較前一律正規化為數值 */
+const numericSize = computed(() => Number(props.size) || 0)
+
 const textSizeClass = computed(() =>
-  props.size >= 40 ? 'text-sm' : props.size >= 28 ? 'text-xs' : 'text-base'
+  numericSize.value >= 40 ? 'text-sm' : numericSize.value >= 28 ? 'text-xs' : 'text-base'
 )
 </script>
 

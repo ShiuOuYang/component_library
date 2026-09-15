@@ -1,8 +1,5 @@
 import { computed } from 'vue'
-import {  useNavigationStore } from '../stores'
-// import { useWipApi } from './useWipApi'
-import { useApiState } from './useApi'
-
+import { useNavigationStore } from '../stores'
 
 // 導航相關的組合式函數
 export function useNavigation() {
@@ -24,23 +21,7 @@ export function useNavigation() {
   }
 }
 
-// 組合多個store的通用函數
-export function useApp() {
-  const wip = useWip()
-  const navigation = useNavigation()
-  const apiState = useApiState()
-  
-  return {
-    ...wip,
-    ...navigation,
-    // 全域 API 狀態
-    globalLoading: apiState.isLoading,
-    globalError: apiState.hasError,
-    globalSuccess: apiState.success
-  }
-}
-
-// 僅使用 API 功能
-export function useApiOnly() {
-  return useWipApi()
-}
+// 註：原本此處還有 useApp() 與 useApiOnly()，兩者分別呼叫 useWip() 與 useWipApi()。
+// 這兩個函式隨 wip store 一併移除（見 stores/index.js 被註解掉的匯出）後未補上，
+// 呼叫必定 ReferenceError；且全專案沒有任何地方使用，故直接刪除。
+// 需要組合多個 store 時請直接在使用端各自呼叫對應的 use*Store()。

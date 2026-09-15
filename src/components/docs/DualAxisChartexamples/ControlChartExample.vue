@@ -17,8 +17,8 @@
             :layers="controlChartLayersWithOutliers"
             :trigger-lines="controlChartTriggers"
             title="製程管制圖 (X̄-Chart) - 自動異常檢測"
-            :showGrid="true"
-            :enableBrush="true"
+            :show-grid="true"
+            :enable-brush="true"
             :y-left-domain="[95, 105]"
           />
           <!-- 顯示異常統計 -->
@@ -45,7 +45,6 @@ import CodeBlock from '@/components/library/ui/CodeBlock.vue';
 
 // 定義管制界線
 const UCL = 103;
-const CL = 100;
 const LCL = 97;
 
 // 原始測量數據

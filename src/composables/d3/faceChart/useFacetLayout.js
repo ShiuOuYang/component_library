@@ -153,7 +153,7 @@ export function useVerticalFacetLayout(props, effectiveHeight) {
     const offsets = [];
     let currentY = props.margin?.top || 40;
     
-    facetHeights.value.forEach((height, i) => {
+    facetHeights.value.forEach((height, _i) => {
       offsets.push(currentY);
       currentY += height + (props.facetSpacing || 10);
     });

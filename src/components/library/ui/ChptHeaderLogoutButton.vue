@@ -107,7 +107,7 @@ async function handleLogout(): Promise<void> {
   try {
     isLoggingOut.value = true
     await logout()
-  } catch (error) {
+  } catch (_error) {
     window.alert('登出失敗，請稍後再試')
   } finally {
     isLoggingOut.value = false

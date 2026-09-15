@@ -224,14 +224,11 @@ const {
   xScale,
   yLeftScale,
   yRightScale,
-  leftLayers,
-  rightLayers,
   processedLeftLayers,   // ✅ 已過濾數據的左側圖層
   processedRightLayers,  // ✅ 已過濾數據的右側圖層
   originalXDomain,
   originalYLeftDomain,
-  originalYRightDomain,
-  filterDataByXDomain
+  originalYRightDomain
 } = useChartScales(
   props,
   chartWidth,
@@ -734,7 +731,7 @@ const renderStackedBars = () => {
   g.selectAll('*').remove();
 
   stackedLayers.forEach((layer, layerIndex) => {
-    const { data, stackKeys, xValue, colorScale, keyFn } = layer;
+    const { data, stackKeys, xValue, colorScale } = layer;
     if (!data || !stackKeys || !data.length) return;
 
     // D3 stack 生成器
@@ -758,7 +755,7 @@ const renderStackedBars = () => {
         : colorScale?.[seriesKey] || colorScale?.[seriesIndex] || d3.schemeCategory10[seriesIndex % 10];
 
       // ✅ 直接使用 append 建立元素，完全避免 data join
-      seriesData.forEach((d, dataIndex) => {
+      seriesData.forEach((d, _dataIndex) => {
         const xVal = xValue(d.data);
         const x = xScale.value(xVal);
         const y0 = yScale(d[0]);
@@ -783,7 +780,7 @@ const renderStackedBars = () => {
           .on('mouseleave', () => {
             handleLayerLeave();
           })
-          .on('click', function(event) {
+          .on('click', function(_event) {
             const barData = d3.select(this).datum();
             emit('layer-click', { data: barData.rawData, layer: barData.layer, series: barData.seriesKey });
           });
@@ -920,7 +917,6 @@ const renderLines = () => {
             .style('cursor', 'pointer')
             .on('mouseenter', (event, d) => {
               d3.select(event.target).attr('r', 6);
-              console.log('Line 點 Hover:', d.rawData, event);
               handleLayerHover(event, d.rawData, d.layer);
             })
             .on('mouseleave', (event) => {
@@ -1194,7 +1190,6 @@ const renderLegend = () => {
   });
 
   const itemWidth = 100;
-  const itemHeight = 20;
   // ✅ 圖例放置在圖表下方，水平居中
   const totalWidth = legendItems.length * itemWidth;
   const startX = (chartWidth.value - totalWidth) / 2;
@@ -1327,7 +1322,7 @@ const renderTriggerLines = () => {
       exit => exit.remove()
     );
 
-  lineGroups.each(function(triggerLine, i) {
+  lineGroups.each(function(triggerLine, _i) {
     const lineGroup = d3.select(this);
     const {
       type = 'horizontal',
@@ -1384,7 +1379,7 @@ const renderTriggerLines = () => {
             d3.select(this).attr('stroke-width', strokeWidth);
             handleLayerLeave();
           } : null)
-          .on('click', interactive ? (event) => {
+          .on('click', interactive ? (_event) => {
             emit('layer-click', { data: { value, label, type, yAxis }, layer: { type: 'trigger-line', ...triggerLine } });
           } : null),
         update => update,

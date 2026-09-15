@@ -92,7 +92,8 @@ interface ChptRadioProps {
 }
 
 const props = withDefaults(defineProps<ChptRadioProps>(), {
-  modelValue: null,
+  // 未選取時以 undefined 表示（modelValue 的型別不含 null）
+  modelValue: undefined,
   items: () => [],
   name: () => `chpt-radio-${Math.random().toString(36).slice(2, 9)}`,
   size: '4',
@@ -171,9 +172,10 @@ const dotColorClass = computed(() => colorMap[props.color]?.dot ?? colorMap.prim
 
 /** label 樣式 */
 function getLabelClasses(item: ChptRadioItem): Record<string, boolean> {
+  const disabled = Boolean(item.disabled)
   return {
-    'hover:opacity-80': !item.disabled,
-    'opacity-50 cursor-not-allowed': item.disabled,
+    'hover:opacity-80': !disabled,
+    'opacity-50 cursor-not-allowed': disabled,
   }
 }
 

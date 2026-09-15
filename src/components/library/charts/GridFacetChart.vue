@@ -110,7 +110,6 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
 import DualAxisComboChart from './DualAxisComboChart.vue';
 import { useFacetLayout, useGridFacetLayout } from '@/composables/d3/faceChart/useFacetLayout';
 import { useFacetBrush } from '@/composables/d3/faceChart/useFacetBrush';

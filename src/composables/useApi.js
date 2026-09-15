@@ -1,5 +1,5 @@
 import { ref, computed, readonly } from 'vue'
-import { HTTP_STATUS, isSuccessStatus, isRedirectStatus, isClientErrorStatus, isServerErrorStatus, getStatusMessage } from '../api/httpStatus.js'
+import { HTTP_STATUS, isSuccessStatus, isClientErrorStatus, isServerErrorStatus, getStatusMessage } from '../api/httpStatus.js'
 
 // 🎯 創建全局 API 狀態單例
 let apiStateInstance = null

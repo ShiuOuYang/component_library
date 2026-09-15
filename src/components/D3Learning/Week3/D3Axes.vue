@@ -819,7 +819,6 @@ const styleDemo1 = () => {
 const styleDemo2 = () => {
   createBasicAxisDemo();
   
-  const chartHeight = 150;
   
   d3.select(demo2Svg.value)
     .select('.y-axis')

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Common Components — 相容 facade（@deprecated）
  *
  * 元件已分群搬移到 '@/components/library'（ui / charts / viewer / excel / shared）。
@@ -16,3 +16,4 @@ export * from '@/components/library/charts'
 export * from '@/components/library/excel'
 export * from '@/components/library/viewer'
 export { useToast } from '@/components/library/shared/useToast'
+export { useDarkMode, initDarkMode } from '@/components/library/shared/useDarkMode'

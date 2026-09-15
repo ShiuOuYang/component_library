@@ -39,7 +39,6 @@
     </label>
     <input
       :id="id"
-      ref="fileInput"
       type="file"
       accept=".xlsx,.xls"
       class="hidden"
@@ -107,7 +106,6 @@ const emit = defineEmits<{
   (e: 'upload-error', error: unknown): void
 }>()
 
-const fileInput = ref<HTMLInputElement | null>(null)
 const fileName = ref('')
 const loading = ref(false)
 const id = computed(() => props.inputId)

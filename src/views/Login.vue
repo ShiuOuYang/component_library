@@ -129,10 +129,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth.js'
 
-const router = useRouter()
 const { login, isLoggingIn, loginError } = useAuth()
 
 const formData = ref({

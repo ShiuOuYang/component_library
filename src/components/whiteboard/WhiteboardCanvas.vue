@@ -904,7 +904,7 @@ async function pasteImageFromClipboard() {
           return;
         }
       }
-    } catch (error) {
+    } catch (_error) {
       // Fall back to Ctrl+V paste event handling.
     }
   }

@@ -26,7 +26,6 @@
         
         <!-- Modal 容器 -->
         <div
-          ref="modalRef"
           class="relative bg-white overflow-hidden pointer-events-auto"
           :class="[props.roundedClass, props.shadowClass, props.borderClass]"
           :style="modalStyle"
@@ -34,7 +33,6 @@
         >
           <!-- Modal 標題欄 -->
           <div
-            ref="headerRef"
             class="flex items-center justify-between px-4 py-3 bg-gradient-to-r border-b border-gray-200 cursor-move select-none"
             :class="props.headerBgColor"
             @mousedown="startDrag"
@@ -221,11 +219,6 @@ const currentZIndex = computed(() => getZIndex(modalId))
 const slots = useSlots()
 const hasFooterSlot = computed(() => !!slots.footer)
 
-// Modal 狀態
-const visible = computed({
-  get: () => props.modelValue,
-  set: (value: boolean) => emit('update:modelValue', value)
-})
 const isMinimized = ref(false)
 const isMaximized = ref(props.defaultMaximized)
 
@@ -257,9 +250,6 @@ const beforeMaximize = ref<ModalState>({
   height: typeof props.height === 'string' ? parseInt(props.height) : props.height
 })
 
-// 模板引用
-const modalRef = ref<HTMLDivElement | null>(null)
-const headerRef = ref<HTMLDivElement | null>(null)
 
 // 初始化 Modal 位置和大小
 function initializeModal(): void {

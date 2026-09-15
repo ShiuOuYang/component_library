@@ -298,8 +298,8 @@ watchEffect(() => {
             />
             
             <text
-              v-if="showLabels1"
               v-for="d in barData1"
+              v-show="showLabels1"
               :key="'label-' + d.name"
               :x="barXScale1(d.name) + barXScale1.bandwidth() / 2"
               :y="barYScale1(d.value) - 5"
@@ -623,8 +623,8 @@ watchEffect(() => {
             
             <!-- 資料點 -->
             <circle
-              v-if="showDots3"
               v-for="(d, i) in lineData3"
+              v-show="showDots3"
               :key="i"
               :cx="lineXScale3(d.date)"
               :cy="lineYScale3(d.value)"
@@ -947,10 +947,6 @@ const toggleDots = () => {
   showDots3.value = !showDots3.value;
 };
 
-const formatDate = (date) => {
-  return d3.timeFormat('%m/%d')(date);
-};
-
 // ========== 範例 4：響應式 ==========
 const responsiveContainer = ref(null);
 const responsiveWidth = ref(600);
@@ -993,7 +989,7 @@ onMounted(() => {
     responsiveWidth.value = responsiveContainer.value.clientWidth;
     
     resizeObserver = new ResizeObserver(entries => {
-      for (let entry of entries) {
+      for (const entry of entries) {
         responsiveWidth.value = entry.contentRect.width;
       }
     });

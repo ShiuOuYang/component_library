@@ -223,7 +223,7 @@ const effectiveHeight = computed(() => props.autoResize ? observedHeight.value :
 
 // 當圖例在底部時，增加 SVG 高度以容納圖例
 const svgHeight = computed(() => {
-  let baseHeight = effectiveHeight.value;
+  const baseHeight = effectiveHeight.value;
   if (props.showColorLegend && props.colorLegendPosition === 'bottom') {
     return baseHeight + 40; // 增加空間給底部圖例
   }
@@ -581,7 +581,7 @@ const handleCellHover = function(event, d) {
 /**
  * 處理單元格離開事件
  */
-const handleCellLeave = function(event, d) {
+const handleCellLeave = function(_event, _d) {
   // 恢復樣式
   d3.select(this)
     .style('stroke', props.cellBorderColor)
@@ -955,15 +955,18 @@ const render = () => {
 
 // === 響應式渲染 ===
 watchEffect(() => {
-  // 觸發重新渲染的依賴
-  effectiveWidth.value;
-  effectiveHeight.value;
-  props.data;
-  effectiveXDomain.value;
-  effectiveYDomain.value;
-  colorScale.value;
-  props.enableBrush;
-  
+  // 觸發重新渲染的依賴：讀取即建立追蹤，集中成一個陣列比裸表達式清楚，
+  // 也不會被靜態分析誤判為無效果的語句。
+  const _deps = [
+    effectiveWidth.value,
+    effectiveHeight.value,
+    props.data,
+    effectiveXDomain.value,
+    effectiveYDomain.value,
+    colorScale.value,
+    props.enableBrush,
+  ];
+
   if (svgRef.value) {
     render();
   }

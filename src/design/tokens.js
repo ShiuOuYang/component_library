@@ -1,4 +1,4 @@
-  /**
+/**
  * 設計令牌 — 單一真實來源（Single Source of Truth）
  *
  * 這是整個元件庫唯一手動維護顏色 / 尺寸 / 動效數值的地方。
@@ -100,6 +100,56 @@ const colors = {
     dark: '#737373',    // neutral-500
     focus: '#2563EB',   // primary-600
   },
+}
+
+/**
+ * 深色主題覆寫（Dark Theme Overrides）
+ *
+ * 只覆寫「隨主題翻轉」的語意色：文字 / 背景 / 邊框 / 圖表軸線。
+ * 品牌色階（primary / secondary）與語意色階（success / danger …）維持同一組色階，
+ * 元件在深色下改用較淺的階（例如 primary-400 取代 primary-600）即可，
+ * 不需要再維護第二份色票。
+ *
+ * 由 tokensPlugin.js 產出到 `.dark` 選擇器下，變數名稱與亮色完全相同，
+ * 因此使用 var(--color-text-primary) 的 scoped CSS 會自動跟著翻轉。
+ */
+const darkColors = {
+  text: {
+    primary: '#F5F5F5',   // neutral-100
+    secondary: '#D4D4D4', // neutral-300
+    tertiary: '#A3A3A3',  // neutral-400
+    disabled: '#737373',  // neutral-500
+    inverse: '#171717',   // neutral-900
+  },
+
+  background: {
+    primary: '#171717',     // neutral-900
+    secondary: '#1F1F1F',
+    tertiary: '#262626',    // neutral-800
+    highlighted: '#1E3A8A', // primary-900
+  },
+
+  border: {
+    light: '#262626',   // neutral-800
+    default: '#404040', // neutral-700
+    medium: '#525252',  // neutral-600
+    dark: '#737373',    // neutral-500
+    focus: '#60A5FA',   // primary-400（深色底下 600 對比不足）
+  },
+}
+
+/** 深色主題的視覺化色彩覆寫（軸線 / 格線需要降低亮度，類別色階維持不變） */
+const darkViz = {
+  axis: {
+    line: '#525252',  // neutral-600
+    tick: '#525252',
+    text: '#A3A3A3',  // neutral-400
+    grid: '#404040',  // neutral-700
+    label: '#D4D4D4', // neutral-300
+  },
+  missing: '#404040',
+  selection: 'rgba(96, 165, 250, 0.22)', // primary-400
+  highlight: '#60A5FA',
 }
 
 // ===== 資料視覺化色彩（D3 圖表專用）=====
@@ -303,9 +353,20 @@ export const designTokens = {
   breakpoints,
 }
 
+/**
+ * 深色主題令牌 — 只含需要覆寫的鍵，其餘沿用 designTokens。
+ * tokensPlugin 用它產生 `.dark` 下的 CSS 變數。
+ */
+export const darkTokens = {
+  colors: darkColors,
+  viz: darkViz,
+}
+
 // 快捷具名匯出
 export {
   colors,
+  darkColors,
+  darkViz,
   viz,
   spacing,
   borderRadius,

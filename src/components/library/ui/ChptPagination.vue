@@ -164,8 +164,16 @@ const displayedPages = computed<(number | string)[]>(() => {
 const btnClass =
   'h-6 min-w-6 flex items-center justify-center bg-transparent border-none border-neutral-300 cursor-pointer px-1.5 text-neutral-700 transition-colors text-xs hover:bg-primary-50 hover:text-primary-500 disabled:text-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100'
 
-function changePage(page: number): void {
-  const p = Math.max(1, Math.min(page, totalPages.value))
+/**
+ * 切換頁碼。
+ * displayedPages 的型別是 (number | string)[]（含省略號 '...'），
+ * 模板的 v-if="page !== '...'" 收窄無法傳遞到事件處理器，因此這裡自行容錯：
+ * 非數字一律忽略，不要送出 NaN 的頁碼。
+ */
+function changePage(page: number | string): void {
+  const n = Number(page)
+  if (!Number.isFinite(n)) return
+  const p = Math.max(1, Math.min(n, totalPages.value))
   if (p !== props.currentPage) {
     emit('update:currentPage', p)
     emit('change', p)

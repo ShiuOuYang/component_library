@@ -7,7 +7,7 @@
       <!-- 標題 -->
       <button
         type="button"
-        class="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-neutral-50 focus:outline-none"
+        class="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-neutral-50 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
         @click="toggle(index)"
       >
         <span class="font-medium text-neutral-800 text-sm">{{ item.title }}</span>

@@ -167,9 +167,65 @@ CSS 變數名稱**全數保持不變**，既有元件的 scoped CSS 不需修改
 - `--font-size-*` / `--font-weight-*` / `--line-height-*` / `--spacing-*`
 - `--duration-*`（附 ms 單位，供 CSS 用；D3 請 import `duration`）
 
+---
+
+## 深色模式（Dark Mode）
+
+採 **class 策略**，四個環節缺一不可：
+
+| 環節 | 檔案 | 作用 |
+|---|---|---|
+| 1. Tailwind 設定 | `tailwind.config.js` → `darkMode: 'class'` | 讓 `dark:` 前綴聽 `.dark` 而不是作業系統偏好 |
+| 2. 狀態來源 | `library/shared/useDarkMode.ts` | 在 `<html>` 掛 / 卸 `.dark`，並存進 `localStorage` |
+| 3. 令牌覆寫 | `src/design/tokens.js` → `darkColors` / `darkViz` | 提供深色的文字 / 背景 / 邊框 / 軸線值 |
+| 4. 變數注入 | `src/design/tokensPlugin.js` | 把 3. 產出到 `.dark { … }`，變數名稱與亮色相同 |
+
+> ⚠️ 少了第 1 步，Tailwind 會落回 `darkMode: 'media'`，切換鈕按了完全沒反應——
+> 這正是先前的狀況（切換鈕只改 `<body class="dark-mode">`，而沒有元件在聽它）。
+
+### 元件怎麼寫
+
+**優先用 CSS 變數**，它們會自動翻轉，不需要寫任何 `dark:`：
+
+```css
+/* scoped CSS — 亮色深色都正確 */
+.panel {
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-default);
+}
+```
+
+只有在**需要換色階**時才用 `dark:`（品牌色與語意色階不翻轉，深色底下要改用較淺的階）：
+
+```html
+<span class="text-primary-600 dark:text-primary-400">連結</span>
+<div class="bg-neutral-100 dark:bg-neutral-800">卡片</div>
+```
+
+會自動翻轉的變數：`--color-text-*`、`--color-bg-*`、`--color-border-*`、
+`--viz-axis-*`、`--viz-missing`、`--viz-selection`、`--viz-highlight`。
+**不會**翻轉的：`--color-primary-*`、`--color-neutral-*`、語意色階、`--viz-cat-*`。
+
+### API
+
+```ts
+import { useDarkMode } from '@/components/library'
+
+const { isDark, mode, setMode, toggle } = useDarkMode()
+
+toggle()             // light ⇄ dark
+setMode('system')    // 跟隨作業系統，並持續監聽變化
+mode.value           // 'light' | 'dark' | 'system'
+```
+
+狀態是 module-scoped 單例，頁面上放幾顆 `<ChptDarkModeToggle />` 都會同步。
+應用程式進入點需呼叫一次 `initDarkMode()`（`src/main.js` 已接），
+`index.html` 另有一段前置腳本在首次繪製前套用主題，避免畫面閃爍。
+
 ## 待辦
 
 - [ ] 確認 `src/assets/animations.css` 的 keyframes 是否與 `tailwind.config.js` 的 `keyframes` 重複，重複的刪掉一邊
 - [ ] 把既有圖表元件 scoped CSS 裡硬寫的軸線色改成 `var(--viz-axis-*)`
-- [ ] `.btn` / `.input` / `.tag` 待頁面遷移到 JxButton / JxInput 後移除
+- [ ] `.btn` / `.input` / `.tag` 待頁面遷移到 ChptButton / ChptInput 後移除
 - [ ] `primary` 色階 400→500→600 明度落差偏大，若要做平滑漸層需重新校準

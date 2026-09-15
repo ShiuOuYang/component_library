@@ -1,5 +1,4 @@
-import { ref, onMounted, onUnmounted } from 'vue'
-import { on } from 'ws'
+import { ref } from 'vue'
 
 export function useWebSocket(url, options = {}) {
   // 解構 options 物件，並設定預設值

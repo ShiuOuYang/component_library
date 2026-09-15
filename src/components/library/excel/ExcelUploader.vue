@@ -1,4 +1,13 @@
-<script>
-/** ExcelUploader（相容別名） - re-export ChptExcelUploader */
-export { default } from './ChptExcelUploader.vue'
+<script lang="ts">
+/**
+ * ExcelUploader —— ChptExcelUploader 的相容別名（@deprecated）
+ *
+ * 請改用 <ChptExcelUploader />。此檔僅為過渡期不破壞既有呼叫端而保留。
+ *
+ * ⚠️ 不可寫成 `export { default } from './ChptExcelUploader.vue'`：
+ *    SFC 本身隱含一個 default export，兩者會撞成 TS2528。
+ */
+import ChptExcelUploader from './ChptExcelUploader.vue'
+
+export default ChptExcelUploader
 </script>

@@ -51,10 +51,7 @@
           :value-domain="[0, 100]"
         />
         <div class="mt-4">
-          <ChptCodeBlock
-            language="html"
-            code='<EnterpriseHeatmap :data="rows" :color-range="[\'#16a34a\',\'#eab308\',\'#dc2626\']" highlight-mode="both" show-cell-values />'
-          />
+          <ChptCodeBlock language="html" :code="colorRangeSnippet" />
         </div>
       </section>
 
@@ -85,6 +82,14 @@
 </template>
 
 <script setup>
+
+/**
+ * 給 ChptCodeBlock 顯示用的範例片段。
+ * 放在 script 而非直接寫在 HTML 屬性裡 —— HTML 屬性沒有 \' 這種跳脫，
+ * 單引號屬性會在第一個 ' 就被截斷。
+ */
+const colorRangeSnippet =
+  `<EnterpriseHeatmap :data="rows" :color-range="['#16a34a','#eab308','#dc2626']" highlight-mode="both" show-cell-values />`
 import { computed } from 'vue'
 import { EnterpriseHeatmap } from '@/components/library/charts'
 import { ChptCodeBlock } from '@/components/library'

@@ -62,7 +62,10 @@ const props = withDefaults(defineProps<ChptEmptyProps>(), {
   fullWidth: false,
 })
 
-const textSizeClass = computed(() => (props.iconSize >= 64 ? 'text-lg' : 'text-base'))
+/** iconSize 允許 number 或 string，比較前正規化為數值 */
+const numericIconSize = computed(() => Number(props.iconSize) || 0)
+
+const textSizeClass = computed(() => (numericIconSize.value >= 64 ? 'text-lg' : 'text-base'))
 </script>
 
 <style scoped>

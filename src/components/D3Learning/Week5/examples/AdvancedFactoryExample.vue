@@ -141,8 +141,7 @@ import {
   LineLayerBuilder,
   AxisConfigBuilder,
   quickConfig,
-  COLOR_SCHEMES,
-  FORMATTERS
+  COLOR_SCHEMES
 } from '../utils/chartConfigFactory';
 
 // === 數據 ===

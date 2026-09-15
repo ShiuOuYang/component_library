@@ -1,0 +1,51 @@
+name: CI
+
+# 針對 PR 與主要分支的推送執行品質檢查。
+# 這是這個 repo 的第一道自動關卡 —— 在此之前 CI 只做建置與部署，
+# 型別錯誤、lint 錯誤、壞掉的 lockfile 都不會被擋下來。
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+# 同一分支上只保留最新一次執行
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck / Lint / Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # lockfile 曾經混入 registry.npmmirror.com 的 resolved URL，
+      # 導致沒有該鏡像存取權的環境（包含這個 runner）安裝失敗。
+      - name: Lockfile uses a single registry
+        run: |
+          if grep -q 'registry\.npmmirror\.com' package-lock.json; then
+            echo "::error file=package-lock.json::package-lock.json 含有 registry.npmmirror.com 的位址；請以預設 registry 重新產生 lockfile"
+            exit 1
+          fi
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

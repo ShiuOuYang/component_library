@@ -1,6 +1,13 @@
-<script>
-/** TabNavigation（相容別名） - re-export ChptTabNavigation */
-export { default } from './ChptTabNavigation.vue'
+<script lang="ts">
+/**
+ * TabNavigation —— ChptTabNavigation 的相容別名（@deprecated）
+ *
+ * 請改用 <ChptTabNavigation />。此檔僅為過渡期不破壞既有呼叫端而保留。
+ *
+ * ⚠️ 不可寫成 `export { default } from './ChptTabNavigation.vue'`：
+ *    SFC 本身隱含一個 default export，兩者會撞成 TS2528。
+ */
+import ChptTabNavigation from './ChptTabNavigation.vue'
+
+export default ChptTabNavigation
 </script>
-
-

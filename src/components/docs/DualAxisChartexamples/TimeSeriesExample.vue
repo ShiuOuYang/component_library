@@ -13,8 +13,8 @@
             :auto-resize="true"
             :layers="timeSeriesLayers"
             title="伺服器流量監控 (24小時)"
-            :showGrid="true"
-            :enableBrush="true"
+            :show-grid="true"
+            :enable-brush="true"
             :x-scale-type="'time'"
             :x-axis-format="d3.timeFormat('%H:%M')"
           />

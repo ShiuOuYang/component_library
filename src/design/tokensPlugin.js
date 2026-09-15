@@ -26,7 +26,7 @@
 // 🔧 專案 package.json 是 "type": "module"，ESM 解析需要完整副檔名，
 //    寫成 'tailwindcss/plugin' 會 ERR_MODULE_NOT_FOUND
 import plugin from 'tailwindcss/plugin.js'
-import { designTokens } from './tokens.js'
+import { designTokens, darkTokens } from './tokens.js'
 
 /** kebab-case 轉換：successHover → success-hover */
 const toKebab = (str) => str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
@@ -137,9 +137,39 @@ export function buildCssVariables(tokens = designTokens) {
   return vars
 }
 
+/**
+ * 建立深色主題要覆寫的 CSS 變數表
+ *
+ * 只產出「隨主題翻轉」的變數（文字 / 背景 / 邊框 / 圖表軸線），
+ * 變數名稱與亮色版完全相同，因此掛上 `.dark` 之後
+ * 所有 var(--color-text-primary) 之類的引用會自動跟著翻轉，
+ * 元件的 scoped CSS 不需要任何修改。
+ */
+export function buildDarkCssVariables(tokens = darkTokens) {
+  const vars = {}
+  const { colors, viz } = tokens
+
+  flatten(colors.text, 'color-text', vars)
+  flatten(colors.background, 'color-bg', vars)
+  flatten(colors.border, 'color-border', vars)
+
+  flatten(viz.axis, 'viz-axis', vars)
+  vars['--viz-missing'] = viz.missing
+  vars['--viz-selection'] = viz.selection
+  vars['--viz-highlight'] = viz.highlight
+
+  // color-scheme 讓瀏覽器原生控制項（捲軸 / 表單 / date picker）跟著變深
+  vars['color-scheme'] = 'dark'
+
+  return vars
+}
+
 export default plugin(function ({ addBase }) {
   addBase({
-    ':root': buildCssVariables(),
+    ':root': { ...buildCssVariables(), 'color-scheme': 'light' },
+
+    // darkMode: 'class' —— 由 useDarkMode() 在 <html> 上掛 .dark
+    '.dark': buildDarkCssVariables(),
   })
 })
 

@@ -164,7 +164,7 @@
     </div>
 
     <!-- ===== 表格主體 ===== -->
-    <div class="overflow-auto excel-grid" ref="gridEl">
+    <div class="overflow-auto excel-grid">
       <table class="grid-table">
         <thead>
           <tr>
@@ -384,7 +384,6 @@ const formulaBarValue = ref('')
 // ===== 互動狀態 =====
 const isSelecting = ref(false)
 const mouseDownCell = ref<{ r: number; c: number; shift: boolean } | null>(null)
-const gridEl = ref<HTMLDivElement | null>(null)
 const containerRef = ref<HTMLDivElement | null>(null)
 const formulaInputRef = ref<HTMLInputElement | null>(null)
 /** 目前編輯中的 input（普通變數，非 reactive，僅命令式使用） */
@@ -469,8 +468,8 @@ function getCellStyle(r: number, c: number): CellStyle {
 }
 
 // ===== 公式引擎 =====
-/** 解析範圍字串 "A1:B3" 或 "A1"，回傳儲存格座標陣列 */
-function resolveRange(token: string, sheet: SheetData): { r: number; c: number }[] {
+/** 解析範圍字串 "A1:B3" 或 "A1"，回傳儲存格座標陣列（純座標運算，與工作表內容無關） */
+function resolveRange(token: string): { r: number; c: number }[] {
   const t = token.trim().toUpperCase()
   const cells: { r: number; c: number }[] = []
   if (t.includes(':')) {
@@ -571,7 +570,7 @@ function collectNumericValues(arg: string, sheet: SheetData): number[] {
   if (t === '') return []
   // 參照或範圍
   if (/^[A-Za-z]+\d+/.test(t)) {
-    return resolveRange(t, sheet)
+    return resolveRange(t)
       .map(({ r, c }) => toNumber(refValue(r, c, sheet)))
       .filter((v) => !isNaN(v))
   }
@@ -594,7 +593,7 @@ function evalArithmetic(expr: string, sheet: SheetData): string | number | null 
   // 將參照（含範圍）替換為數值
   s = s.replace(/\b[A-Za-z]+\d+(?::[A-Za-z]+\d+)?\b/g, (tok) => {
     if (tok.includes(':')) {
-      const vals = resolveRange(tok, sheet).map(({ r, c }) => toNumber(refValue(r, c, sheet)))
+      const vals = resolveRange(tok).map(({ r, c }) => toNumber(refValue(r, c, sheet)))
       const nums = vals.filter((v) => !isNaN(v))
       return String(nums.length ? nums.reduce((a, b) => a + b, 0) : 0)
     }
@@ -619,7 +618,7 @@ function evalArithmetic(expr: string, sheet: SheetData): string | number | null 
 
   // 四則運算安全求值
   try {
-    // eslint-disable-next-line no-new-func
+     
     const fn = new Function('"use strict";return (' + s + ');')
     const result = fn()
     if (typeof result === 'number' && !isNaN(result)) return result

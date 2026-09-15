@@ -4,14 +4,13 @@
     @click="handleClick"
     :class="buttonClasses"
     :disabled="props.disabled || props.loading"
+    :aria-busy="props.loading"
   >
-    <ChptIcon v-if="props.icon" :color="props.iconColor" :class="iconClass">{{ props.icon }}</ChptIcon>
+    <ChptIcon v-if="props.icon" :color="props.iconColor">{{ props.icon }}</ChptIcon>
 
-    <template v-if="props.loading">
-      <i class="fas fa-spinner fa-spin"></i>
-    </template>
+    <ChptSpinner v-if="props.loading" loading :size="16" />
 
-    <span v-if="props.label && !props.loading" :class="textClass">{{ props.label }}</span>
+    <span v-if="props.label && !props.loading">{{ props.label }}</span>
 
     <!-- 角標 -->
     <span
@@ -29,8 +28,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import ChptSpinner from './ChptSpinner.vue'
 import type { ButtonNativeType } from '@/components/library/shared/types/ui.types'
 
 /**
@@ -74,8 +74,6 @@ interface ChptButtonProps {
   badgeBgColor?: string
   /** 角標文字色 */
   badgeTextColor?: string
-  /** 文字色 class */
-  textColor?: string
   /** 自訂 class */
   class?: string
 }
@@ -96,7 +94,6 @@ const props = withDefaults(defineProps<ChptButtonProps>(), {
   badgeText: 0,
   badgeBgColor: 'danger',
   badgeTextColor: 'white',
-  textColor: 'white',
 })
 
 const emit = defineEmits<{
@@ -158,26 +155,26 @@ const colorClass = computed(() => {
 
 /** 最終按鈕 class 組合 */
 const buttonClasses = computed(() => [
-  'flex items-center transition-all duration-300 focus:outline-none relative',
+  // focus-visible:* 這組是必要的：focus:outline-none 會蓋掉 base.css 的全域
+  // :focus-visible 外框，沒有替代樣式的話鍵盤使用者完全看不到焦點位置。
+  'flex items-center transition-all duration-300 relative',
+  'focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500',
   sizeClass.value,
   colorClass.value,
   roundedClass.value,
+  gapClass.value,
   { 'flex-row-reverse': props.iconPosition === 'right' },
   { 'opacity-50 cursor-not-allowed': props.disabled || props.loading },
   { 'cursor-progress': props.loading },
   props.class,
 ])
 
-/** 圖示間距 class */
-const iconClass = computed(() =>
-  props.label ? (props.iconPosition === 'left' ? 'mr-2' : 'ml-2') : ''
-)
-
-/** 文字間距 class */
-const textClass = computed(() => {
-  if (!props.icon) return ''
-  return props.iconPosition === 'left' ? 'ml-2' : 'mr-2'
-})
+/**
+ * 圖示與文字的間距。
+ * 原本 icon 加 mr-2、text 再加 ml-2，兩者相加變成兩倍間距；
+ * 改用容器層的 gap，只出現一次。
+ */
+const gapClass = computed(() => (props.icon && props.label ? 'gap-2' : ''))
 
 /** 角標樣式 */
 const badgeClass = computed(() => {
@@ -198,16 +195,22 @@ const badgeClass = computed(() => {
 const displayedBadgeText = ref<string | number>(props.badgeText)
 const animationClass = ref('')
 
+/** 角標動畫的計時器；連續變更時要先取消上一個，卸載時也要清掉 */
+let badgeTimer: ReturnType<typeof setTimeout> | undefined
+
 watch(
   () => props.badgeText,
   (newValue) => {
     animationClass.value = 'opacity-0 -translate-y-1/2'
-    setTimeout(() => {
+    clearTimeout(badgeTimer)
+    badgeTimer = setTimeout(() => {
       displayedBadgeText.value = newValue
       animationClass.value = 'opacity-100'
     }, 200)
   }
 )
+
+onUnmounted(() => clearTimeout(badgeTimer))
 
 /** 點擊行為：禁用或載入中時忽略 */
 function handleClick(event: MouseEvent): void {

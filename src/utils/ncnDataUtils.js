@@ -100,12 +100,13 @@ export function generateTimeRange(timeType, count = 6) {
       }
       break
 
-    case TIME_TYPES.WEEK:
+    case TIME_TYPES.WEEK: {
       const currentWeek = getWeekNumber(now)
       for (let i = count - 1; i >= 0; i--) {
         timeRange.push(`W${currentWeek - i}`)
       }
       break
+    }
 
     case TIME_TYPES.DAY:
       for (let i = count - 1; i >= 0; i--) {

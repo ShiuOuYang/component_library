@@ -804,7 +804,7 @@ const handleBarHover = function(event, d) {
 /**
  * 處理長條 leave
  */
-const handleBarLeave = function(event, d) {
+const handleBarLeave = function(_event, _d) {
   d3.select(this)
     .transition()
     .duration(150)

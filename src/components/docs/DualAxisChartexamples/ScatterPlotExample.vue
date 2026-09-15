@@ -14,8 +14,8 @@
             :auto-resize="true"
             :layers="scatterLayers"
             title="溫度 vs 銷售量相關性分析"
-            :showGrid="true"
-            :enableBrush="true"
+            :show-grid="true"
+            :enable-brush="true"
             :x-scale-type="'linear'"
           />
         </div>

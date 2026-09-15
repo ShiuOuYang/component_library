@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ComponentSize, SelectOption } from '@/components/library/shared/types/ui.types'
+import type { ComponentSize, Recordable, SelectOption } from '@/components/library/shared/types/ui.types'
 
 /**
  * ChptSelect（CHPT 主題） - 通用下拉選單元件
@@ -114,10 +114,19 @@ const sizeClass = computed(() => {
 const isObject = (option: SelectOption | string | number): option is SelectOption =>
   typeof option === 'object' && option !== null
 
+/**
+ * 用 valueKey / labelKey / disabledKey 取值時，選項其實可以是任意形狀的物件
+ * （SelectOption 只是最常見的那一種），而 SelectOption 沒有索引簽章，
+ * 直接 `as Record<...>` 會被 TS 擋下。統一從這裡經 unknown 轉一次。
+ */
+const asRecord = (option: SelectOption): Recordable => option as unknown as Recordable
+
 /** 取得選項的值 */
 function getOptionValue(option: SelectOption | string | number): string | number {
   if (isObject(option)) {
-    return props.valueKey ? (option as Record<string, never>)[props.valueKey] : option.value
+    return props.valueKey
+      ? (asRecord(option)[props.valueKey] as string | number)
+      : option.value
   }
   return option
 }
@@ -125,7 +134,7 @@ function getOptionValue(option: SelectOption | string | number): string | number
 /** 取得選項的顯示文字 */
 function getOptionLabel(option: SelectOption | string | number): string {
   if (isObject(option)) {
-    return props.labelKey ? (option as Record<string, string>)[props.labelKey] : option.label
+    return props.labelKey ? String(asRecord(option)[props.labelKey]) : option.label
   }
   return String(option)
 }
@@ -133,7 +142,7 @@ function getOptionLabel(option: SelectOption | string | number): string {
 /** 取得選項是否禁用 */
 function getOptionDisabled(option: SelectOption | string | number): boolean {
   if (isObject(option)) {
-    return Boolean((option as Record<string, unknown>)[props.disabledKey])
+    return Boolean(asRecord(option)[props.disabledKey])
   }
   return false
 }

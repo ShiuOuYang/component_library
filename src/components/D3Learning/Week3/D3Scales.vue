@@ -1035,7 +1035,6 @@ const practiceUpdate1 = () => {
   const svg = d3.select(practiceSvg.value);
   svg.selectAll('*').remove();
   
-  const data = practiceData.value;
   const groups = ['Group 1', 'Group 2', 'Group 3'];
   const colorScale = d3.scaleOrdinal(d3.schemeCategory10).domain(groups);
   

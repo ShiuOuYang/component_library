@@ -850,7 +850,7 @@ function toggleLayer(layer) {
 }
 
 // ===== Zoom =====
-function setupZoom(svg, group, width, height) {
+function setupZoom(svg, group, _width, _height) {
   zoomBehavior = d3.zoom()
     .scaleExtent([props.minZoom, props.maxZoom])
     .on('zoom', (event) => {

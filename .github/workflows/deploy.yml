@@ -12,7 +12,10 @@ on:
 
 jobs:
   build-and-deploy:
-    if: github.event_name == 'push' || github.event.pull_request.merged == true
+    # push trigger 目前是關閉的（見上方被註解的 on.push），
+    # 因此這裡只需判斷 PR 是否真的被合併；原本的 github.event_name == 'push'
+    # 是永遠不成立的死條件。
+    if: github.event.pull_request.merged == true
     runs-on: [self-hosted]
     
     steps:
@@ -34,6 +37,13 @@ jobs:
         npm ci
       shell: powershell
     
+    - name: Verify (typecheck + lint)
+      run: |
+        Write-Host "Running typecheck and lint before build..."
+        npm run typecheck
+        npm run lint
+      shell: powershell
+
     - name: Build Vue.js Dashboard with Vite
       run: |
         Write-Host "Building Vue.js 3 + Composition API WIP Dashboard..."
@@ -83,6 +93,9 @@ jobs:
     
     - name: Cleanup Docker resources
       run: |
-        Write-Host "Cleaning up Docker resources..."
-        docker system prune -f --volumes
+        # 只清理這次建置產生的懸空映像。
+        # 原本是 `docker system prune -f --volumes`，那會刪掉同一台 self-hosted
+        # runner 上所有未使用的映像、網路與「具名 volume」——包含其他專案的資料。
+        Write-Host "Removing dangling images created by this build..."
+        docker image prune -f
       shell: powershell

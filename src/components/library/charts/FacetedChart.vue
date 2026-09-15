@@ -89,7 +89,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import DualAxisComboChart from './DualAxisComboChart.vue';
 
 const props = defineProps({
@@ -232,7 +232,7 @@ const facetOffsets = computed(() => {
   const offsets = [];
   let currentY = props.margin.top;
   
-  facetHeights.value.forEach((height, i) => {
+  facetHeights.value.forEach((height, _i) => {
     offsets.push(currentY);
     currentY += height + props.facetSpacing;
   });

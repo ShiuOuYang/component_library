@@ -1,46 +1,13 @@
-<script>
-/** PageSwitcher（相容別名） - re-export ChptPageSwitcher */
-export { default } from './ChptPageSwitcher.vue'
+<script lang="ts">
+/**
+ * PageSwitcher —— ChptPageSwitcher 的相容別名（@deprecated）
+ *
+ * 請改用 <ChptPageSwitcher />。此檔僅為過渡期不破壞既有呼叫端而保留。
+ *
+ * ⚠️ 不可寫成 `export { default } from './ChptPageSwitcher.vue'`：
+ *    SFC 本身隱含一個 default export，兩者會撞成 TS2528。
+ */
+import ChptPageSwitcher from './ChptPageSwitcher.vue'
+
+export default ChptPageSwitcher
 </script>
-
-<style scoped>
-/* 滑入滑出動畫 */
-.slide-fade-enter-active {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slide-fade-leave-active {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slide-fade-enter-from {
-  transform: translateX(-10px);
-  opacity: 0;
-}
-
-.slide-fade-leave-to {
-  transform: translateX(-10px);
-  opacity: 0;
-}
-
-/* 按鈕懸停效果 */
-button {
-  position: relative;
-  overflow: hidden;
-}
-
-button::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 0;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
-  transition: width 0.3s ease;
-}
-
-button:hover::before {
-  width: 100%;
-}
-</style>

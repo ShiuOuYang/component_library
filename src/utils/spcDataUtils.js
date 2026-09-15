@@ -15,7 +15,6 @@ export function transformSpcMainDataToStackedBar(mainData) {
 
   const chartData = []
   const fileGroups = []
-  const stages = new Set()
 
   // 遍歷每個 FileGroup
   mainData.forEach(groupObj => {

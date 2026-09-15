@@ -19,7 +19,7 @@ export function useRouteGuard() {
       userStore.initAuth()
     }
 
-    const skipAuth = import.meta.env.VITE_SKIP_AUTH === 'true' || process.env.NODE_ENV === 'development'
+    const skipAuth = import.meta.env.VITE_SKIP_AUTH === 'true' || import.meta.env.DEV
     if (skipAuth) {
       console.log('🚀 跳過 token 驗證（開發模式），但保留權限檢查')
       

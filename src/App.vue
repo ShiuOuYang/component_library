@@ -4,7 +4,7 @@ import { useAuth } from './composables/useAuth.js'
 import GlobalNotifications from './components/GlobalNotifications.vue'
 
 // 初始化認證狀態
-const { } = useAuth() // 這會自動初始化認證狀態
+useAuth() // 這會自動初始化認證狀態（內部以 onMounted 觸發，不需取回任何值）
 
 // App 現在只需要提供路由出口
 onMounted(() => {

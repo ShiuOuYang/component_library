@@ -86,7 +86,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { ComponentSize } from '@/components/library/shared/types/ui.types'
-import type { SelectOption } from '@/components/library/shared/types/ui.types'
+import type { Recordable, SelectOption } from '@/components/library/shared/types/ui.types'
 
 /**
  * ChptFilter（CHPT 主題） - 過濾選擇元件
@@ -157,9 +157,16 @@ const emit = defineEmits<{
 const id = computed(() => `chpt-filter-${Math.random().toString(36).slice(2, 9)}`)
 
 // ===== 通用選項處理 =====
+
+/**
+ * 用 valueKey / labelKey 取值時，選項可以是任意形狀的物件，
+ * 而 SelectOption 沒有索引簽章，直接 as Record<...> 會被 TS 擋下。
+ */
+const asRecord = (option: SelectOption): Recordable => option as unknown as Recordable
+
 function getOptionValue(option: SelectOption | string | number): SelectOption['value'] {
   if (option && typeof option === 'object') {
-    if (props.valueKey) return (option as Record<string, unknown>)[props.valueKey] as SelectOption['value']
+    if (props.valueKey) return asRecord(option)[props.valueKey] as SelectOption['value']
     return (option as SelectOption).value
   }
   return option as SelectOption['value']
@@ -167,7 +174,7 @@ function getOptionValue(option: SelectOption | string | number): SelectOption['v
 
 function getOptionLabel(option: SelectOption | string | number): string {
   if (option && typeof option === 'object') {
-    if (props.labelKey) return String((option as Record<string, unknown>)[props.labelKey])
+    if (props.labelKey) return String(asRecord(option)[props.labelKey])
     return String((option as SelectOption).label)
   }
   return String(option)

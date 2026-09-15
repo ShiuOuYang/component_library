@@ -57,7 +57,7 @@ export const LAYER_FIELD_MAPPING = {
  */
 export function findPartNumber(row) {
   for (const field of PART_NUMBER_FIELDS) {
-    if (row.hasOwnProperty(field) && row[field]) {
+    if (Object.prototype.hasOwnProperty.call(row, field) && row[field]) {
       return String(row[field]).trim()
     }
   }
@@ -74,7 +74,7 @@ export function findLayerValue(row, standardLayerName) {
   const possibleNames = LAYER_FIELD_MAPPING[standardLayerName] || [standardLayerName]
   
   for (const fieldName of possibleNames) {
-    if (row.hasOwnProperty(fieldName)) {
+    if (Object.prototype.hasOwnProperty.call(row, fieldName)) {
       const value = row[fieldName]
       
       // 處理 N/A 或空值

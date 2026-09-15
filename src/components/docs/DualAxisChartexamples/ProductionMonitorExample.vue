@@ -13,8 +13,8 @@
             :auto-resize="true"
             :layers="productionLayers"
             title="生產良率與稼動率監控"
-            :showGrid="true"
-            :enableBrush="true"
+            :show-grid="true"
+            :enable-brush="true"
           />
         </div>
       </div>

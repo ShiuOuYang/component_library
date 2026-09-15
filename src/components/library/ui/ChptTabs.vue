@@ -4,6 +4,7 @@
     <div
       class="flex border-b border-neutral-200"
       :class="{ 'justify-center': props.centered }"
+      role="tablist"
     >
       <button
         v-for="(tab, index) in props.tabs"
@@ -14,8 +15,11 @@
           isActive(index)
             ? 'text-primary-600 font-medium'
             : 'text-neutral-500 hover:text-neutral-700',
-          props.disabledTab?.(tab) ? 'opacity-50 cursor-not-allowed' : '',
+          isDisabled(tab) ? 'opacity-50 cursor-not-allowed' : '',
         ]"
+        role="tab"
+        :aria-selected="isActive(index)"
+        :disabled="isDisabled(tab)"
         @click="select(index, tab)"
       >
         <span class="flex items-center gap-2">
@@ -38,8 +42,8 @@
     <div class="pt-5">
       <template v-for="(tab, index) in props.tabs" :key="index">
         <div v-if="isActive(index)" class="chpt-tabs-panel">
-          <slot :name="`panel-${index}`" :tab="tab">
-            <slot :name="panel" :tab="tab" :index="index">
+          <slot :name="`panel-${index}`" :tab="tab" :index="index">
+            <slot name="panel" :tab="tab" :index="index">
               {{ tab.content }}
             </slot>
           </slot>
@@ -79,12 +83,18 @@ interface ChptTabsProps {
   modelValue?: number
   /** 是否水平置中 */
   centered?: boolean
+  /**
+   * 動態判斷某個頁籤是否停用。
+   * 與 ChptTabItem.disabled 同時存在時，任一為 true 即停用。
+   */
+  disabledTab?: (tab: ChptTabItem) => boolean
 }
 
 const props = withDefaults(defineProps<ChptTabsProps>(), {
   tabs: () => [],
   modelValue: 0,
   centered: false,
+  disabledTab: undefined,
 })
 
 const emit = defineEmits<{
@@ -106,8 +116,13 @@ function isActive(index: number): boolean {
   return activeIndex.value === index
 }
 
+/** 頁籤是否停用：item 自身的 disabled 或 disabledTab() 任一成立 */
+function isDisabled(tab: ChptTabItem): boolean {
+  return Boolean(tab.disabled) || Boolean(props.disabledTab?.(tab))
+}
+
 function select(index: number, tab: ChptTabItem): void {
-  if (tab.disabled) return
+  if (isDisabled(tab)) return
   activeIndex.value = index
   emit('update:modelValue', index)
   emit('change', index)

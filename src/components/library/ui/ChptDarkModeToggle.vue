@@ -2,9 +2,14 @@
   <div class="flex flex-col items-center gap-2" :class="{ 'relative z-10': variant === 'fancy' }">
     <!-- 控制選項 -->
     <div v-if="showControls" class="controls mb-2">
-      <label class="flex items-center gap-2 text-sm text-neutral-700">
-        <input type="checkbox" v-model="syncWithBody" class="cursor-pointer" />
-        Sync &lt;body&gt;
+      <label class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+        <input
+          type="checkbox"
+          :checked="mode === 'system'"
+          class="cursor-pointer"
+          @change="handleFollowSystem(($event.target as HTMLInputElement).checked)"
+        />
+        {{ followSystemLabel }}
       </label>
     </div>
 
@@ -12,8 +17,10 @@
     <template v-if="variant === 'fancy'">
       <button
         class="fancy-toggle dark-mode-toggle-container"
-        :aria-pressed="isDarkMode.toString()"
-        title="切換深色模式"
+        type="button"
+        :aria-pressed="isDarkMode"
+        :aria-label="toggleLabel"
+        :title="toggleLabel"
         @click="handleToggle"
       >
         <span class="toggle__content">
@@ -46,6 +53,9 @@
     <!-- Simple 模式：簡單亮/暗按鈕 -->
     <button
       v-else
+      type="button"
+      :aria-pressed="isDarkMode"
+      :aria-label="toggleLabel"
       @click="handleToggle"
       :class="[
         'px-4 py-2 rounded-lg border transition-all duration-300 font-medium min-w-[100px] cursor-pointer',
@@ -58,7 +68,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
+import { useDarkMode, type ChptThemeMode } from '@/components/library/shared/useDarkMode'
 
 /**
  * ChptDarkModeToggle（CHPT 主題） - 深色模式切換元件
@@ -67,10 +78,10 @@ import { ref, computed, watch, onMounted } from 'vue'
  * - variant="fancy"：華麗 SVG 動畫切換（小熊飛行員）
  * - variant="simple"：簡單亮/暗按鈕
  *
- * 特性：
- * - v-model:darkMode 雙向綁定
- * - 可同步到 <body>（data-dark-mode / class）
- * - 完整 Props / Emits 型別定義
+ * 狀態一律委派給 useDarkMode()（module-scoped 全域單例），因此：
+ * - 頁面上放幾顆切換鈕都會同步
+ * - 切換會真正掛上 <html class="dark">，Tailwind 的 dark: 與 token 變數才會生效
+ * - 使用者選擇會存進 localStorage，重新整理後保留
  */
 
 type ChptDarkModeVariant = 'fancy' | 'simple'
@@ -78,13 +89,16 @@ type ChptDarkModeVariant = 'fancy' | 'simple'
 interface ChptDarkModeProps {
   /** 外觀模式 */
   variant?: ChptDarkModeVariant
-  /** 初始深色模式狀態（v-model:darkMode） */
+  /** 初始深色模式狀態；僅在使用者尚未做過選擇（仍為 system）時套用 */
   initialDarkMode?: boolean
-  /** 是否顯示控制選項 */
+  /** 是否顯示「跟隨系統」控制選項 */
   showControls?: boolean
-  /** 是否預設同步 body */
+  /**
+   * @deprecated 已無作用。主題現在一律同步到 <html> 與 <body>，
+   * 由 useDarkMode() 統一處理，保留此 prop 只為不破壞既有呼叫端。
+   */
   syncBodyByDefault?: boolean
-  /** 深色模式（v-model:darkMode） */
+  /** 受控模式：由外部指定深色與否（v-model:darkMode） */
   darkMode?: boolean
 }
 
@@ -101,46 +115,45 @@ const emit = defineEmits<{
   (e: 'toggle', value: boolean): void
 }>()
 
-const isDarkMode = ref(props.darkMode ?? props.initialDarkMode)
-const syncWithBody = ref(props.syncBodyByDefault)
+const { isDark, mode, setMode, toggle } = useDarkMode()
 
+/** 對外維持原本的 isDarkMode 名稱 */
+const isDarkMode = computed(() => isDark.value)
+
+const toggleLabel = computed(() => (isDark.value ? '切換為淺色模式' : '切換為深色模式'))
+const followSystemLabel = '跟隨系統'
+
+/** 受控模式：外部傳入 darkMode 時以它為準 */
 watch(
   () => props.darkMode,
   (value) => {
-    if (value !== undefined) isDarkMode.value = value
-  }
+    if (value !== undefined && value !== isDark.value) setMode(value ? 'dark' : 'light')
+  },
+  { immediate: true }
 )
 
-function handleToggle(): void {
-  isDarkMode.value = !isDarkMode.value
-  if (syncWithBody.value) {
-    document.body.setAttribute('data-dark-mode', isDarkMode.value.toString())
-    if (isDarkMode.value) {
-      document.body.classList.add('dark-mode')
-      document.body.classList.remove('light-mode')
-    } else {
-      document.body.classList.add('light-mode')
-      document.body.classList.remove('dark-mode')
-    }
+/** 非受控時，initialDarkMode 只在使用者還沒做過選擇（仍為 system）時生效 */
+onMounted(() => {
+  if (props.darkMode === undefined && props.initialDarkMode && mode.value === 'system') {
+    setMode('dark')
   }
-  emit('update:darkMode', isDarkMode.value)
-  emit('toggle', isDarkMode.value)
+})
+
+function handleToggle(): void {
+  toggle()
+  emit('update:darkMode', isDark.value)
+  emit('toggle', isDark.value)
 }
 
-watch(() => props.initialDarkMode, (newValue) => {
-  if (props.darkMode === undefined) isDarkMode.value = newValue
-})
-
-onMounted(() => {
-  if (syncWithBody.value) {
-    document.body.setAttribute('data-dark-mode', isDarkMode.value.toString())
-    document.body.classList.add(isDarkMode.value ? 'dark-mode' : 'light-mode')
-  }
-})
+function handleFollowSystem(followSystem: boolean): void {
+  const next: ChptThemeMode = followSystem ? 'system' : isDark.value ? 'dark' : 'light'
+  setMode(next)
+  emit('update:darkMode', isDark.value)
+}
 
 defineExpose({
   toggle: handleToggle,
-  isDarkMode: computed(() => isDarkMode.value),
+  isDarkMode,
 })
 </script>
 

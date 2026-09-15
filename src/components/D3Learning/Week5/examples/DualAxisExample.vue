@@ -283,7 +283,7 @@ const handleClick = (event) => {
   alert(`點擊了: ${JSON.stringify(event.data?.data || event.data, null, 2)}`);
 };
 
-const handleHover = (event) => {
+const handleHover = (_event) => {
   // 可以在這裡添加更複雜的 hover 邏輯
 };
 

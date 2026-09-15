@@ -55,9 +55,8 @@ const props = withDefaults(defineProps<ChptProgressProps>(), {
   showLabel: true,
 })
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: number): void
-}>()
+// 註：本元件為純顯示，modelValue 是單向輸入，不會回寫。
+// 原本宣告的 update:modelValue 從未 emit，留著只會誤導使用端，故移除。
 
 /** 限制在 0~100 */
 const displayPercent = computed(() =>

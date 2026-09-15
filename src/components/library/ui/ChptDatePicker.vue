@@ -5,7 +5,7 @@
     </label>
 
     <VueDatePicker
-      :model-value="props.modelValue"
+      :model-value="innerModelValue"
       :range="props.range"
       :enable-time-picker="props.enableTimePicker"
       :format="props.format"
@@ -27,6 +27,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
+import type { ModelValue } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import type { ComponentSize } from '@/components/library/shared/types/ui.types'
 
@@ -91,6 +92,17 @@ const props = withDefaults(defineProps<ChptDatePickerProps>(), {
   fullWidth: false,
   errorText: '',
 })
+
+/**
+ * VueDatePicker 的 ModelValue 不含 null，也不接受 [Date | string, Date | string]
+ * 這種混合元素的 tuple（它要的是 Date[] 或 string[] 同質陣列）。
+ * 這裡把 null 收斂成 undefined，區間值交由 VueDatePicker 自行解析。
+ */
+const innerModelValue = computed<ModelValue | undefined>(() =>
+  props.modelValue === null || props.modelValue === undefined
+    ? undefined
+    : (props.modelValue as ModelValue)
+)
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: ChptDatePickerValue): void

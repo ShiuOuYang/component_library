@@ -14,8 +14,8 @@
             :debounce-delay="200"
             :layers="responsiveLayers"
             title="響應式圖表（試著調整窗口大小）"
-            :showGrid="true"
-            :enableBrush="true"
+            :show-grid="true"
+            :enable-brush="true"
             @chart-resize="logResize"
           />
         </div>

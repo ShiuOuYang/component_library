@@ -12,7 +12,7 @@
     </slot>
 
     <div class="rounded shadow-sm overflow-hidden">
-      <div ref="tableRef" :style="tableContainerStyle" @scroll="handleScroll">
+      <div :style="tableContainerStyle" @scroll="handleScroll">
         <table>
           <thead class="bg-neutral-50 shadow-sm">
             <tr>
@@ -99,7 +99,7 @@
                   :name="`td-${column.dataIndex}`"
                   :column="column"
                   :row="row"
-                  :rowIndex="rowIndex"
+                  :row-index="rowIndex"
                 >
                   <div class="text-center text-neutral-700 whitespace-nowrap leading-tight py-0.5">
                     {{ column.format ? column.format(row[column.dataIndex]) : row[column.dataIndex] }}
@@ -319,7 +319,7 @@ const finishedData = computed<ChptFixedTableRow[]>(() => {
   if (props.isFilter && filterState.value.size > 0) {
     result = result.filter((item) => {
       for (const [columnKey, selectedValues] of filterState.value.entries()) {
-        if (selectedValues.length > 0 && !selectedValues.includes(item[columnKey])) {
+        if (selectedValues.length > 0 && !selectedValues.includes(normalizeCellValue(item[columnKey]))) {
           return false
         }
       }
@@ -393,7 +393,7 @@ function unFixedColumn(currentColumn: ChptFixedTableColumn): void {
   const unfixed = Object.entries(tempObj.value)
     .sort((a, b) => a[1] - b[1])
     .map(([dataIndex]) => innerColumns.value.find((c) => c.dataIndex === dataIndex))
-    .filter((c): c is ChptFixedTableColumn => Boolean(c) && !c.defaultFixed)
+    .filter((c): c is ChptFixedTableColumn => c !== undefined && !c.defaultFixed)
 
   innerColumns.value = [...innerColumns.value.filter((c) => c.defaultFixed), ...unfixed]
   fixedColumns.value = getFixedColumnIds()
@@ -465,7 +465,6 @@ function getAccumulatedWidthByDataIndex(column: ChptFixedTableColumn): number {
 }
 
 // ===== 捲動方向 =====
-const tableRef = ref<HTMLElement | null>(null)
 type ScrollDirection = '' | 'horizontal' | 'vertical'
 const currentScrollDirection = ref<ScrollDirection>('')
 const prevScrollLeft = ref(0)
@@ -521,10 +520,32 @@ const filterColumnValueArray = ref<Array<string | number | boolean>>([])
 const originalData = ref<ChptFixedTableRow[]>([])
 const filterSearchText = ref('')
 
+/** 欄位篩選用的選項。label 必須是 string —— ChptCheckbox 的 items 要求如此 */
 interface ChptRadioItem {
-  label: string | number | boolean
+  label: string
   value: string | number | boolean
   disabled?: boolean
+}
+
+/**
+ * 把儲存格的值正規化為可比較 / 可顯示的原始值。
+ *
+ * 資料列型別是 Record<string, unknown>，值可能是 null / undefined / 物件。
+ * 原本兩處各自寫 `item ?? ''`，物件值會被當成選項的 value 直接存起來，
+ * 之後 includes() 以參考比對必定落空 —— 篩選會無聲失效，label 也會顯示
+ * [object Object]。統一走這個函式後兩邊規則一致。
+ */
+function normalizeCellValue(value: unknown): string | number | boolean {
+  if (value === null || value === undefined) return ''
+  const t = typeof value
+  if (t === 'string' || t === 'number' || t === 'boolean') return value as string | number | boolean
+  return String(value)
+}
+
+/** 由儲存格值建立篩選選項 */
+function toFilterOption(value: unknown): ChptRadioItem {
+  const v = normalizeCellValue(value)
+  return { value: v, label: String(v) }
 }
 
 watch(
@@ -533,7 +554,7 @@ watch(
     if (newValue) {
       uniqueColumnValueArray.value = [
         ...new Set(originalData.value.map((item) => item[newValue.dataIndex])),
-      ].map((item) => ({ value: item ?? '', label: item ?? '' }))
+      ].map(toFilterOption)
     }
   }
 )
@@ -545,11 +566,11 @@ watch(filterSearchText, (newValue) => {
     const all = [...new Set(originalData.value.map((item) => item[column.dataIndex]))]
     uniqueColumnValueArray.value = all
       .filter((value) => String(value).toLowerCase().includes(newValue.toLowerCase()))
-      .map((item) => ({ value: item ?? '', label: item ?? '' }))
+      .map(toFilterOption)
   } else {
-    uniqueColumnValueArray.value = [...new Set(originalData.value.map((item) => item[column.dataIndex]))].map(
-      (item) => ({ value: item ?? '', label: item ?? '' })
-    )
+    uniqueColumnValueArray.value = [
+      ...new Set(originalData.value.map((item) => item[column.dataIndex])),
+    ].map(toFilterOption)
   }
 })
 

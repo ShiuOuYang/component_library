@@ -16,9 +16,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
+    // TS 6 起 baseUrl 已棄用；paths 改寫成相對路徑即可，不需要 baseUrl
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "types": ["vite/client"]
   },

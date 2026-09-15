@@ -13,8 +13,17 @@
 ## 快速開始
 
 ```bash
-npm install
+npm ci             # 使用 lockfile 安裝（不要用 npm install，會改寫 lockfile）
 npm run dev        # 開發 / 文件站
+```
+
+品質檢查：
+
+```bash
+npm run typecheck  # vue-tsc，型別必須零錯誤
+npm run lint       # ESLint，errors 必須為 0
+npm run format     # Prettier 排版
+npm run verify     # typecheck → lint → build，CI 跑的就是這串
 ```
 
 元件正式入口為 **`@/components/library`**：
@@ -67,6 +76,33 @@ FilterBar/FilterDropdown/FilterSelect/TagFilterDropdown、CommonTooltip、Dragga
 
 ---
 
+## 深色模式
+
+採 **class 策略**：`useDarkMode()` 在 `<html>` 掛 `.dark`，Tailwind 的 `dark:`
+與 `tokensPlugin` 注入的 `.dark` CSS 變數同時生效。
+
+```vue
+<script setup>
+import { useDarkMode, ChptDarkModeToggle } from '@/components/library'
+
+const { isDark, mode, setMode, toggle } = useDarkMode()
+</script>
+
+<template>
+  <ChptDarkModeToggle variant="simple" />
+</template>
+```
+
+- 使用者選擇存在 `localStorage['chpt-theme']`，可為 `light` / `dark` / `system`
+- 應用進入點需呼叫一次 `initDarkMode()`（`src/main.js` 已接）
+- `index.html` 有一段前置腳本在首次繪製前套用主題，避免畫面閃爍
+- 元件優先使用會自動翻轉的 CSS 變數（`--color-text-*` / `--color-bg-*` /
+  `--color-border-*` / `--viz-axis-*`），只有需要換色階時才寫 `dark:`
+
+細節見 [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md#深色模式dark-mode)。
+
+---
+
 ## 設計系統（Theme）
 
 所有顏色／尺寸／圓角／動效皆由 **`src/design/tokens.js`** 定義，
@@ -84,7 +120,7 @@ FilterBar/FilterDropdown/FilterSelect/TagFilterDropdown、CommonTooltip、Dragga
 | `danger` / `warning` / `info` | 錯誤 / 警示 / 資訊 | Tailwind red/yellow/sky 系 |
 | `neutral` | 文字、邊框、底色 | Tailwind 內建 neutral |
 
-詳細規則見 [`style/DESIGN_SYSTEM.md`](style/DESIGN_SYSTEM.md)。
+詳細規則見 [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md)。
 
 ---
 

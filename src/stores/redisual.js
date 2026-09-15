@@ -66,7 +66,6 @@ export const useRedisualStore = defineStore('redisual', () => {
     
     // 分離 FB 欄位和非 FB 欄位，分別排序
     const fbItems = data.filter(item => item.fb.includes('FB'))
-    const nonFbItems = data.filter(item => !item.fb.includes('FB'))
     
     // FB 欄位按數字排序
     fbItems.sort((a, b) => {

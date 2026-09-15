@@ -19,6 +19,7 @@
 
         <!-- 抽屜 -->
         <Transition
+          appear
           :enter-active-class="`transition-all duration-300 ${enterClass}`"
           :leave-active-class="`transition-all duration-200 ${leaveClass}`"
         >

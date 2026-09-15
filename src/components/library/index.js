@@ -32,3 +32,4 @@ export {
 
 // ===== shared =====
 export { useToast } from './shared/useToast'
+export { useDarkMode, initDarkMode, THEME_STORAGE_KEY } from './shared/useDarkMode'

@@ -3,13 +3,16 @@
     <!-- 控制選項 -->
     <div v-if="showControls" class="controls mb-2">
       <label class="flex items-center gap-2 text-sm">
-        <input type="checkbox" v-model="syncWithBody" />
-        Sync &lt;body&gt;
+        <input type="checkbox" :checked="followSystem" @change="handleFollowSystem($event.target.checked)" />
+        跟隨系統
       </label>
     </div>
     
     <!-- 簡單切換按鈕 -->
     <button 
+      type="button"
+      :aria-pressed="isDarkMode"
+      :aria-label="toggleLabel"
       @click="handleToggle"
       :class="[
         'toggle-btn',
@@ -23,77 +26,54 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
+import { useDarkMode } from '@/components/library/shared/useDarkMode'
 
-// Props
+/**
+ * SimpleDarkModeToggle（@deprecated）
+ *
+ * 請改用 <ChptDarkModeToggle variant="simple" />。
+ * 此檔保留以免破壞既有呼叫端，狀態已改為委派給 useDarkMode()，
+ * 與 ChptDarkModeToggle 共用同一份全域狀態。
+ */
 const props = defineProps({
-  initialDarkMode: {
-    type: Boolean,
-    default: false
-  },
-  showControls: {
-    type: Boolean,
-    default: false
-  },
-  syncBodyByDefault: {
-    type: Boolean,
-    default: true
-  }
+  initialDarkMode: { type: Boolean, default: false },
+  showControls: { type: Boolean, default: false },
+  /** @deprecated 已無作用，主題一律同步到 <html> 與 <body> */
+  syncBodyByDefault: { type: Boolean, default: true },
 })
 
-// Emits
 const emit = defineEmits(['update:darkMode', 'toggle'])
 
-// 響應式狀態
-const isDarkMode = ref(props.initialDarkMode)
-const syncWithBody = ref(props.syncBodyByDefault)
+const { isDark, mode, setMode, toggle } = useDarkMode()
 
-// 切換處理函數
-const handleToggle = () => {
-  isDarkMode.value = !isDarkMode.value
-  
-  // 同步到 body 元素
-  if (syncWithBody.value) {
-    document.body.setAttribute('data-dark-mode', isDarkMode.value.toString())
-    
-    if (isDarkMode.value) {
-      document.body.classList.add('dark-mode')
-      document.body.classList.remove('light-mode')
-    } else {
-      document.body.classList.add('light-mode')
-      document.body.classList.remove('dark-mode')
-    }
+const isDarkMode = computed(() => isDark.value)
+const toggleLabel = computed(() => (isDark.value ? '切換為淺色模式' : '切換為深色模式'))
+const followSystem = computed(() => mode.value === 'system')
+
+watch(
+  () => props.initialDarkMode,
+  (value) => {
+    if (value && mode.value === 'system') setMode('dark')
   }
-  
-  // 發出事件
-  emit('update:darkMode', isDarkMode.value)
-  emit('toggle', isDarkMode.value)
-  
-  console.log('🌙 Dark Mode Toggled:', isDarkMode.value)
+)
+
+onMounted(() => {
+  if (props.initialDarkMode && mode.value === 'system') setMode('dark')
+})
+
+function handleToggle() {
+  toggle()
+  emit('update:darkMode', isDark.value)
+  emit('toggle', isDark.value)
 }
 
-// 監聽外部變化
-watch(() => props.initialDarkMode, (newValue) => {
-  isDarkMode.value = newValue
-})
+function handleFollowSystem(checked) {
+  setMode(checked ? 'system' : isDark.value ? 'dark' : 'light')
+  emit('update:darkMode', isDark.value)
+}
 
-// 組件掛載時設置初始狀態
-onMounted(() => {
-  if (syncWithBody.value) {
-    document.body.setAttribute('data-dark-mode', isDarkMode.value.toString())
-    if (isDarkMode.value) {
-      document.body.classList.add('dark-mode')
-    } else {
-      document.body.classList.add('light-mode')
-    }
-  }
-})
-
-// 暴露方法
-defineExpose({
-  toggle: handleToggle,
-  isDarkMode: computed(() => isDarkMode.value)
-})
+defineExpose({ toggle: handleToggle, isDarkMode })
 </script>
 
 <style scoped>

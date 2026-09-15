@@ -510,17 +510,6 @@ function handlePageChange(page: number): void {
   emit('update:page', currentPage.value)
 }
 
-// 處理當前頁碼輸入變化
-function handleCurrentPageChange() {
-  if (currentPage.value < 1) {
-    currentPage.value = 1
-  } else if (currentPage.value > totalPages.value) {
-    currentPage.value = totalPages.value || 1
-  }
-  
-  emit('update:page', currentPage.value)
-}
-
 // 處理分頁大小變更
 function handlePageSizeChange(size?: number) {
   if (size != null) {

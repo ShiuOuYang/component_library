@@ -293,7 +293,7 @@ function renderAll(width, height) {
 }
 
 // ===== 渲染圖層內的元素 =====
-function renderLayerElements(group, elements, layerColor) {
+function renderLayerElements(group, elements, _layerColor) {
   // 按照 type 渲染順序：outline → region → trace → pad → via → component → silk
   const renderOrder = ['outline', 'region', 'trace', 'pad', 'via', 'component', 'silk']
 
@@ -559,7 +559,7 @@ function toggleLayer(layer) {
 }
 
 // ===== Zoom =====
-function setupZoom(svg, group, width, height) {
+function setupZoom(svg, group, _width, _height) {
   zoomBehavior = d3.zoom()
     .scaleExtent([props.minZoom, props.maxZoom])
     .on('zoom', (event) => {

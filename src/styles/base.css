@@ -19,20 +19,11 @@
   }
 
   /**
-   * 強制淺色模式
-   * 🔧 原本在 :root / html / body / * 四處重複宣告 color-scheme，並用
-   *    @media (prefers-color-scheme: dark) 加 !important 再蓋一次。
-   *    實際上 `color-scheme: light` 宣告在 html 一處即可完全生效，
-   *    瀏覽器不會因為使用者偏好深色而覆蓋它，不需要 !important，
-   *    也不需要用萬用選擇器套到每一個元素（那是效能負擔）。
-   *
-   * ⚠️ 未來要支援深色模式時，改動點只有這裡 + tokens.js 加一組 dark 值，
-   *    不必再回頭清理散落的 !important。
+   * color-scheme 不在此硬寫。
+   * tokensPlugin.js 會在 :root 放 `color-scheme: light`、在 `.dark` 放 `dark`，
+   * 由 useDarkMode() 掛在 <html> 上的 .dark 決定，瀏覽器原生控制項
+   * （捲軸 / 表單 / date picker）才會跟著翻轉。
    */
-  html {
-    color-scheme: light;
-  }
-
   html,
   body {
     color: var(--color-text-primary);

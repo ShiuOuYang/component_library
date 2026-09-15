@@ -1,11 +1,9 @@
 import { computed, onMounted } from "vue";
 import { useUserStore } from "../stores/user.js";
-import { useNavigationStore } from "../stores/navigation.js";
 import { useRouter } from "vue-router";
 
 export function useAuth() {
   const userStore = useUserStore();
-  const navigationStore = useNavigationStore();
   const router = useRouter();
 
   // 計算屬性

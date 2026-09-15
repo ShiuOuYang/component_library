@@ -862,7 +862,7 @@ d3.selectAll('.practice-rect')
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import * as d3 from 'd3';
 
 const demo1Svg = ref(null);

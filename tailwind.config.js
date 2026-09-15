@@ -18,6 +18,10 @@ const { colors, shadows, typography, duration, zIndex } = designTokens
  */
 /** @type {import('tailwindcss').Config} */
 export default {
+  // 深色模式採 class 策略：由 useDarkMode() 在 <html> 掛 .dark 切換。
+  // 不可省略 —— 省略時 Tailwind 會落回 'media'，只聽作業系統偏好，切換鈕會完全失效。
+  darkMode: 'class',
+
   content: [
     './index.html',
     './src/**/*.{vue,js,ts,jsx,tsx}',

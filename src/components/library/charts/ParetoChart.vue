@@ -252,7 +252,6 @@ const drawParetoChart = async () => {
   await nextTick()
   
   if (!chartContainer.value || paretoData.value.length === 0) {
-    console.log('ParetoChart - 跳過繪製:', !chartContainer.value ? '無容器' : '無數據')
     return
   }
 
@@ -271,7 +270,6 @@ const drawParetoChart = async () => {
     
     // 確保容器有有效尺寸
     if (containerRect.width === 0 || containerRect.height === 0) {
-      console.log('ParetoChart - 容器尺寸為零，延遲渲染')
       setTimeout(() => drawParetoChart(), 100)
       return
     }
@@ -334,7 +332,7 @@ const drawParetoChart = async () => {
       .range(props.colorScheme)
 
     // 繪製柱狀圖
-    const bars = g.selectAll('.bar')
+    g.selectAll('.bar')
       .data(paretoData.value)
       .enter()
       .append('rect')
@@ -346,10 +344,10 @@ const drawParetoChart = async () => {
       .attr('fill', d => colorScale(d.name))
       .attr('opacity', 0.8)
       .style('cursor', 'pointer')
-      .on('mouseover', function(event, d) {
+      .on('mouseover', function(_event, _d) {
         d3.select(this).attr('opacity', 1)
       })
-      .on('mouseout', function(event, d) {
+      .on('mouseout', function(_event, _d) {
         d3.select(this).attr('opacity', 0.8)
       })
       
@@ -501,7 +499,7 @@ const updateParetoData = async () => {
       emit('update:paretoData', paretoData.value)
     } else {
       paretoData.value = []
-      console.log('ParetoChart - 無有效數據')
+      console.warn('[ChptParetoChart] 資料中沒有可繪製的有效數值')
     }
     
     // 確保在下一個 tick 後繪製，讓 DOM 有時間更新
@@ -524,7 +522,7 @@ const updateParetoData = async () => {
 }
 
 // 監聽傳入數據變化
-watch(() => props.paretoInputData, async (newData) => {
+watch(() => props.paretoInputData, async (_newData) => {
   // 延遲執行以確保組件已掛載
   await nextTick()
   setTimeout(() => {
@@ -533,7 +531,7 @@ watch(() => props.paretoInputData, async (newData) => {
 }, { deep: true, immediate: false })
 
 // 監聽閾值變化
-watch(() => props.cumulativeThreshold, async (newThreshold, oldThreshold) => {
+watch(() => props.cumulativeThreshold, async (_newThreshold, _oldThreshold) => {
   // console.log('ParetoChart - 閾值變化:', { newThreshold, oldThreshold })
   if (props.paretoInputData && props.paretoInputData.length > 0) {
     await nextTick()

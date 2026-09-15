@@ -8,7 +8,9 @@ WORKDIR /app
 COPY package*.json ./
 
 # 安裝所有依賴（包括開發依賴用於 Vue.js 3 + Vite 建置）
-RUN npm install
+# 用 npm ci 而非 npm install：專案有 package-lock.json，
+# npm install 會忽略鎖定版本並可能改寫 lockfile，建置就不可重現了。
+RUN npm ci
 
 # 複製所有必要的 Vue.js 3 專案檔案
 COPY . .
@@ -34,8 +36,8 @@ WORKDIR /app
 # 複製 package.json 和 package-lock.json
 COPY package*.json ./
 
-# 只安裝生產依賴
-RUN npm ci --only=production
+# 只安裝生產依賴（--only=production 已棄用，改用 --omit=dev）
+RUN npm ci --omit=dev
 
 # 從構建階段複製打包後的文件
 COPY --from=builder /app/dist ./dist
