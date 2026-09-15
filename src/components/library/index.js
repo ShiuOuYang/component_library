@@ -33,3 +33,5 @@ export {
 // ===== shared =====
 export { useToast } from './shared/useToast'
 export { useDarkMode, initDarkMode, THEME_STORAGE_KEY } from './shared/useDarkMode'
+export { useModalManager, generateModalId } from './shared/useModalManager'
+export { useOptionalRouter } from './shared/useOptionalRouter'

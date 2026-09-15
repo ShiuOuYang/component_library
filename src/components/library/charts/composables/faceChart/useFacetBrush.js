@@ -63,7 +63,6 @@ export function useFacetBrush() {
           ...colXDomains.value,
           [col]: event.xDomain
         };
-        console.log(`  → [both 模式] 更新欄 ${col} 的 X domain`, colXDomains.value[col]);
       }
       if (event.yLeftDomain || event.yRightDomain) {
         // 🔧 不可變更新：創建新物件觸發 Vue 響應式
@@ -75,14 +74,9 @@ export function useFacetBrush() {
           ...rowYDomains.value,
           [row]: newRowData
         };
-        console.log(`  → [both 模式] 更新列 ${row} 的 Y domain`, rowYDomains.value[row]);
       }
     }
     
-    console.log('  → 當前所有 domains 狀態:', {
-      colXDomains: { ...colXDomains.value },
-      rowYDomains: JSON.parse(JSON.stringify(rowYDomains.value))
-    });
     
     emit('selection-change', { ...event, facetId, row, col });
   };
@@ -126,11 +120,6 @@ export function useFacetBrush() {
    * @param {Function} emit - Vue emit 函數
    */
   const handleResetZoom = (emit) => {
-    console.log('🔴 [Reset] handleResetZoom 觸發');
-    console.log('  → Reset 前 colXDomains:', JSON.parse(JSON.stringify(colXDomains.value)));
-    console.log('  → Reset 前 rowYDomains:', JSON.parse(JSON.stringify(rowYDomains.value)));
-    console.log('  → Reset 前 Object.keys(colXDomains):', Object.keys(colXDomains.value));
-    console.log('  → Reset 前 Object.keys(rowYDomains):', Object.keys(rowYDomains.value));
     
     // 清空所有 domain
     currentXDomain.value = null;
@@ -142,11 +131,6 @@ export function useFacetBrush() {
     // 🔧 觸發 resetTrigger 通知所有子圖表清除 brush selection
     resetTrigger.value++;
     
-    console.log('  → Reset 後 colXDomains:', JSON.parse(JSON.stringify(colXDomains.value)));
-    console.log('  → Reset 後 rowYDomains:', JSON.parse(JSON.stringify(rowYDomains.value)));
-    console.log('  → Reset 後 Object.keys(colXDomains):', Object.keys(colXDomains.value));
-    console.log('  → Reset 後 Object.keys(rowYDomains):', Object.keys(rowYDomains.value));
-    console.log('  → Reset Trigger:', resetTrigger.value);
     
     if (emit) {
       emit('zoom-reset');
@@ -169,12 +153,6 @@ export function useFacetBrush() {
       result = fallback;
     }
     
-    console.log(`🟢 [Query] getXDomain(syncMode=${syncMode}, col=${col})`, {
-      storedValue: colXDomains.value[col],
-      result: result,
-      willUseFallback: result === undefined,
-      fallback: fallback
-    });
     
     return result;
   };
@@ -195,12 +173,6 @@ export function useFacetBrush() {
       result = fallback;
     }
     
-    console.log(`🟢 [Query] getYLeftDomain(syncMode=${syncMode}, row=${row})`, {
-      storedValue: rowYDomains.value[row]?.yLeft,
-      result: result,
-      willUseFallback: result === undefined,
-      fallback: fallback
-    });
     
     return result;
   };
@@ -221,12 +193,6 @@ export function useFacetBrush() {
       result = fallback;
     }
     
-    console.log(`🟢 [Query] getYRightDomain(syncMode=${syncMode}, row=${row})`, {
-      storedValue: rowYDomains.value[row]?.yRight,
-      result: result,
-      willUseFallback: result === undefined,
-      fallback: fallback
-    });
     
     return result;
   };

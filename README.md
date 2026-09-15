@@ -20,10 +20,11 @@ npm run dev        # 開發 / 文件站
 品質檢查：
 
 ```bash
-npm run typecheck  # vue-tsc，型別必須零錯誤
-npm run lint       # ESLint，errors 必須為 0
-npm run format     # Prettier 排版
-npm run verify     # typecheck → lint → build，CI 跑的就是這串
+npm run typecheck        # vue-tsc，型別必須零錯誤
+npm run check:boundary   # 組件庫邊界檢查（見下方「組件庫邊界」）
+npm run lint             # ESLint，errors 必須為 0
+npm run format           # Prettier 排版
+npm run verify           # 以上全部 + build，CI 跑的就是這串
 ```
 
 元件正式入口為 **`@/components/library`**：
@@ -57,10 +58,12 @@ import { ChptExcelEditor } from '@/components/library/excel'
 src/components/library/          正式組件庫入口
   ui/index.js        通用 UI（Chpt*：表單/資料/反饋/浮層/導覽）
   charts/index.js    D3 圖表（雙軸/柏拉圖/熱力/分面…）
+  charts/composables/  圖表專用的 D3 composable（scales / brush / facet layout）
   viewer/index.js    領域檢視器（Gerber / PCB）
   excel/index.js     Excel 編輯/匯出/匯入
-  shared/            types/ui.types.ts、useToast.ts（跨群共用）
-  index.js           正式公開 API（canonical 元件 + useToast）
+  shared/            跨群共用：types/ui.types.ts、useToast、useDarkMode、
+                     useModalManager、useOptionalRouter
+  index.js           正式公開 API（canonical 元件 + composables）
 
 src/components/common/index.js   相容 facade（@deprecated）
                                  保留舊匯出名，供既有程式碼/舊文件零改動遷移
@@ -68,6 +71,52 @@ src/design/          設計系統（tokens.js 唯一手動來源 → tokensPlugi
 src/styles/          全域樣式（base / components / index）
 src/views/docs/      組件文檔站（/docs 子頁）
 ```
+
+---
+
+## 組件庫邊界
+
+`src/components/library/` 必須能**整包複製到另一個專案**而不需要修改。
+因此它只允許相依：
+
+- npm 套件（`vue` / `d3` / `@vueuse/core` / `xlsx` …）
+- library 內部（`@/components/library/…` 或相對路徑）
+- `@/design`（設計令牌本身就是組件庫的一部分）
+
+**不得**出現 `@/composables`、`@/stores`、`@/api`、`@/utils`、`@/router`、`@/views`。
+`npm run check:boundary` 會擋下違規，CI 也會跑。
+
+### 使用端要提供什麼
+
+| 項目 | 必要性 | 說明 |
+|---|---|---|
+| `vue` ^3.5 | 必要 | peer dependency |
+| `vue-router` ^4 | **選用** | 只有 `ChptTabNavigation` / `ChptPageSwitcher` 會用；沒有時它們退回受控模式 |
+| Material Symbols CSS | 必要（用到 `ChptIcon` 時） | `import 'material-symbols/outlined.css'` |
+| `<ChptToast />` | 用到 `useToast()` 時 | 需在應用根部掛一次 |
+| `<ChptModalDock />` | 用到 modal 最小化時 | 需在應用根部掛一次 |
+| `initDarkMode()` | 建議 | 在進入點呼叫一次，套用使用者上次選擇的主題 |
+
+### 需要應用邏輯的元件
+
+這類元件一律以 props / emit 注入，組件庫不直接 import 應用程式的模組：
+
+```vue
+<script setup>
+import { useAuth } from '@/composables/useAuth'
+const { logout } = useAuth()
+</script>
+
+<template>
+  <!-- 登出流程由使用端注入，元件只負責確認 → loading → 回報 -->
+  <ChptHeaderLogoutButton :on-logout="logout" @error="toast.error('登出失敗')" />
+
+  <!-- 沒有 router 時傳 active-path + 監聽 select 即可 -->
+  <ChptTabNavigation :tabs="tabs" :active-path="current" @select="current = $event.path" />
+</template>
+```
+
+---
 
 **遷移指引**：舊程式若使用 `@/components/common` 仍可運作（facade）；
 新程式請改用 `@/components/library`。legacy／alias stub（CommonTable、ExcelEditor、ModalDock、

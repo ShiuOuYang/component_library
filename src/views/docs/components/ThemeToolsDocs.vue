@@ -76,9 +76,11 @@
       </div>
 
       <ApiTable title="Props" :rows="logoutProps" />
+      <ApiTable title="Events" :rows="logoutEvents" />
 
       <p class="text-sm text-neutral-600 mt-4">
-        <strong>注意：</strong>元件內建確認對話框與登入中的 loading 狀態；<code>variant</code> 支援
+        <strong>注意：</strong>本元件是純展示元件，只負責「確認 → loading → 回報結果」，
+        實際登出流程請透過 <code>on-logout</code> 注入。<code>variant</code> 支援
         soft-red／solid-red／outline-gray／ghost／primary 五種外觀。
       </p>
     </section>
@@ -113,6 +115,7 @@
 </template>
 
 <script setup>
+/* eslint-disable no-useless-escape -- 範例字串裡的結束標籤必須跳脫，否則 SFC 解析器會把 script 區塊提前收尾；ESLint 的 JS parser 看不到 SFC 這一層，故誤判 */
 import { ref } from 'vue'
 import {
   ChptDarkModeToggle,
@@ -128,14 +131,23 @@ const darkSimple = ref(false)
 const darkModeSample = `<ChptDarkModeToggle
   v-model:dark-mode="darkMode"
   variant="fancy"    <!-- 或 simple -->
-  :sync-body-by-default="true"
+  :show-controls="true"
 />`
 
-const logoutSample = `<ChptHeaderLogoutButton
-  size="md"
-  variant="soft-red"
-  label="登出"
-/>`
+const logoutSample = `<script setup>
+import { useAuth } from '@/composables/useAuth'
+const { logout } = useAuth()
+<\/script>
+
+<template>
+  <ChptHeaderLogoutButton
+    size="md"
+    variant="soft-red"
+    label="登出"
+    :on-logout="logout"
+    @error="(e) => toast.error('登出失敗')"
+  />
+</template>`
 
 // ---- API 資料（與元件 props/emits 對齊） ----
 const darkModeProps = [
@@ -143,7 +155,7 @@ const darkModeProps = [
   { name: 'darkMode', type: 'boolean', def: 'undefined', desc: '深色狀態（v-model:dark-mode）' },
   { name: 'initialDarkMode', type: 'boolean', def: 'false', desc: '初始狀態（未綁定 v-model 時）' },
   { name: 'showControls', type: 'boolean', def: 'false', desc: '顯示額外控制選項' },
-  { name: 'syncBodyByDefault', type: 'boolean', def: 'true', desc: '是否自動同步 body 的 data-dark-mode/class' },
+  { name: 'syncBodyByDefault', type: 'boolean', def: 'true', desc: '@deprecated 已無作用；主題一律由 useDarkMode() 同步到 <html> 與 <body>' },
 ]
 const darkModeEvents = [
   { name: 'update:darkMode', params: '(value: boolean)', desc: '狀態變更（v-model）' },
@@ -155,9 +167,19 @@ const darkModeExpose = [
 ]
 
 const logoutProps = [
+  { name: 'onLogout', type: '() => void | Promise<void>', def: 'undefined', desc: '實際登出流程，由使用端注入；等待期間顯示 loading' },
   { name: 'size', type: "'sm'|'md'", def: "'md'", desc: '尺寸' },
   { name: 'variant', type: "'soft-red'|'solid-red'|'outline-gray'|'ghost'|'primary'", def: "'soft-red'", desc: '樣式變體' },
   { name: 'label', type: 'string', def: "'登出'", desc: '按鈕文字' },
+  { name: 'loadingLabel', type: 'string', def: "'登出…'", desc: '載入中文字' },
+  { name: 'title', type: 'string', def: "'登出系統'", desc: '按鈕的無障礙標題' },
+  { name: 'confirm', type: 'boolean', def: 'true', desc: '點擊後是否先跳確認視窗' },
+  { name: 'confirmMessage', type: 'string', def: "'確定要登出嗎？'", desc: '確認視窗訊息' },
   { name: 'customClass', type: 'string', def: "''", desc: '自訂 class' },
+]
+
+const logoutEvents = [
+  { name: 'logout', params: '()', desc: '使用者確認登出（onLogout 執行前）' },
+  { name: 'error', params: '(error: unknown)', desc: 'onLogout 執行失敗；錯誤如何呈現由使用端決定' },
 ]
 </script>

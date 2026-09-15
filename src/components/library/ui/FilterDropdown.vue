@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, useTemplateRef } from 'vue'
+import { onClickOutside } from '@vueuse/core'
 
 const props = defineProps({
   label: {
@@ -62,10 +63,19 @@ function toggleAll() {
 function closeDropdown() {
   isOpen.value = false
 }
+/**
+ * 點擊元件外部時關閉下拉。
+ *
+ * 原本用的是 main.js 全域註冊的 v-click-outside 指令 —— 那是應用程式層的設定，
+ * 組件庫不該假設使用端一定註冊過同名指令（沒註冊時只會靜默失效，不會報錯）。
+ * 改用既有相依 @vueuse/core 的 onClickOutside，元件自給自足。
+ */
+const rootRef = useTemplateRef('root')
+onClickOutside(rootRef, () => closeDropdown())
 </script>
 
 <template>
-  <div class="relative" v-click-outside="closeDropdown">
+  <div ref="root" class="relative">
     <!-- 下拉按鈕 - 移除標籤，緊湊設計 -->
     <button
       @click="isOpen = !isOpen"

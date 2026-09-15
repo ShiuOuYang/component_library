@@ -69,8 +69,8 @@
 <script setup>
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue';
 import * as d3 from 'd3';
-import { useD3Brush } from '@/composables/d3/useD3Brush';
-import { useChartScales } from '@/composables/d3/useChartScales';
+import { useD3Brush } from './composables/useD3Brush';
+import { useChartScales } from './composables/useChartScales';
 
 const props = defineProps({
   // === 基礎配置 ===

@@ -132,7 +132,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, useSlots, nextTick, type CSSProperties } from 'vue'
-import { useModalManager, generateModalId } from '@/composables/useModalManager'
+import { useModalManager, generateModalId } from '@/components/library/shared/useModalManager'
 
 interface ModalState {
   x: number

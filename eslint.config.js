@@ -102,6 +102,7 @@ export default defineConfigWithVueTs(
     files: [
       '*.config.js',
       'server.js',
+      'scripts/**/*.{js,mjs}',
       'src/design/**/*.js',
       'eslint.config.js',
     ],

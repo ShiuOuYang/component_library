@@ -111,8 +111,8 @@
 
 <script setup>
 import DualAxisComboChart from './DualAxisComboChart.vue';
-import { useFacetLayout, useGridFacetLayout } from '@/composables/d3/faceChart/useFacetLayout';
-import { useFacetBrush } from '@/composables/d3/faceChart/useFacetBrush';
+import { useFacetLayout, useGridFacetLayout } from './composables/faceChart/useFacetLayout';
+import { useFacetBrush } from './composables/faceChart/useFacetBrush';
 
 const props = defineProps({
   // ===== 數據配置 =====

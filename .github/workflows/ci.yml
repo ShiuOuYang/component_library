@@ -44,6 +44,10 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # 組件庫必須能整包搬到別的專案，不得相依應用程式內部模組
+      - name: Library boundary
+        run: npm run check:boundary
+
       - name: Lint
         run: npm run lint
 

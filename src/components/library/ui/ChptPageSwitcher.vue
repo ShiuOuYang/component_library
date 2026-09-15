@@ -38,8 +38,9 @@
                 : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600 border-l-4 border-transparent'
             ]"
           >
-            <!-- 圖標 -->
-            <component :is="page.icon || fallbackIcon" class="w-4 h-4 flex-shrink-0" />
+            <!-- 圖標（未提供時留一個等寬的空位，讓各列標題仍然對齊） -->
+            <component v-if="page.icon" :is="page.icon" class="w-4 h-4 flex-shrink-0" />
+            <span v-else class="w-4 h-4 flex-shrink-0" aria-hidden="true" />
 
             <!-- 標題 -->
             <span class="flex-1">{{ page.title }}</span>
@@ -70,15 +71,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, h, type VNode } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, computed, onBeforeUnmount, type VNode } from 'vue'
+import { useOptionalRouter } from '@/components/library/shared/useOptionalRouter'
 
 /**
  * ChptPageSwitcher（CHPT 主題） - 側邊頁面切換器
  *
- * 整合原 PageSwitcher：
- * - 完整 Props 型別定義（interface + withDefaults）
- * - 左側邊緣滑出面板，支援自訂頁面清單與標題
+ * 左側邊緣滑出面板，支援自訂頁面清單與標題。
+ *
+ * 導覽方式（依序取用第一個可用的）：
+ *   1. 監聽 @select 事件自行處理
+ *   2. 環境中有 vue-router 時自動 router.push()
+ *
+ * 目前頁面由 activePath 決定；未提供時才回頭讀當前路由。
+ *
+ * 註：原本這裡內建了 /ncn-dashboard、/yield-monitor、/spc-monitor 三個預設頁面，
+ * 那是某一個應用的路由設定，不屬於通用組件庫，已移除 —— pages 現在是必要輸入。
  */
 
 interface PageSwitchItem {
@@ -94,39 +102,33 @@ interface ChptPageSwitcherProps {
   pages?: PageSwitchItem[]
   /** 底部提示文字 */
   footerHint?: string
+  /** 目前頁面路徑。提供時進入受控模式（不再讀取當前路由） */
+  activePath?: string
 }
 
 const props = withDefaults(defineProps<ChptPageSwitcherProps>(), {
   title: '頁面切換',
   pages: () => [],
   footerHint: '滑鼠移開自動收起',
+  activePath: undefined,
 })
 
-// Router
-const router = useRouter()
-const route = useRoute()
+const emit = defineEmits<{
+  (e: 'select', page: PageSwitchItem): void
+}>()
+
+const { router, currentPath } = useOptionalRouter()
 
 // 狀態
 const isExpanded = ref(false)
 let hideTimeout: ReturnType<typeof setTimeout> | null = null
+let collapseTimeout: ReturnType<typeof setTimeout> | null = null
 
-/** 內建預設頁面配置 */
-const fallbackIcon = h('svg', { class: 'w-4 h-4' })
+const resolvedPages = computed<PageSwitchItem[]>(() => props.pages)
 
-const defaultPages: PageSwitchItem[] = [
-  { path: '/ncn-dashboard', title: 'NCN Monitor' },
-  { path: '/yield-monitor', title: 'Yield Monitor' },
-  { path: '/spc-monitor', title: 'SPC Monitor' },
-]
-
-/** 解析後的頁面清單（未提供時使用內建預設） */
-const resolvedPages = computed<PageSwitchItem[]>(() =>
-  props.pages.length > 0 ? props.pages : defaultPages
-)
-
-/** 判斷是否為當前頁面 */
+/** 判斷是否為當前頁面：activePath 優先，其次才看路由 */
 function isCurrentPage(path: string): boolean {
-  return route.path === path
+  return props.activePath !== undefined ? props.activePath === path : currentPath.value === path
 }
 
 function handleMouseEnter(): void {
@@ -144,13 +146,24 @@ function handleMouseLeave(): void {
 }
 
 function navigateToPage(path: string): void {
-  if (route.path !== path) {
+  const page = resolvedPages.value.find((p) => p.path === path)
+  if (page) emit('select', page)
+
+  // 有 router 就自動導航；沒有的話交給使用端在 @select 裡處理
+  if (router && currentPath.value !== path) {
     router.push(path)
   }
-  setTimeout(() => {
+
+  collapseTimeout = setTimeout(() => {
     isExpanded.value = false
   }, 200)
 }
+
+// 元件卸載時清掉計時器，避免在已銷毀的元件上改狀態
+onBeforeUnmount(() => {
+  if (hideTimeout) clearTimeout(hideTimeout)
+  if (collapseTimeout) clearTimeout(collapseTimeout)
+})
 </script>
 
 <style scoped>

@@ -182,7 +182,7 @@ import {
   ref, computed, watch, onMounted, onUnmounted, useSlots, nextTick, type CSSProperties,
 } from 'vue'
 import ChptIcon from './ChptIcon.vue'
-import { useModalManager, generateModalId } from '@/composables/useModalManager'
+import { useModalManager, generateModalId } from '@/components/library/shared/useModalManager'
 
 /**
  * ChptModal（CHPT 主題） - 通用模態框 / 多視窗

@@ -253,7 +253,7 @@ import {
   ChptTag,
   ChptCodeBlock,
 } from '@/components/library'
-import { useModalManager } from '@/composables/useModalManager'
+import { useModalManager } from '@/components/library/shared/useModalManager'
 import ApiTable from './_ApiTable.vue'
 
 const modalOpen = ref(false)
