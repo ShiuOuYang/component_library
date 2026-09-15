@@ -75,9 +75,33 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',')
 
+/**
+ * 元素是否對使用者可見。
+ *
+ * 不用 offsetWidth / offsetHeight 判斷：那是從「排版結果」反推可見性，
+ * 在沒有排版引擎的環境（jsdom、SSR hydration 前、尚未 layout 的容器）
+ * 所有元素都會被當成不可見，焦點陷阱於是靜默失效。
+ * 改為直接檢查造成隱藏的原因，並往上檢查祖先的 display: none。
+ * 附帶好處：Tab 的處理路徑不再需要讀取會觸發 reflow 的 offset* 屬性。
+ */
+function isVisible(el: HTMLElement, container: HTMLElement): boolean {
+  let node: HTMLElement | null = el
+  while (node) {
+    if (node.hidden) return false
+    if (node.getAttribute('aria-hidden') === 'true') return false
+
+    const style = window.getComputedStyle(node)
+    if (style.display === 'none' || style.visibility === 'hidden') return false
+
+    if (node === container) break
+    node = node.parentElement
+  }
+  return true
+}
+
 function getFocusable(container: HTMLElement): HTMLElement[] {
-  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
-    (el) => el.offsetWidth > 0 || el.offsetHeight > 0 || el === document.activeElement
+  return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter((el) =>
+    isVisible(el, container)
   )
 }
 

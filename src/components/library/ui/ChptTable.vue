@@ -19,15 +19,15 @@
       
       <div class="flex items-center gap-2.5">
         <!-- 分頁控制區 (top 或 both 時顯示) -->
-        <PaginationControls
+        <ChptPagination
           v-if="paginationPosition === 'top' || paginationPosition === 'both'"
+          variant="compact"
           :current-page="currentPage"
-          :total-pages="totalPages"
-          :page-size="pageSize"
-          :total="sortedAndFilteredData.length"
+          :items-per-page="pageSize"
+          :total-items="sortedAndFilteredData.length"
           bg-color="bg-neutral-50"
-          @page-change="handlePageChange"
-          @page-size-change="handlePageSizeChange"
+          @update:current-page="handlePageChange"
+          @update:items-per-page="handlePageSizeChange"
         />
         
         <slot name="right-controls"></slot>
@@ -123,14 +123,14 @@
       </div>
       
       <div class="flex items-center gap-2.5">
-        <PaginationControls
+        <ChptPagination
+          variant="compact"
           :current-page="currentPage"
-          :total-pages="totalPages"
-          :page-size="pageSize"
-          :total="sortedAndFilteredData.length"
+          :items-per-page="pageSize"
+          :total-items="sortedAndFilteredData.length"
           bg-color="bg-white"
-          @page-change="handlePageChange"
-          @page-size-change="handlePageSizeChange"
+          @update:current-page="handlePageChange"
+          @update:items-per-page="handlePageSizeChange"
         />
         
         <slot name="bottom-right-controls"></slot>
@@ -144,7 +144,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, useSlots, onMounted } from 'vue'
-import PaginationControls from './PaginationControls.vue'
+import ChptPagination from './ChptPagination.vue'
 
 // === 型別定義 ===
 type DataRow = Record<string, unknown> //=type DataRow = { [key: string]: unknown };

@@ -112,6 +112,29 @@ export default defineConfigWithVueTs(
   },
 
   {
+    // 測試檔：vitest 的 globals（describe / it / expect / vi）
+    name: 'app/tests',
+    files: ['tests/**/*.{js,ts}', '**/*.spec.{js,ts}'],
+    languageOptions: {
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+      },
+    },
+    rules: {
+      // 測試裡故意 mount 不合法的 props 來驗證容錯
+      'vue/require-default-prop': 'off',
+    },
+  },
+
+  {
     // CI 守門腳本是 CLI 工具，輸出結果到 stdout 是它們的本職
     name: 'app/cli-scripts',
     files: ['scripts/**/*.{js,mjs}'],

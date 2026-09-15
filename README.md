@@ -24,6 +24,9 @@ npm run typecheck        # vue-tsc，型別必須零錯誤
 npm run check:boundary   # 組件庫邊界檢查（見下方「組件庫邊界」）
 npm run check:legacy     # legacy 相容層必須維持薄包裝
 npm run check:docs       # 文件站路由不得有佔位頁或斷掉的引用
+npm run test             # Vitest 單元測試
+npm run test:watch       # 監看模式
+npm run test:coverage    # 覆蓋率報告（含門檻檢查）
 npm run lint             # ESLint，errors 必須為 0
 npm run format           # Prettier 排版
 npm run verify           # 以上全部 + build，CI 跑的就是這串
@@ -140,6 +143,59 @@ src/views/docs/      組件文檔站（/docs 子頁）
 
 元件不得只寫 `focus:outline-none` —— 那會蓋掉 `base.css` 的全域
 `:focus-visible` 外框。必須同時提供 `focus-visible:ring-*` 之類的替代樣式。
+
+---
+
+## 測試
+
+```bash
+npm run test            # 一次跑完
+npm run test:watch      # 開發時監看
+npm run test:coverage   # 覆蓋率 + 門檻檢查
+```
+
+Vitest + @vue/test-utils + jsdom。測試檔在 `tests/`：
+
+| 目錄 | 內容 |
+|---|---|
+| `tests/regression/` | **每個 case 對應一個實際存在過的 bug** |
+| `tests/shared/` | composables：useDarkMode / useOverlay / useToast / useModalManager / useOptionalRouter / warnDeprecated |
+| `tests/ui/` | 元件與 legacy 相容層的轉發 |
+| `tests/design/` | 設計令牌與 tokensPlugin 產出的 CSS 變數 |
+
+> ⚠️ 本專案的 Vite 是 5.x，所以 Vitest 必須留在 **2.x**
+> （Vitest 3+ 起 peer 要求 Vite 6+）。升 Vitest 前要先升 Vite。
+
+### 覆蓋率現況
+
+整體 **約 21%** —— 這個數字偏低是因為 40 多個元件還沒有測試把平均拉下來，
+不是已測部分測得淺。已測的部分：
+
+| 範圍 | 覆蓋率 |
+|---|---|
+| `library/shared/**`（composables） | 98% |
+| `src/design/**`（設計令牌） | 93% |
+| `ChptButton` / `ChptToast` | 100% |
+| `ChptDrawer` | 95% |
+| `ChptTable` | 76% |
+| `ChptModal` | 65% |
+
+`vitest.config.js` 的門檻設在**目前水準**而不是理想值，目的是讓覆蓋率只能往上，
+而不是掛一個現在就過不了的數字讓 CI 永遠紅燈。`shared/` 與 `design/` 的門檻
+另外拉高（90%），避免已經測透的部分退步。
+
+### 為什麼優先寫回歸測試
+
+這輪審視修掉的 bug，幾乎每一個都是「一個單元測試就能抓到」的類型，卻在
+沒有任何測試的情況下存活到人工審視才被發現：
+
+- `ChptToast` 從未渲染 `toast.content` —— 提示只有圖示和關閉鈕，沒有訊息文字
+- `ChptTable` 的排序表頭沒有 `tabindex` 也沒有鍵盤事件 —— 鍵盤完全無法排序
+- 每個 Modal 各自綁 `document` keydown —— 按一次 Escape 關掉所有開啟的浮層
+- `ChptTabs` 的 `disabledTab` prop 根本沒宣告 —— 停用功能形同不存在
+- `ChptProgress` 宣告 `update:modelValue` 卻從未 emit
+
+`tests/regression/fixed-bugs.spec.js` 把它們全部鎖住了。
 
 ---
 

@@ -30,6 +30,18 @@ async function collectFiles(dir) {
   return out
 }
 
+/**
+ * canonical（Chpt*）元件不得內部相依 legacy 相容層。
+ * ChptTable 曾經內部使用 PaginationControls，導致使用者只要用 ChptTable
+ * 就會收到一則與自己無關的 PaginationControls deprecation 警告。
+ */
+const LEGACY_COMPONENTS = [
+  'CodeBlock', 'CommonTable', 'CommonTooltip', 'DraggableModal',
+  'FilterBar', 'FilterDropdown', 'FilterSelect', 'HeaderLogoutButton',
+  'ModalDock', 'PageSwitcher', 'Pagination', 'PaginationControls',
+  'SimpleDarkModeToggle', 'TabNavigation', 'TagFilterDropdown',
+]
+
 const violations = []
 
 for (const file of await collectFiles(LIBRARY_ROOT)) {
@@ -48,12 +60,34 @@ for (const file of await collectFiles(LIBRARY_ROOT)) {
     const line = code.slice(0, match.index).split('\n').length
     violations.push({ file: relative('.', file), line, spec })
   }
+
+  // canonical 不得 import legacy。
+  // 兩種檔案不受此限：legacy 本身（薄包裝當然要 import canonical，反向也可能
+  // 互相引用），以及 barrel index.js（匯出 legacy 正是它的職責）。
+  const base = file.split('/').pop()
+  if (base === 'index.js' || base === 'index.ts') continue
+  if (LEGACY_COMPONENTS.includes(base.replace(/\.vue$/, ''))) continue
+
+  for (const match of code.matchAll(IMPORT_RE)) {
+    const spec = match[1]
+    const imported = spec.split('/').pop().replace(/\.vue$/, '')
+    if (!LEGACY_COMPONENTS.includes(imported)) continue
+
+    const line = code.slice(0, match.index).split('\n').length
+    violations.push({
+      file: relative('.', file),
+      line,
+      spec,
+      reason: `canonical 元件不得內部使用 legacy 相容層（${imported}）`,
+    })
+  }
 }
 
 if (violations.length > 0) {
-  console.error('組件庫邊界檢查失敗：library 不得相依應用程式內部模組\n')
+  console.error('組件庫邊界檢查失敗\n')
   for (const v of violations) {
     console.error(`  ${v.file}:${v.line}  →  ${v.spec}`)
+    if (v.reason) console.error(`      ${v.reason}`)
   }
   console.error(
     '\n處理方式：若該模組本來就屬於組件庫，請搬進 src/components/library/；' +
