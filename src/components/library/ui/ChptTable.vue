@@ -53,7 +53,12 @@
                   'text-primary-500': getColumnSortInfo(column.key) !== null
                 }
               ]"
+              scope="col"
+              :aria-sort="ariaSortFor(column)"
+              :tabindex="isColumnClickable(column) ? 0 : undefined"
               @click="handleHeaderClick(column)"
+              @keydown.enter.prevent="handleHeaderClick(column)"
+              @keydown.space.prevent="handleHeaderClick(column)"
             >
               <div class="relative flex items-center justify-center min-h-[28px]">
                 <span class="text-center px-4">{{ column.title }}</span>
@@ -61,6 +66,7 @@
                 <!-- 排序圖標 - 使用絕對定位，支援多欄排序顯示 -->
                 <span 
                   v-if="isColumnClickable(column)" 
+                  aria-hidden="true"
                   class="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 transition-all duration-200"
                   :class="getColumnSortInfo(column.key) !== null ? 'opacity-100' : 'opacity-30 hover:opacity-60'"
                 >
@@ -254,6 +260,22 @@ const sortColumns = ref<SortItem[]>(
 )
 
 // 向下相容的 computed：取第一個排序欄位
+/**
+ * 欄位的 aria-sort 值。
+ *
+ * 原本表頭只有 @click，既沒有 tabindex 也沒有鍵盤事件 —— 排序功能對鍵盤
+ * 使用者完全不存在；而排序狀態只靠視覺上的 ▲▼ 表示，螢幕閱讀器讀不到。
+ * 注意不要在 <th> 上覆寫 role（例如改成 button），那會破壞表格語意；
+ * 讓它維持 columnheader，再以 tabindex + keydown 提供鍵盤操作即可。
+ */
+function ariaSortFor(column: Column): 'ascending' | 'descending' | 'none' | undefined {
+  // 只有可排序的欄位才需要 aria-sort；不可排序的欄位不應出現這個屬性
+  if (!isColumnClickable(column)) return undefined
+  const info = getColumnSortInfo(column.key)
+  if (info === null) return 'none'
+  return info.direction === 'asc' ? 'ascending' : 'descending'
+}
+
 const sortColumn = computed(() => sortColumns.value.length > 0 ? sortColumns.value[0].key : null)
 const sortDirection = computed(() => sortColumns.value.length > 0 ? sortColumns.value[0].direction : 'asc')
 

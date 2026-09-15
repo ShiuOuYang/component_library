@@ -21,14 +21,21 @@
         </div>
       </div>
       <div>
-        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="分頁導航">
           <button @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="sr-only">上一頁</span>
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd"/></svg>
           </button>
           <template v-for="page in displayedPages" :key="page">
-            <button v-if="page !== '...'" @click="changePage(page)" :class="[page === currentPage ? 'relative z-10 inline-flex items-center bg-primary-600 px-4 py-2 text-sm font-semibold text-white' : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-neutral-900 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50']">{{ page }}</button>
-            <span v-else class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-neutral-700 ring-1 ring-inset ring-neutral-300">...</span>
+            <button
+              v-if="page !== '...'"
+              type="button"
+              :aria-label="`第 ${page} 頁`"
+              :aria-current="page === currentPage ? 'page' : undefined"
+              @click="changePage(page)"
+              :class="[page === currentPage ? 'relative z-10 inline-flex items-center bg-primary-600 px-4 py-2 text-sm font-semibold text-white' : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-neutral-900 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50']"
+            >{{ page }}</button>
+            <span v-else aria-hidden="true" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-neutral-700 ring-1 ring-inset ring-neutral-300">...</span>
           </template>
           <button @click="nextPage" :disabled="currentPage === totalPages" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="sr-only">下一頁</span>
@@ -40,27 +47,27 @@
   </div>
 
   <!-- Compact 模式（原 PaginationControls） -->
-  <div v-else class="flex items-center gap-2.5">
+  <nav v-else aria-label="分頁導航" class="flex items-center gap-2.5">
     <div v-if="showSummary && totalItems > 0" class="text-xs text-neutral-500 mr-1 px-1.5 rounded h-6 flex items-center border border-neutral-300" :class="bgColor">共 {{ totalItems }} 筆</div>
 
     <div v-if="showPageSize" class="flex items-center gap-1 text-xs text-neutral-700 border border-neutral-300 rounded px-1.5 h-6" :class="bgColor">
       <span>每頁</span>
-      <input type="number" :value="itemsPerPage" min="1" max="1000" class="w-9 h-4.5 border border-neutral-300 rounded-sm text-center px-0.5 text-xs bg-white focus:outline-none focus:border-primary-500" @change="handlePageSizeInput" />
+      <input type="number" :value="itemsPerPage" min="1" max="1000" aria-label="每頁筆數" class="w-9 h-4.5 border border-neutral-300 rounded-sm text-center px-0.5 text-xs bg-white focus:outline-none focus:border-primary-500" @change="handlePageSizeInput" />
       <span>筆</span>
     </div>
 
     <div class="flex items-center rounded border border-neutral-300 overflow-hidden" :class="bgColor">
-      <button :class="btnClass" class="border-r" @click="changePage(1)" :disabled="currentPage === 1" title="第一頁"><span class="text-xs">«</span></button>
-      <button :class="btnClass" class="border-r" @click="changePage(currentPage - 1)" :disabled="currentPage === 1" title="上一頁"><span class="text-xs">‹</span></button>
+      <button :class="btnClass" class="border-r" @click="changePage(1)" :disabled="currentPage === 1" title="第一頁" :aria-label="'第一頁'"><span aria-hidden="true" class="text-xs">«</span></button>
+      <button :class="btnClass" class="border-r" @click="changePage(currentPage - 1)" :disabled="currentPage === 1" title="上一頁" :aria-label="'上一頁'"><span aria-hidden="true" class="text-xs">‹</span></button>
       <div class="flex items-center h-6 px-1 bg-white border-r border-neutral-300">
-        <input type="number" :value="currentPage" min="1" :max="totalPages" class="w-7 h-4.5 text-center border border-neutral-300 rounded-sm text-xs px-0.5 focus:outline-none focus:border-primary-500" @change="handlePageInput" />
+        <input type="number" :value="currentPage" min="1" :max="totalPages" aria-label="目前頁碼" class="w-7 h-4.5 text-center border border-neutral-300 rounded-sm text-xs px-0.5 focus:outline-none focus:border-primary-500" @change="handlePageInput" />
         <span class="mx-1 text-neutral-700 text-xs">/</span>
         <span class="text-xs text-neutral-700">{{ totalPages || 0 }}</span>
       </div>
-      <button :class="btnClass" class="border-r" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || totalPages === 0" title="下一頁"><span class="text-xs">›</span></button>
-      <button :class="btnClass" @click="changePage(totalPages)" :disabled="currentPage === totalPages || totalPages === 0" title="最後一頁"><span class="text-xs">»</span></button>
+      <button :class="btnClass" class="border-r" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || totalPages === 0" title="下一頁" :aria-label="'下一頁'"><span aria-hidden="true" class="text-xs">›</span></button>
+      <button :class="btnClass" @click="changePage(totalPages)" :disabled="currentPage === totalPages || totalPages === 0" title="最後一頁" :aria-label="'最後一頁'"><span aria-hidden="true" class="text-xs">»</span></button>
     </div>
-  </div>
+  </nav>
 </template>
 
 <script setup lang="ts">

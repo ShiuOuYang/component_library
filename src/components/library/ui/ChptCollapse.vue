@@ -6,7 +6,10 @@
     >
       <!-- 標題 -->
       <button
+        :id="headerId(index)"
         type="button"
+        :aria-expanded="isOpen(index)"
+        :aria-controls="panelId(index)"
         class="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-neutral-50 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
         @click="toggle(index)"
       >
@@ -14,6 +17,7 @@
         <ChptIcon
           :size="18"
           color="neutral-500"
+          aria-hidden="true"
           class="transition-transform duration-200"
           :class="isOpen(index) ? 'rotate-180' : ''"
         >
@@ -32,6 +36,9 @@
       >
         <div
           v-if="isOpen(index)"
+          :id="panelId(index)"
+          role="region"
+          :aria-labelledby="headerId(index)"
           class="px-4 pb-4 text-sm text-neutral-600"
         >
           <slot :name="`content-${index}`" :item="item">
@@ -44,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, useId, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 
 /**
@@ -90,6 +97,18 @@ watch(
   },
   { immediate: true }
 )
+
+const uid = useId()
+
+/** 標題按鈕的 id，供內容區的 aria-labelledby 指向 */
+function headerId(index: number): string {
+  return `${uid}-header-${index}`
+}
+
+/** 內容區的 id，供標題按鈕的 aria-controls 指向 */
+function panelId(index: number): string {
+  return `${uid}-panel-${index}`
+}
 
 function isOpen(index: number): boolean {
   return openIndexes.value.includes(index)

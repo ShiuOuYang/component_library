@@ -4,6 +4,7 @@
       <li
         class="flex items-center shrink-0"
         :class="stepClass(step)"
+        :aria-current="step.status === 'process' ? 'step' : undefined"
       >
         <!-- 節點 -->
         <div class="flex flex-col items-center">
@@ -11,7 +12,7 @@
             class="flex items-center justify-center rounded-full border-2 font-semibold"
             :class="nodeClass(step)"
           >
-            <ChptIcon v-if="step.status === 'done'" :size="nodeSize - 4">check</ChptIcon>
+            <ChptIcon v-if="step.status === 'done'" :size="nodeSize - 4" aria-hidden="true">check</ChptIcon>
             <template v-else>{{ index + 1 }}</template>
           </span>
           <span
@@ -21,11 +22,14 @@
           >
             {{ step.title }}
           </span>
+          <!-- 狀態只靠顏色與打勾圖示表達，補一段只給輔助技術讀的文字 -->
+          <span class="sr-only">{{ statusText(step) }}</span>
         </div>
 
-        <!-- 連接線 -->
+        <!-- 連接線（純視覺） -->
         <div
           v-if="index < props.steps.length - 1"
+          aria-hidden="true"
           class="mx-2 h-0.5 rounded-full flex-1 min-w-[24px]"
           :class="props.steps[index + 1]?.status === 'done' ? 'bg-primary-500' : 'bg-neutral-300'"
         />
@@ -78,6 +82,17 @@ function nodeClass(step: StepItem): string {
 }
 
 /** 外部容器樣式 */
+/** 步驟狀態的文字說明（僅供螢幕閱讀器） */
+function statusText(step: StepItem): string {
+  const map: Record<string, string> = {
+    done: '已完成',
+    process: '進行中',
+    wait: '尚未開始',
+    error: '發生錯誤',
+  }
+  return map[step.status ?? 'wait'] ?? ''
+}
+
 function stepClass(step: StepItem): string {
   return step.status === 'process' ? 'opacity-100' : ''
 }

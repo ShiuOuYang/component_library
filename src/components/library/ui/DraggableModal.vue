@@ -26,7 +26,11 @@
         
         <!-- Modal 容器 -->
         <div
-          class="relative bg-white overflow-hidden pointer-events-auto"
+          ref="panel"
+          role="dialog"
+          :aria-labelledby="titleId"
+          tabindex="-1"
+          class="relative bg-white overflow-hidden pointer-events-auto focus:outline-none"
           :class="[props.roundedClass, props.shadowClass, props.borderClass]"
           :style="modalStyle"
           @mousedown="handleBringToFront"
@@ -47,7 +51,7 @@
               </div>
               
               <!-- 標題 -->
-              <h3 class="text-lg font-semibold" :class="props.headerTextColor">
+              <h3 :id="titleId" class="text-lg font-semibold" :class="props.headerTextColor">
                 <slot name="title">{{ title }}</slot>
               </h3>
             </div>
@@ -131,8 +135,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted, useSlots, nextTick, type CSSProperties } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, useId, useSlots, useTemplateRef, nextTick, type CSSProperties } from 'vue'
 import { useModalManager, generateModalId } from '@/components/library/shared/useModalManager'
+import { useOverlay } from '@/components/library/shared/useOverlay'
 
 interface ModalState {
   x: number
@@ -492,6 +497,24 @@ function handleClose(): void {
   emit('close')
 }
 
+// ===== 無障礙 =====
+/** 標題元素的 id，供 aria-labelledby 指向 */
+const titleId = `${useId()}-title`
+const panelRef = useTemplateRef<HTMLElement>('panel')
+
+/**
+ * 多視窗模式：背景仍可操作，因此不鎖捲動、不困住焦點；
+ * 但 Escape 要只關最上層那一個（原本每個實例各綁一個監聽器，會全部一起關）。
+ *
+ * ⚠️ 必須放在 isMinimized 與 handleClose 之後：useOverlay 的 watch 是 immediate 的。
+ */
+useOverlay(() => props.modelValue && !isMinimized.value, panelRef, {
+  onEscape: () => handleClose(),
+  closeOnEscape: () => props.closable,
+  lockScroll: false,
+  trapFocus: false,
+})
+
 // 處理背景點擊
 function handleBackdropClick(_event: MouseEvent): void {
   // // 如果是遮罩點擊
@@ -505,12 +528,10 @@ function handleBringToFront(): void {
   bringToFront(modalId)
 }
 
-// 監聽鍵盤事件
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape' && props.modelValue && props.closable) {
-    handleClose()
-  }
-}
+/**
+ * Escape 的處理已移交 useOverlay 的全域堆疊。
+ * 原本每個實例各自綁 document keydown，多開視窗時按一次會全部關掉。
+ */
 
 // 監聽視窗大小變化
 function handleWindowResize(): void {
@@ -565,7 +586,6 @@ watch(() => props.defaultMaximized, (newVal) => {
 })
 
 onMounted(() => {
-  document.addEventListener('keydown', handleKeydown)
   window.addEventListener('resize', handleWindowResize)
   
   // 🔧 修正：如果 Modal 一開始就是顯示狀態，立即初始化
@@ -585,7 +605,6 @@ onUnmounted(() => {
   if (isMinimized.value) {
     unregisterMinimized(modalId)
   }
-  document.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('resize', handleWindowResize)
   document.removeEventListener('mousemove', handleDrag)
   document.removeEventListener('mouseup', stopDrag)

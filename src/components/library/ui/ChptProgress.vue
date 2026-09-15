@@ -2,6 +2,11 @@
   <div class="flex items-center gap-3">
     <div
       ref="trackRef"
+      role="progressbar"
+      :aria-valuenow="displayPercent"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      :aria-label="props.ariaLabel"
       class="flex-1 rounded-full overflow-hidden"
       :style="{ height: `${props.strokeWidth}px`, backgroundColor: trackColorClass }"
       :class="props.trackColor"
@@ -45,6 +50,8 @@ interface ChptProgressProps {
   trackColor?: string
   /** 是否顯示百分比標籤 */
   showLabel?: boolean
+  /** 進度條的無障礙名稱 */
+  ariaLabel?: string
 }
 
 const props = withDefaults(defineProps<ChptProgressProps>(), {
@@ -53,6 +60,7 @@ const props = withDefaults(defineProps<ChptProgressProps>(), {
   strokeWidth: 8,
   trackColor: '',
   showLabel: true,
+  ariaLabel: '進度',
 })
 
 // 註：本元件為純顯示，modelValue 是單向輸入，不會回寫。

@@ -74,6 +74,48 @@ src/views/docs/      組件文檔站（/docs 子頁）
 
 ---
 
+## 無障礙（Accessibility）
+
+### 浮層
+
+`ChptModal` / `ChptDrawer` / `ChptPopconfirm` / `DraggableModal` 共用
+`library/shared/useOverlay.ts`，統一處理四件事：
+
+| 行為 | 說明 |
+|---|---|
+| Escape 只關最上層 | 全域一個監聽器 + 一個堆疊。原本每個實例各綁 `document` keydown，開三個視窗按一次 Escape 會三個一起關 |
+| 焦點陷阱 | Tab / Shift+Tab 只在浮層內循環 |
+| 焦點歸還 | 關閉後把焦點還給開啟前的元素 |
+| 背景捲動鎖 | 以引用計數處理巢狀浮層，並補上捲軸寬度避免版面跳動 |
+
+`mode="window"` 的多視窗與 `ChptPopconfirm` 屬於非模態（背景仍可操作），
+因此只套用 Escape 堆疊，不鎖捲動也不困住焦點。
+
+沒有 `title` 時務必給 `aria-label` —— `role="dialog"` 一定要有可及名稱，
+否則螢幕閱讀器只會念「對話方塊」。
+
+### 表單
+
+`ChptInput` / `ChptTextarea` / `ChptSelect` 的 `errorText` 會自動以
+`aria-describedby` 關聯到輸入元素，並加上 `aria-invalid` 與 `role="alert"`。
+元件 id 一律由 Vue 3.5 的 `useId()` 產生（SSR 安全）。
+
+### 資料與狀態
+
+- `ChptTable` 可排序的表頭有 `aria-sort`，並支援 Enter / Space 鍵排序
+  （原本只有 `@click`，鍵盤完全無法排序）
+- `ChptProgress` 有 `role="progressbar"` 與 `aria-valuenow/min/max`
+- `ChptToast` 是 live region；`danger` 用 `assertive`，其餘用 `polite`
+- `ChptCollapse` 有 `aria-expanded` / `aria-controls`，內容區為 `role="region"`
+- `ChptSteps` 以 `aria-current="step"` 標示目前步驟，並補上僅供輔助技術的狀態文字
+
+### 焦點可見性
+
+元件不得只寫 `focus:outline-none` —— 那會蓋掉 `base.css` 的全域
+`:focus-visible` 外框。必須同時提供 `focus-visible:ring-*` 之類的替代樣式。
+
+---
+
 ## 組件庫邊界
 
 `src/components/library/` 必須能**整包複製到另一個專案**而不需要修改。

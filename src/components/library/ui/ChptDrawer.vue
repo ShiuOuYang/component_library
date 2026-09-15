@@ -13,6 +13,7 @@
         <!-- 遮罩 -->
         <div
           class="absolute inset-0"
+          aria-hidden="true"
           :style="{ backgroundColor: `rgba(0,0,0,${props.backdropOpacity})` }"
           @click="handleBackdrop"
         />
@@ -24,7 +25,13 @@
           :leave-active-class="`transition-all duration-200 ${leaveClass}`"
         >
           <div
-            class="absolute bg-white shadow-2xl flex flex-col"
+            ref="panel"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="props.title ? undefined : props.ariaLabel"
+            :aria-labelledby="props.title ? titleId : undefined"
+            tabindex="-1"
+            class="absolute bg-white shadow-2xl flex flex-col focus:outline-none"
             :class="[panelClasses]"
             :style="panelStyle"
           >
@@ -32,7 +39,7 @@
               v-if="props.title"
               class="flex items-center justify-between px-5 py-4 border-b border-neutral-100"
             >
-              <h3 class="font-semibold text-neutral-800">{{ props.title }}</h3>
+              <h3 :id="titleId" class="font-semibold text-neutral-800">{{ props.title }}</h3>
               <button
                 v-if="props.closable"
                 type="button"
@@ -59,8 +66,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId, useTemplateRef } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useOverlay } from '@/components/library/shared/useOverlay'
 
 /**
  * ChptDrawer（CHPT 主題） - 抽屜 / 側滑面板
@@ -70,6 +78,8 @@ import ChptIcon from './ChptIcon.vue'
  * - 四個方向滑出、可設定尺寸
  * - Teleport 掛載到 body
  * - 完整 Props / Emits 型別定義
+ * - 無障礙：role="dialog"、焦點陷阱與歸還、背景捲動鎖、Escape 關閉
+ *   （原本這三件事一件都沒有，鍵盤使用者打開後 Tab 會直接跑到背後的頁面）
  */
 
 type DrawerPlacement = 'left' | 'right' | 'top' | 'bottom'
@@ -89,6 +99,10 @@ interface ChptDrawerProps {
   maskClosable?: boolean
   /** 遮罩透明度 */
   backdropOpacity?: number
+  /** 無標題時的無障礙名稱（role="dialog" 一定要有可及名稱） */
+  ariaLabel?: string
+  /** 按 Escape 是否關閉 */
+  closeOnEscape?: boolean
 }
 
 const props = withDefaults(defineProps<ChptDrawerProps>(), {
@@ -99,6 +113,8 @@ const props = withDefaults(defineProps<ChptDrawerProps>(), {
   closable: true,
   maskClosable: true,
   backdropOpacity: 0.4,
+  ariaLabel: '側邊面板',
+  closeOnEscape: true,
 })
 
 const emit = defineEmits<{
@@ -149,6 +165,17 @@ function handleClose(): void {
 function handleBackdrop(): void {
   if (props.maskClosable) handleClose()
 }
+
+// ===== 無障礙 =====
+/** 標題元素的 id，供 aria-labelledby 指向 */
+const titleId = `${useId()}-title`
+const panelRef = useTemplateRef<HTMLElement>('panel')
+
+// 放在 handleClose 之後：useOverlay 的 watch 是 immediate 的，提前呼叫會撞上 TDZ
+useOverlay(() => props.modelValue, panelRef, {
+  onEscape: () => handleClose(),
+  closeOnEscape: () => props.closable && props.closeOnEscape,
+})
 </script>
 
 <style scoped>

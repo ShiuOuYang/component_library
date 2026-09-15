@@ -8,6 +8,8 @@
       :id="id"
       :value="props.modelValue"
       :disabled="props.disabled"
+      :aria-invalid="props.errorText ? 'true' : undefined"
+      :aria-describedby="props.errorText ? errorId : undefined"
       @change="handleChange"
       class="border rounded-md shadow-sm focus:outline-none focus:ring-1 transition-colors"
       :class="[
@@ -32,12 +34,14 @@
       </option>
     </select>
 
-    <p v-if="props.errorText" class="text-xs text-danger-500">{{ props.errorText }}</p>
+    <p v-if="props.errorText" :id="errorId" role="alert" class="text-xs text-danger-500">
+      {{ props.errorText }}
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 import type { ComponentSize, Recordable, SelectOption } from '@/components/library/shared/types/ui.types'
 
 /**
@@ -97,7 +101,15 @@ const emit = defineEmits<{
 }>()
 
 /** 唯一 id */
-const id = computed(() => `chpt-select-${Math.random().toString(36).slice(2, 11)}`)
+/**
+ * 元件內部使用的 id。
+ * 原本是 computed(() => `…${Math.random()}`)：computed 沒有反應式相依所以值其實穩定，
+ * 但 SSR 時伺服器與用戶端會算出不同的值，造成 hydration 不一致。
+ * useId()（Vue 3.5+）就是為此設計的。
+ */
+const id = useId()
+/** 錯誤訊息的 id，供 aria-describedby 指向 */
+const errorId = `${id}-error`
 
 /** 尺寸對應 class */
 const sizeClass = computed(() => {

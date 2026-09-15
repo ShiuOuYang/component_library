@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, useId } from 'vue'
 import type { ComponentSize } from '@/components/library/shared/types/ui.types'
 import type { Recordable, SelectOption } from '@/components/library/shared/types/ui.types'
 
@@ -154,7 +154,13 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: ChptFilterValue): void
 }>()
 
-const id = computed(() => `chpt-filter-${Math.random().toString(36).slice(2, 9)}`)
+/**
+ * 元件內部使用的 id。
+ * 原本是 computed(() => `…${Math.random()}`)：computed 沒有反應式相依所以值其實穩定，
+ * 但 SSR 時伺服器與用戶端會算出不同的值，造成 hydration 不一致。
+ * useId()（Vue 3.5+）就是為此設計的。
+ */
+const id = useId()
 
 // ===== 通用選項處理 =====
 

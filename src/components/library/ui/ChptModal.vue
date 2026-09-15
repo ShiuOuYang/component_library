@@ -15,6 +15,7 @@
       >
         <div
           class="absolute inset-0"
+          aria-hidden="true"
           :style="{ backgroundColor: `rgba(0,0,0,${props.backdropOpacity})` }"
           @click="handleBackdrop"
         />
@@ -28,14 +29,20 @@
           leave-to-class="opacity-0 scale-95"
         >
           <div
-            class="relative bg-white rounded-xl shadow-2xl flex flex-col max-h-[85vh]"
+            ref="dialogPanel"
+            role="dialog"
+            aria-modal="true"
+            :aria-label="props.title ? undefined : props.ariaLabel"
+            :aria-labelledby="props.title ? titleId : undefined"
+            tabindex="-1"
+            class="relative bg-white rounded-xl shadow-2xl flex flex-col max-h-[85vh] focus:outline-none"
             :style="dialogBoxStyle"
           >
             <div
               v-if="props.title"
               class="flex items-center justify-between px-5 py-4 border-b border-neutral-100"
             >
-              <h3 class="font-semibold text-neutral-800">{{ props.title }}</h3>
+              <h3 :id="titleId" class="font-semibold text-neutral-800">{{ props.title }}</h3>
               <button
                 v-if="props.closable"
                 type="button"
@@ -78,6 +85,7 @@
       >
         <div
           class="absolute inset-0"
+          aria-hidden="true"
           :class="{ 'pointer-events-none': props.backdropOpacity === 0 }"
           :style="{ backgroundColor: `rgba(0, 0, 0, ${props.backdropOpacity})` }"
           @click="handleBackdrop"
@@ -85,7 +93,12 @@
 
         <div
           ref="modalRef"
-          class="relative bg-white overflow-hidden pointer-events-auto"
+          role="dialog"
+          :aria-modal="props.backdropOpacity > 0 ? 'true' : 'false'"
+          :aria-label="props.title ? undefined : props.ariaLabel"
+          :aria-labelledby="props.title ? titleId : undefined"
+          tabindex="-1"
+          class="relative bg-white overflow-hidden pointer-events-auto focus:outline-none"
           :class="[roundedClass, shadowClass, borderClass]"
           :style="windowStyle"
           @mousedown="handleBringToFront"
@@ -106,7 +119,7 @@
                   <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
                 </svg>
               </div>
-              <h3 class="text-lg font-semibold" :class="headerTextColor">
+              <h3 :id="titleId" class="text-lg font-semibold" :class="headerTextColor">
                 <slot name="title">{{ title }}</slot>
               </h3>
             </div>
@@ -182,7 +195,9 @@ import {
   ref, computed, watch, onMounted, onUnmounted, useSlots, nextTick, type CSSProperties,
 } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useId, useTemplateRef } from 'vue'
 import { useModalManager, generateModalId } from '@/components/library/shared/useModalManager'
+import { useOverlay } from '@/components/library/shared/useOverlay'
 
 /**
  * ChptModal（CHPT 主題） - 通用模態框 / 多視窗
@@ -209,6 +224,11 @@ interface ChptModalProps {
   modelValue?: boolean
   /** 佈局模式：dialog 對話框 / window 多視窗 */
   mode?: ChptModalMode
+  /**
+   * 無標題時的無障礙名稱。
+   * role="dialog" 一定要有可及名稱，否則螢幕閱讀器只會念「對話方塊」。
+   */
+  ariaLabel?: string
   /** 標題 */
   title?: string
   /** 視窗 ID（window 多實例時用） */
@@ -252,6 +272,7 @@ interface ChptModalProps {
 const props = withDefaults(defineProps<ChptModalProps>(), {
   modelValue: false,
   mode: 'dialog',
+  ariaLabel: '對話方塊',
   title: '',
   id: undefined,
   width: undefined,
@@ -320,6 +341,18 @@ const {
 
 const modalId = props.id ?? generateModalId()
 const currentZIndex = computed(() => getZIndex(modalId))
+
+// ===== 無障礙 =====
+/** 標題元素的 id，供 aria-labelledby 指向 */
+const titleId = `${useId()}-title`
+
+// dialog / window 兩種模式各有自己的面板容器，焦點陷阱要套在目前這個上
+const dialogPanelRef = useTemplateRef<HTMLElement>('dialogPanel')
+const windowPanelRef = useTemplateRef<HTMLElement>('modalRef')
+const panelRef = computed(() =>
+  props.mode === 'dialog' ? dialogPanelRef.value : windowPanelRef.value
+)
+
 
 // ===== window state =====
 const isMinimized = ref(false)
@@ -495,14 +528,36 @@ function handleClose(): void {
 function handleBackdrop(): void {
   if (props.maskClosable) handleClose()
 }
+
+/**
+ * 浮層無障礙行為：焦點陷阱、焦點歸還、背景捲動鎖、Escape 只關最上層。
+ *
+ * ⚠️ 必須放在 isMinimized 與 handleClose 宣告之後 —— useOverlay 內部的 watch
+ *    是 immediate 的，會立刻求值傳進來的 getter，提前呼叫會撞上 const 的 TDZ。
+ */
+useOverlay(
+  // window 模式最小化到口袋時不算開啟，否則焦點會被困在看不見的面板裡
+  () => props.modelValue && !(props.mode === 'window' && isMinimized.value),
+  panelRef,
+  {
+    onEscape: () => handleClose(),
+    closeOnEscape: () => props.closable,
+    // window 模式是非模態的多視窗（背景仍可操作），不鎖捲動也不困住焦點
+    lockScroll: props.mode === 'dialog',
+    trapFocus: props.mode === 'dialog',
+  }
+)
 function handleBringToFront(): void {
   if (props.mode === 'window') bringToFront(modalId)
 }
 
 // ===== 鍵盤 / resize =====
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape' && props.modelValue && props.closable) handleClose()
-}
+/**
+ * Escape 的處理已移交 useOverlay 的全域堆疊。
+ *
+ * 原本每個 Modal 實例各自綁 document 的 keydown，同時開三個視窗時
+ * 按一次 Escape 會三個一起關；現在只有堆疊最上層會收到。
+ */
 function handleWindowResize(): void {
   if (props.mode === 'window' && props.modelValue) constrainToViewport()
 }
@@ -523,7 +578,6 @@ watch(() => props.defaultMaximized, (newVal) => {
 })
 
 onMounted(() => {
-  document.addEventListener('keydown', handleKeydown)
   window.addEventListener('resize', handleWindowResize)
   if (props.modelValue && props.mode === 'window') {
     nextTick(() => { registerZIndex(modalId); bringToFront(modalId); initializeModal() })
@@ -533,7 +587,6 @@ onMounted(() => {
 onUnmounted(() => {
   unregisterZIndex(modalId)
   if (isMinimized.value) unregisterMinimized(modalId)
-  document.removeEventListener('keydown', handleKeydown)
   window.removeEventListener('resize', handleWindowResize)
   document.removeEventListener('mousemove', handleDrag)
   document.removeEventListener('mouseup', stopDrag)

@@ -2,10 +2,12 @@
   <span
     ref="triggerEl"
     class="inline-flex"
+    :aria-describedby="visible ? tooltipId : undefined"
     @mouseenter="handleEnter"
     @mouseleave="handleLeave"
     @focusin="handleFocusIn"
     @focusout="handleFocusOut"
+    @keydown.esc="handleLeave"
   >
     <slot></slot>
 
@@ -20,14 +22,17 @@
       >
         <div
           v-if="visible"
+          :id="tooltipId"
           ref="tooltipEl"
+          role="tooltip"
           class="fixed z-50"
           :style="{ left: left + 'px', top: top + 'px' }"
           :class="themeClass"
         >
-          <!-- 箭頭指示器 -->
+          <!-- 箭頭指示器（純視覺） -->
           <div
             v-if="props.showArrow"
+            aria-hidden="true"
             class="absolute w-3 h-3 rotate-45"
             :class="arrowClass"
           ></div>
@@ -43,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick, useId } from 'vue'
 
 /**
  * ChptTooltip（CHPT 主題）- 通用提示框
@@ -89,6 +94,9 @@ const emit = defineEmits<{
 const triggerEl = ref<HTMLElement | null>(null)
 const tooltipEl = ref<HTMLElement | null>(null)
 const visible = ref(false)
+
+/** tooltip 的 id，供觸發元素的 aria-describedby 指向 */
+const tooltipId = `${useId()}-tooltip`
 const left = ref(0)
 const top = ref(0)
 let hideTimer: ReturnType<typeof setTimeout> | null = null
