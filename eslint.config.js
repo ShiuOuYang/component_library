@@ -110,4 +110,13 @@ export default defineConfigWithVueTs(
       globals: { ...globals.node },
     },
   },
+
+  {
+    // CI 守門腳本是 CLI 工具，輸出結果到 stdout 是它們的本職
+    name: 'app/cli-scripts',
+    files: ['scripts/**/*.{js,mjs}'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
 )

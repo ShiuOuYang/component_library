@@ -18,7 +18,6 @@ import DualAxisChartDoc from "../views/docs/DualAxisChartDoc.vue";
 import HeatmapDoc from "../views/docs/HeatmapDoc.vue";
 import ParetoDoc from "../views/docs/ParetoDoc.vue";
 import TooltipDoc from "../views/docs/TooltipDoc.vue";
-import ComponentPlaceholder from "../views/docs/ComponentPlaceholder.vue";
 
 const routes = [
     {
@@ -79,35 +78,11 @@ const routes = [
         },
       },
       {
-        path: "components/pie-chart",
-        name: "PieChartDoc",
-        component: ComponentPlaceholder,
-        meta: {
-          title: "圓餅圖",
-        },
-      },
-      {
-        path: "components/gauge",
-        name: "GaugeDoc",
-        component: ComponentPlaceholder,
-        meta: {
-          title: "儀表板",
-        },
-      },
-      {
         path: "components/heatmap",
         name: "HeatmapDoc",
         component: HeatmapDoc,
         meta: {
           title: "熱力圖",
-        },
-      },
-      {
-        path: "components/gantt",
-        name: "GanttDoc",
-        component: ComponentPlaceholder,
-        meta: {
-          title: "甘特圖",
         },
       },
       {
@@ -129,7 +104,9 @@ const routes = [
       {
         path: "components/schematic-viewer",
         name: "SchematicViewerDoc",
-        component: () => import("../components/SchematicViewer.vue"),
+        // 原本直接指向元件本身，與其他文件頁不一致（而且 SchematicViewer
+        // 是自帶 header 的整頁應用，直接塞進 DocLayout 會有兩層版面）。
+        component: () => import("../views/docs/SchematicViewerDoc.vue"),
         meta: {
           title: "Schematic Viewer",
         },
@@ -215,17 +192,9 @@ const routes = [
         },
       },
       {
-        path: "components/legend",
-        name: "LegendDoc",
-        component: ComponentPlaceholder,
-        meta: {
-          title: "Legend 圖例",
-        },
-      },
-      {
         path: "guide/getting-started",
         name: "GettingStarted",
-        component: ComponentPlaceholder,
+        component: () => import("../views/docs/guide/GettingStarted.vue"),
         meta: {
           title: "快速開始",
         },
@@ -233,12 +202,22 @@ const routes = [
       {
         path: "guide/best-practices",
         name: "BestPractices",
-        component: ComponentPlaceholder,
+        component: () => import("../views/docs/guide/BestPractices.vue"),
         meta: {
           title: "最佳實踐",
         },
       },
     ],
+  },
+  // 未匹配的路徑原本會渲染成白畫面（沒有 catch-all 路由）
+  {
+    path: "/:pathMatch(.*)*",
+    name: "NotFound",
+    component: () => import("../views/NotFound.vue"),
+    meta: {
+      title: "找不到頁面",
+      requiresAuth: false,
+    },
   },
   {
     path: "/d3-learning",
@@ -341,11 +320,12 @@ router.beforeEach(async (to, from, next) => {
   }
 });
 
-// // 設置頁面標題
-// router.afterEach((to) => {
-//   if (to.meta.title) {
-//     document.title = `${to.meta.title} - 看板系統`
-//   }
-// })
+// 設置頁面標題
+// 原本這段被整段註解掉，所以不論切到哪一頁，分頁標題都停在 index.html 的
+// 「組件庫文檔」不會變。
+const BASE_TITLE = '組件庫文檔'
+router.afterEach((to) => {
+  document.title = to.meta?.title ? `${to.meta.title} - ${BASE_TITLE}` : BASE_TITLE
+})
 
 export default router;

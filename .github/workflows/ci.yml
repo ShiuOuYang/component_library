@@ -52,6 +52,10 @@ jobs:
       - name: Legacy shims stay thin
         run: npm run check:legacy
 
+      # 文件站不得出現佔位頁或斷掉的元件引用
+      - name: Docs routes
+        run: npm run check:docs
+
       - name: Lint
         run: npm run lint
 

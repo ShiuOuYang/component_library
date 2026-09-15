@@ -23,6 +23,7 @@ npm run dev        # 開發 / 文件站
 npm run typecheck        # vue-tsc，型別必須零錯誤
 npm run check:boundary   # 組件庫邊界檢查（見下方「組件庫邊界」）
 npm run check:legacy     # legacy 相容層必須維持薄包裝
+npm run check:docs       # 文件站路由不得有佔位頁或斷掉的引用
 npm run lint             # ESLint，errors 必須為 0
 npm run format           # Prettier 排版
 npm run verify           # 以上全部 + build，CI 跑的就是這串
@@ -72,6 +73,31 @@ src/design/          設計系統（tokens.js 唯一手動來源 → tokensPlugi
 src/styles/          全域樣式（base / components / index）
 src/views/docs/      組件文檔站（/docs 子頁）
 ```
+
+---
+
+## 尚未實作的元件
+
+以下元件曾經在 router 裡掛著指向「開發中」佔位頁的路由，其中四個連側欄入口
+都沒有，是只能手打 URL 才到得了的孤兒路由。已全部移除 ——
+**元件真的做出來之後再把路由加回來**（`npm run check:docs` 會擋下佔位頁復活）。
+
+| 元件 | 群別 | 備註 |
+|---|---|---|
+| 圓餅圖 / 環圈圖 | charts | |
+| 儀表板（Gauge） | charts | |
+| 甘特圖 | charts | 與 app 端的 `/gantt` 路由無關 |
+| Legend 圖例 | charts | 目前各圖表各自畫圖例，尚未抽成共用元件 |
+
+新增時請一併補上：`library/charts/` 的實作、`charts/index.js` 的匯出、
+`views/docs/` 的文件頁、`router/index.js` 的路由、`DocLayout.vue` 的側欄項目。
+
+### 不屬於組件庫的整頁應用
+
+`SchematicViewer`、`whiteboard/*`、`GlobalNotifications` 位於
+`src/components/` 而非 `src/components/library/`，它們是自帶版面的整頁應用
+或 app 專屬元件，刻意**不**列入 `@/components/library` 的公開 API。
+文件站保留展示頁，但不代表它們可以被當成組件庫元件引用。
 
 ---
 

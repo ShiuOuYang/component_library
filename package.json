@@ -12,9 +12,10 @@
     "typecheck": "vue-tsc --noEmit",
     "check:boundary": "node scripts/check-library-boundary.mjs",
     "check:legacy": "node scripts/check-legacy-thin.mjs",
+    "check:docs": "node scripts/check-docs-routes.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "npm run typecheck && npm run check:boundary && npm run check:legacy && npm run lint && npm run build"
+    "verify": "npm run typecheck && npm run check:boundary && npm run check:legacy && npm run check:docs && npm run lint && npm run build"
   },
   "peerDependencies": {
     "vue": "^3.5.0",
