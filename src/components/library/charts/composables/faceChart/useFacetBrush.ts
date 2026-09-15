@@ -1,4 +1,43 @@
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue'
+import type { XDomain, YDomain } from '@/components/library/charts/types/chart.types'
+
+/** 分面之間的同步模式 */
+export type FacetSyncMode =
+  /** 全部分面共用同一組 domain */
+  | 'all'
+  /** 同一列共用 Y 軸 */
+  | 'row'
+  /** 同一欄共用 X 軸 */
+  | 'col'
+  /** 同列共用 Y、同欄共用 X */
+  | 'both'
+  /** 各分面獨立 */
+  | 'none'
+
+/** 某一列的 Y domain（左右軸各自一組） */
+export interface RowYDomain {
+  yLeft?: YDomain
+  yRight?: YDomain
+}
+
+/** 分面 brush 事件的 payload */
+export interface FacetBrushEvent {
+  xDomain?: XDomain
+  yLeftDomain?: YDomain
+  yRightDomain?: YDomain
+}
+
+/** 座標軸拖曳事件 */
+export interface FacetAxisDragEvent {
+  axis: 'x' | 'yLeft' | 'yRight'
+  domain?: XDomain | YDomain
+}
+
+/** 分面圖表對外發出的事件 */
+export type FacetBrushEmit = (
+  event: 'selection-change' | 'axis-drag' | 'zoom-reset',
+  payload?: unknown
+) => void
 
 /**
  * Facet 圖表 Brush 同步邏輯
@@ -6,16 +45,16 @@ import { ref } from 'vue';
  */
 export function useFacetBrush() {
   // ===== 全域 Domain（用於 'all' 模式） =====
-  const currentXDomain = ref(null);
-  const currentYLeftDomain = ref(null);
-  const currentYRightDomain = ref(null);
+  const currentXDomain = ref<XDomain | null>(null) as Ref<XDomain | null>
+  const currentYLeftDomain = ref<YDomain | null>(null) as Ref<YDomain | null>
+  const currentYRightDomain = ref<YDomain | null>(null) as Ref<YDomain | null>
 
   // ===== 分組 Domain（用於 'row' 和 'col' 模式） =====
-  const rowYDomains = ref({}); // { rowIndex: { yLeft: [...], yRight: [...] } }
-  const colXDomains = ref({}); // { colIndex: [...] }
+  const rowYDomains = ref<Record<number, RowYDomain>>({})
+  const colXDomains = ref<Record<number, XDomain>>({})
 
   // ===== Reset Trigger（用於通知子圖表清除 brush selection） =====
-  const resetTrigger = ref(0);
+  const resetTrigger = ref(0)
 
   /**
    * 處理選取範圍變化
@@ -26,7 +65,14 @@ export function useFacetBrush() {
    * @param {Number} col - 當前圖表的欄索引
    * @param {Function} emit - Vue emit 函數
    */
-  const handleSelectionChange = (event, facetId, syncMode, row, col, emit) => {
+  const handleSelectionChange = (
+    event: FacetBrushEvent,
+    facetId: string,
+    syncMode: FacetSyncMode,
+    row: number,
+    col: number,
+    emit: FacetBrushEmit
+  ): void => {
 
     if (syncMode === 'all') {
       // ✅ 模式 1：全部同步
@@ -90,36 +136,59 @@ export function useFacetBrush() {
    * @param {Number} col - 當前圖表的欄索引
    * @param {Function} emit - Vue emit 函數
    */
-  const handleAxisDrag = (event, facetId, syncMode, row, col, emit) => {
+  const handleAxisDrag = (
+    event: FacetAxisDragEvent,
+    facetId: string,
+    syncMode: FacetSyncMode,
+    row: number,
+    col: number,
+    emit: FacetBrushEmit
+  ): void => {
+    if (!event.domain) {
+      emit('axis-drag', { ...event, facetId, row, col })
+      return
+    }
+
     if (syncMode === 'all') {
-      if (event.axis === 'x' && event.domain) {
-        currentXDomain.value = event.domain;
+      if (event.axis === 'x') {
+        currentXDomain.value = event.domain as XDomain
       }
-    } else if (syncMode === 'col' || syncMode === 'both') {
-      if (event.axis === 'x' && event.domain) {
-        colXDomains.value[col] = event.domain;
+    } else {
+      /**
+       * 🔧 原本寫成
+       *      else if (syncMode === 'col' || syncMode === 'both') { …處理 x… }
+       *      else if (syncMode === 'row' || syncMode === 'both') { …處理 y… }
+       *    第二個 'both' 永遠不可達（已被前一個分支攔截），所以 both 模式下
+       *    拖曳 Y 軸完全沒有作用 —— 由 TypeScript 的 TS2367 抓到。
+       *    both 的語意是「同欄共用 X + 同列共用 Y」，兩者都要處理。
+       */
+      const syncsX = syncMode === 'col' || syncMode === 'both'
+      const syncsY = syncMode === 'row' || syncMode === 'both'
+
+      if (syncsX && event.axis === 'x') {
+        colXDomains.value[col] = event.domain as XDomain
       }
-    } else if (syncMode === 'row' || syncMode === 'both') {
-      if ((event.axis === 'yLeft' || event.axis === 'yRight') && event.domain) {
+
+      if (syncsY && (event.axis === 'yLeft' || event.axis === 'yRight')) {
         if (!rowYDomains.value[row]) {
-          rowYDomains.value[row] = {};
+          rowYDomains.value[row] = {}
         }
         if (event.axis === 'yLeft') {
-          rowYDomains.value[row].yLeft = event.domain;
+          rowYDomains.value[row].yLeft = event.domain as YDomain
         } else {
-          rowYDomains.value[row].yRight = event.domain;
+          rowYDomains.value[row].yRight = event.domain as YDomain
         }
       }
     }
-    
-    emit('axis-drag', { ...event, facetId, row, col });
+
+    emit('axis-drag', { ...event, facetId, row, col })
   };
 
   /**
    * 重置縮放
    * @param {Function} emit - Vue emit 函數
    */
-  const handleResetZoom = (emit) => {
+  const handleResetZoom = (emit?: FacetBrushEmit): void => {
     
     // 清空所有 domain
     currentXDomain.value = null;
@@ -143,10 +212,14 @@ export function useFacetBrush() {
    * @param {Number} col - 欄索引
    * @param {*} fallback - 預設值
    */
-  const getXDomain = (syncMode, col, fallback) => {
-    let result;
+  const getXDomain = (
+    syncMode: FacetSyncMode,
+    col: number,
+    fallback?: XDomain
+  ): XDomain | undefined => {
+    let result: XDomain | null | undefined
     if (syncMode === 'all') {
-      result = currentXDomain.value;
+      result = currentXDomain.value
     } else if (syncMode === 'col' || syncMode === 'both') {
       result = colXDomains.value[col];
     } else {
@@ -154,8 +227,8 @@ export function useFacetBrush() {
     }
     
     
-    return result;
-  };
+    return result ?? undefined
+  }
 
   /**
    * 獲取指定位置的 Y Left Domain
@@ -163,10 +236,14 @@ export function useFacetBrush() {
    * @param {Number} row - 列索引
    * @param {*} fallback - 預設值
    */
-  const getYLeftDomain = (syncMode, row, fallback) => {
-    let result;
+  const getYLeftDomain = (
+    syncMode: FacetSyncMode,
+    row: number,
+    fallback?: YDomain
+  ): YDomain | undefined => {
+    let result: YDomain | null | undefined
     if (syncMode === 'all') {
-      result = currentYLeftDomain.value;
+      result = currentYLeftDomain.value
     } else if (syncMode === 'row' || syncMode === 'both') {
       result = rowYDomains.value[row]?.yLeft;
     } else {
@@ -174,8 +251,8 @@ export function useFacetBrush() {
     }
     
     
-    return result;
-  };
+    return result ?? undefined
+  }
 
   /**
    * 獲取指定位置的 Y Right Domain
@@ -183,10 +260,14 @@ export function useFacetBrush() {
    * @param {Number} row - 列索引
    * @param {*} fallback - 預設值
    */
-  const getYRightDomain = (syncMode, row, fallback) => {
-    let result;
+  const getYRightDomain = (
+    syncMode: FacetSyncMode,
+    row: number,
+    fallback?: YDomain
+  ): YDomain | undefined => {
+    let result: YDomain | null | undefined
     if (syncMode === 'all') {
-      result = currentYRightDomain.value;
+      result = currentYRightDomain.value
     } else if (syncMode === 'row' || syncMode === 'both') {
       result = rowYDomains.value[row]?.yRight;
     } else {
@@ -194,13 +275,13 @@ export function useFacetBrush() {
     }
     
     
-    return result;
-  };
+    return result ?? undefined
+  }
 
   /**
    * 檢查是否有任何縮放
    */
-  const hasAnyZoom = () => {
+  const hasAnyZoom = (): boolean => {
     return !!(
       currentXDomain.value || 
       currentYLeftDomain.value || 
@@ -219,6 +300,14 @@ export function useFacetBrush() {
     // 分組 Domain
     rowYDomains,
     colXDomains,
+
+    /**
+     * 🔧 原本 resetTrigger 宣告了、handleResetZoom 也會遞增它，但沒有被 return。
+     *    GridFacetChart 的 :key 寫成 `…reset${resetTrigger}`，值卻是 undefined，
+     *    key 永遠是常數字串 "resetundefined" —— 重置縮放時子圖表不會重新掛載，
+     *    brush 的選取框因此永遠清不掉。
+     */
+    resetTrigger,
     
     // 方法
     handleSelectionChange,
