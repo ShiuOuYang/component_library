@@ -72,31 +72,25 @@
         @axis-drag="handleAxisDrag($event, facetData.id)"
         @zoom-reset="handleResetZoom"
       >
-        <!--
-          Tooltip 插槽
-
-          ⚠️ 子元件 DualAxisComboChart 目前仍是 JS，Vue 推不出它的 slot payload
-             型別（會變成 never），因此這裡以 asTooltipPayload() 明確標註。
-             等 DualAxisComboChart 轉為 TS 後，這個轉型可以直接移除。
-        -->
-        <template #tooltip="slotProps">
+        <!-- Tooltip 插槽：payload 型別由子元件的 slot 定義推論而來 -->
+        <template #tooltip="{ tooltipData, tooltipVisible }">
           <slot
             name="tooltip"
-            :tooltip-data="asTooltipPayload(slotProps).tooltipData"
-            :tooltip-visible="asTooltipPayload(slotProps).tooltipVisible"
+            :tooltip-data="tooltipData"
+            :tooltip-visible="tooltipVisible"
             :facet="facetData"
           >
             <div
-              v-if="asTooltipPayload(slotProps).tooltipVisible && asTooltipPayload(slotProps).tooltipData"
+              v-if="tooltipVisible && tooltipData"
               class="default-tooltip"
-              :style="getTooltipStyle(asTooltipPayload(slotProps).tooltipData!)"
+              :style="getTooltipStyle(tooltipData)"
             >
               <div class="tooltip-title">
                 {{ xFacetLabel }}: {{ facetData.xValue }} | 
                 {{ yFacetLabel }}: {{ facetData.yValue }}
               </div>
-              <div v-if="asTooltipPayload(slotProps).tooltipData?.data" class="tooltip-content">
-                {{ formatTooltipValue(asTooltipPayload(slotProps).tooltipData?.data, facetData) }}
+              <div v-if="tooltipData.data" class="tooltip-content">
+                {{ formatTooltipValue(tooltipData.data, facetData) }}
               </div>
             </div>
           </slot>
@@ -125,7 +119,7 @@ import type {
   FacetBrushEvent,
   FacetSyncMode,
 } from './composables/faceChart/useFacetBrush'
-import type { BrushMode, ChartDatum, XScaleType } from './types/chart.types'
+import type { BrushMode, ChartDatum, TooltipPayload, XScaleType } from './types/chart.types'
 import { useFacetBrush } from './composables/faceChart/useFacetBrush';
 
 interface GridFacetChartProps {
@@ -267,28 +261,11 @@ const handleResetZoom = (): void => {
 };
 
 // ===== Tooltip 樣式 =====
-/** 子圖表的 tooltip slot 傳上來的 payload */
-interface FacetTooltipPayload {
-  position?: { pageX: number; pageY: number }
-  data?: ChartDatum
-}
 
-/** 子元件的 tooltip slot 作用域 */
-interface FacetTooltipSlotProps {
-  tooltipData?: FacetTooltipPayload
-  tooltipVisible?: boolean
-}
-
-/**
- * 把來源不明的 slot payload 標成已知形狀。
- * 子元件轉為 TS 之後 Vue 就能自行推論，這個函式可以移除。
- */
-const asTooltipPayload = (slotProps: unknown): FacetTooltipSlotProps =>
-  (slotProps ?? {}) as FacetTooltipSlotProps
-
-const getTooltipStyle = (tooltipData: FacetTooltipPayload): CSSProperties => ({
-  left: `${(tooltipData.position?.pageX ?? 0) + 10}px`,
-  top: `${(tooltipData.position?.pageY ?? 0) - 10}px`,
+/** tooltip 擺在游標右下方一點，避免蓋住被懸停的元素 */
+const getTooltipStyle = (tooltipData: TooltipPayload): CSSProperties => ({
+  left: `${tooltipData.position.pageX + 10}px`,
+  top: `${tooltipData.position.pageY - 10}px`,
 });
 
 const formatTooltipValue = (data: ChartDatum | undefined, facet: GridFacet): string => {

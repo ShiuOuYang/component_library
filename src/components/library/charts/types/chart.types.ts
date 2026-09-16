@@ -165,6 +165,38 @@ export interface ChartScalesProps<T = ChartDatum> {
   brushMode?: BrushMode
 }
 
+// ===== Tooltip =====
+
+/**
+ * Tooltip 的座標。
+ *
+ * pageX / pageY 是視窗座標（可直接配 position: fixed）；
+ * containerX / containerY 是相對圖表容器的座標，容器尚未掛載時為 null。
+ */
+export interface TooltipPosition {
+  pageX: number
+  pageY: number
+  containerX: number | null
+  containerY: number | null
+}
+
+/**
+ * Tooltip 的內容，同時是 tooltip 插槽的 payload 與 tooltip-show 事件的載荷。
+ *
+ * 外層元件（例如 GridFacetChart）要自行擺放 tooltip 時需要 position，
+ * 因此位置資訊放在 payload 裡，而不是只隨事件發出。
+ */
+export interface TooltipPayload<T = ChartDatum> {
+  /** 被懸停元素對應的資料列 */
+  data: T
+  /** 該元素所屬的圖層設定 */
+  layer: ChartLayer<T>
+  /** 堆疊圖的系列鍵；非堆疊圖為 undefined */
+  seriesKey?: string
+  /** 觸發懸停時的滑鼠位置 */
+  position: TooltipPosition
+}
+
 // ===== 型別守衛 =====
 
 /**

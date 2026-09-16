@@ -341,6 +341,40 @@ describe('DualAxisComboChart', () => {
       wrapper.unmount()
     })
 
+    it('tooltip 插槽拿到的 payload 帶有 position', async () => {
+      // 外層元件（GridFacetChart）要靠 position 把 tooltip 擺在游標旁，
+      // 少了它 tooltip 會固定黏在容器左上角。
+      const wrapper = mount(DualAxisComboChart, {
+        props: {
+          layers: [barLayer],
+          width: 600,
+          height: 400,
+          animationDuration: 0,
+          autoResize: false,
+        },
+        slots: {
+          tooltip: `
+            <template #tooltip="{ tooltipData, tooltipVisible }">
+              <span v-if="tooltipVisible" class="probe">{{ tooltipData.position.pageX }}</span>
+            </template>
+          `,
+        },
+        attachTo: document.body,
+      })
+      await nextTick()
+      await nextTick()
+
+      await wrapper.find('rect.stacked-bar').trigger('mouseenter', { clientX: 123, clientY: 45 })
+
+      expect(wrapper.find('.probe').text()).toBe('123')
+
+      const shown = wrapper.emitted('tooltip-show')!
+      const position = (shown[0][0] as { position: { pageX: number; pageY: number } }).position
+      // 事件與插槽拿到的是同一組座標
+      expect(position).toMatchObject({ pageX: 123, pageY: 45 })
+      wrapper.unmount()
+    })
+
     it('mouseleave 發出 tooltip-hide', async () => {
       const wrapper = await mountChart()
       await wrapper.find('rect.stacked-bar').trigger('mouseenter')

@@ -79,6 +79,8 @@ import type {
   ChartLayer,
   ChartMargin,
   ContinuousScaleType,
+  TooltipPayload,
+  TooltipPosition,
   XDomain,
   XAccessor,
   XScale,
@@ -210,26 +212,6 @@ interface BoundDatum {
 /** brush 結束事件；x 模式的 selection 是一對座標，xy 模式是兩個角 */
 interface BrushSelectionEvent {
   selection: [number, number] | [[number, number], [number, number]] | null
-}
-
-// === Tooltip 型別 ===
-
-/** tooltip 的座標；containerX / containerY 在容器尚未掛載時為 null */
-interface TooltipPosition {
-  pageX: number
-  pageY: number
-  containerX: number | null
-  containerY: number | null
-}
-
-/** 傳給 tooltip slot 的內容 */
-interface TooltipPayload {
-  /** 被懸停元素對應的資料列 */
-  data: ChartDatum
-  /** 該元素所屬的圖層設定 */
-  layer: ChartLayer
-  /** 堆疊圖的系列鍵；非堆疊圖為 undefined */
-  seriesKey?: string
 }
 
 // === Refs ===
@@ -1664,15 +1646,11 @@ const handleLayerHover = (
   layer: ChartLayer,
   seriesKey?: string
 ): void => {
-  tooltipData.value = { data, layer, seriesKey };
+  const position = buildTooltipPosition(event);
+  tooltipData.value = { data, layer, seriesKey, position };
   tooltipVisible.value = true;
   emit('layer-hover', { data, layer, seriesKey });
-  emit('tooltip-show', { 
-    position: buildTooltipPosition(event), 
-    data, 
-    layer,
-    seriesKey 
-  });
+  emit('tooltip-show', { position, data, layer, seriesKey });
 };
 
 /**
