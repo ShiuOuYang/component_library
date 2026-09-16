@@ -12,9 +12,12 @@
  * 但測試看到的 DOM 是殘缺的。因此在這裡補上最小可用的實作：
  * 把 transform 字串解析成矩陣，讓 consolidate() 回傳 d3 需要的 { matrix }。
  *
- * 2) SVGSVGElement 的 width / height / viewBox（SVGAnimatedLength / Rect）
+ * 2) SVGSVGElement 的 width / height（SVGAnimatedLength）
  *    d3-brush 沒給 extent 時會呼叫 defaultExtent()，它讀
  *    svg.width.baseVal.value，同樣會拋錯，brush 根本建不起來。
+ *
+ * 3) getTotalLength()
+ *    「沿著路徑畫出來」的動畫要靠它算 stroke-dasharray。
  */
 
 const FUNCTION_RE = /(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g
@@ -156,4 +159,47 @@ export function installSvgGeometryPolyfill() {
 
   defineAnimatedLength(SVGSVGElement.prototype, 'width')
   defineAnimatedLength(SVGSVGElement.prototype, 'height')
+}
+
+// ===== SVGPathElement.getTotalLength =====
+
+/**
+ * 粗略估算路徑長度。
+ *
+ * jsdom 沒有幾何引擎，算不出真正的弧長，因此這裡把路徑上的座標點串成折線
+ * 來估算：曲線會被低估，但這個值只用在 stroke-dasharray 的畫線動畫上，
+ * 精確度不影響「動畫有沒有被設定」這件事。
+ */
+export function approximatePathLength(d) {
+  if (!d) return 0
+
+  // 取出所有數字，兩兩視為一組座標
+  const numbers = (d.match(/-?\d*\.?\d+(?:e[+-]?\d+)?/gi) ?? []).map(Number)
+  let length = 0
+  let prevX = null
+  let prevY = null
+
+  for (let i = 0; i + 1 < numbers.length; i += 2) {
+    const x = numbers[i]
+    const y = numbers[i + 1]
+    if (prevX !== null && prevY !== null) {
+      length += Math.hypot(x - prevX, y - prevY)
+    }
+    prevX = x
+    prevY = y
+  }
+  return length
+}
+
+/**
+ * jsdom 根本沒有實作 SVGPathElement —— <path> 建出來是普通的 SVGElement，
+ * 因此掛在 SVGElement.prototype 上。沒有 d 屬性的元素自然回 0。
+ */
+export function installSvgPathPolyfill() {
+  if (typeof SVGElement === 'undefined') return
+  if (typeof SVGElement.prototype.getTotalLength === 'function') return
+
+  SVGElement.prototype.getTotalLength = function () {
+    return approximatePathLength(this.getAttribute('d'))
+  }
 }

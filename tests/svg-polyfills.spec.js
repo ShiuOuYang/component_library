@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseTransformAttribute } from './svg-polyfills.js'
+import { approximatePathLength, parseTransformAttribute } from './svg-polyfills.js'
 
 /**
  * 這個 polyfill 是所有圖表測試的地基：d3-transition 對 transform 插值時
@@ -103,5 +103,25 @@ describe('installSvgGeometryPolyfill', () => {
 
     svg.setAttribute('width', 'auto')
     expect(svg.width.baseVal.value).toBe(0)
+  })
+})
+
+describe('installSvgPathPolyfill', () => {
+  it('折線長度等於各段距離之和', () => {
+    // (0,0) → (3,4) 長度 5，再到 (3,0) 長度 4
+    expect(approximatePathLength('M0,0L3,4L3,0')).toBeCloseTo(9)
+  })
+
+  it('沒有 d 時長度為 0', () => {
+    expect(approximatePathLength('')).toBe(0)
+    expect(approximatePathLength(null)).toBe(0)
+  })
+
+  it('掛在 SVGElement 上（jsdom 沒有 SVGPathElement），讀 d 屬性計算', () => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    expect(path.getTotalLength()).toBe(0)
+
+    path.setAttribute('d', 'M0,0L0,10')
+    expect(path.getTotalLength()).toBeCloseTo(10)
   })
 })

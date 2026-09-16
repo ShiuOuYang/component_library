@@ -6,13 +6,15 @@
 import { beforeEach, vi } from 'vitest'
 import {
   installSvgGeometryPolyfill,
+  installSvgPathPolyfill,
   installSvgTransformPolyfill,
 } from './svg-polyfills.js'
 
 // jsdom 缺的 SVG 幾何 API：d3-transition 插值 transform、d3-brush 推算
-// 預設範圍時都會讀，缺了會直接拋錯
+// 預設範圍、畫線動畫量測路徑長度時都會讀，缺了會直接拋錯
 installSvgTransformPolyfill()
 installSvgGeometryPolyfill()
+installSvgPathPolyfill()
 
 // matchMedia：useDarkMode 用它判斷系統偏好
 if (!window.matchMedia) {
