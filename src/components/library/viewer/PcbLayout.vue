@@ -64,141 +64,174 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import * as d3 from 'd3'
-
-// ===== 預設圖形類型顏色 =====
-const TYPE_COLORS = {
-  outline:  '#16a34a',
-  trace:    '#4ecdc4',
-  pad:      '#ffe66d',
-  via:      '#ff6b6b',
-  region:   '#00ff88',
-  silk:     '#ffffff',
-  component:'#c0a0ff',
-}
-const TYPE_LABELS = {
-  outline:  '板框 (Outline)',
-  trace:    '走線 (Trace)',
-  pad:      '焊盤 (Pad)',
-  via:      '過孔 (Via)',
-  region:   '銅箔區域 (Region)',
-  silk:     '絲印 (Silk)',
-  component:'元件外框 (Component)',
-}
+import type {
+  PcbComponent,
+  PcbData,
+  PcbElement,
+  PcbElementType,
+  PcbOutline,
+  PcbPad,
+  PcbRegion,
+  PcbSilk,
+  PcbTrace,
+  PcbVia,
+} from './pcb/pcb.types'
+import {
+  DEFAULT_VIA_OUTER,
+  collectElements,
+  computeBounds,
+  pathToD,
+} from './pcb/pcbGeometry'
+import {
+  RENDER_ORDER,
+  TYPE_COLORS,
+  TYPE_LABELS,
+  defaultLayerColor,
+  isKnownType,
+} from './pcb/typeColors'
+import { fitToViewport } from './shared/viewportFit'
 
 // ===== Props =====
-const props = defineProps({
+interface PcbLayoutProps {
   /**
-   * PCB 資料 — 結構化 JSON
-   * {
-   *   board: { width, height, units? },
-   *   layers?: [{ name, color?, visible?, elements: [...] }],
-   *   elements?: [...],   // 若無 layers，直接給 elements
-   * }
-   *
-   * 每個 element:
-   *   { type: 'outline', path: [{x,y},...] }
-   *   { type: 'trace', x1, y1, x2, y2, width? }
-   *   { type: 'pad', x, y, shape: 'circle'|'rect'|'oblong', width, height?, drill? }
-   *   { type: 'via', x, y, outerDia, innerDia }
-   *   { type: 'region', path: [{x,y},...] }
-   *   { type: 'silk', path?: [{x,y},...], text?: 'U1', x?, y?, fontSize? }
-   *   { type: 'component', refDes, x, y, width, height, rotation? }
+   * PCB 資料 — 結構化 JSON。
+   * 有 layers 時依圖層分組，否則直接吃 elements 並依 type 自動分層。
+   * 各元素的欄位定義見 pcb/pcb.types.ts。
    */
-  data: {
-    type: Object,
-    required: true,
-  },
+  data: PcbData
   /** 背景色 */
-  backgroundColor: { type: String, default: '#1a1a2e' },
-  /** 自訂顏色映射 { trace: '#xxx', pad: '#xxx', ... } */
-  colorMap: { type: Object, default: () => ({}) },
+  backgroundColor?: string
+  /** 自訂顏色映射，例如 { trace: '#xxx', pad: '#xxx' } */
+  colorMap?: Partial<Record<PcbElementType, string>>
   /** 是否顯示資訊面板 */
-  showInfo: { type: Boolean, default: true },
+  showInfo?: boolean
   /** 是否顯示縮放按鈕 */
-  showControls: { type: Boolean, default: true },
+  showControls?: boolean
   /** 是否顯示圖層面板 */
-  showLayerPanel: { type: Boolean, default: true },
+  showLayerPanel?: boolean
   /** 是否自動響應容器 resize */
-  autoResize: { type: Boolean, default: true },
-  /** 邊距 */
-  padding: { type: Number, default: 20 },
-  /** 最大/最小縮放倍率 */
-  maxZoom: { type: Number, default: 200 },
-  minZoom: { type: Number, default: 0.1 },
+  autoResize?: boolean
+  /** 邊距 (px) */
+  padding?: number
+  /** 最大縮放倍率 */
+  maxZoom?: number
+  /** 最小縮放倍率 */
+  minZoom?: number
   /** 預設走線寬度 (mm) */
-  defaultTraceWidth: { type: Number, default: 0.2 },
+  defaultTraceWidth?: number
   /** 預設焊盤大小 (mm) */
-  defaultPadSize: { type: Number, default: 0.6 },
+  defaultPadSize?: number
   /** 是否顯示元件 refDes 標籤 */
-  showRefDes: { type: Boolean, default: true },
+  showRefDes?: boolean
+}
+
+const props = withDefaults(defineProps<PcbLayoutProps>(), {
+  backgroundColor: '#1a1a2e',
+  colorMap: () => ({}),
+  showInfo: true,
+  showControls: true,
+  showLayerPanel: true,
+  autoResize: true,
+  padding: 20,
+  maxZoom: 200,
+  minZoom: 0.1,
+  defaultTraceWidth: 0.2,
+  defaultPadSize: 0.6,
+  showRefDes: true,
 })
 
-const emit = defineEmits(['loaded', 'error', 'zoom-change', 'element-click', 'element-hover'])
+/** 載入完成後回報的板子資訊 */
+export interface PcbBoardInfo {
+  units: string
+  elementCount: number
+  sizeText: string
+}
+
+/** 互動事件的載荷 */
+export interface PcbElementEvent {
+  event: MouseEvent
+  data: PcbElement
+}
+
+const emit = defineEmits<{
+  loaded: [payload: { info: PcbBoardInfo | null; layerCount: number }]
+  error: [payload: { message: string }]
+  'zoom-change': [payload: { zoom: number }]
+  'element-click': [payload: PcbElementEvent]
+  /** 離開元素時發 null */
+  'element-hover': [payload: PcbElementEvent | null]
+}>()
 
 // ===== DOM Refs =====
-const containerRef = ref(null)
-const svgRef = ref(null)
+const containerRef = ref<HTMLDivElement | null>(null)
+const svgRef = ref<SVGSVGElement | null>(null)
 
 // ===== 狀態 =====
-const currentZoom = ref(1)
-const boardInfo = ref(null)
-const internalLayers = ref([])
 
-// D3 物件
-let svgSelection = null
-let mainGroup = null
-let zoomBehavior = null
-let resizeObserver = null
-let resizeTimer = null
-const layerGroupMap = new Map()
+/** 元件內部持有的圖層 */
+interface PcbViewerLayer {
+  id: string
+  name: string
+  color: string
+  visible: boolean
+  elements: PcbElement[]
+}
+
+const currentZoom = ref(1)
+const boardInfo = ref<PcbBoardInfo | null>(null)
+const internalLayers = ref<PcbViewerLayer[]>([])
+
+// D3 物件（非響應式）
+type SvgSelection = d3.Selection<SVGSVGElement, unknown, null, undefined>
+type GroupSelection = d3.Selection<SVGGElement, unknown, null, undefined>
+
+let svgSelection: SvgSelection | null = null
+let mainGroup: GroupSelection | null = null
+let zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown> | null = null
+let resizeObserver: ResizeObserver | null = null
+let resizeTimer: ReturnType<typeof setTimeout> | null = null
+const layerGroupMap = new Map<string, GroupSelection>()
 
 // ===== 色彩工具 =====
-function getColor(type) {
+function getColor(type: PcbElementType): string {
   return props.colorMap[type] || TYPE_COLORS[type] || '#888'
 }
 
-// ===== 取得所有 elements（快取）=====
-const cachedElements = computed(() => {
-  if (!props.data) return []
-  if (props.data.layers?.length) {
-    return props.data.layers.flatMap(l => l.elements || [])
-  }
-  return props.data.elements || []
-})
-
-function getAllElements() {
-  return cachedElements.value
+/** 統一取出錯誤訊息（catch 到的東西不保證是 Error） */
+function toMessage(e: unknown): string {
+  return e instanceof Error ? e.message : String(e)
 }
+
+// ===== 取得所有 elements（快取）=====
+const cachedElements = computed(() => collectElements(props.data))
 
 // ===== 圖例 =====
 const legendEntries = computed(() => {
-  const types = [...new Set(cachedElements.value.map(e => e.type))]
+  const types = [...new Set(cachedElements.value.map((e) => e.type))]
   return types
-    .filter(t => TYPE_LABELS[t])
-    .map(t => ({ label: TYPE_LABELS[t], color: getColor(t) }))
+    .filter(isKnownType)
+    .map((t) => ({ label: TYPE_LABELS[t], color: getColor(t) }))
 })
 
 // ===== 建立內部圖層 =====
-function buildLayers() {
-  const defaultPalette = ['#4ecdc4', '#ffe66d', '#ff6b6b', '#00ff88', '#c0a0ff', '#ffffff', '#ff9f40']
-
+function buildLayers(): void {
   if (props.data?.layers?.length) {
     internalLayers.value = props.data.layers.map((l, i) => ({
       id: `layer-${i}`,
       name: l.name || `Layer ${i + 1}`,
-      color: l.color || defaultPalette[i % defaultPalette.length],
+      color: l.color || defaultLayerColor(i),
       visible: l.visible !== false,
-      elements: l.elements || [],
+      elements: l.elements ?? [],
     }))
   } else if (props.data?.elements?.length) {
     // 無 layers：自動依 type 分組
-    const grouped = d3.group(props.data.elements, d => d.type)
+    const grouped = d3.group(props.data.elements, (d) => d.type)
     internalLayers.value = Array.from(grouped, ([type, elements]) => ({
       id: `layer-${type}`,
-      name: TYPE_LABELS[type] || type,
+      name: isKnownType(type) ? TYPE_LABELS[type] : type,
       color: getColor(type),
       visible: true,
       elements,
@@ -208,67 +241,24 @@ function buildLayers() {
   }
 }
 
-// ===== 計算全域幾何邊界 =====
-function computeBounds() {
-  // 優先使用 board 尺寸
-  if (props.data?.board?.width && props.data?.board?.height) {
-    return { x1: 0, y1: 0, x2: props.data.board.width, y2: props.data.board.height }
-  }
-
-  const allEl = getAllElements()
-  if (!allEl.length) return null
-
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
-
-  for (const el of allEl) {
-    if (el.type === 'outline' || el.type === 'region') {
-      for (const p of (el.path || [])) {
-        minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x)
-        minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y)
-      }
-    } else if (el.type === 'trace') {
-      minX = Math.min(minX, el.x1, el.x2); maxX = Math.max(maxX, el.x1, el.x2)
-      minY = Math.min(minY, el.y1, el.y2); maxY = Math.max(maxY, el.y1, el.y2)
-    } else if (el.x != null && el.y != null) {
-      const r = (el.width || el.outerDia || props.defaultPadSize) / 2
-      minX = Math.min(minX, el.x - r); maxX = Math.max(maxX, el.x + r)
-      minY = Math.min(minY, el.y - r); maxY = Math.max(maxY, el.y + r)
-    }
-    if (el.type === 'component') {
-      const hw = (el.width || 0) / 2, hh = (el.height || 0) / 2
-      minX = Math.min(minX, el.x - hw); maxX = Math.max(maxX, el.x + hw)
-      minY = Math.min(minY, el.y - hh); maxY = Math.max(maxY, el.y + hh)
-    }
-  }
-
-  if (!isFinite(minX)) return null
-  return { x1: minX, y1: minY, x2: maxX, y2: maxY }
-}
-
 // ===== 渲染所有圖層 =====
-function renderAll(width, height) {
+function renderAll(width: number, height: number): void {
+  if (!svgSelection) return
+
   svgSelection.selectAll('*').remove()
   layerGroupMap.clear()
 
-  const bounds = computeBounds()
+  const bounds = computeBounds(props.data, { defaultPadSize: props.defaultPadSize })
   if (!bounds) return
 
-  const { x1, y1, x2, y2 } = bounds
-  const geoW = (x2 - x1) || 1
-  const geoH = (y2 - y1) || 1
-  const pad = props.padding
-
-  const scale = Math.min((width - pad * 2) / geoW, (height - pad * 2) / geoH)
-  const offsetX = (width - geoW * scale) / 2
-  const offsetY = (height - geoH * scale) / 2
+  // 視窗適配的算式與 GerberViewer 共用（含 Y 軸翻轉）
+  const fit = fitToViewport(bounds, width, height, props.padding)
 
   mainGroup = svgSelection.append('g').attr('class', 'pcb-root')
 
-  // 全域座標轉換（Y 軸翻轉，和 GerberViewer 相同）
   const worldGroup = mainGroup.append('g')
     .attr('class', 'pcb-world')
-    .attr('transform',
-      `translate(${offsetX},${offsetY + geoH * scale}) scale(${scale},${-scale}) translate(${-x1},${-y1})`)
+    .attr('transform', fit.transform)
 
   let totalElements = 0
   const units = props.data?.board?.units || 'mm'
@@ -279,39 +269,51 @@ function renderAll(width, height) {
       .attr('display', layer.visible ? null : 'none')
     layerGroupMap.set(layer.id, layerG)
 
-    renderLayerElements(layerG, layer.elements, layer.color)
+    renderLayerElements(layerG, layer.elements)
     totalElements += layer.elements.length
   }
 
   boardInfo.value = {
     units,
     elementCount: totalElements,
-    sizeText: `${geoW.toFixed(2)} × ${geoH.toFixed(2)} ${units}`,
+    sizeText: `${fit.geoWidth.toFixed(2)} × ${fit.geoHeight.toFixed(2)} ${units}`,
   }
 
-  setupZoom(svgSelection, mainGroup, width, height)
+  setupZoom(svgSelection, mainGroup)
 }
 
 // ===== 渲染圖層內的元素 =====
-function renderLayerElements(group, elements, _layerColor) {
-  // 按照 type 渲染順序：outline → region → trace → pad → via → component → silk
-  const renderOrder = ['outline', 'region', 'trace', 'pad', 'via', 'component', 'silk']
+function renderLayerElements(group: GroupSelection, elements: PcbElement[]): void {
+  // 依 RENDER_ORDER 繪製：先鋪底、再疊細節，最後才是文字
+  const byType = d3.group(elements, (d) => d.type)
 
-  const byType = d3.group(elements, d => d.type)
-
-  for (const type of renderOrder) {
+  for (const type of RENDER_ORDER) {
     const els = byType.get(type)
     if (!els?.length) continue
     const color = getColor(type)
 
     switch (type) {
-      case 'outline': renderOutlines(group, els, color); break
-      case 'region':  renderRegions(group, els, color); break
-      case 'trace':   renderTraces(group, els, color); break
-      case 'pad':     renderPads(group, els, color); break
-      case 'via':     renderVias(group, els, color); break
-      case 'component': renderComponents(group, els, color); break
-      case 'silk':    renderSilks(group, els, color); break
+      case 'outline':
+        renderOutlines(group, els as PcbOutline[], color)
+        break
+      case 'region':
+        renderRegions(group, els as PcbRegion[], color)
+        break
+      case 'trace':
+        renderTraces(group, els as PcbTrace[], color)
+        break
+      case 'pad':
+        renderPads(group, els as PcbPad[], color)
+        break
+      case 'via':
+        renderVias(group, els as PcbVia[], color)
+        break
+      case 'component':
+        renderComponents(group, els as PcbComponent[], color)
+        break
+      case 'silk':
+        renderSilks(group, els as PcbSilk[], color)
+        break
     }
   }
 }
@@ -319,7 +321,7 @@ function renderLayerElements(group, elements, _layerColor) {
 // ===== 各類型渲染函數 =====
 
 /** 板框 */
-function renderOutlines(group, elements, color) {
+function renderOutlines(group: GroupSelection, elements: PcbOutline[], color: string): void {
   for (const el of elements) {
     if (!el.path?.length) continue
     const d = pathToD(el.path, true)
@@ -338,7 +340,7 @@ function renderOutlines(group, elements, color) {
 }
 
 /** 銅箔區域 */
-function renderRegions(group, elements, color) {
+function renderRegions(group: GroupSelection, elements: PcbRegion[], color: string): void {
   for (const el of elements) {
     if (!el.path?.length) continue
     const d = pathToD(el.path, true)
@@ -357,14 +359,14 @@ function renderRegions(group, elements, color) {
 }
 
 /** 走線 */
-function renderTraces(group, elements, color) {
+function renderTraces(group: GroupSelection, elements: PcbTrace[], color: string): void {
   group.selectAll(null).data(elements).join('line')
-    .attr('x1', d => d.x1)
-    .attr('y1', d => d.y1)
-    .attr('x2', d => d.x2)
-    .attr('y2', d => d.y2)
+    .attr('x1', (d) => d.x1)
+    .attr('y1', (d) => d.y1)
+    .attr('x2', (d) => d.x2)
+    .attr('y2', (d) => d.y2)
     .attr('stroke', color)
-    .attr('stroke-width', d => d.width || props.defaultTraceWidth)
+    .attr('stroke-width', (d) => d.width || props.defaultTraceWidth)
     .attr('stroke-linecap', 'round')
     .style('cursor', 'pointer')
     .on('mouseenter', handleHover)
@@ -373,15 +375,21 @@ function renderTraces(group, elements, color) {
 }
 
 /** 焊盤 — 依 shape 分組批次渲染 */
-function renderPads(group, elements, color) {
-  const byShape = d3.group(elements, d => d.shape || 'circle')
+function renderPads(group: GroupSelection, elements: PcbPad[], color: string): void {
+  const byShape = d3.group(elements, (d) => d.shape || 'circle')
 
-  // circle pads
-  const circles = byShape.get('circle') || []
+  /** 焊盤寬；沒給就用預設值 */
+  const padWidth = (d: PcbPad): number => d.width || props.defaultPadSize
+  /** 焊盤高；沒給就沿用寬（正方形／正圓） */
+  const padHeight = (d: PcbPad): number => d.height || d.width || props.defaultPadSize
+
+  // 圓形焊盤
+  const circles = byShape.get('circle') ?? []
   if (circles.length) {
     group.selectAll(null).data(circles).join('circle')
-      .attr('cx', d => d.x).attr('cy', d => d.y)
-      .attr('r', d => (d.width || props.defaultPadSize) / 2)
+      .attr('cx', (d) => d.x)
+      .attr('cy', (d) => d.y)
+      .attr('r', (d) => padWidth(d) / 2)
       .attr('fill', color)
       .style('cursor', 'pointer')
       .on('mouseenter', handleHover)
@@ -389,14 +397,21 @@ function renderPads(group, elements, color) {
       .on('click', handleClick)
   }
 
-  // rect pads
-  const rects = byShape.get('rect') || []
-  if (rects.length) {
-    group.selectAll(null).data(rects).join('rect')
-      .attr('x', d => d.x - (d.width || props.defaultPadSize) / 2)
-      .attr('y', d => d.y - (d.height || d.width || props.defaultPadSize) / 2)
-      .attr('width', d => d.width || props.defaultPadSize)
-      .attr('height', d => d.height || d.width || props.defaultPadSize)
+  // 矩形與長圓形焊盤：只差圓角半徑，共用同一段繪製
+  for (const shape of ['rect', 'oblong'] as const) {
+    const pads = byShape.get(shape) ?? []
+    if (!pads.length) continue
+
+    const cornerRadius = (d: PcbPad): number =>
+      shape === 'oblong' ? Math.min(padWidth(d), padHeight(d)) / 2 : 0
+
+    group.selectAll(null).data(pads).join('rect')
+      .attr('x', (d) => d.x - padWidth(d) / 2)
+      .attr('y', (d) => d.y - padHeight(d) / 2)
+      .attr('width', padWidth)
+      .attr('height', padHeight)
+      .attr('rx', cornerRadius)
+      .attr('ry', cornerRadius)
       .attr('fill', color)
       .style('cursor', 'pointer')
       .on('mouseenter', handleHover)
@@ -404,39 +419,24 @@ function renderPads(group, elements, color) {
       .on('click', handleClick)
   }
 
-  // oblong pads
-  const oblongs = byShape.get('oblong') || []
-  if (oblongs.length) {
-    group.selectAll(null).data(oblongs).join('rect')
-      .attr('x', d => d.x - (d.width || props.defaultPadSize) / 2)
-      .attr('y', d => d.y - (d.height || d.width || props.defaultPadSize) / 2)
-      .attr('width', d => d.width || props.defaultPadSize)
-      .attr('height', d => d.height || d.width || props.defaultPadSize)
-      .attr('rx', d => Math.min(d.width || props.defaultPadSize, d.height || d.width || props.defaultPadSize) / 2)
-      .attr('ry', d => Math.min(d.width || props.defaultPadSize, d.height || d.width || props.defaultPadSize) / 2)
-      .attr('fill', color)
-      .style('cursor', 'pointer')
-      .on('mouseenter', handleHover)
-      .on('mouseleave', handleLeave)
-      .on('click', handleClick)
-  }
-
-  // 鑽孔 — 批次渲染
-  const drilled = elements.filter(d => d.drill)
+  // 鑽孔：用背景色蓋一個圓，做出「挖穿」的效果
+  const drilled = elements.filter((d): d is PcbPad & { drill: number } => !!d.drill)
   if (drilled.length) {
     group.selectAll(null).data(drilled).join('circle')
-      .attr('cx', d => d.x).attr('cy', d => d.y)
-      .attr('r', d => d.drill / 2)
+      .attr('cx', (d) => d.x)
+      .attr('cy', (d) => d.y)
+      .attr('r', (d) => d.drill / 2)
       .attr('fill', props.backgroundColor)
   }
 }
 
 /** 過孔 — 批次渲染 */
-function renderVias(group, elements, color) {
+function renderVias(group: GroupSelection, elements: PcbVia[], color: string): void {
   // 外圈
   group.selectAll(null).data(elements).join('circle')
-    .attr('cx', d => d.x).attr('cy', d => d.y)
-    .attr('r', d => (d.outerDia || 0.6) / 2)
+    .attr('cx', (d) => d.x)
+    .attr('cy', (d) => d.y)
+    .attr('r', (d) => (d.outerDia || DEFAULT_VIA_OUTER) / 2)
     .attr('fill', color)
     .style('cursor', 'pointer')
     .on('mouseenter', handleHover)
@@ -444,15 +444,16 @@ function renderVias(group, elements, color) {
     .on('click', handleClick)
   // 內孔
   group.selectAll(null).data(elements).join('circle')
-    .attr('cx', d => d.x).attr('cy', d => d.y)
-    .attr('r', d => (d.innerDia || 0.3) / 2)
+    .attr('cx', (d) => d.x)
+    .attr('cy', (d) => d.y)
+    .attr('r', (d) => (d.innerDia || 0.3) / 2)
     .attr('fill', props.backgroundColor)
 }
 
 /** 元件外框 — 批次渲染 */
-function renderComponents(group, elements, color) {
+function renderComponents(group: GroupSelection, elements: PcbComponent[], color: string): void {
   const groups = group.selectAll(null).data(elements).join('g')
-    .attr('transform', d => `translate(${d.x},${d.y}) rotate(${d.rotation || 0})`)
+    .attr('transform', (d) => `translate(${d.x},${d.y}) rotate(${d.rotation || 0})`)
     .style('cursor', 'pointer')
     .on('mouseenter', handleHover)
     .on('mouseleave', handleLeave)
@@ -460,8 +461,10 @@ function renderComponents(group, elements, color) {
 
   // 外框
   groups.append('rect')
-    .attr('x', d => -(d.width || 2) / 2).attr('y', d => -(d.height || 1) / 2)
-    .attr('width', d => d.width || 2).attr('height', d => d.height || 1)
+    .attr('x', (d) => -(d.width || 2) / 2)
+    .attr('y', (d) => -(d.height || 1) / 2)
+    .attr('width', (d) => d.width || 2)
+    .attr('height', (d) => d.height || 1)
     .attr('rx', 0.1).attr('ry', 0.1)
     .attr('fill', 'none')
     .attr('stroke', color)
@@ -470,37 +473,37 @@ function renderComponents(group, elements, color) {
 
   // Pin 1 標記
   groups.append('circle')
-    .attr('cx', d => -(d.width || 2) / 2 + 0.2)
-    .attr('cy', d => -(d.height || 1) / 2 + 0.2)
+    .attr('cx', (d) => -(d.width || 2) / 2 + 0.2)
+    .attr('cy', (d) => -(d.height || 1) / 2 + 0.2)
     .attr('r', 0.08)
     .attr('fill', color)
 
   // refDes 標籤（翻轉 Y 因為 SVG 座標已翻轉）
   if (props.showRefDes) {
-    groups.filter(d => d.refDes)
+    groups.filter((d) => !!d.refDes)
       .append('text')
       .attr('x', 0).attr('y', 0)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
       .attr('transform', 'scale(1,-1)')
-      .style('font-size', d => `${Math.min(d.width || 2, d.height || 1) * 0.3}px`)
+      .style('font-size', (d) => `${Math.min(d.width || 2, d.height || 1) * 0.3}px`)
       .style('fill', color)
       .style('font-family', 'monospace')
       .style('pointer-events', 'none')
-      .text(d => d.refDes)
+      .text((d) => d.refDes ?? '')
   }
 }
 
 /** 絲印圖形/文字 — 批次渲染 */
-function renderSilks(group, elements, color) {
+function renderSilks(group: GroupSelection, elements: PcbSilk[], color: string): void {
   // 絲印線條
-  const pathEls = elements.filter(d => d.path?.length)
+  const pathEls = elements.filter((d) => d.path?.length)
   if (pathEls.length) {
     group.selectAll(null).data(pathEls).join('path')
-      .attr('d', d => pathToD(d.path, false))
+      .attr('d', (d) => pathToD(d.path, false))
       .attr('fill', 'none')
       .attr('stroke', color)
-      .attr('stroke-width', d => d.width || 0.1)
+      .attr('stroke-width', (d) => d.width || 0.1)
       .attr('stroke-linecap', 'round')
       .style('cursor', 'pointer')
       .on('mouseenter', handleHover)
@@ -509,61 +512,56 @@ function renderSilks(group, elements, color) {
   }
 
   // 絲印文字
-  const textEls = elements.filter(d => d.text && d.x != null && d.y != null)
+  const textEls = elements.filter(
+    (d): d is PcbSilk & { text: string; x: number; y: number } =>
+      !!d.text && d.x != null && d.y != null
+  )
   if (textEls.length) {
     group.selectAll(null).data(textEls).join('text')
-      .attr('x', d => d.x).attr('y', d => d.y)
+      .attr('x', (d) => d.x)
+      .attr('y', (d) => d.y)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'middle')
-      .attr('transform', d => `translate(${d.x},${d.y}) scale(1,-1) translate(${-d.x},${-d.y})`)
-      .style('font-size', d => `${d.fontSize || 0.8}px`)
+      // 全域 transform 已翻轉 Y，文字要再翻回來才不會上下顛倒
+      .attr('transform', (d) => `translate(${d.x},${d.y}) scale(1,-1) translate(${-d.x},${-d.y})`)
+      .style('font-size', (d) => `${d.fontSize || 0.8}px`)
       .style('fill', color)
       .style('font-family', 'monospace')
       .style('pointer-events', 'none')
-      .text(d => d.text)
+      .text((d) => d.text)
   }
-}
-
-// ===== 工具函數 =====
-
-function pathToD(points, closed) {
-  if (!points?.length) return ''
-  let d = `M${points[0].x},${points[0].y}`
-  for (let i = 1; i < points.length; i++) {
-    d += `L${points[i].x},${points[i].y}`
-  }
-  if (closed) d += 'Z'
-  return d
 }
 
 // ===== 互動事件 =====
-function handleHover(event, d) {
-  d3.select(this).style('opacity', 0.7)
+// this 是被指到的節點。用 selectAll(null).data().join() 建出來的選取，
+// 其元素型別是 `XxxElement | null`，因此 this 也要容許 null。
+function handleHover(this: SVGElement | null, event: MouseEvent, d: PcbElement): void {
+  if (this) d3.select(this).style('opacity', 0.7)
   emit('element-hover', { event, data: d })
 }
 
-function handleLeave() {
-  d3.select(this).style('opacity', null)
+function handleLeave(this: SVGElement | null): void {
+  if (this) d3.select(this).style('opacity', null)
   emit('element-hover', null)
 }
 
-function handleClick(event, d) {
+function handleClick(event: MouseEvent, d: PcbElement): void {
   emit('element-click', { event, data: d })
 }
 
 // ===== 圖層切換 =====
-function toggleLayer(layer) {
+function toggleLayer(layer: PcbViewerLayer): void {
   layer.visible = !layer.visible
   const layerG = layerGroupMap.get(layer.id)
   if (layerG) layerG.attr('display', layer.visible ? null : 'none')
 }
 
 // ===== Zoom =====
-function setupZoom(svg, group, _width, _height) {
-  zoomBehavior = d3.zoom()
+function setupZoom(svg: SvgSelection, group: GroupSelection): void {
+  zoomBehavior = d3.zoom<SVGSVGElement, unknown>()
     .scaleExtent([props.minZoom, props.maxZoom])
-    .on('zoom', (event) => {
-      group.attr('transform', event.transform)
+    .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
+      group.attr('transform', event.transform.toString())
       currentZoom.value = event.transform.k
       emit('zoom-change', { zoom: event.transform.k })
     })
@@ -571,49 +569,60 @@ function setupZoom(svg, group, _width, _height) {
   svg.call(zoomBehavior).on('dblclick.zoom', () => resetView())
 }
 
-function zoomIn() {
+function zoomIn(): void {
   if (!svgSelection || !zoomBehavior) return
   svgSelection.transition().duration(300).call(zoomBehavior.scaleBy, 1.5)
 }
 
-function zoomOut() {
+function zoomOut(): void {
   if (!svgSelection || !zoomBehavior) return
   svgSelection.transition().duration(300).call(zoomBehavior.scaleBy, 0.67)
 }
 
-function resetView() {
+function resetView(): void {
   if (!svgSelection || !zoomBehavior) return
   svgSelection.transition().duration(500).call(zoomBehavior.transform, d3.zoomIdentity)
   currentZoom.value = 1
 }
 
 // ===== 主渲染流程 =====
-async function renderChart() {
+async function renderChart(): Promise<void> {
   if (!containerRef.value || !svgRef.value || !props.data) return
 
-  buildLayers()
+  // error 事件原本沒有任何地方會發出（渲染沒有包 try/catch，例外直接
+  // 逸出到 Vue 的錯誤處理）；補上之後這個宣告的事件才真的可用。
+  try {
+    buildLayers()
 
-  await nextTick()
-  const { width, height } = containerRef.value.getBoundingClientRect()
-  if (width <= 0 || height <= 0) return
-
-  svgSelection = d3.select(svgRef.value).attr('width', width).attr('height', height)
-  renderAll(width, height)
-
-  emit('loaded', {
-    info: boardInfo.value,
-    layerCount: internalLayers.value.length,
-  })
-}
-
-function handleResize() {
-  clearTimeout(resizeTimer)
-  resizeTimer = setTimeout(async () => {
+    await nextTick()
     if (!containerRef.value || !svgRef.value) return
     const { width, height } = containerRef.value.getBoundingClientRect()
     if (width <= 0 || height <= 0) return
+
     svgSelection = d3.select(svgRef.value).attr('width', width).attr('height', height)
     renderAll(width, height)
+
+    emit('loaded', {
+      info: boardInfo.value,
+      layerCount: internalLayers.value.length,
+    })
+  } catch (e) {
+    console.error('PcbLayout 渲染失敗:', e)
+    emit('error', { message: toMessage(e) })
+  }
+}
+
+function handleResize(): void {
+  if (resizeTimer) clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(() => {
+    resizeTimer = null
+    if (!containerRef.value || !svgRef.value) return
+    const { width, height } = containerRef.value.getBoundingClientRect()
+    if (width <= 0 || height <= 0) return
+
+    svgSelection = d3.select(svgRef.value).attr('width', width).attr('height', height)
+    renderAll(width, height)
+    // 重畫會重建 zoom behavior，縮放倍率也跟著回到 1
     currentZoom.value = 1
   }, 200)
 }
@@ -624,11 +633,11 @@ onMounted(() => {
     resizeObserver = new ResizeObserver(handleResize)
     resizeObserver.observe(containerRef.value)
   }
-  renderChart()
+  void renderChart()
 })
 
 onBeforeUnmount(() => {
-  clearTimeout(resizeTimer)
+  if (resizeTimer) clearTimeout(resizeTimer)
   if (resizeObserver) {
     resizeObserver.disconnect()
     resizeObserver = null
@@ -636,8 +645,8 @@ onBeforeUnmount(() => {
   if (svgSelection) svgSelection.on('.zoom', null)
 })
 
-watch(() => props.data, () => renderChart())
-watch(() => props.backgroundColor, () => renderChart())
+watch(() => props.data, () => void renderChart())
+watch(() => props.backgroundColor, () => void renderChart())
 
 defineExpose({ zoomIn, zoomOut, resetView, toggleLayer, forceRender: renderChart })
 </script>

@@ -6,17 +6,14 @@
 import type { ImageTree, PathSegment } from '@tracespace/plotter'
 import type { MoveCommand, ParsedLayer } from './gerber.types'
 import { isParsedExcellon } from './gerber.types'
+import type { Bounds } from '../shared/viewportFit'
+
+// 視窗適配的算式與 PcbLayout 共用
+export { fitToViewport } from '../shared/viewportFit'
+export type { Bounds, FitTransform } from '../shared/viewportFit'
 
 /** 鑽頭直徑缺失時的預設值（mm） */
 const DEFAULT_DRILL_DIAMETER = 0.3
-
-/** 圖形的外接矩形 */
-export interface Bounds {
-  x1: number
-  y1: number
-  x2: number
-  y2: number
-}
 
 /**
  * 把 tracespace 的線段陣列轉成 SVG path 的 d 屬性。
@@ -154,51 +151,4 @@ export function computeBounds(
 
   if (!Number.isFinite(acc.minX) || !Number.isFinite(acc.minY)) return null
   return { x1: acc.minX, y1: acc.minY, x2: acc.maxX, y2: acc.maxY }
-}
-
-/** 把 Gerber 座標系映射到 SVG 像素的參數 */
-export interface FitTransform {
-  scale: number
-  offsetX: number
-  offsetY: number
-  /** 幾何寬高（Gerber 單位） */
-  geoWidth: number
-  geoHeight: number
-  /** 套用在世界群組上的 transform 字串（含 Y 軸翻轉） */
-  transform: string
-}
-
-/**
- * 算出「等比置中塞進畫布」的轉換。
- *
- * Gerber 的 Y 軸向上、SVG 向下，所以 scale 的 y 取負值，並先平移到底部。
- * 寬高為 0（單點圖層）時以 1 代替，避免 scale 變成 Infinity。
- */
-export function fitToViewport(
-  bounds: Bounds,
-  width: number,
-  height: number,
-  padding: number
-): FitTransform {
-  const geoWidth = bounds.x2 - bounds.x1 || 1
-  const geoHeight = bounds.y2 - bounds.y1 || 1
-
-  const scale = Math.min(
-    (width - padding * 2) / geoWidth,
-    (height - padding * 2) / geoHeight
-  )
-  const offsetX = (width - geoWidth * scale) / 2
-  const offsetY = (height - geoHeight * scale) / 2
-
-  return {
-    scale,
-    offsetX,
-    offsetY,
-    geoWidth,
-    geoHeight,
-    transform:
-      `translate(${offsetX},${offsetY + geoHeight * scale}) ` +
-      `scale(${scale},${-scale}) ` +
-      `translate(${-bounds.x1},${-bounds.y1})`,
-  }
 }
