@@ -4,6 +4,10 @@
  * jsdom 缺少幾個元件會用到的瀏覽器 API，在這裡補上最小實作。
  */
 import { beforeEach, vi } from 'vitest'
+import { installSvgTransformPolyfill } from './svg-transform-polyfill.js'
+
+// SVGGraphicsElement.transform：d3-transition 對 transform 插值時必讀
+installSvgTransformPolyfill()
 
 // matchMedia：useDarkMode 用它判斷系統偏好
 if (!window.matchMedia) {

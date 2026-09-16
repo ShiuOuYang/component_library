@@ -41,11 +41,25 @@ export type YDomain = [number, number]
 
 // ===== 圖層 =====
 
-/** 圖層類型 */
-export type ChartLayerType = 'bar' | 'stacked-bar' | 'line' | 'area' | 'scatter'
+/**
+ * 圖層類型。
+ *
+ * 'trigger-line' 不是真正的資料圖層 —— 參考線沒有 data 也不參與比例尺計算。
+ * 它只出現在 layer-hover / layer-click 的 payload 裡，讓使用端能用同一組
+ * 事件處理參考線的互動。這是既有的對外行為，型別如實反映而不改 API。
+ */
+export type ChartLayerType = 'bar' | 'stacked-bar' | 'line' | 'area' | 'scatter' | 'trigger-line'
 
 /** 圖層要掛在左或右 Y 軸 */
 export type ChartAxisSide = 'left' | 'right'
+
+/** 圖層在圖例中的設定 */
+export interface ChartLayerLegend {
+  /** 是否顯示此圖層的圖例項（預設顯示） */
+  show?: boolean
+  /** 圖例文字 */
+  label?: string
+}
 
 /**
  * 單一圖層設定。
@@ -72,6 +86,27 @@ export interface ChartLayer<T = ChartDatum> {
   colorScale?: d3.ScaleOrdinal<string, string>
   /** enter-update-exit 的 key 函式，避免重繪時錯位 */
   keyFn?: (datum: T, index: number) => string
+
+  // ===== 折線圖專屬 =====
+  /** 線條顏色 */
+  lineColor?: string
+  /** 線寬（px） */
+  strokeWidth?: number
+  /** 是否在每個資料點畫圓點 */
+  showDots?: boolean
+  /** 圓點半徑（px） */
+  dotSize?: number
+  /** 圓點顏色；未指定時沿用 lineColor */
+  dotColor?: string
+  /** 圓點不透明度（0~1） */
+  dotOpacity?: number
+  /** D3 曲線插值器，例如 d3.curveMonotoneX */
+  curve?: d3.CurveFactory
+
+  // ===== 圖例 =====
+  /** 此圖層在圖例中的設定 */
+  legend?: ChartLayerLegend
+
   /** 由 useChartScales 標記「此圖層的 data 已按 brush 範圍過濾」 */
   _isFiltered?: boolean
 }
@@ -128,4 +163,30 @@ export interface ChartScalesProps<T = ChartDatum> {
   yLeftDomain?: YDomain | null
   yRightDomain?: YDomain | null
   brushMode?: BrushMode
+}
+
+// ===== 型別守衛 =====
+
+/**
+ * 是否為 band scale（離散類別）。
+ *
+ * 只有 band scale 有 bandwidth()；柱狀圖的寬度與位置計算依賴它。
+ * 渲染函式用這個守衛一次收窄，之後就不必在每個呼叫點各自斷言。
+ */
+export function isBandScale(scale: XScale | null | undefined): scale is d3.ScaleBand<string> {
+  return scale !== null && scale !== undefined && typeof (scale as d3.ScaleBand<string>).bandwidth === 'function'
+}
+
+/**
+ * 是否為連續型比例尺（linear / time / log …）。
+ * 連續型有 invert()，band 沒有 —— 框選要把像素換算回資料值時需要它。
+ */
+export function isContinuousScale(
+  scale: XScale | YScale | null | undefined
+): scale is d3.ScaleContinuousNumeric<number, number> {
+  return (
+    scale !== null &&
+    scale !== undefined &&
+    typeof (scale as d3.ScaleContinuousNumeric<number, number>).invert === 'function'
+  )
 }

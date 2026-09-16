@@ -66,103 +66,108 @@
   </div>
 </template>
 
-<script setup>
-import { ref, computed, watch, watchEffect, onMounted, onUnmounted } from 'vue';
+<script setup lang="ts">
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted, type Ref } from 'vue';
 import * as d3 from 'd3';
 import { useD3Brush } from './composables/useD3Brush';
 import { useChartScales } from './composables/useChartScales';
+import { isBandScale } from './types/chart.types'
+import type {
+  BrushMode,
+  ChartAxisSide,
+  ChartDatum,
+  ChartLayer,
+  ChartMargin,
+  ContinuousScaleType,
+  XDomain,
+  XAccessor,
+  XScale,
+  XScaleType,
+  YAccessor,
+  YDomain,
+  YScale,
+} from './types/chart.types'
+import type { TriggerLine } from './composables/faceChart/useFacetLayout'
 
-const props = defineProps({
+interface DualAxisComboChartProps {
+
   // === 基礎配置 ===
-  width: { type: Number, default: 800 },
-  height: { type: Number, default: 500 },
-  autoResize: { type: Boolean, default: false }, // 啟用自動響應容器大小
-  debounceDelay: { type: Number, default: 150 }, // ResizeObserver 防抖延遲（毫秒）
-  margin: { 
-    type: Object, 
-    default: () => ({ top: 60, right: 80, bottom: 60, left: 80 })
-  },
+  width?: number
+  height?: number
+  autoResize?: boolean
+  debounceDelay?: number
+  margin?: ChartMargin
 
   // === 圖層配置 ===
-  layers: {
-    type: Array,
-    required: true,
-    // 範例結構：
-    // [
-    //   {
-    //     type: 'stacked-bar',
-    //     data: [...],
-    //     yAxis: 'left',
-    //     stackKeys: ['series1', 'series2'],
-    //     xValue: d => d.category,
-    //     colorScale: d3.scaleOrdinal(d3.schemeCategory10),
-    //     legend: { show: true, position: 'top-right' }
-    //   },
-    //   {
-    //     type: 'line',
-    //     data: [...],
-    //     yAxis: 'right',
-    //     xValue: d => d.category,
-    //     yValue: d => d.value,
-    //     lineColor: '#ff6b6b',
-    //     strokeWidth: 2,
-    //     showDots: true
-    //   }
-    // ]
-  },
+  /**
+   * 圖層陣列。一張圖可疊多個圖層（例如柱狀 + 折線雙軸），
+   * 每個圖層各自帶資料與取值函式，並以 yAxis 指定掛在哪一側。
+   */
+  layers: ChartLayer[]
 
   // === X 軸配置 ===
-  xScaleType: { type: String, default: 'band' }, // 'band' | 'linear' | 'time'
-  xDomain: { type: Array, default: null },
-  xAxisLabel: { type: String, default: '' },
-  xAxisFormat: { type: Function, default: null },
-  xAxisLabelRotate: { type: Number, default: 0 }, // X 軸標籤旋轉角度（度數，負值為逆時針）
+  xScaleType?: XScaleType
+  xDomain?: XDomain | null
+  xAxisLabel?: string
+  xAxisFormat?: ((value: never) => string) | null
+  xAxisLabelRotate?: number
 
   // === 左 Y 軸配置 ===
-  yLeftScaleType: { type: String, default: 'linear' }, // 'linear' | 'log' | 'sqrt'
-  yLeftDomain: { type: Array, default: null },
-  yLeftAxisLabel: { type: String, default: '' },
-  yLeftAxisFormat: { type: Function, default: null },
+  yLeftScaleType?: ContinuousScaleType
+  yLeftDomain?: YDomain | null
+  yLeftAxisLabel?: string
+  yLeftAxisFormat?: ((value: number) => string) | null
 
   // === 右 Y 軸配置 ===
-  yRightScaleType: { type: String, default: 'linear' },
-  yRightDomain: { type: Array, default: null },
-  yRightAxisLabel: { type: String, default: '' },
-  yRightAxisFormat: { type: Function, default: null },
+  yRightScaleType?: ContinuousScaleType
+  yRightDomain?: YDomain | null
+  yRightAxisLabel?: string
+  yRightAxisFormat?: ((value: number) => string) | null
 
   // === 視覺配置 ===
-  title: { type: String, default: '' },
-  showGrid: { type: Boolean, default: true },
-  animationDuration: { type: Number, default: 750 },
-  
+  title?: string
+  showGrid?: boolean
+  animationDuration?: number
+
   // === 互動配置 ===
-  enableBrush: { type: Boolean, default: true }, // 啟用框選縮放功能
-  brushMode: { type: String, default: 'xy' }, // 'xy' | 'x' - 框選模式：雙軸或僅 X 軸
-  enableAxisDrag: { type: Boolean, default: true }, // 啟用座標軸拖曳平移功能
-  showResetButton: { type: Boolean, default: true }, // 顯示重置按鈕
+  enableBrush?: boolean
+  brushMode?: BrushMode
+  enableAxisDrag?: boolean
+  showResetButton?: boolean
 
   // === Trigger 線配置（管制圖、良率分析圖） ===
-  triggerLines: {
-    type: Array,
-    default: () => [],
-    // 範例結構：
-    // [
-    //   {
-    //     type: 'horizontal',  // 'horizontal' | 'vertical'
-    //     value: 100,          // Y軸數值（horizontal）或 X軸數值（vertical）
-    //     yAxis: 'left',       // 'left' | 'right' - 使用哪個 Y 軸（僅 horizontal）
-    //     label: 'UCL',        // 線條標籤
-    //     color: '#ef4444',    // 線條顏色
-    //     strokeWidth: 2,      // 線條粗細
-    //     strokeDasharray: '5,5', // 虛線樣式（'5,5' 為虛線，null 為實線）
-    //     showInLegend: true,  // 是否顯示在圖例中
-    //     interactive: true,   // 是否支援 hover 互動
-    //     labelPosition: 'end' // 'start' | 'end' | 'middle' - 標籤位置
-    //   }
-    // ]
-  },
+  /** 參考線，例如規格上下限或良率門檻 */
+  triggerLines?: TriggerLine[]
+}
 
-});
+const props = withDefaults(defineProps<DualAxisComboChartProps>(), {
+  width: 800,
+  height: 500,
+  autoResize: false,
+  debounceDelay: 150,
+  margin: () => ({ top: 60, right: 80, bottom: 60, left: 80 }),
+  xScaleType: 'band',
+  xDomain: null,
+  xAxisLabel: '',
+  xAxisFormat: null,
+  xAxisLabelRotate: 0,
+  yLeftScaleType: 'linear',
+  yLeftDomain: null,
+  yLeftAxisLabel: '',
+  yLeftAxisFormat: null,
+  yRightScaleType: 'linear',
+  yRightDomain: null,
+  yRightAxisLabel: '',
+  yRightAxisFormat: null,
+  title: '',
+  showGrid: true,
+  animationDuration: 750,
+  enableBrush: true,
+  brushMode: 'xy',
+  enableAxisDrag: true,
+  showResetButton: true,
+  triggerLines: () => [],
+})
 
 const emit = defineEmits([
   'layer-click',
@@ -176,37 +181,93 @@ const emit = defineEmits([
   'axis-drag' // 座標軸拖曳平移
 ]);
 
-// === Refs ===
-const containerRef = ref(null);
-const svgRef = ref(null);
-const gridLayerRef = ref(null);
-const stackedBarLayerRef = ref(null);
-const lineLayerRef = ref(null);
-const triggerLineLayerRef = ref(null);
-const xAxisRef = ref(null);
-const yAxisLeftRef = ref(null);
-const yAxisRightRef = ref(null);
-const legendLayerRef = ref(null);
-const titleLayerRef = ref(null);
-const brushLayerRef = ref(null);
+// === 圖例 ===
 
-const chartId = ref(`chart-${Math.random().toString(36).substr(2, 9)}`);
-const tooltipData = ref(null);
+/** 圖例中一個項目的樣式種類 */
+type LegendSymbol = 'rect' | 'line' | 'scatter' | 'trigger-line'
+
+/** 圖例項 */
+interface LegendItem {
+  label: string
+  color: string
+  /** 決定要畫方塊、線段還是圓點 */
+  type: LegendSymbol
+  /** scatter 用的圓點半徑 */
+  dotSize?: number
+  /** trigger-line 用的虛線樣式 */
+  strokeDasharray?: string | null
+}
+
+// === D3 事件與綁定資料的型別 ===
+
+/** 綁在 SVG 元素上的資料（供 brush overlay 穿透時讀回） */
+interface BoundDatum {
+  rawData: ChartDatum
+  layer: ChartLayer
+  seriesKey?: string
+}
+
+/** brush 結束事件；x 模式的 selection 是一對座標，xy 模式是兩個角 */
+interface BrushSelectionEvent {
+  selection: [number, number] | [[number, number], [number, number]] | null
+}
+
+// === Tooltip 型別 ===
+
+/** tooltip 的座標；containerX / containerY 在容器尚未掛載時為 null */
+interface TooltipPosition {
+  pageX: number
+  pageY: number
+  containerX: number | null
+  containerY: number | null
+}
+
+/** 傳給 tooltip slot 的內容 */
+interface TooltipPayload {
+  /** 被懸停元素對應的資料列 */
+  data: ChartDatum
+  /** 該元素所屬的圖層設定 */
+  layer: ChartLayer
+  /** 堆疊圖的系列鍵；非堆疊圖為 undefined */
+  seriesKey?: string
+}
+
+// === Refs ===
+// 每個圖層是一個 <g>；D3 直接操作這些節點做 enter-update-exit
+const containerRef = ref<HTMLDivElement | null>(null);
+const svgRef = ref<SVGSVGElement | null>(null);
+const gridLayerRef = ref<SVGGElement | null>(null);
+const stackedBarLayerRef = ref<SVGGElement | null>(null);
+const lineLayerRef = ref<SVGGElement | null>(null);
+const triggerLineLayerRef = ref<SVGGElement | null>(null);
+const xAxisRef = ref<SVGGElement | null>(null);
+const yAxisLeftRef = ref<SVGGElement | null>(null);
+const yAxisRightRef = ref<SVGGElement | null>(null);
+const legendLayerRef = ref<SVGGElement | null>(null);
+const titleLayerRef = ref<SVGGElement | null>(null);
+const brushLayerRef = ref<SVGGElement | null>(null);
+
+/**
+ * 每個實例的唯一 id。
+ * 用來組 clip-path 的 id，避免同頁多張圖互相覆蓋彼此的裁切區域。
+ */
+const chartId = ref(`chart-${Math.random().toString(36).slice(2, 11)}`);
+const tooltipData = ref<TooltipPayload | null>(null);
 const tooltipVisible = ref(false);
 
 // === 響應式尺寸管理 ===
 const observedWidth = ref(props.width);
 const observedHeight = ref(props.height);
-let resizeObserver = null;
-let resizeDebounceTimer = null;
+let resizeObserver: ResizeObserver | null = null;
+let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 // === Brush 功能整合 ===
 const { resetBtnShow } = useD3Brush(emit);
 
 // 儲存當前的 domain（用於 Brush 縮放）
-const currentXDomain = ref(null);
-const currentYLeftDomain = ref(null);
-const currentYRightDomain = ref(null);
+const currentXDomain = ref<XDomain | null>(null) as Ref<XDomain | null>;
+const currentYLeftDomain = ref<YDomain | null>(null) as Ref<YDomain | null>;
+const currentYRightDomain = ref<YDomain | null>(null) as Ref<YDomain | null>;
 
 // 標記是否為本地 Brush 操作（用於區分自己 Brush vs 外部同步）
 const isLocalBrush = ref(false);
@@ -244,13 +305,94 @@ const effectiveAnimationDuration = computed(() => {
   return resetBtnShow.value ? 0 : props.animationDuration;
 });
 
+/**
+ * 把 X domain 的兩個端點轉成可做算術的數值。
+ *
+ * X 軸的 domain 依比例尺種類可能是數值、日期或類別字串；
+ * 拖曳平移／縮放一律在數值域上計算，時間軸換成時間戳後再轉回 Date。
+ */
+function toNumericDomain(domain: XDomain, isTimeScale: boolean): [number, number] {
+  const [a, b] = domain as [string | number | Date, string | number | Date];
+  if (isTimeScale) {
+    return [new Date(a).getTime(), new Date(b).getTime()];
+  }
+  return [Number(a), Number(b)];
+}
+
+/**
+ * enter-update-exit 的 key 函式。
+ * 圖層有自訂 keyFn 就用它（避免重繪時元素錯位），否則退回索引。
+ */
+function makeKeyFn(layer: ChartLayer): (d: BoundDatum, i: number) => string {
+  const custom = layer.keyFn;
+  if (custom) return (d, i) => custom(d.rawData, i);
+  return (_d, i) => String(i);
+}
+
+/**
+ * 取得堆疊系列的顏色。
+ * colorScale 可以是 d3 的 ordinal scale（以 key 呼叫）或一張 key → 色碼的查表。
+ */
+function resolveSeriesColor(
+  colorScale: ChartLayer['colorScale'] | Record<string, string> | undefined,
+  seriesKey: string,
+  seriesIndex: number
+): string {
+  if (typeof colorScale === 'function') return colorScale(seriesKey);
+  if (colorScale && typeof colorScale === 'object') {
+    const table = colorScale as Record<string, string>;
+    const hit = table[seriesKey] ?? table[String(seriesIndex)];
+    if (hit) return hit;
+  }
+  return d3.schemeCategory10[seriesIndex % 10];
+}
+
+/**
+ * 建立一組把資料列換算成像素座標的函式。
+ *
+ * band scale 與連續型 scale 的呼叫方式不同（前者吃類別字串、後者吃數值），
+ * 原本這段 band 判斷在 renderLines / renderScatter 裡各自重複了四次，
+ * 其中 .defined() 的三元運算兩個分支還完全相同（copy-paste 殘留），
+ * 導致 band scale 下 defined 檢查用的是 band 起點、而 .x() 用的是 band 中心。
+ */
+function makeAccessors(
+  xs: XScale,
+  ys: YScale,
+  xValue: XAccessor,
+  yValue: YAccessor
+) {
+  /** X 像素座標；band scale 取 band 中心。無法定位時回傳 undefined */
+  const xPos = (d: ChartDatum): number | undefined => {
+    const raw = xValue(d);
+    if (isBandScale(xs)) {
+      const start = xs(String(raw));
+      return start === undefined ? undefined : start + xs.bandwidth() / 2;
+    }
+    return (xs as d3.ScaleContinuousNumeric<number, number>)(Number(raw));
+  };
+
+  /** Y 像素座標 */
+  const yPos = (d: ChartDatum): number => ys(yValue(d));
+
+  /** 這個資料點是否能畫出來（座標皆為有效數值） */
+  const isDefined = (d: ChartDatum): boolean => {
+    const x = xPos(d);
+    const y = yPos(d);
+    return x !== undefined && Number.isFinite(x) && Number.isFinite(y);
+  };
+
+  return { xPos, yPos, isDefined };
+}
+
 // === 渲染函數 ===
 
 /**
  * 設置 Brush overlay 的 Tooltip 穿透檢測
  * @param {d3.Selection} overlay - Brush overlay 元素
  */
-const setupTooltipDetection = (overlay) => {
+const setupTooltipDetection = (
+  overlay: d3.Selection<SVGRectElement, unknown, null, undefined>
+): void => {
   let isDragging = false;
   
   overlay
@@ -259,7 +401,7 @@ const setupTooltipDetection = (overlay) => {
       isDragging = false;
       handleLayerLeave();
     })
-    .on('mousemove.tooltip', function(event) {
+    .on('mousemove.tooltip', function (this: SVGRectElement, event: MouseEvent) {
       if (isDragging) return;
       
       // 臨時穿透檢測底層元素
@@ -271,7 +413,8 @@ const setupTooltipDetection = (overlay) => {
       if (elementBelow?.classList.contains('stacked-bar') || 
           elementBelow?.classList.contains('line-dot')) {
         // ✅ 直接從 DOM 元素讀取已綁定的完整資料
-        const boundData = d3.select(elementBelow).datum();
+        // 元素上綁的是 renderStackedBars / renderLines 在 .datum() 存進去的物件
+        const boundData = d3.select(elementBelow).datum() as BoundDatum | undefined;
         if (boundData?.layer) {
           handleLayerHover(event, boundData.rawData, boundData.layer, boundData.seriesKey);
         }
@@ -289,39 +432,48 @@ const setupTooltipDetection = (overlay) => {
  * 處理 Brush 選取完成事件
  * @param {Object} event - D3 brush 事件
  */
-const handleBrushSelection = (event) => {
+const handleBrushSelection = (event: BrushSelectionEvent): void => {
   if (!event.selection) return;
 
-  // 解析選取範圍
-  let x0, y0, x1, y1;
+  const xs = xScale.value;
+  if (!xs) return;
+
+  // 解析選取範圍。xy 模式是兩個角，x 模式只有一對 X 座標
+  let x0: number, x1: number;
+  let y0: number | undefined, y1: number | undefined;
   if (props.brushMode === 'xy') {
-    [[x0, y0], [x1, y1]] = event.selection;
+    const [[sx0, sy0], [sx1, sy1]] = event.selection as [[number, number], [number, number]];
+    x0 = sx0; y0 = sy0; x1 = sx1; y1 = sy1;
   } else {
-    [x0, x1] = event.selection;
+    const [sx0, sx1] = event.selection as [number, number];
+    x0 = sx0; x1 = sx1;
   }
 
   // 計算 X 軸 domain
-  let selectedXDomain;
-  if (props.xScaleType === 'band') {
-    const allCategories = originalXDomain.value || xScale.value.domain();
+  let selectedXDomain: XDomain;
+  if (isBandScale(xs)) {
+    const allCategories = (originalXDomain.value as string[] | null) ?? xs.domain();
+    const bandWidth = xs.bandwidth();
     selectedXDomain = allCategories.filter((d) => {
-      // Band Scale 的長條結構：假設bandWidth為50px
+      // Band Scale 的長條結構：假設 bandWidth 為 50px
       // |----A----|----B----|----C----|
       //    50px      50px      50px
-      const bandStart = xScale.value(d);
-      const bandWidth = xScale.value.bandwidth();
-      const bandEnd = bandStart + bandWidth;
-      return bandEnd > x0 && bandStart < x1;
+      // 與框選範圍有重疊就算選中（與 useD3Brush 的「必須完整落入」不同：
+      // 這裡是圖表本身的框選，行為刻意較寬鬆）
+      const bandStart = xs(d);
+      if (bandStart === undefined) return false;
+      return bandStart + bandWidth > x0 && bandStart < x1;
     });
   } else {
-    selectedXDomain = [xScale.value.invert(x0), xScale.value.invert(x1)];
+    const continuous = xs as d3.ScaleContinuousNumeric<number, number>;
+    selectedXDomain = [continuous.invert(x0), continuous.invert(x1)];
   }
 
   if (selectedXDomain.length === 0) return;
 
   // 計算 Y 軸 domain（僅 xy 模式）
-  let selectedYLeftDomain = null;
-  let selectedYRightDomain = null;
+  let selectedYLeftDomain: YDomain | null = null;
+  let selectedYRightDomain: YDomain | null = null;
 
   if (props.brushMode === 'xy') {
     if (yLeftScale.value && y0 !== undefined && y1 !== undefined) {
@@ -347,11 +499,11 @@ const handleBrushSelection = (event) => {
     mode: props.brushMode
   });
 
-  // 清除選取框
-  d3.select(brushLayerRef.value).call(
-    props.brushMode === 'xy' ? d3.brush().move : d3.brushX().move,
-    null
-  );
+  // 清除選取框：move(selection, null) 會把 brush 的選取框收掉
+  if (brushLayerRef.value) {
+    const brushBehavior = props.brushMode === 'xy' ? d3.brush() : d3.brushX();
+    brushBehavior.move(d3.select(brushLayerRef.value), null);
+  }
 };
 
 /**
@@ -461,11 +613,13 @@ const renderAxisDrag = () => {
     
     // 移除舊的拖曳事件並重新綁定
     overlay.on('.drag', null);
-    overlay.call(d3.drag()
-      .on('start', function() {
+    // 收窄成 SVGRectElement，drag behavior 的 selection 型別才對得上
+    (overlay as d3.Selection<SVGRectElement, unknown, SVGGElement, unknown>).call(
+      d3.drag<SVGRectElement, unknown>()
+      .on('start', function (this: SVGRectElement) {
         d3.select(this).style('cursor', 'grabbing');
       })
-      .on('drag', function(event) {
+      .on('drag', function (this: SVGRectElement, event: d3.D3DragEvent<SVGRectElement, unknown, unknown>) {
         handleXAxisDrag(event.dx, event.dy);
       })
       .on('end', function() {
@@ -490,11 +644,13 @@ const renderAxisDrag = () => {
       .style('cursor', 'ns-resize');
     
     overlay.on('.drag', null);
-    overlay.call(d3.drag()
-      .on('start', function() {
+    // 收窄成 SVGRectElement，drag behavior 的 selection 型別才對得上
+    (overlay as d3.Selection<SVGRectElement, unknown, SVGGElement, unknown>).call(
+      d3.drag<SVGRectElement, unknown>()
+      .on('start', function (this: SVGRectElement) {
         d3.select(this).style('cursor', 'grabbing');
       })
-      .on('drag', function(event) {
+      .on('drag', function (this: SVGRectElement, event: d3.D3DragEvent<SVGRectElement, unknown, unknown>) {
         handleYAxisDrag(event.dx, event.dy, 'left');
       })
       .on('end', function() {
@@ -519,11 +675,13 @@ const renderAxisDrag = () => {
       .style('cursor', 'ns-resize');
     
     overlay.on('.drag', null);
-    overlay.call(d3.drag()
-      .on('start', function() {
+    // 收窄成 SVGRectElement，drag behavior 的 selection 型別才對得上
+    (overlay as d3.Selection<SVGRectElement, unknown, SVGGElement, unknown>).call(
+      d3.drag<SVGRectElement, unknown>()
+      .on('start', function (this: SVGRectElement) {
         d3.select(this).style('cursor', 'grabbing');
       })
-      .on('drag', function(event) {
+      .on('drag', function (this: SVGRectElement, event: d3.D3DragEvent<SVGRectElement, unknown, unknown>) {
         handleYAxisDrag(event.dx, event.dy, 'right');
       })
       .on('end', function() {
@@ -538,21 +696,22 @@ const renderAxisDrag = () => {
  * @param {number} dx - X 方向的拖曳距離（像素）
  * @param {number} dy - Y 方向的拖曳距離（像素）
  */
-const handleXAxisDrag = (dx, dy) => {
+const handleXAxisDrag = (dx: number, dy: number): void => {
   if (!xScale.value || !originalXDomain.value) return;
   
   // ✅ Band Scale（類別型）預設不支援拖曳
   if (props.xScaleType === 'band') return;
   
   const currentDomain = currentXDomain.value || originalXDomain.value;
+  if (currentDomain.length < 2) return;
+
   const absDx = Math.abs(dx);
   const absDy = Math.abs(dy);
-  let newDomain;
+  let newDomain: XDomain;
   
   // ✅ 時間軸需要轉換為數字（時間戳）進行計算
   const isTimeScale = props.xScaleType === 'time';
-  const domainMin = isTimeScale ? new Date(currentDomain[0]).getTime() : currentDomain[0];
-  const domainMax = isTimeScale ? new Date(currentDomain[1]).getTime() : currentDomain[1];
+  const [domainMin, domainMax] = toNumericDomain(currentDomain, isTimeScale);
   
   // 判斷主要拖曳方向（參照 Y 軸邏輯）
   if (absDx > absDy && absDx >= 1) {
@@ -602,7 +761,7 @@ const handleXAxisDrag = (dx, dy) => {
  * @param {number} dy - Y 方向的拖曳距離（像素）
  * @param {string} side - 'left' | 'right' - 哪一側的 Y 軸
  */
-const handleYAxisDrag = (dx, dy, side) => {
+const handleYAxisDrag = (dx: number, dy: number, side: ChartAxisSide): void => {
   const yScale = side === 'left' ? yLeftScale.value : yRightScale.value;
   const originalDomain = side === 'left' ? originalYLeftDomain.value : originalYRightDomain.value;
   
@@ -614,7 +773,7 @@ const handleYAxisDrag = (dx, dy, side) => {
 
   const absDx = Math.abs(dx);
   const absDy = Math.abs(dy);
-  let newDomain;
+  let newDomain: YDomain;
   
   // 判斷主要拖曳方向
   if (absDy > absDx && absDy >= 1) {
@@ -643,9 +802,9 @@ const handleYAxisDrag = (dx, dy, side) => {
   }
   
   if (side === 'left') {
-    currentYLeftDomain.value = [...newDomain];
+    currentYLeftDomain.value = [newDomain[0], newDomain[1]];
   } else {
-    currentYRightDomain.value = [...newDomain];
+    currentYRightDomain.value = [newDomain[0], newDomain[1]];
   }
 
   resetBtnShow.value = true;
@@ -681,11 +840,14 @@ const renderGrid = () => {
 
   // Y 軸網格線
   if (yLeftScale.value) {
-    const gridLeft = d3.axisLeft(yLeftScale.value)
+    // tickFormat 要傳函式；原本傳字串 '' 只是碰巧被 d3 忽略
+    const gridLeft = d3
+      .axisLeft<number>(yLeftScale.value)
       .tickSize(-chartWidth.value)
-      .tickFormat('');
+      .tickFormat(() => '');
 
-    g.selectAll('.grid-left').data([null])
+    g.selectAll<SVGGElement, null>('.grid-left')
+      .data([null])
       .join('g')
       .attr('class', 'grid-left')
       .call(gridLeft)
@@ -732,16 +894,21 @@ const renderStackedBars = () => {
 
   stackedLayers.forEach((layer, layerIndex) => {
     const { data, stackKeys, xValue, colorScale } = layer;
-    if (!data || !stackKeys || !data.length) return;
+    const xs = xScale.value;
+    const yScale = yLeftScale.value;
+
+    // 堆疊柱狀圖必須是 band scale（每根柱子佔一個類別的寬度）；
+    // 缺少 xValue、stackKeys 或比例尺時無法定位，靜默跳過
+    if (!data || !data.length || !stackKeys || !xValue || !yScale || !isBandScale(xs)) return;
 
     // D3 stack 生成器
-    const stack = d3.stack()
+    const stack = d3
+      .stack<ChartDatum>()
       .keys(stackKeys)
       .order(d3.stackOrderNone)
       .offset(d3.stackOffsetNone);
 
     const series = stack(data);
-    const yScale = yLeftScale.value;
 
     // 為每個 layer 創建獨立的 group
     const layerGroup = g.append('g')
@@ -750,21 +917,20 @@ const renderStackedBars = () => {
     // 渲染每個系列
     series.forEach((seriesData, seriesIndex) => {
       const seriesKey = seriesData.key;
-      const color = typeof colorScale === 'function' 
-        ? colorScale(seriesKey, seriesIndex) 
-        : colorScale?.[seriesKey] || colorScale?.[seriesIndex] || d3.schemeCategory10[seriesIndex % 10];
+      // colorScale 可以是 d3 的 ordinal scale（函式）或一張查表；
+      // 兩者都支援，最後退回 d3 內建色盤
+      const color = resolveSeriesColor(colorScale, seriesKey, seriesIndex);
 
       // ✅ 直接使用 append 建立元素，完全避免 data join
       seriesData.forEach((d, _dataIndex) => {
-        const xVal = xValue(d.data);
-        const x = xScale.value(xVal);
+        const x = xs(String(xValue(d.data)));
         const y0 = yScale(d[0]);
         const y1 = yScale(d[1]);
         const height = y0 - y1;
-        const bandwidth = xScale.value.bandwidth();
+        const bandwidth = xs.bandwidth();
 
         // 跳過無效數據
-        if (x === undefined || isNaN(height) || height < 0) return;
+        if (x === undefined || !Number.isFinite(height) || height < 0) return;
 
         const bar = layerGroup.append('rect')
           .attr('class', `layer-${layerIndex}-series-${seriesIndex} stacked-bar`)
@@ -773,16 +939,20 @@ const renderStackedBars = () => {
           .attr('fill', color)
           .style('cursor', 'pointer')
           .datum({ rawData: d.data, layer, seriesKey })
-          .on('mouseenter', function(event) {
-            const barData = d3.select(this).datum();
+          .on('mouseenter', function (this: SVGRectElement, event: MouseEvent) {
+            const barData = d3.select(this).datum() as BoundDatum;
             handleLayerHover(event, barData.rawData, barData.layer, barData.seriesKey);
           })
           .on('mouseleave', () => {
             handleLayerLeave();
           })
-          .on('click', function(_event) {
-            const barData = d3.select(this).datum();
-            emit('layer-click', { data: barData.rawData, layer: barData.layer, series: barData.seriesKey });
+          .on('click', function (this: SVGRectElement) {
+            const barData = d3.select(this).datum() as BoundDatum;
+            emit('layer-click', {
+              data: barData.rawData,
+              layer: barData.layer,
+              series: barData.seriesKey,
+            });
           });
 
         // ✅ 動畫處理
@@ -836,34 +1006,23 @@ const renderLines = () => {
 
   lineLayers.forEach((layer, layerIndex) => {
     const { data, xValue, yValue, lineColor, strokeWidth, showDots, curve, yAxis } = layer;
-    if (!data) return;
-
-    // ✅ 直接使用 layer.data，不需要再過濾！
-    // 原本的過濾邏輯已移至 composable
 
     // ✅ 根據 yAxis 選擇對應的 scale
-    const yScale = yAxis === 'left' ? yLeftScale.value : yRightScale.value;
+    const ys = yAxis === 'right' ? yRightScale.value : yLeftScale.value;
+    const xs = xScale.value;
+
+    // 缺少任一必要條件就畫不出這個圖層；靜默跳過而不是產生 NaN 座標
+    if (!data || !xValue || !yValue || !xs || !ys) return;
+
+    const { xPos, yPos, isDefined } = makeAccessors(xs, ys, xValue, yValue);
     const color = lineColor || '#ef4444';
 
     // 線條生成器
-    const lineGenerator = d3.line()
-      .defined(d => {
-        // ✅ 過濾掉會產生 NaN 的數據點
-        const x = xValue(d);
-        const y = yValue(d);
-        const xPos = props.xScaleType === 'band' 
-          ? xScale.value(x) 
-          : xScale.value(x);
-        const yPos = yScale(y);
-        return !isNaN(xPos) && !isNaN(yPos) && xPos !== undefined && yPos !== undefined;
-      })
-      .x(d => {
-        const x = xValue(d);
-        return props.xScaleType === 'band' 
-          ? xScale.value(x) + xScale.value.bandwidth() / 2
-          : xScale.value(x);
-      })
-      .y(d => yScale(yValue(d)))
+    const lineGenerator = d3
+      .line<ChartDatum>()
+      .defined(isDefined)
+      .x((d) => xPos(d) ?? 0)
+      .y(yPos)
       .curve(curve || d3.curveMonotoneX);
     /**       
       * 常見曲線類型：
@@ -895,18 +1054,13 @@ const renderLines = () => {
     // 渲染數據點
     if (showDots) {
       // ✅ 過濾掉會產生 NaN 的數據點
-      const validData = data.filter(d => {
-        const x = xValue(d);
-        const y = yValue(d);
-        const xPos = props.xScaleType === 'band' 
-          ? xScale.value(x) 
-          : xScale.value(x);
-        const yPos = yScale(y);
-        return !isNaN(xPos) && !isNaN(yPos) && xPos !== undefined && yPos !== undefined;
-      });
+      const validData = data.filter(isDefined);
 
-      g.selectAll(`circle.dot-${layerIndex}`)
-        .data(validData.map(d => ({ rawData: d, layer })), layer.keyFn || ((d, i) => i))
+      g.selectAll<SVGCircleElement, BoundDatum>(`circle.dot-${layerIndex}`)
+        .data(
+          validData.map((d) => ({ rawData: d, layer })),
+          makeKeyFn(layer)
+        )
         .join(
           enter => enter.append('circle')
             .attr('class', `dot-${layerIndex} line-dot`)
@@ -915,15 +1069,15 @@ const renderLines = () => {
             .attr('stroke', '#fff')
             .attr('stroke-width', 2)
             .style('cursor', 'pointer')
-            .on('mouseenter', (event, d) => {
-              d3.select(event.target).attr('r', 6);
+            .on('mouseenter', (event: MouseEvent, d) => {
+              d3.select(event.target as SVGCircleElement).attr('r', 6);
               handleLayerHover(event, d.rawData, d.layer);
             })
-            .on('mouseleave', (event) => {
-              d3.select(event.target).attr('r', 4);
+            .on('mouseleave', (event: MouseEvent) => {
+              d3.select(event.target as SVGCircleElement).attr('r', 4);
               handleLayerLeave();
             })
-            .on('click', (event, d) => {
+            .on('click', (_event: MouseEvent, d) => {
               emit('layer-click', { data: d.rawData, layer: d.layer });
             }),
           update => update,
@@ -935,13 +1089,8 @@ const renderLines = () => {
         .transition()
         .duration(effectiveAnimationDuration.value)
         .ease(d3.easeCubicOut)
-        .attr('cx', d => {
-          const x = xValue(d.rawData);
-          return props.xScaleType === 'band'
-            ? xScale.value(x) + xScale.value.bandwidth() / 2
-            : xScale.value(x);
-        })
-        .attr('cy', d => yScale(yValue(d.rawData)))
+        .attr('cx', (d) => xPos(d.rawData) ?? 0)
+        .attr('cy', (d) => yPos(d.rawData))
         .attr('r', 4);
     }
   });
@@ -988,17 +1137,24 @@ const renderScatter = () => {
       dotOpacity,
       yAxis 
     } = layer;
-    if (!data) return;
-
     // ✅ 根據 yAxis 選擇對應的 scale
-    const yScale = yAxis === 'left' ? yLeftScale.value : yRightScale.value;
+    const ys = yAxis === 'right' ? yRightScale.value : yLeftScale.value;
+    const xs = xScale.value;
+
+    // 缺少任一必要條件就畫不出這個圖層
+    if (!data || !xValue || !yValue || !xs || !ys) return;
+
+    const { xPos, yPos } = makeAccessors(xs, ys, xValue, yValue);
     const color = dotColor || '#3b82f6';
     const size = dotSize || 4;
-    const opacity = dotOpacity || 0.7;
+    const opacity = dotOpacity ?? 0.7;
 
     // 渲染散點
-    g.selectAll(`circle.scatter-dot-${layerIndex}`)
-      .data(data.map(d => ({ rawData: d, layer })), layer.keyFn || ((d, i) => i))
+    g.selectAll<SVGCircleElement, BoundDatum>(`circle.scatter-dot-${layerIndex}`)
+      .data(
+        data.map((d) => ({ rawData: d, layer })),
+        makeKeyFn(layer)
+      )
       .join(
         enter => enter.append('circle')
           .attr('class', `scatter-dot-${layerIndex} scatter-dot`)
@@ -1008,21 +1164,21 @@ const renderScatter = () => {
           .attr('stroke', '#fff')
           .attr('stroke-width', 1)
           .style('cursor', 'pointer')
-          .on('mouseenter', (event, d) => {
-            d3.select(event.target)
+          .on('mouseenter', (event: MouseEvent, d) => {
+            d3.select(event.target as SVGCircleElement)
               .attr('r', size * 1.5)
               .attr('fill-opacity', 1)
               .attr('stroke-width', 2);
             handleLayerHover(event, d.rawData, d.layer);
           })
-          .on('mouseleave', (event) => {
-            d3.select(event.target)
+          .on('mouseleave', (event: MouseEvent) => {
+            d3.select(event.target as SVGCircleElement)
               .attr('r', size)
               .attr('fill-opacity', opacity)
               .attr('stroke-width', 1);
             handleLayerLeave();
           })
-          .on('click', (event, d) => {
+          .on('click', (_event: MouseEvent, d) => {
             emit('layer-click', { data: d.rawData, layer: d.layer });
           }),
         update => update,
@@ -1034,13 +1190,8 @@ const renderScatter = () => {
       .transition()
       .duration(effectiveAnimationDuration.value)
       .ease(d3.easeCubicOut)
-      .attr('cx', d => {
-        const x = xValue(d.rawData);
-        return props.xScaleType === 'band'
-          ? xScale.value(x) + xScale.value.bandwidth() / 2
-          : xScale.value(x);
-      })
-      .attr('cy', d => yScale(yValue(d.rawData)))
+      .attr('cx', (d) => xPos(d.rawData) ?? 0)
+      .attr('cy', (d) => yPos(d.rawData))
       .attr('r', size)
       .attr('fill', color)
       .attr('fill-opacity', opacity);
@@ -1062,13 +1213,18 @@ const renderScatter = () => {
 const renderAxes = () => {
   // X 軸
   if (xAxisRef.value && xScale.value) {
-    const xAxis = d3.axisBottom(xScale.value);
-    if (props.xAxisFormat) xAxis.tickFormat(props.xAxisFormat);
+    // XScale 是 band / 連續型的聯集，d3.axisBottom 需要一個具體的 AxisScale；
+    // 兩者在座標軸的用法相同，這裡統一視為 AxisScale<d3.AxisDomain>
+    const xAxis = d3.axisBottom(xScale.value as d3.AxisScale<d3.AxisDomain>);
+    if (props.xAxisFormat) {
+      const format = props.xAxisFormat as unknown as (value: d3.AxisDomain) => string;
+      xAxis.tickFormat((value) => format(value));
+    }
 
     d3.select(xAxisRef.value)
       .transition()
       .duration(effectiveAnimationDuration.value)
-      .call(xAxis)
+      .call(xAxis as unknown as (t: d3.Transition<SVGGElement, unknown, null, undefined>) => void)
       .selectAll('text')
       .style('text-anchor', props.xAxisLabelRotate !== 0 ? 'end' : 'middle')
       .attr('dx', props.xAxisLabelRotate !== 0 ? '-.8em' : '0')
@@ -1078,24 +1234,30 @@ const renderAxes = () => {
 
   // 左 Y 軸
   if (yAxisLeftRef.value && yLeftScale.value) {
-    const yAxis = d3.axisLeft(yLeftScale.value);
-    if (props.yLeftAxisFormat) yAxis.tickFormat(props.yLeftAxisFormat);
+    const yAxis = d3.axisLeft<number>(yLeftScale.value);
+    if (props.yLeftAxisFormat) {
+      const format = props.yLeftAxisFormat;
+      yAxis.tickFormat((value) => format(Number(value)));
+    }
 
     d3.select(yAxisLeftRef.value)
       .transition()
       .duration(effectiveAnimationDuration.value)
-      .call(yAxis);
+      .call(yAxis as unknown as (t: d3.Transition<SVGGElement, unknown, null, undefined>) => void);
   }
 
   // 右 Y 軸
   if (yAxisRightRef.value && yRightScale.value) {
-    const yAxis = d3.axisRight(yRightScale.value);
-    if (props.yRightAxisFormat) yAxis.tickFormat(props.yRightAxisFormat);
+    const yAxis = d3.axisRight<number>(yRightScale.value);
+    if (props.yRightAxisFormat) {
+      const format = props.yRightAxisFormat;
+      yAxis.tickFormat((value) => format(Number(value)));
+    }
 
     d3.select(yAxisRightRef.value)
       .transition()
       .duration(effectiveAnimationDuration.value)
-      .call(yAxis);
+      .call(yAxis as unknown as (t: d3.Transition<SVGGElement, unknown, null, undefined>) => void);
   }
 };
 
@@ -1148,16 +1310,14 @@ const renderLegend = () => {
   if (!legendLayerRef.value) return;
 
   const g = d3.select(legendLayerRef.value);
-  const legendItems = [];
+  const legendItems: LegendItem[] = [];
 
   // 收集所有需要圖例的項目
   props.layers.forEach(layer => {
     if (layer.legend?.show !== false) {
       if (layer.type === 'stacked-bar' && layer.stackKeys) {
         layer.stackKeys.forEach((key, i) => {
-          const color = typeof layer.colorScale === 'function'
-            ? layer.colorScale(key, i)
-            : layer.colorScale?.[i] || d3.schemeCategory10[i % 10];
+          const color = resolveSeriesColor(layer.colorScale, key, i);
           legendItems.push({ label: key, color, type: 'rect' });
         });
       } else if (layer.type === 'line') {
@@ -1195,7 +1355,7 @@ const renderLegend = () => {
   const startX = (chartWidth.value - totalWidth) / 2;
   const startY = chartHeight.value + 30; // 圖表底部下方 30px
 
-  g.selectAll('g.legend-item')
+  g.selectAll<SVGGElement, LegendItem>('g.legend-item')
     .data(legendItems)
     .join(
       enter => {
@@ -1208,8 +1368,8 @@ const renderLegend = () => {
       update => update,
       exit => exit.remove()
     )
-    .attr('transform', (d, i) => `translate(${startX + i * itemWidth}, ${startY})`)
-    .each(function(d) {
+    .attr('transform', (_d, i) => `translate(${startX + i * itemWidth}, ${startY})`)
+    .each(function (this: SVGGElement, d) {
       const item = d3.select(this);
       
       if (d.type === 'rect') {
@@ -1243,7 +1403,7 @@ const renderLegend = () => {
           .attr('stroke-width', 1);
         // 將 rect 改為 circle
         const symbol = item.select('.legend-symbol');
-        if (symbol.node()?.tagName === 'rect') {
+        if ((symbol.node() as Element | null)?.tagName === 'rect') {
           symbol.remove();
           item.insert('circle', '.legend-text')
             .attr('class', 'legend-symbol')
@@ -1314,15 +1474,16 @@ const renderTriggerLines = () => {
   const g = d3.select(triggerLineLayerRef.value);
 
   // 為每條 trigger 線創建一個 group
-  const lineGroups = g.selectAll('g.trigger-line-group')
-    .data(props.triggerLines, (d, i) => d.id || i)
+  const lineGroups = g
+    .selectAll<SVGGElement, TriggerLine>('g.trigger-line-group')
+    .data(props.triggerLines, (d, i) => d.id ?? String(i))
     .join(
       enter => enter.append('g').attr('class', 'trigger-line-group'),
       update => update,
       exit => exit.remove()
     );
 
-  lineGroups.each(function(triggerLine, _i) {
+  lineGroups.each(function (this: SVGGElement, triggerLine) {
     const lineGroup = d3.select(this);
     const {
       type = 'horizontal',
@@ -1335,6 +1496,14 @@ const renderTriggerLines = () => {
       interactive = true,
       labelPosition = 'end'
     } = triggerLine;
+
+    /**
+     * 參考線的 hover / click payload。
+     * 參考線不是資料圖層，但沿用 layer-hover / layer-click 讓使用端
+     * 能用同一組事件處理 —— 這是既有的對外行為。
+     */
+    const triggerLineDatum: ChartDatum = { value, label, type, yAxis };
+    const triggerLinePseudoLayer: ChartLayer = { ...triggerLine, type: 'trigger-line' };
 
     // 選擇對應的 scale
     const yScale = yAxis === 'left' ? yLeftScale.value : yRightScale.value;
@@ -1352,9 +1521,11 @@ const renderTriggerLines = () => {
       y2 = yPos;
     } else {
       // 垂直線（未來擴展）
-      const xPos = props.xScaleType === 'band'
-        ? xScale.value(value) + xScale.value.bandwidth() / 2
-        : xScale.value(value);
+      const xs = xScale.value;
+      if (!xs) return;
+      const xPos = isBandScale(xs)
+        ? (xs(String(value)) ?? 0) + xs.bandwidth() / 2
+        : (xs as d3.ScaleContinuousNumeric<number, number>)(value);
       x1 = xPos;
       y1 = 0;
       x2 = xPos;
@@ -1362,26 +1533,43 @@ const renderTriggerLines = () => {
     }
 
     // 渲染線條
-    lineGroup.selectAll('line.trigger-line')
+    lineGroup
+      .selectAll<SVGLineElement, TriggerLine>('line.trigger-line')
       .data([triggerLine])
       .join(
-        enter => enter.append('line')
-          .attr('class', 'trigger-line')
-          .attr('stroke', color)
-          .attr('stroke-width', strokeWidth)
-          .attr('stroke-dasharray', strokeDasharray)
-          .style('cursor', interactive ? 'pointer' : 'default')
-          .on('mouseenter', interactive ? function(event) {
-            d3.select(this).attr('stroke-width', strokeWidth + 1);
-            handleLayerHover(event, { value, label, type, yAxis }, { type: 'trigger-line', ...triggerLine });
-          } : null)
-          .on('mouseleave', interactive ? function() {
-            d3.select(this).attr('stroke-width', strokeWidth);
-            handleLayerLeave();
-          } : null)
-          .on('click', interactive ? (_event) => {
-            emit('layer-click', { data: { value, label, type, yAxis }, layer: { type: 'trigger-line', ...triggerLine } });
-          } : null),
+        (enter) => {
+          const line = enter
+            .append('line')
+            .attr('class', 'trigger-line')
+            .attr('stroke', color)
+            .attr('stroke-width', strokeWidth)
+            .attr('stroke-dasharray', strokeDasharray)
+            .style('cursor', interactive ? 'pointer' : 'default');
+
+          // 只在需要互動時才綁事件。
+          // 原本寫 `.on('mouseenter', interactive ? fn : null)` —— 傳入
+          // 「函式 | null」的聯集會讓 d3 的 .on() 多載無法解析，而且即使
+          // interactive 為 false 也白走一次綁定。
+          if (interactive) {
+            line
+              .on('mouseenter', function (this: SVGLineElement, event: MouseEvent) {
+                d3.select(this).attr('stroke-width', strokeWidth + 1);
+                handleLayerHover(event, triggerLineDatum, triggerLinePseudoLayer);
+              })
+              .on('mouseleave', function (this: SVGLineElement) {
+                d3.select(this).attr('stroke-width', strokeWidth);
+                handleLayerLeave();
+              })
+              .on('click', () => {
+                emit('layer-click', {
+                  data: triggerLineDatum,
+                  layer: triggerLinePseudoLayer,
+                });
+              });
+          }
+
+          return line;
+        },
         update => update,
         exit => exit.remove()
       )
@@ -1470,7 +1658,12 @@ const renderTriggerLines = () => {
  *   handleLayerHover(event, d, layer, 'series1');
  * })
  */
-const handleLayerHover = (event, data, layer, seriesKey) => {
+const handleLayerHover = (
+  event: MouseEvent,
+  data: ChartDatum,
+  layer: ChartLayer,
+  seriesKey?: string
+): void => {
   tooltipData.value = { data, layer, seriesKey };
   tooltipVisible.value = true;
   emit('layer-hover', { data, layer, seriesKey });
@@ -1497,7 +1690,7 @@ const handleLayerHover = (event, data, layer, seriesKey) => {
  *   handleLayerLeave();
  * })
  */
-const handleLayerLeave = () => {
+const handleLayerLeave = (): void => {
   tooltipVisible.value = false;
   emit('tooltip-hide');
 };
@@ -1520,7 +1713,7 @@ const handleLayerLeave = () => {
  * const position = buildTooltipPosition(mouseEvent);
  * // { pageX: 450, pageY: 300, containerX: 120, containerY: 80 }
  */
-const buildTooltipPosition = (event) => {
+const buildTooltipPosition = (event: MouseEvent): TooltipPosition => {
   const rect = containerRef.value?.getBoundingClientRect?.();
   return {
     pageX: event.clientX,
@@ -1645,6 +1838,9 @@ onUnmounted(() => {
     resizeDebounceTimer = null;
   }
 });
+
+// SVG 與容器對外開放，方便呼叫端截圖或量測
+defineExpose({ containerRef, svgRef })
 </script>
 
 <style scoped>

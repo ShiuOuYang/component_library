@@ -23,14 +23,27 @@ import type {
 
 /** 參考線（例如良率門檻、規格上下限） */
 export interface TriggerLine {
+  /** 穩定 id，供 enter-update-exit 的 key 使用；未提供時退回索引 */
+  id?: string
   /** 落在哪個值 */
   value: number
+  /** 水平線（對應 Y 值）或垂直線（對應 X 值） */
+  type?: 'horizontal' | 'vertical'
   /** 掛在哪一側的 Y 軸 */
   yAxis?: 'left' | 'right'
+  /** 線上顯示的文字 */
   label?: string
+  /** 標籤擺放位置 */
+  labelPosition?: 'start' | 'middle' | 'end'
   color?: string
+  /** 線寬（px） */
+  strokeWidth?: number
   /** 虛線樣式，對應 SVG 的 stroke-dasharray */
-  dash?: string
+  strokeDasharray?: string | null
+  /** 是否響應滑鼠（hover 高亮、顯示 tooltip） */
+  interactive?: boolean
+  /** 是否列入圖例 */
+  showInLegend?: boolean
 }
 
 /** 單一分面的設定 */
