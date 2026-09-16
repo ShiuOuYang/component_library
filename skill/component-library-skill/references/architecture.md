@@ -32,7 +32,7 @@ src/design/tokens.js        ← 唯一手動維護（品牌色/語意色/間距/
 
 ### `src/api/index.js`
 axios 實例：
-- `baseURL = import.meta.env.VITE_API_BASE_URL || 'http://10.22.94.69:3007/router'`
+- `baseURL = import.meta.env.VITE_API_BASE_URL || 'http://<production-host>:3007/router'`
 - `timeout: 120000`
 - **request 攔截器**：自動帶 `Authorization: Bearer`（`localStorage.auth_token`），並記錄 `config.metadata.startTime`
 - **response 攔截器**：印出耗時；`401` 清 token（未來導向登入頁）；狀態碼訊息來自 `./httpStatus.js`
@@ -75,7 +75,7 @@ axios 實例：
 
 | 變數 | development | production |
 |---|---|---|
-| `VITE_API_BASE_URL` | `http://10.22.41.134:3005/router` | `http://10.22.94.69:3007/router` |
+| `VITE_API_BASE_URL` | `http://<dev-host>:3005/router` | `http://<production-host>:3007/router` |
 | `VITE_API_TIMEOUT` | 10000 | 15000 |
 | `VITE_ENABLE_MOCK_DATA` | false | false |
 | `VITE_ENABLE_AUTO_REFRESH` / `VITE_REFRESH_INTERVAL` | true / 30000 | true / 60000 |

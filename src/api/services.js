@@ -1,4 +1,4 @@
-import api from "./index.js";
+import api, { AUTH_BASE_URL } from "./index.js";
 
 // 認證相關 API
 export const authApi = {
@@ -6,7 +6,7 @@ export const authApi = {
   login: async (credentials) => {
     try {
       console.log("🔐 發送登入請求:", credentials);
-      const response = await api.post("http://10.22.94.69:3007/user/login", {
+      const response = await api.post(`${AUTH_BASE_URL}/user/login`, {
         EMPID: credentials.username,
         PWD: credentials.password,
       });
@@ -48,7 +48,7 @@ export const authApi = {
     }
 
     try {
-      const response = await api.get("http://10.22.94.69:3007/user/verify", {
+      const response = await api.get(`${AUTH_BASE_URL}/user/verify`, {
         headers: {
           authorization: token,
         },

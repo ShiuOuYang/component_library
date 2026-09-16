@@ -44,6 +44,25 @@ jobs:
         npm run lint
       shell: powershell
 
+    # 後端位址不寫在版控裡（.env.production 只有 localhost 佔位值），
+    # 改由 repository variable 注入。Vite 會讓 .env.production.local
+    # 覆寫 .env.production，而該檔名已被 .gitignore 的 *.local 忽略。
+    #
+    # 缺少設定時直接失敗 —— 悄悄打包出一份連到 localhost 的前端，
+    # 比建置失敗難發現得多。
+    - name: Inject production API base URL
+      run: |
+        if ([string]::IsNullOrWhiteSpace($env:VITE_API_BASE_URL)) {
+          Write-Host "ERROR: repository variable VITE_API_BASE_URL is not set."
+          Write-Host "Set it in Settings > Secrets and variables > Actions > Variables."
+          exit 1
+        }
+        "VITE_API_BASE_URL=$env:VITE_API_BASE_URL" | Out-File -FilePath ".env.production.local" -Encoding utf8
+        Write-Host "Wrote .env.production.local"
+      env:
+        VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+      shell: powershell
+
     - name: Build Vue.js Dashboard with Vite
       run: |
         Write-Host "Building Vue.js 3 + Composition API WIP Dashboard..."
@@ -66,10 +85,14 @@ jobs:
         docker-compose down --remove-orphans --timeout 30
         
         # 建置並啟動 Vue.js Dashboard
+        # VITE_API_BASE_URL 透過 env 傳進來，docker-compose 會把它
+        # 帶成 Dockerfile 的 build arg（見 docker-compose.yml 的 build.args）
         docker-compose build --no-cache
         docker-compose up -d
         
         Write-Host "Vue.js Dashboard deploent completed"
+      env:
+        VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
       shell: powershell
     
     - name: Verify Vue.js Dashboard

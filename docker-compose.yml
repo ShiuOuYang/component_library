@@ -3,6 +3,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # 由執行 docker-compose 的環境提供（CI 用 repository variable）。
+        # 沒給值時 Dockerfile 會直接讓建置失敗，不會悄悄打包出連到 localhost 的前端。
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     container_name: component_library
     ports:
       - '5015:5000'

@@ -18,6 +18,12 @@ COPY . .
 # 檢查關鍵檔案是否存在
 RUN ls -la && echo "Checking key files:" && ls -la index.html vite.config.js || true
 
+# 後端位址由建置參數注入。
+# 不能靠 CI 先寫好 .env.production.local 再 COPY 進來 ——
+# .dockerignore 排除了 .env*.local，那個檔案永遠到不了這裡。
+ARG VITE_API_BASE_URL
+RUN if [ -z "$VITE_API_BASE_URL" ]; then       echo "ERROR: build arg VITE_API_BASE_URL is required"; exit 1;     fi &&     echo "VITE_API_BASE_URL=$VITE_API_BASE_URL" > .env.production.local
+
 # 建置 Vue.js 3 + Vite + Tailwind CSS 應用
 RUN npm run build
 
