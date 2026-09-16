@@ -150,8 +150,14 @@ async function handleFileUpload(event: Event): Promise<void> {
       const jsonData = XLSX.utils.sheet_to_json(worksheet)
       emit('data-loaded', jsonData)
       emit('upload-success')
+      // 清空 input 讓同一個檔案可以再選一次（change 事件才會再觸發）。
+      //
+      // ⚠️ 原本這裡也把 fileName 清掉了，於是
+      //    v-if="fileName && !loading && showFileName" 永遠不成立：
+      //    上傳中 !loading 是 false，上傳完 fileName 又是空的 ——
+      //    showFileName 這個 prop 從來沒有任何效果。成功後保留檔名才符合
+      //    「顯示已匯入哪個檔案」的原意。
       input.value = ''
-      fileName.value = ''
     } catch (error) {
       emit('error', (error as Error).message)
       emit('upload-error', error)

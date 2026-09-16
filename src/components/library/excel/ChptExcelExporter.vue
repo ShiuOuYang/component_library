@@ -252,7 +252,13 @@ const exportOptions = ref<{
 
 const availableColumns = computed<ExporterColumn[]>(() => {
   if (props.columns.length > 0) {
-    return props.columns.filter((col) => col.key)
+    // 補上 title：沒給時以 key 當標題。
+    // ⚠️ 原本直接回傳 props.columns，title 為 undefined 的欄位在勾選清單裡
+    //    會顯示成空白（樣板是 {{ column.title }}），使用者看不出那是哪一欄；
+    //    但匯出的標題列又有 `col.title || col.key` 的後備，兩邊不一致。
+    return props.columns
+      .filter((col) => col.key)
+      .map((col) => ({ key: col.key, title: col.title || col.key }))
   }
   if (props.data.length > 0) {
     return Object.keys(props.data[0]).map((key) => ({
@@ -401,7 +407,10 @@ function prepareExportData(): {
   const exportData = props.data.map((item) => {
     const exportItem: Record<string, unknown> = {}
     orderedKeys.forEach((colKey) => {
-      exportItem[columnMap[colKey]] = item[colKey] || ''
+      // ⚠️ 原本是 `item[colKey] || ''`：0 與 false 都是 falsy，會被換成空字串。
+      //    數量欄位（unit_qty / pnp_qty）填 0 是很正常的資料，匯出後卻變成
+      //    空白格 —— 那是靜默的資料遺失。只有 null / undefined 該補空字串。
+      exportItem[columnMap[colKey]] = item[colKey] ?? ''
     })
     return exportItem
   })

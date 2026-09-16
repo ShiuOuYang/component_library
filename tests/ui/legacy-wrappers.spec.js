@@ -16,6 +16,12 @@ import CommonTable from '@/components/library/ui/CommonTable.vue'
 import ChptTable from '@/components/library/ui/ChptTable.vue'
 import CommonTooltip from '@/components/library/ui/CommonTooltip.vue'
 import ChptDataTooltip from '@/components/library/ui/ChptDataTooltip.vue'
+import ExcelEditor from '@/components/library/excel/ExcelEditor.vue'
+import ChptExcelEditor from '@/components/library/excel/ChptExcelEditor.vue'
+import ExcelExporter from '@/components/library/excel/ExcelExporter.vue'
+import ChptExcelExporter from '@/components/library/excel/ChptExcelExporter.vue'
+import ExcelUploader from '@/components/library/excel/ExcelUploader.vue'
+import ChptExcelUploader from '@/components/library/excel/ChptExcelUploader.vue'
 
 /**
  * legacy 相容層全部是薄包裝，只轉發 props / emits / slots。
@@ -65,6 +71,16 @@ describe('legacy 包裝：確實渲染出 canonical 元件', () => {
 
   it('CommonTable 是 ChptTable 的別名（同一個元件）', () => {
     expect(CommonTable).toBe(ChptTable)
+  })
+
+  /**
+   * excel/ 的三個 legacy 檔是純別名（export default Canonical），
+   * 不是包裝 —— 因此驗證的是「同一個元件物件」，不是「渲染出 canonical」。
+   */
+  it('ExcelEditor / ExcelExporter / ExcelUploader 都是 canonical 的別名', () => {
+    expect(ExcelEditor).toBe(ChptExcelEditor)
+    expect(ExcelExporter).toBe(ChptExcelExporter)
+    expect(ExcelUploader).toBe(ChptExcelUploader)
   })
 
   it('CommonTooltip 是 ChptDataTooltip 的別名（同一個元件）', () => {

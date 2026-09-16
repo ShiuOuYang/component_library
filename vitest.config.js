@@ -37,10 +37,10 @@ export default mergeConfig(
          * 因此各自掛上獨立門檻，避免日後被改回去。
          */
         thresholds: {
-          statements: 60,
-          branches: 78,
-          functions: 58,
-          lines: 60,
+          statements: 64,
+          branches: 79,
+          functions: 61,
+          lines: 64,
 
           // 已測透的部分：各自訂門檻，不讓整體平均掩護退步
           'src/components/library/shared/**': {
@@ -61,6 +61,19 @@ export default mergeConfig(
             branches: 85,
             functions: 95,
             lines: 95,
+          },
+          // 匯入 / 匯出：會碰使用者的檔案，退步的代價是資料出錯
+          'src/components/library/excel/ChptExcelExporter.vue': {
+            statements: 90,
+            branches: 82,
+            functions: 88,
+            lines: 90,
+          },
+          'src/components/library/excel/ChptExcelUploader.vue': {
+            statements: 90,
+            branches: 88,
+            functions: 95,
+            lines: 90,
           },
           'src/components/library/viewer/gerber/**': {
             statements: 95,
