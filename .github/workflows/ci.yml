@@ -23,10 +23,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Node 22：jsdom 30 的 engines 是 ^22.22.2 || ^24.15.0 || >=26，
+      # 它依賴的 undici 8 又要求 >=22.19.0。釘在 Node 20 時 undici 會因為
+      # worker_threads 沒有 markAsUncloneable 而載入失敗，jsdom 起不來 ——
+      # 結果是「no tests」加上 0% 覆蓋率，而不是任何一個測試失敗。
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
