@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
+import { readdirSync, rmSync } from 'node:fs'
 import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import * as XLSX from 'xlsx-js-style'
@@ -40,7 +41,23 @@ afterEach(() => {
   const urlApi = URL as unknown as Record<string, unknown>
   delete urlApi.createObjectURL
   delete urlApi.revokeObjectURL
+  removeGeneratedFiles()
 })
+
+/**
+ * 清掉測試留下的 .xlsx。
+ *
+ * 測「createObjectURL 不可用」那條後備路徑時，元件會呼叫 XLSX.writeFile，
+ * 而它在 Node 環境是真的往工作目錄寫檔。ESM 命名空間是凍結的、沒辦法
+ * spyOn 攔下來，所以改成事後清乾淨（.gitignore 另外也擋了一層）。
+ */
+function removeGeneratedFiles(): void {
+  for (const name of readdirSync(process.cwd())) {
+    if (/^(WIP_Report|MyReport)_\d{8}T\d{6}\.xlsx$/.test(name)) {
+      rmSync(name, { force: true })
+    }
+  }
+}
 
 /** 把攔截到的 Blob 讀回成工作表資料 */
 async function readExported(): Promise<{

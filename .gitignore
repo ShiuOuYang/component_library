@@ -25,3 +25,7 @@ coverage
 *.njsproj
 *.sln
 *.sw?
+
+# 測試會走匯出的後備路徑（XLSX.writeFile），那會真的在工作目錄寫檔。
+# 測試本身會清掉，這裡再擋一層以免不小心提交。
+/*.xlsx
