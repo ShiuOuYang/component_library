@@ -30,7 +30,7 @@
         :height="facetHeights[index]"
         :auto-resize="false"
         :margin="getFacetMargin(index)"
-        :layers="facet.layers"
+        :layers="facet.layers ?? []"
         :x-scale-type="xScaleType"
         :x-domain="syncBrush ? currentXDomain : facet.xDomain"
         :x-axis-format="xAxisFormat"
@@ -88,175 +88,172 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import type { CSSProperties } from 'vue';
 import DualAxisComboChart from './DualAxisComboChart.vue';
+import {
+  computeFacetHeights,
+  computeFacetOffsets,
+} from './composables/useStackedFacetLayout';
+import type {
+  BrushMode,
+  ChartDatum,
+  ChartLayer,
+  ChartMargin,
+  ContinuousScaleType,
+  TooltipPayload,
+  XDomain,
+  XScaleType,
+  YDomain,
+} from './types/chart.types';
+import type { TriggerLine } from './composables/faceChart/useFacetLayout';
 
-const props = defineProps({
-  facets: {
-    type: Array,
-    required: true,
-  },
-  title: {
-    type: String,
-    default: '',
-  },
-  width: {
-    type: Number,
-    default: 1200,
-  },
-  totalHeight: {
-    type: Number,
-    default: 800,
-  },
-  autoResize: {
-    type: Boolean,
-    default: false,
-  },
-  margin: {
-    type: Object,
-    default: () => ({ top: 40, right: 80, bottom: 60, left: 80 }),
-  },
-  facetSpacing: {
-    type: Number,
-    default: 10,
-  },
-  xScaleType: {
-    type: String,
-    default: 'time',
-  },
-  xDomain: {
-    type: Array,
-    default: null,
-  },
-  xAxisFormat: {
-    type: Function,
-    default: null,
-  },
-  xAxisLabelRotate: {
-    type: Number,
-    default: -45,
-  },
-  enableBrush: {
-    type: Boolean,
-    default: true,
-  },
-  brushMode: {
-    type: String,
-    default: 'x',
-  },
-  syncBrush: {
-    type: Boolean,
-    default: true,
-  },
-  enableAxisDragging: {
-    type: Boolean,
-    default: false,
-  },
-  showResetButton: {
-    type: Boolean,
-    default: true,
-  },
-  lastFacetExtraHeight: {
-    type: Number,
-    default: 50,
-  }
+// ===== 型別 =====
+
+/**
+ * 一個垂直分面。
+ *
+ * height 的語意依「是否所有分面都指定」而定：全部指定時當權重按比例分配，
+ * 只有部分指定時才是固定像素（詳見 useStackedFacetLayout）。
+ */
+export interface VerticalFacet {
+  id: string | number
+  title?: string
+  layers?: ChartLayer[]
+  height?: number
+  xDomain?: XDomain | null
+  yLeftScaleType?: ContinuousScaleType
+  yLeftDomain?: YDomain | null
+  yLeftAxisFormat?: (value: number) => string
+  yRightScaleType?: ContinuousScaleType
+  yRightDomain?: YDomain | null
+  yRightAxisFormat?: (value: number) => string
+  triggerLines?: TriggerLine[]
+  showGrid?: boolean
+}
+
+interface FacetedChartProps {
+  /** 垂直堆疊的分面；共用同一條 X 軸 */
+  facets: VerticalFacet[]
+  title?: string
+  width?: number
+  totalHeight?: number
+  autoResize?: boolean
+  margin?: ChartMargin
+  /** 分面之間的間距 (px) */
+  facetSpacing?: number
+  xScaleType?: XScaleType
+  xDomain?: XDomain | null
+  xAxisFormat?: ((value: never) => string) | null
+  xAxisLabelRotate?: number
+  enableBrush?: boolean
+  brushMode?: BrushMode
+  /** 框選與拖曳是否同步到所有分面 */
+  syncBrush?: boolean
+  enableAxisDragging?: boolean
+  showResetButton?: boolean
+  /** 最後一個分面的額外高度（只有它要畫 X 軸刻度） */
+  lastFacetExtraHeight?: number
+}
+
+const props = withDefaults(defineProps<FacetedChartProps>(), {
+  title: '',
+  width: 1200,
+  totalHeight: 800,
+  autoResize: false,
+  margin: () => ({ top: 40, right: 80, bottom: 60, left: 80 }),
+  facetSpacing: 10,
+  xScaleType: 'time',
+  xDomain: null,
+  xAxisFormat: null,
+  xAxisLabelRotate: -45,
+  enableBrush: true,
+  brushMode: 'x',
+  syncBrush: true,
+  enableAxisDragging: false,
+  showResetButton: true,
+  lastFacetExtraHeight: 50,
 });
 
-const emit = defineEmits(['selection-change', 'axis-drag', 'zoom-reset', 'chart-resize']);
+/** 子圖表回傳的框選結果 */
+interface FacetSelectionEvent {
+  xDomain?: XDomain | null
+  [key: string]: unknown
+}
+
+/** 子圖表回傳的軸拖曳結果 */
+interface FacetAxisDragEvent {
+  axis?: string
+  domain?: XDomain | null
+  [key: string]: unknown
+}
+
+const emit = defineEmits<{
+  'selection-change': [payload: FacetSelectionEvent & { facetId: string | number }]
+  'axis-drag': [payload: FacetAxisDragEvent & { facetId: string | number }]
+  'zoom-reset': []
+  'chart-resize': [size: { width: number; height: number }]
+}>();
 
 // ===== State =====
-const containerRef = ref(null);
-const currentXDomain = ref(null);
+const containerRef = ref<HTMLDivElement | null>(null);
+const currentXDomain = ref<XDomain | null>(null);
 const observedWidth = ref(props.width);
 const observedHeight = ref(props.totalHeight);
-const chartVersion = ref(0); // 強制刷新版本號
+/**
+ * 強制刷新版本號。
+ * 尺寸變更時遞增，讓子圖表的 key 改變而整個重建 —— D3 的渲染狀態
+ * 綁在既有節點上，尺寸大幅變動時重建比逐一更新可靠。
+ */
+const chartVersion = ref(0);
 
-let resizeObserver = null;
-let resizeDebounceTimer = null;
+let resizeObserver: ResizeObserver | null = null;
+let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 // ===== Computed Properties =====
-const effectiveWidth = computed(() => 
+const effectiveWidth = computed(() =>
   props.autoResize ? observedWidth.value : props.width
 );
 
-const effectiveHeight = computed(() => 
+const effectiveHeight = computed(() =>
   props.autoResize ? observedHeight.value : props.totalHeight
 );
 
 const chartWidth = computed(() => effectiveWidth.value);
 
-const availableHeight = computed(() => 
-  effectiveHeight.value - props.margin.top - props.margin.bottom - 
+const availableHeight = computed(() =>
+  effectiveHeight.value - props.margin.top - props.margin.bottom -
   (props.facets.length - 1) * props.facetSpacing
 );
 
-// 計算每個分面的高度
-const facetHeights = computed(() => {
-  const allHaveHeight = props.facets.every(f => f.height);
-  const someHaveHeight = props.facets.some(f => f.height);
-  
-  if (allHaveHeight) {
-    // 所有 facet 都有 height，當作權重分配
-    const totalWeight = props.facets.reduce((sum, f) => sum + (f.height || 1), 0);
-    return props.facets.map((facet, index) => {
-      const weight = facet.height || 1;
-      const baseHeight = Math.floor(availableHeight.value * (weight / totalWeight));
-      const isLast = index === props.facets.length - 1;
-      return Math.max(baseHeight + (isLast ? props.lastFacetExtraHeight : 0), 100);
-    });
-  } else if (someHaveHeight) {
-    // 部分有 height，固定高度 + 均分剩餘
-    const totalCustomHeight = props.facets.reduce((sum, f) => sum + (f.height || 0), 0);
-    const remainingCount = props.facets.filter(f => !f.height).length;
-    const remainingHeight = availableHeight.value - totalCustomHeight;
-    const defaultHeight = remainingCount > 0 ? remainingHeight / remainingCount : 0;
-    
-    return props.facets.map((f, index) => {
-      const baseHeight = f.height || defaultHeight;
-      const isLast = index === props.facets.length - 1;
-      return Math.max(baseHeight + (isLast ? props.lastFacetExtraHeight : 0), 100);
-    });
-  } else {
-    // 全部均分
-    const baseHeight = Math.floor(availableHeight.value / props.facets.length);
-    return props.facets.map((_, index) => {
-      const isLast = index === props.facets.length - 1;
-      return Math.max(baseHeight + (isLast ? props.lastFacetExtraHeight : 0), 100);
-    });
-  }
-});
+/** 每個分面的高度（三種分配規則見 useStackedFacetLayout） */
+const facetHeights = computed(() =>
+  computeFacetHeights({
+    availableHeight: availableHeight.value,
+    heights: props.facets.map((f) => f.height),
+    lastFacetExtraHeight: props.lastFacetExtraHeight,
+  })
+);
 
-// 計算每個分面的偏移
-const facetOffsets = computed(() => {
-  const offsets = [];
-  let currentY = props.margin.top;
-  
-  facetHeights.value.forEach((height, _i) => {
-    offsets.push(currentY);
-    currentY += height + props.facetSpacing;
-  });
-  
-  return offsets;
-});
+/** 每個分面的垂直偏移 */
+const facetOffsets = computed(() =>
+  computeFacetOffsets(facetHeights.value, props.margin.top, props.facetSpacing)
+);
 
-// 檢查是否有任何縮放
-const hasAnyZoom = computed(() => {
-  return currentXDomain.value !== null;
-});
+/** 是否有任何縮放（決定重置按鈕要不要出現） */
+const hasAnyZoom = computed(() => currentXDomain.value !== null);
 
 // ===== Style Helpers =====
-const containerStyle = computed(() => {
-  if (props.autoResize) {
-    return {};
-  }
+const containerStyle = computed<CSSProperties>(() => {
+  if (props.autoResize) return {};
   return {
     width: `${props.width}px`,
     height: `${props.totalHeight}px`,
   };
 });
 
-const getFacetStyle = (index) => ({
+const getFacetStyle = (index: number): CSSProperties => ({
   position: 'absolute',
   top: `${facetOffsets.value[index]}px`,
   left: '0px',
@@ -264,25 +261,26 @@ const getFacetStyle = (index) => ({
   height: `${facetHeights.value[index]}px`,
 });
 
-const getFacetLabelStyle = (index) => {
-  const labelWidth = 50; // 固定標籤寬度
-  return {
-    position: 'absolute',
-    left: '10px',
-    top: `${facetHeights.value[index] / 2}px`,
-    transform: 'translateY(-50%) rotate(-90deg)',
-    width: `${labelWidth}px`,
-    textAlign: 'center',
-  };
-};
+const getFacetLabelStyle = (index: number): CSSProperties => ({
+  position: 'absolute',
+  left: '10px',
+  top: `${facetHeights.value[index] / 2}px`,
+  transform: 'translateY(-50%) rotate(-90deg)',
+  width: '50px',
+  textAlign: 'center',
+});
 
-const getFacetMargin = (index) => {
+/**
+ * 每個分面的內部邊距。
+ * 只有最後一個分面要畫 X 軸刻度，因此下緣留比較多；
+ * 標籤有旋轉時還要再多一些。
+ */
+const getFacetMargin = (index: number): ChartMargin => {
   const isLast = index === props.facets.length - 1;
-  // 根據旋轉角度動態調整最後一個分面的 bottom margin
-  const bottomMargin = isLast 
+  const bottomMargin = isLast
     ? (Math.abs(props.xAxisLabelRotate) > 0 ? 60 : 50)
     : 10;
-  
+
   return {
     top: 10,
     right: props.margin.right,
@@ -291,44 +289,51 @@ const getFacetMargin = (index) => {
   };
 };
 
-const getTooltipStyle = (tooltipData) => ({
-  left: `${tooltipData.position?.pageX + 10}px`,
-  top: `${tooltipData.position?.pageY - 10}px`,
+/** tooltip 擺在游標右下方一點，避免蓋住被懸停的元素 */
+const getTooltipStyle = (tooltipData: TooltipPayload): CSSProperties => ({
+  left: `${tooltipData.position.pageX + 10}px`,
+  top: `${tooltipData.position.pageY - 10}px`,
 });
 
 // ===== Event Handlers =====
-const handleSelectionChange = (event, facetId) => {
+const handleSelectionChange = (
+  event: FacetSelectionEvent,
+  facetId: string | number
+): void => {
   if (props.syncBrush && event.xDomain) {
     currentXDomain.value = event.xDomain;
   }
   emit('selection-change', { ...event, facetId });
 };
 
-const handleAxisDrag = (event, facetId) => {
-  // ✅ 同步 X 軸拖曳到所有 facet
+const handleAxisDrag = (event: FacetAxisDragEvent, facetId: string | number): void => {
+  // X 軸拖曳同步到所有分面
   if (props.syncBrush && event.axis === 'x' && event.domain) {
     currentXDomain.value = event.domain;
   }
   emit('axis-drag', { ...event, facetId });
 };
 
-const handleResetZoom = () => {
+const handleResetZoom = (): void => {
   currentXDomain.value = null;
   emit('zoom-reset');
 };
 
-const formatTooltipValue = (data, facet) => {
+const formatTooltipValue = (
+  data: ChartDatum | undefined,
+  facet: VerticalFacet
+): string => {
   if (!data) return '';
-  
+
   const layer = facet.layers?.[0];
   if (layer?.yValue && typeof layer.yValue === 'function') {
     const value = layer.yValue(data);
     if (facet.yLeftAxisFormat) {
       return facet.yLeftAxisFormat(value);
     }
-    return value;
+    return String(value);
   }
-  
+
   return JSON.stringify(data);
 };
 
@@ -341,23 +346,28 @@ watch([observedWidth, observedHeight], () => {
 onMounted(() => {
   if (props.autoResize && containerRef.value) {
     resizeObserver = new ResizeObserver((entries) => {
-      clearTimeout(resizeDebounceTimer);
+      if (resizeDebounceTimer) clearTimeout(resizeDebounceTimer);
       resizeDebounceTimer = setTimeout(() => {
-        if (entries[0]) {
-          const { width, height } = entries[0].contentRect;
-          const newWidth = Math.max(width, 400);
-          const newHeight = Math.max(height, 300);
-          
-          if (Math.abs(observedWidth.value - newWidth) > 5 || 
-              Math.abs(observedHeight.value - newHeight) > 5) {
-            observedWidth.value = newWidth;
-            observedHeight.value = newHeight;
-            emit('chart-resize', { width: newWidth, height: newHeight });
-          }
+        resizeDebounceTimer = null;
+        const entry = entries[0];
+        if (!entry) return;
+
+        const { width, height } = entry.contentRect;
+        const newWidth = Math.max(width, 400);
+        const newHeight = Math.max(height, 300);
+
+        // 差距太小就不重建圖表（重建成本高，抖動幾像素不值得）
+        if (
+          Math.abs(observedWidth.value - newWidth) > 5 ||
+          Math.abs(observedHeight.value - newHeight) > 5
+        ) {
+          observedWidth.value = newWidth;
+          observedHeight.value = newHeight;
+          emit('chart-resize', { width: newWidth, height: newHeight });
         }
       }, 150);
     });
-    
+
     resizeObserver.observe(containerRef.value);
   }
 });
@@ -367,7 +377,7 @@ onUnmounted(() => {
     resizeObserver.disconnect();
     resizeObserver = null;
   }
-  
+
   if (resizeDebounceTimer) {
     clearTimeout(resizeDebounceTimer);
     resizeDebounceTimer = null;
