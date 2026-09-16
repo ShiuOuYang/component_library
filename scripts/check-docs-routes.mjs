@@ -13,8 +13,18 @@ import { readFile, access } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 
 const ROUTER = 'src/router/index.js'
-const source = await readFile(ROUTER, 'utf8')
+const rawSource = await readFile(ROUTER, 'utf8')
 const routerDir = dirname(ROUTER)
+
+/**
+ * 去掉區塊註解與行註解後再比對。
+ *
+ * 被註解掉的 import 不是路由，不該被當成「引用了不存在的檔案」；
+ * 同理，註解裡提到 Placeholder 也不代表真的掛了佔位頁。
+ */
+const source = rawSource
+  .replace(/\/\*[\s\S]*?\*\//g, '')
+  .replace(/^\s*\/\/.*$/gm, '')
 
 const problems = []
 
@@ -22,7 +32,8 @@ const problems = []
 // 同時涵蓋靜態 import 與路由層的 () => import("…")
 const specs = new Set()
 for (const m of source.matchAll(/import\s*\(\s*["']([^"']+)["']\s*\)/g)) specs.add(m[1])
-for (const m of source.matchAll(/^import\s+\w+\s+from\s+["']([^"']+)["'];?$/gm)) specs.add(m[1])
+// 靜態 import 的綁定可能是 default、具名或混合，因此不限定成單一識別字
+for (const m of source.matchAll(/\bfrom\s*["']([^"']+)["']/g)) specs.add(m[1])
 
 for (const spec of specs) {
   if (!spec.startsWith('.')) continue

@@ -17,8 +17,18 @@ import { join, relative } from 'node:path'
 const LIBRARY_ROOT = 'src/components/library'
 const ALLOWED_ALIAS_PREFIXES = ['@/components/library', '@/design']
 
-// 從 import / export ... from '…' 取出模組路徑
-const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]/g
+/**
+ * 取出模組路徑，涵蓋四種寫法：
+ *   import x from '…' / export … from '…'   → from 分支
+ *   import '…'                              → 純副作用匯入（原本漏掉）
+ *   await import('…')                        → 動態匯入（原本漏掉）
+ *   require('…')                             → CJS（原本漏掉）
+ *
+ * ⚠️ 原本只比對 `from '…'`，因此 `import '@/stores/setup'` 這種沒有綁定的
+ *    副作用匯入完全躲得過檢查 —— 那正是最容易讓組件庫偷偷綁回應用程式的寫法。
+ */
+const IMPORT_RE =
+  /(?:\bfrom\s*|\bimport\s*\(?\s*|\brequire\s*\(\s*)['"]([^'"]+)['"]/g
 
 async function collectFiles(dir) {
   const out = []

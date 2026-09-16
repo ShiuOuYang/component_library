@@ -15,7 +15,7 @@
         :height="800"
         :enable-brush="true"
         :sync-brush="true"
-        :brush-mode="x"
+        brush-mode="x"
         x-scale-type="time"
         :x-axis-format="formatDate"
         :x-axis-label-rotate="-45"
@@ -55,13 +55,26 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
-import { GridFacetChart } from './index';
 import * as d3 from 'd3';
+import GridFacetChart from './GridFacetChart.vue';
+import type { GridFacetDatum } from './composables/faceChart/useFacetLayout';
+import type { ChartDatum } from './types/chart.types';
+
+/**
+ * 範例資料的一列。
+ * generateTimeSeriesData() 每筆都同時給 value 與 sales，
+ * 讓不同範例可以各取所需。
+ */
+interface DemoPoint extends ChartDatum {
+  date: string
+  value: number
+  sales: number
+}
 
 // ===== 範例 1：銷售數據矩陣 =====
-const salesMatrixData = ref([
+const salesMatrixData = ref<GridFacetDatum[]>([
   {
     region: '北區',
     product: 'A產品',
@@ -69,8 +82,8 @@ const salesMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(30, 100, 200),
-        xValue: d => new Date(d.date),
-        yValue: d => d.sales,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).sales,
         yAxis: 'left',
         lineColor: '#3b82f6',
         strokeWidth: 2,
@@ -78,7 +91,7 @@ const salesMatrixData = ref([
       }
     ],
     yLeftDomain: [0, 300],
-    yLeftAxisFormat: d => `${d}萬`,
+    yLeftAxisFormat: (d: number) => `${d}萬`,
   },
   {
     region: '北區',
@@ -87,8 +100,8 @@ const salesMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(30, 80, 150),
-        xValue: d => new Date(d.date),
-        yValue: d => d.sales,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).sales,
         yAxis: 'left',
         lineColor: '#10b981',
         strokeWidth: 2,
@@ -96,7 +109,7 @@ const salesMatrixData = ref([
       }
     ],
     yLeftDomain: [0, 300],
-    yLeftAxisFormat: d => `${d}萬`,
+    yLeftAxisFormat: (d: number) => `${d}萬`,
   },
   {
     region: '南區',
@@ -105,8 +118,8 @@ const salesMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(30, 120, 250),
-        xValue: d => new Date(d.date),
-        yValue: d => d.sales,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).sales,
         yAxis: 'left',
         lineColor: '#3b82f6',
         strokeWidth: 2,
@@ -114,7 +127,7 @@ const salesMatrixData = ref([
       }
     ],
     yLeftDomain: [0, 300],
-    yLeftAxisFormat: d => `${d}萬`,
+    yLeftAxisFormat: (d: number) => `${d}萬`,
   },
   {
     region: '南區',
@@ -123,8 +136,8 @@ const salesMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(30, 90, 180),
-        xValue: d => new Date(d.date),
-        yValue: d => d.sales,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).sales,
         yAxis: 'left',
         lineColor: '#10b981',
         strokeWidth: 2,
@@ -132,7 +145,7 @@ const salesMatrixData = ref([
       }
     ],
     yLeftDomain: [0, 300],
-    yLeftAxisFormat: d => `${d}萬`,
+    yLeftAxisFormat: (d: number) => `${d}萬`,
   },
   {
     region: '東區',
@@ -141,8 +154,8 @@ const salesMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(30, 110, 220),
-        xValue: d => new Date(d.date),
-        yValue: d => d.sales,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).sales,
         yAxis: 'left',
         lineColor: '#3b82f6',
         strokeWidth: 2,
@@ -150,7 +163,7 @@ const salesMatrixData = ref([
       }
     ],
     yLeftDomain: [0, 300],
-    yLeftAxisFormat: d => `${d}萬`,
+    yLeftAxisFormat: (d: number) => `${d}萬`,
   },
   {
     region: '東區',
@@ -159,8 +172,8 @@ const salesMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(30, 70, 140),
-        xValue: d => new Date(d.date),
-        yValue: d => d.sales,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).sales,
         yAxis: 'left',
         lineColor: '#10b981',
         strokeWidth: 2,
@@ -168,12 +181,12 @@ const salesMatrixData = ref([
       }
     ],
     yLeftDomain: [0, 300],
-    yLeftAxisFormat: d => `${d}萬`,
+    yLeftAxisFormat: (d: number) => `${d}萬`,
   },
 ]);
 
 // ===== 範例 2：製程參數監控 =====
-const processMatrixData = ref([
+const processMatrixData = ref<GridFacetDatum[]>([
   {
     machine: 'M1',
     parameter: '溫度',
@@ -181,8 +194,8 @@ const processMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(50, 200, 250),
-        xValue: d => new Date(d.date),
-        yValue: d => d.value,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).value,
         yAxis: 'left',
         lineColor: '#ef4444',
         strokeWidth: 2,
@@ -201,8 +214,8 @@ const processMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(50, 80, 120),
-        xValue: d => new Date(d.date),
-        yValue: d => d.value,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).value,
         yAxis: 'left',
         lineColor: '#3b82f6',
         strokeWidth: 2,
@@ -217,8 +230,8 @@ const processMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(50, 205, 245),
-        xValue: d => new Date(d.date),
-        yValue: d => d.value,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).value,
         yAxis: 'left',
         lineColor: '#ef4444',
         strokeWidth: 2,
@@ -237,8 +250,8 @@ const processMatrixData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(50, 85, 115),
-        xValue: d => new Date(d.date),
-        yValue: d => d.value,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).value,
         yAxis: 'left',
         lineColor: '#3b82f6',
         strokeWidth: 2,
@@ -249,7 +262,7 @@ const processMatrixData = ref([
 ]);
 
 // ===== 範例 3：自動響應式 =====
-const autoResizeData = ref([
+const autoResizeData = ref<GridFacetDatum[]>([
   {
     category: 'A',
     metric: 'Yield',
@@ -257,15 +270,15 @@ const autoResizeData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(20, 85, 95),
-        xValue: d => new Date(d.date),
-        yValue: d => d.value,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).value,
         yAxis: 'left',
         lineColor: '#8b5cf6',
         strokeWidth: 2,
       }
     ],
     yLeftDomain: [80, 100],
-    yLeftAxisFormat: d => `${d}%`,
+    yLeftAxisFormat: (d: number) => `${d}%`,
   },
   {
     category: 'A',
@@ -274,8 +287,8 @@ const autoResizeData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(20, 2, 8),
-        xValue: d => new Date(d.date),
-        yValue: d => d.value,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).value,
         yAxis: 'left',
         lineColor: '#f59e0b',
         strokeWidth: 2,
@@ -290,15 +303,15 @@ const autoResizeData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(20, 88, 96),
-        xValue: d => new Date(d.date),
-        yValue: d => d.value,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).value,
         yAxis: 'left',
         lineColor: '#8b5cf6',
         strokeWidth: 2,
       }
     ],
     yLeftDomain: [80, 100],
-    yLeftAxisFormat: d => `${d}%`,
+    yLeftAxisFormat: (d: number) => `${d}%`,
   },
   {
     category: 'B',
@@ -307,8 +320,8 @@ const autoResizeData = ref([
       {
         type: 'line',
         data: generateTimeSeriesData(20, 1, 6),
-        xValue: d => new Date(d.date),
-        yValue: d => d.value,
+        xValue: (d) => new Date((d as DemoPoint).date),
+        yValue: (d) => (d as DemoPoint).value,
         yAxis: 'left',
         lineColor: '#f59e0b',
         strokeWidth: 2,
@@ -319,8 +332,8 @@ const autoResizeData = ref([
 ]);
 
 // ===== 工具函數 =====
-function generateTimeSeriesData(days, min, max) {
-  const data = [];
+function generateTimeSeriesData(days: number, min: number, max: number): DemoPoint[] {
+  const data: DemoPoint[] = [];
   const now = new Date();
   
   for (let i = 0; i < days; i++) {
@@ -336,7 +349,9 @@ function generateTimeSeriesData(days, min, max) {
   return data;
 }
 
-const formatDate = d3.timeFormat('%m/%d');
+// x 軸值是 Date（xValue 回傳 new Date(...)），但 xAxisFormat 的簽章收 unknown
+const timeFormatter = d3.timeFormat('%m/%d');
+const formatDate = (value: unknown): string => timeFormatter(value as Date);
 </script>
 
 <style scoped>

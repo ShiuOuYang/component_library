@@ -9,7 +9,7 @@
   />
 </template>
 
-<script setup>
+<script setup lang="ts">
 import ChptCodeBlock from './ChptCodeBlock.vue'
 import { warnDeprecated } from '@/components/library/shared/warnDeprecated'
 
@@ -18,17 +18,23 @@ import { warnDeprecated } from '@/components/library/shared/warnDeprecated'
  *
  * 兩者 props 完全一致，此檔改為薄包裝。
  */
-const props = defineProps({
-  code: { type: String, required: true },
-  language: { type: String, default: 'javascript' },
-  trimIndent: { type: Boolean, default: true },
-  tip: { type: String, default: '' },
-  tipType: {
-    type: String,
-    default: 'info',
-    validator: (value) => ['info', 'warning', 'success', 'error'].includes(value),
-  },
-  tipTitle: { type: String, default: '重要提示' },
+type TipType = 'info' | 'warning' | 'success' | 'error'
+
+interface CodeBlockProps {
+  code: string
+  language?: string
+  trimIndent?: boolean
+  tip?: string
+  tipType?: TipType
+  tipTitle?: string
+}
+
+const props = withDefaults(defineProps<CodeBlockProps>(), {
+  language: 'javascript',
+  trimIndent: true,
+  tip: '',
+  tipType: 'info',
+  tipTitle: '重要提示',
 })
 
 warnDeprecated('CodeBlock', 'ChptCodeBlock')

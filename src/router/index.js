@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useRouteGuard } from "../composables/useRouteGuard.js";
-// import ComponentLibrary from "../views/ComponentLibrary.vue";
-// import D3Practice from "../views/D3Practice.vue";
 import Login from "../views/Login.vue";
 import D3LearningView from "../views/D3Learning/D3LearningView.vue";
 import D3LearningIndex from "../views/D3Learning/D3LearningIndex.vue";

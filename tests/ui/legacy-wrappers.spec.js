@@ -147,6 +147,55 @@ describe('legacy 包裝：事件對應', () => {
 
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([{ a: '1' }])
   })
+
+  it('Pagination 轉發三個事件', async () => {
+    const wrapper = mount(Pagination, { props: { totalItems: 100 } })
+    const inner = wrapper.findComponent(ChptPagination)
+
+    inner.vm.$emit('update:currentPage', 3)
+    inner.vm.$emit('update:itemsPerPage', 50)
+    inner.vm.$emit('change', 3)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.emitted('update:currentPage')?.[0]).toEqual([3])
+    expect(wrapper.emitted('update:itemsPerPage')?.[0]).toEqual([50])
+    expect(wrapper.emitted('change')?.[0]).toEqual([3])
+  })
+
+  /**
+   * ChptFilter 的 modelValue 型別涵蓋三種模式（select 為純量、
+   * dropdown / tag 為陣列），legacy 介面則是各自固定一種。
+   * 薄包裝在轉發時會把值收窄回 legacy 的形狀。
+   */
+  it('FilterSelect 只轉出單一值', async () => {
+    const wrapper = mount(FilterSelect, { props: { options: ['a', 'b'] } })
+    const inner = wrapper.findComponent(ChptFilter)
+
+    inner.vm.$emit('update:modelValue', 'a')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['a'])
+
+    // 萬一收到陣列（理論上不會），取第一個而不是把陣列丟給呼叫端
+    inner.vm.$emit('update:modelValue', ['b'])
+    await wrapper.vm.$nextTick()
+    expect(wrapper.emitted('update:modelValue')?.[1]).toEqual(['b'])
+  })
+
+  it('FilterDropdown 與 TagFilterDropdown 只轉出陣列', async () => {
+    for (const Legacy of [FilterDropdown, TagFilterDropdown]) {
+      const wrapper = mount(Legacy, { props: { options: ['a', 'b'] } })
+      const inner = wrapper.findComponent(ChptFilter)
+
+      inner.vm.$emit('update:modelValue', ['a', 'b'])
+      await wrapper.vm.$nextTick()
+      expect(wrapper.emitted('update:modelValue')?.[0]).toEqual([['a', 'b']])
+
+      // 萬一收到純量（理論上不會），包成陣列而不是破壞呼叫端的型別假設
+      inner.vm.$emit('update:modelValue', 'a')
+      await wrapper.vm.$nextTick()
+      expect(wrapper.emitted('update:modelValue')?.[1]).toEqual([['a']])
+    }
+  })
 })
 
 describe('legacy 包裝：會發出 deprecation 警告', () => {
