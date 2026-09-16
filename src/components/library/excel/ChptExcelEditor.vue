@@ -269,6 +269,10 @@
 <script setup lang="ts">
 import { ref, reactive, computed, nextTick, watch, onMounted, onBeforeUnmount } from 'vue'
 import * as XLSX from 'xlsx-js-style'
+// 座標工具與公式引擎都是純運算，抽到 formula/ 之下獨立測試
+// （公式引擎原本整包寫在這個檔案裡，而且是用 new Function 求值）
+import { cellRef, colName, parseRef } from './formula/cellRef'
+import { evaluateFormula } from './formula/formulaEngine'
 
 /**
  * ChptExcelEditor（CHPT 主題）- 仿原生 Excel 試算表元件
@@ -412,31 +416,6 @@ const redoStack = ref<SheetData[]>([])
 const canUndo = computed(() => undoStack.value.length > 0)
 const canRedo = computed(() => redoStack.value.length > 0)
 
-// ===== 工具函式：欄名 =====
-function colName(c: number): string {
-  let n = c
-  let s = ''
-  while (n > 0) {
-    const mod = (n - 1) % 26
-    s = String.fromCharCode(65 + mod) + s
-    n = Math.floor((n - 1) / 26)
-  }
-  return s
-}
-
-function cellRef(r: number, c: number): string {
-  return colName(c) + r
-}
-
-/** 解析 "A1" -> { r, c } */
-function parseRef(ref: string): { r: number; c: number } {
-  const m = ref.match(/^([A-Za-z]+)(\d+)$/)
-  if (!m) return { r: 1, c: 1 }
-  let col = 0
-  for (const ch of m[1].toUpperCase()) col = col * 26 + (ch.charCodeAt(0) - 64)
-  return { r: parseInt(m[2], 10), c: col }
-}
-
 /** 取得儲存格原始內容 */
 function getCell(r: number, c: number): CellData | undefined {
   return activeSheet.value.cells[cellRef(r, c)]
@@ -465,167 +444,6 @@ function getCellValue(r: number, c: number): string | number {
 function getCellStyle(r: number, c: number): CellStyle {
   const cell = getCell(r, c)
   return cell?.style ?? {}
-}
-
-// ===== 公式引擎 =====
-/** 解析範圍字串 "A1:B3" 或 "A1"，回傳儲存格座標陣列（純座標運算，與工作表內容無關） */
-function resolveRange(token: string): { r: number; c: number }[] {
-  const t = token.trim().toUpperCase()
-  const cells: { r: number; c: number }[] = []
-  if (t.includes(':')) {
-    const [a, b] = t.split(':')
-    const p1 = parseRef(a)
-    const p2 = parseRef(b)
-    const r1 = Math.min(p1.r, p2.r)
-    const r2 = Math.max(p1.r, p2.r)
-    const c1 = Math.min(p1.c, p2.c)
-    const c2 = Math.max(p1.c, p2.c)
-    for (let rr = r1; rr <= r2; rr++) {
-      for (let cc = c1; cc <= c2; cc++) cells.push({ r: rr, c: cc })
-    }
-  } else {
-    cells.push(parseRef(t))
-  }
-  return cells
-}
-
-/** 依公式上下文取得儲存格數值（number | string） */
-function refValue(r: number, c: number, sheet: SheetData): string | number {
-  const key = cellRef(r, c)
-  const cell = sheet.cells[key]
-  if (!cell) return 0
-  const raw = cell.raw
-  if (typeof raw === 'string' && raw.startsWith('=')) {
-    const v = evaluateFormula(raw.slice(1), sheet)
-    return v === null ? 0 : v
-  }
-  return raw ?? 0
-}
-
-/** 取得數值（失敗回 NaN） */
-function toNumber(v: unknown): number {
-  if (typeof v === 'number') return v
-  if (typeof v === 'string' && v.trim() !== '' && !isNaN(Number(v))) return Number(v)
-  return NaN
-}
-
-/** 公式求值（不含前導 =） */
-function evaluateFormula(expr: string, sheet: SheetData): string | number | null {
-  const formula = expr.trim()
-  if (formula === '') return null
-
-  // ===== 函式 =====
-  const fnMatch = formula.match(/^(SUM|AVERAGE|AVG|MIN|MAX|COUNT|IF)\((.*)\)$/i)
-  if (fnMatch) {
-    const fnName = fnMatch[1].toUpperCase()
-    const args = splitArgs(fnMatch[2])
-    if (fnName === 'IF') {
-      if (args.length < 3) return null
-      const cond = evaluateFormula(args[0], sheet)
-      const trueVal = evaluateFormula(args[1], sheet)
-      const falseVal = evaluateFormula(args[2], sheet)
-      return truthy(cond) ? trueVal : falseVal
-    }
-    const values = args.flatMap((arg) => collectNumericValues(arg, sheet))
-    if (fnName === 'SUM') return values.reduce((a, b) => a + b, 0)
-    if (fnName === 'AVERAGE' || fnName === 'AVG') {
-      return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0
-    }
-    if (fnName === 'MIN') return values.length ? Math.min(...values) : 0
-    if (fnName === 'MAX') return values.length ? Math.max(...values) : 0
-    if (fnName === 'COUNT') return values.filter((v) => !isNaN(v)).length
-  }
-
-  // ===== 一般運算式（含參照與四則運算） =====
-  return evalArithmetic(formula, sheet)
-}
-
-function truthy(v: unknown): boolean {
-  if (typeof v === 'number') return v !== 0
-  return !!v && String(v).toLowerCase() !== 'false'
-}
-
-/** 分割函式引數（注意巢狀括號） */
-function splitArgs(s: string): string[] {
-  const out: string[] = []
-  let depth = 0
-  let cur = ''
-  for (const ch of s) {
-    if (ch === '(') depth++
-    if (ch === ')') depth--
-    if (ch === ',' && depth === 0) {
-      out.push(cur)
-      cur = ''
-    } else {
-      cur += ch
-    }
-  }
-  if (cur.trim() !== '') out.push(cur)
-  return out
-}
-
-/** 收集引數中的所有數值（參照範圍 / 單格 / 直數字面） */
-function collectNumericValues(arg: string, sheet: SheetData): number[] {
-  const t = arg.trim()
-  if (t === '') return []
-  // 參照或範圍
-  if (/^[A-Za-z]+\d+/.test(t)) {
-    return resolveRange(t)
-      .map(({ r, c }) => toNumber(refValue(r, c, sheet)))
-      .filter((v) => !isNaN(v))
-  }
-  // 字面數值
-  const n = toNumber(t)
-  if (!isNaN(n)) return [n]
-  return []
-}
-
-/** 求值四則運算式：將參照替換為數值後安全計算 */
-function evalArithmetic(expr: string, sheet: SheetData): string | number | null {
-  // 先處理巢狀函式
-  let s = expr
-  const fnRe = /(SUM|AVERAGE|AVG|MIN|MAX|COUNT)\(([^()]*)\)/gi
-  s = s.replace(fnRe, (_, fn, inner) => {
-    const sub = evaluateFormula(`${fn}(${inner})`, sheet)
-    return String(sub)
-  })
-
-  // 將參照（含範圍）替換為數值
-  s = s.replace(/\b[A-Za-z]+\d+(?::[A-Za-z]+\d+)?\b/g, (tok) => {
-    if (tok.includes(':')) {
-      const vals = resolveRange(tok).map(({ r, c }) => toNumber(refValue(r, c, sheet)))
-      const nums = vals.filter((v) => !isNaN(v))
-      return String(nums.length ? nums.reduce((a, b) => a + b, 0) : 0)
-    }
-    const v = toNumber(refValue(parseRef(tok).r, parseRef(tok).c, sheet))
-    return String(isNaN(v) ? 0 : v)
-  })
-
-  // 處理比較運算
-  const cmp = s.match(/^\s*(-?[\d.]+)\s*(>=|<=|<>|=|>|<)\s*(-?[\d.]+)\s*$/)
-  if (cmp) {
-    const a = Number(cmp[1])
-    const b = Number(cmp[3])
-    switch (cmp[2]) {
-      case '>': return a > b ? 'TRUE' : 'FALSE'
-      case '<': return a < b ? 'TRUE' : 'FALSE'
-      case '>=': return a >= b ? 'TRUE' : 'FALSE'
-      case '<=': return a <= b ? 'TRUE' : 'FALSE'
-      case '=': return a === b ? 'TRUE' : 'FALSE'
-      case '<>': return a !== b ? 'TRUE' : 'FALSE'
-    }
-  }
-
-  // 四則運算安全求值
-  try {
-     
-    const fn = new Function('"use strict";return (' + s + ');')
-    const result = fn()
-    if (typeof result === 'number' && !isNaN(result)) return result
-    return null
-  } catch {
-    return null
-  }
 }
 
 // ===== 顯示輔助 =====
