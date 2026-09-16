@@ -73,7 +73,7 @@ async function mountChart(props: Record<string, unknown> = {}) {
  * 不會在 nextTick 內完成 —— 即使 duration 設為 0 也要讓 timer 轉一次。
  *
  * （transform 插值需要 SVGGraphicsElement.transform，jsdom 沒有，
- *   由 tests/svg-transform-polyfill.js 補上，否則 transition 會中斷。）
+ *   由 tests/svg-polyfills.js 補上，否則 transition 會中斷。）
  */
 async function flushTransitions() {
   await new Promise((resolve) => setTimeout(resolve, 30))

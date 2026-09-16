@@ -4,10 +4,15 @@
  * jsdom 缺少幾個元件會用到的瀏覽器 API，在這裡補上最小實作。
  */
 import { beforeEach, vi } from 'vitest'
-import { installSvgTransformPolyfill } from './svg-transform-polyfill.js'
+import {
+  installSvgGeometryPolyfill,
+  installSvgTransformPolyfill,
+} from './svg-polyfills.js'
 
-// SVGGraphicsElement.transform：d3-transition 對 transform 插值時必讀
+// jsdom 缺的 SVG 幾何 API：d3-transition 插值 transform、d3-brush 推算
+// 預設範圍時都會讀，缺了會直接拋錯
 installSvgTransformPolyfill()
+installSvgGeometryPolyfill()
 
 // matchMedia：useDarkMode 用它判斷系統偏好
 if (!window.matchMedia) {

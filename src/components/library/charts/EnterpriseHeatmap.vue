@@ -80,142 +80,251 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue';
 import * as d3 from 'd3';
+import type { ChartMargin } from './types/chart.types';
+import { sortCategoryLabels } from './utils/sortCategories';
 
-const props = defineProps({
+// === 型別 ===
+
+/** 熱力圖的一列資料；欄位名稱由 xField / yField / valueField 指定 */
+export type HeatmapDatum = Record<string, unknown>
+
+/** 色階圖例的擺放位置 */
+export type ColorLegendPosition = 'right' | 'bottom'
+
+/**
+ * 懸停時的高亮範圍。
+ * cell 只亮自己；row / column 連同整列或整欄；both 兩者皆是。
+ */
+export type HighlightMode = 'cell' | 'row' | 'column' | 'both'
+
+/** 色階函式：吃數值、回傳顏色字串 */
+export type HeatmapColorScale = (value: d3.NumberValue) => string
+
+/**
+ * 一個待繪製的單元格。
+ * value 為 null 代表該 x/y 組合沒有資料（由 showMissingValues 決定是否畫出）。
+ */
+export interface HeatmapCell {
+  x: string
+  y: string
+  value: number | null
+  rawData?: HeatmapDatum
+}
+
+/** linearGradient 的一個色階停點 */
+export interface GradientStop {
+  offset: number
+  color: string
+}
+
+/** 企業級擴展點：接手單元格的繪製 */
+export interface HeatmapCustomRenderers {
+  cell?: (
+    selection: d3.Selection<d3.BaseType, HeatmapCell, SVGGElement, unknown>,
+    data: HeatmapCell[],
+    colorScale: HeatmapColorScale
+  ) => void
+}
+
+interface EnterpriseHeatmapProps {
   // === 基礎配置 ===
-  width: { type: Number, default: 800 },
-  height: { type: Number, default: 600 },
-  autoResize: { type: Boolean, default: false }, // 啟用自動響應容器大小
-  debounceDelay: { type: Number, default: 150 }, // ResizeObserver 防抖延遲（毫秒）
-  margin: { 
-    type: Object, 
-    default: () => ({ top: 80, right: 120, bottom: 80, left: 100 })
-  },
+  width?: number
+  height?: number
+  /** 啟用自動響應容器大小 */
+  autoResize?: boolean
+  /** ResizeObserver 防抖延遲（毫秒） */
+  debounceDelay?: number
+  margin?: ChartMargin
 
   // === 數據配置 ===
-  data: {
-    type: Array,
-    required: true,
-    // 範例結構：
-    // [
-    //   { x: 'A', y: 'Product1', value: 23.5, metadata: {...} },
-    //   { x: 'B', y: 'Product1', value: 45.2, metadata: {...} },
-    //   { x: 'A', y: 'Product2', value: 67.8, metadata: {...} },
-    // ]
-  },
+  /**
+   * 熱力圖資料，每列一個單元格。
+   * 例：[{ x: 'A', y: 'Product1', value: 23.5 }, …]
+   */
+  data: HeatmapDatum[]
 
   // === 欄位映射（支援靈活的數據結構） ===
-  xField: { type: String, default: 'x' },          // X 軸欄位名稱
-  yField: { type: String, default: 'y' },          // Y 軸欄位名稱
-  valueField: { type: String, default: 'value' },  // 數值欄位名稱
-  
+  xField?: string
+  yField?: string
+  valueField?: string
+
   // === X 軸配置 ===
-  xDomain: { type: Array, default: null },  // 自訂 X 軸順序
-  xAxisLabel: { type: String, default: '' },
-  xAxisFormat: { type: Function, default: null },
-  xAxisAngle: { type: Number, default: -45 }, // X 軸標籤旋轉角度
+  /** 自訂 X 軸順序；null 則由資料推算 */
+  xDomain?: Array<string | number> | null
+  xAxisLabel?: string
+  xAxisFormat?: ((value: string) => string) | null
+  /** X 軸標籤旋轉角度 */
+  xAxisAngle?: number
 
   // === Y 軸配置 ===
-  yDomain: { type: Array, default: null },  // 自訂 Y 軸順序
-  yAxisLabel: { type: String, default: '' },
-  yAxisFormat: { type: Function, default: null },
+  /** 自訂 Y 軸順序；null 則由資料推算 */
+  yDomain?: Array<string | number> | null
+  yAxisLabel?: string
+  yAxisFormat?: ((value: string) => string) | null
 
   // === 色階配置 ===
-  colorScheme: { 
-    type: String, 
-    default: 'interpolateRdYlGn',  // D3 內建色階：interpolateRdYlGn, interpolateViridis, interpolateBlues 等
-    validator: (value) => {
-      return value.startsWith('interpolate') || value.startsWith('scheme');
-    }
-  },
-  colorRange: { 
-    type: Array, 
-    default: null // 自訂色階範圍（若指定則優先於 colorScheme）
-  },
-  valueDomain: { type: Array, default: null }, // 數值範圍 [min, max]，null 則自動計算
-  reverseColorScale: { type: Boolean, default: false }, // 反轉色階（高值 -> 冷色，低值 -> 暖色）
+  /** D3 內建色階名稱，例如 interpolateRdYlGn / interpolateViridis */
+  colorScheme?: string
+  /** 自訂色階顏色；有指定時優先於 colorScheme */
+  colorRange?: string[] | null
+  /** 數值範圍 [min, max]；null 則自動計算 */
+  valueDomain?: [number, number] | null
+  /** 反轉色階（高值 → 冷色，低值 → 暖色） */
+  reverseColorScale?: boolean
 
   // === 單元格配置 ===
-  cellPadding: { type: Number, default: 2 },      // 單元格間距（像素）
-  cellBorderRadius: { type: Number, default: 2 }, // 單元格圓角
-  cellBorderWidth: { type: Number, default: 1 },  // 單元格邊框寬度
-  cellBorderColor: { type: String, default: '#fff' }, // 單元格邊框顏色
-  showCellValues: { type: Boolean, default: false }, // 在單元格內顯示數值
-  cellValueFormat: { type: Function, default: d => d.toFixed(1) }, // 單元格內數值格式化
+  cellPadding?: number
+  cellBorderRadius?: number
+  cellBorderWidth?: number
+  cellBorderColor?: string
+  /** 在單元格內顯示數值 */
+  showCellValues?: boolean
+  cellValueFormat?: (value: number) => string
 
   // === 視覺配置 ===
-  title: { type: String, default: '' },
-  showColorLegend: { type: Boolean, default: true }, // 顯示色階圖例
-  colorLegendPosition: { 
-    type: String, 
-    default: 'right',  // 'right' | 'bottom'
-    validator: (value) => ['right', 'bottom'].includes(value)
-  },
-  colorLegendTitle: { type: String, default: 'Value' },
-  animationDuration: { type: Number, default: 500 },
+  title?: string
+  showColorLegend?: boolean
+  colorLegendPosition?: ColorLegendPosition
+  colorLegendTitle?: string
+  animationDuration?: number
 
   // === 互動配置 ===
-  enableBrush: { type: Boolean, default: true },  // 啟用框選縮放功能
-  enableTooltip: { type: Boolean, default: true }, // 啟用 Tooltip
-  highlightMode: { 
-    type: String, 
-    default: 'cell',  // 'cell' | 'row' | 'column' | 'both'
-    validator: (value) => ['cell', 'row', 'column', 'both'].includes(value)
-  },
+  /** 啟用框選縮放 */
+  enableBrush?: boolean
+  enableTooltip?: boolean
+  highlightMode?: HighlightMode
 
   // === 遺漏值處理 ===
-  missingValueColor: { type: String, default: '#e0e0e0' }, // 無數據單元格顏色
-  showMissingValues: { type: Boolean, default: true },     // 是否顯示無數據單元格
+  /** 無數據單元格的顏色 */
+  missingValueColor?: string
+  /** 是否畫出無數據的單元格 */
+  showMissingValues?: boolean
 
-  // ✅ 企業級擴展點：允許完全自定義渲染邏輯
-  customRenderers: { 
-    type: Object, 
-    default: () => ({
-      // cell: (selection, data, colorScale) => { /* 自訂單元格渲染 */ },
-      // tooltip: (data) => { /* 自訂 Tooltip 內容 */ }
-    }) 
-  }
+  /** 企業級擴展點：允許完全自定義渲染邏輯 */
+  customRenderers?: HeatmapCustomRenderers
+}
+
+const props = withDefaults(defineProps<EnterpriseHeatmapProps>(), {
+  width: 800,
+  height: 600,
+  autoResize: false,
+  debounceDelay: 150,
+  margin: () => ({ top: 80, right: 120, bottom: 80, left: 100 }),
+
+  xField: 'x',
+  yField: 'y',
+  valueField: 'value',
+
+  xDomain: null,
+  xAxisLabel: '',
+  xAxisFormat: null,
+  xAxisAngle: -45,
+
+  yDomain: null,
+  yAxisLabel: '',
+  yAxisFormat: null,
+
+  colorScheme: 'interpolateRdYlGn',
+  colorRange: null,
+  valueDomain: null,
+  reverseColorScale: false,
+
+  cellPadding: 2,
+  cellBorderRadius: 2,
+  cellBorderWidth: 1,
+  cellBorderColor: '#fff',
+  showCellValues: false,
+  cellValueFormat: (value: number) => value.toFixed(1),
+
+  title: '',
+  showColorLegend: true,
+  colorLegendPosition: 'right',
+  colorLegendTitle: 'Value',
+  animationDuration: 500,
+
+  enableBrush: true,
+  enableTooltip: true,
+  highlightMode: 'cell',
+
+  missingValueColor: '#e0e0e0',
+  showMissingValues: true,
+
+  customRenderers: () => ({}),
 });
 
-const emit = defineEmits([
-  'cell-click',       // 單元格點擊事件
-  'cell-hover',       // 單元格懸停事件
-  'tooltip-show',     // Tooltip 顯示
-  'tooltip-hide',     // Tooltip 隱藏
-  'chart-ready',      // 圖表渲染完成
-  'chart-resize',     // 圖表尺寸變化
-  'selection-change', // Brush 選取範圍改變
-  'zoom-reset'        // 重置縮放
-]);
+const emit = defineEmits<{
+  /** 單元格點擊 */
+  'cell-click': [payload: { event: MouseEvent; data: HeatmapDatum | HeatmapCell }]
+  /** 單元格懸停 */
+  'cell-hover': [payload: {
+    event: MouseEvent
+    data: HeatmapDatum | HeatmapCell
+    clientX: number
+    clientY: number
+  }]
+  'tooltip-show': [payload: { data: HeatmapDatum; position: { pageX: number; pageY: number } }]
+  'tooltip-hide': []
+  'chart-ready': []
+  'chart-resize': [size: { width: number; height: number }]
+  /** Brush 選取範圍改變 */
+  'selection-change': [payload: { xDomain: string[]; yDomain: string[] }]
+  'zoom-reset': []
+}>();
 
 // === Refs ===
-const containerRef = ref(null);
-const svgRef = ref(null);
-const cellLayerRef = ref(null);
-const xAxisRef = ref(null);
-const yAxisRef = ref(null);
-const colorLegendRef = ref(null);
-const titleLayerRef = ref(null);
-const brushLayerRef = ref(null);
+const containerRef = ref<HTMLDivElement | null>(null);
+const svgRef = ref<SVGSVGElement | null>(null);
+const cellLayerRef = ref<SVGGElement | null>(null);
+const xAxisRef = ref<SVGGElement | null>(null);
+const yAxisRef = ref<SVGGElement | null>(null);
+const colorLegendRef = ref<SVGGElement | null>(null);
+const titleLayerRef = ref<SVGGElement | null>(null);
+const brushLayerRef = ref<SVGGElement | null>(null);
 
-const chartId = ref(`heatmap-${Math.random().toString(36).substr(2, 9)}`);
-const tooltipData = ref(null);
+const chartId = ref(`heatmap-${Math.random().toString(36).slice(2, 11)}`);
+const tooltipData = ref<HeatmapDatum | null>(null);
 const tooltipVisible = ref(false);
 const resetBtnShow = ref(false);
 
 const observedWidth = ref(props.width);
 const observedHeight = ref(props.height);
-let resizeObserver = null;
-let resizeDebounceTimer = null;
+let resizeObserver: ResizeObserver | null = null;
+let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-// 🔧 保存 brush 實例（解決清除選取框 bug）
-const brushInstance = ref(null);
+/**
+ * 保存 brush 實例。
+ * 清除選取框要呼叫同一個實例的 move()，每次重建就清不掉舊的框。
+ * （d3 的 brush 是函式，ref 不會把它包成 Proxy，可安全存放。）
+ */
+const brushInstance = ref<d3.BrushBehavior<unknown> | null>(null);
 
-const currentXDomain = ref(null);
-const currentYDomain = ref(null);
+const currentXDomain = ref<string[] | null>(null);
+const currentYDomain = ref<string[] | null>(null);
+
+// === 讀取欄位的小工具 ===
+
+/**
+ * 把欄位值讀成類別字串。
+ *
+ * band scale 的 domain 一定是字串（d3 內部也會 String() 一次），因此這裡
+ * 提早統一轉型：資料與 xDomain / yDomain prop 兩邊都轉，數字與字串混用時
+ * 才不會比對不到。
+ */
+function readCategory(datum: HeatmapDatum, field: string): string {
+  const raw = datum[field];
+  return raw === null || raw === undefined ? '' : String(raw);
+}
+
+/** 把欄位值讀成數值；空值與非數字都視為「沒有資料」 */
+function readValue(datum: HeatmapDatum, field: string): number | null {
+  const raw = datum[field];
+  if (raw === null || raw === undefined || raw === '') return null;
+  const numeric = typeof raw === 'number' ? raw : Number(raw);
+  return Number.isFinite(numeric) ? numeric : null;
+}
 
 // === 計算屬性 ===
 const effectiveWidth = computed(() => props.autoResize ? observedWidth.value : props.width);
@@ -236,16 +345,16 @@ const chartHeight = computed(() => effectiveHeight.value - props.margin.top - pr
 /**
  * 計算原始 X 軸 domain
  */
-const originalXDomain = computed(() => {
-  if (props.xDomain) return props.xDomain;
-  if (props.data.length === 0) return ['A']; // 🔧 空數據預設
-  return [...new Set(props.data.map(d => d[props.xField]))].sort();
+const originalXDomain = computed<string[]>(() => {
+  if (props.xDomain) return props.xDomain.map(String);
+  if (props.data.length === 0) return ['A']; // 空數據預設
+  return sortCategoryLabels([...new Set(props.data.map((d) => readCategory(d, props.xField)))]);
 });
 
-const originalYDomain = computed(() => {
-  if (props.yDomain) return props.yDomain;
-  if (props.data.length === 0) return ['1']; // 🔧 空數據預設
-  return [...new Set(props.data.map(d => d[props.yField]))].sort();
+const originalYDomain = computed<string[]>(() => {
+  if (props.yDomain) return props.yDomain.map(String);
+  if (props.data.length === 0) return ['1']; // 空數據預設
+  return sortCategoryLabels([...new Set(props.data.map((d) => readCategory(d, props.yField)))]);
 });
 
 /**
@@ -265,19 +374,21 @@ const effectiveYDomain = computed(() => {
 /**
  * 計算數值範圍 [min, max]
  */
-const valueDomainComputed = computed(() => {
+const valueDomainComputed = computed<[number, number]>(() => {
   if (props.valueDomain) return props.valueDomain;
-  const values = props.data.map(d => d[props.valueField]).filter(v => v != null);
+  const values = props.data
+    .map((d) => readValue(d, props.valueField))
+    .filter((v): v is number => v !== null);
   if (values.length === 0) return [0, 100];
-  
+
   const min = d3.min(values) ?? 0;
   const max = d3.max(values) ?? 100;
-  
-  // 🔧 min==max 時擴展範圍避免 scale 錯誤
+
+  // min == max 時擴展範圍，否則 scale 的 domain 退化成一個點
   if (min === max) {
     return max === 0 ? [0, 1] : [min * 0.9, max * 1.1];
   }
-  
+
   return [min, max];
 });
 
@@ -285,7 +396,7 @@ const valueDomainComputed = computed(() => {
  * X 軸 Scale（Band Scale）
  */
 const xScale = computed(() => {
-  return d3.scaleBand()
+  return d3.scaleBand<string>()
     .domain(effectiveXDomain.value)
     .range([0, chartWidth.value])
     .padding(0);
@@ -295,41 +406,45 @@ const xScale = computed(() => {
  * Y 軸 Scale（Band Scale）
  */
 const yScale = computed(() => {
-  return d3.scaleBand()
+  return d3.scaleBand<string>()
     .domain(effectiveYDomain.value)
     .range([0, chartHeight.value])
     .padding(0);
 });
 
+/** d3 的 interpolateXxx 色階由名稱查表取得 */
+function resolveInterpolator(name: string): (t: number) => string {
+  const candidate = (d3 as unknown as Record<string, unknown>)[name];
+  return typeof candidate === 'function'
+    ? (candidate as (t: number) => string)
+    : d3.interpolateRdYlGn;
+}
+
 /**
  * 色階 Scale
  */
-const colorScale = computed(() => {
+const colorScale = computed<HeatmapColorScale>(() => {
   const [min, max] = valueDomainComputed.value;
-  
-  // 🔧 colorRange length < 2 的 fallback
-  // 🔧 Null safety: 確保 colorRange 存在且長度足夠
-  if (props.colorRange?.length >= 2) {
-    const scale = d3.scaleLinear()
+
+  // colorRange 至少要兩個顏色才插得出色階，不足時退回 colorScheme
+  if (props.colorRange && props.colorRange.length >= 2) {
+    const range = props.reverseColorScale ? [...props.colorRange].reverse() : props.colorRange;
+    return d3.scaleLinear<string>()
       .domain(d3.range(min, max, (max - min) / (props.colorRange.length - 1)).concat(max))
-      .range(props.reverseColorScale ? [...props.colorRange].reverse() : props.colorRange);
-    return scale;
+      .range(range);
   }
-  
-  const interpolator = d3[props.colorScheme] || d3.interpolateRdYlGn;
-  return d3.scaleSequential(interpolator)
+
+  return d3.scaleSequential(resolveInterpolator(props.colorScheme))
     .domain(props.reverseColorScale ? [max, min] : [min, max]);
 });
 
-// 🔧 優化：gradient stops 用於 linearGradient（10-20 stops）
-const gradientStops = computed(() => {
+/** 圖例用的 gradient stops（以 20 個停點取代原本的 100 個 rect） */
+const gradientStops = computed<GradientStop[]>(() => {
   const [min, max] = valueDomainComputed.value;
   const numStops = 20;
-  const stops = [];
-  
-  // 🔧 Null safety: 使用 optional chaining
-  if (props.colorRange?.length >= 2) {
-    // 使用 colorRange
+  const stops: GradientStop[] = [];
+
+  if (props.colorRange && props.colorRange.length >= 2) {
     const range = props.reverseColorScale ? [...props.colorRange].reverse() : props.colorRange;
     range.forEach((color, i) => {
       stops.push({
@@ -348,7 +463,7 @@ const gradientStops = computed(() => {
       });
     }
   }
-  
+
   return stops;
 });
 
@@ -358,9 +473,10 @@ const gradientStops = computed(() => {
 const filteredData = computed(() => {
   const xDomain = effectiveXDomain.value;
   const yDomain = effectiveYDomain.value;
-  
-  return props.data.filter(d => 
-    xDomain.includes(d[props.xField]) && yDomain.includes(d[props.yField])
+
+  return props.data.filter((d) =>
+    xDomain.includes(readCategory(d, props.xField)) &&
+    yDomain.includes(readCategory(d, props.yField))
   );
 });
 
@@ -368,39 +484,40 @@ const filteredData = computed(() => {
  * 構建數據映射表（用於快速查找）
  */
 const dataMap = computed(() => {
-  const map = new Map();
-  filteredData.value.forEach(d => {
-    const key = `${d[props.xField]}_${d[props.yField]}`;
-    map.set(key, d);
+  const map = new Map<string, HeatmapDatum>();
+  filteredData.value.forEach((d) => {
+    map.set(`${readCategory(d, props.xField)}_${readCategory(d, props.yField)}`, d);
   });
   return map;
 });
+
+/** 單元格的 join key */
+const cellKey = (d: HeatmapCell): string => `${d.x}_${d.y}`;
 
 // === 渲染函數 ===
 
 /**
  * 渲染熱力圖單元格
- * 
+ *
  * @description 使用 D3 的 enter-update-exit 模式渲染熱力圖單元格，
  *              支援動畫過渡、自訂顏色、邊框、圓角等配置。
  */
-const renderCells = () => {
+const renderCells = (): void => {
   if (!cellLayerRef.value) return;
 
   const cellLayer = d3.select(cellLayerRef.value);
-  
+
   // 準備渲染數據
-  const renderData = [];
-  effectiveXDomain.value.forEach(x => {
-    effectiveYDomain.value.forEach(y => {
-      const key = `${x}_${y}`;
-      const dataPoint = dataMap.value.get(key);
-      
+  const renderData: HeatmapCell[] = [];
+  effectiveXDomain.value.forEach((x) => {
+    effectiveYDomain.value.forEach((y) => {
+      const dataPoint = dataMap.value.get(`${x}_${y}`);
+
       if (dataPoint || props.showMissingValues) {
         renderData.push({
           x,
           y,
-          value: dataPoint ? dataPoint[props.valueField] : null,
+          value: dataPoint ? readValue(dataPoint, props.valueField) : null,
           rawData: dataPoint
         });
       }
@@ -409,9 +526,9 @@ const renderCells = () => {
 
   // 檢查是否有自訂渲染器
   if (props.customRenderers.cell) {
-    const cells = cellLayer.selectAll('.heatmap-cell')
-      .data(renderData, d => `${d.x}_${d.y}`);
-    
+    const cells = cellLayer.selectAll<d3.BaseType, HeatmapCell>('.heatmap-cell')
+      .data(renderData, cellKey);
+
     props.customRenderers.cell(cells, renderData, colorScale.value);
     return;
   }
@@ -419,15 +536,17 @@ const renderCells = () => {
   // 預設渲染邏輯
   const cellWidth = Math.max(0, xScale.value.bandwidth() - props.cellPadding);
   const cellHeight = Math.max(0, yScale.value.bandwidth() - props.cellPadding);
+  const cellX = (d: HeatmapCell): number => (xScale.value(d.x) ?? 0) + props.cellPadding / 2;
+  const cellY = (d: HeatmapCell): number => (yScale.value(d.y) ?? 0) + props.cellPadding / 2;
 
-  cellLayer.selectAll('.heatmap-cell')
-    .data(renderData, d => `${d.x}_${d.y}`)
+  cellLayer.selectAll<SVGRectElement, HeatmapCell>('.heatmap-cell')
+    .data(renderData, cellKey)
     .join(
       // Enter: 建立新儲存格
       enter => enter.append('rect')
         .attr('class', 'heatmap-cell')
-        .attr('x', d => xScale.value(d.x) + props.cellPadding / 2)
-        .attr('y', d => yScale.value(d.y) + props.cellPadding / 2)
+        .attr('x', cellX)
+        .attr('y', cellY)
         .attr('width', cellWidth)
         .attr('height', cellHeight)
         .attr('rx', props.cellBorderRadius)
@@ -454,8 +573,8 @@ const renderCells = () => {
     // 對所有儲存格（enter + update）套用更新
     .transition()
     .duration(props.animationDuration)
-    .attr('x', d => xScale.value(d.x) + props.cellPadding / 2)
-    .attr('y', d => yScale.value(d.y) + props.cellPadding / 2)
+    .attr('x', cellX)
+    .attr('y', cellY)
     .attr('width', cellWidth)
     .attr('height', cellHeight)
     .attr('rx', props.cellBorderRadius)
@@ -470,31 +589,42 @@ const renderCells = () => {
 /**
  * 渲染單元格內的數值文字
  */
-const renderCellValues = (renderData, cellWidth, cellHeight) => {
+const renderCellValues = (
+  renderData: HeatmapCell[],
+  cellWidth: number,
+  cellHeight: number
+): void => {
+  if (!cellLayerRef.value) return;
   const cellLayer = d3.select(cellLayerRef.value);
-  
+
   // 根據 showCellValues 決定要渲染的資料
-  const textData = props.showCellValues 
-    ? renderData.filter(d => d.value != null) 
+  const textData = props.showCellValues
+    ? renderData.filter((d) => d.value != null)
     : [];
 
-  cellLayer.selectAll('.cell-value')
-    .data(textData, d => `${d.x}_${d.y}`)
+  const textX = (d: HeatmapCell): number => (xScale.value(d.x) ?? 0) + xScale.value.bandwidth() / 2;
+  const textY = (d: HeatmapCell): number => (yScale.value(d.y) ?? 0) + yScale.value.bandwidth() / 2;
+  const fontSize = `${Math.min(cellWidth, cellHeight) / 3}px`;
+  // textData 已過濾掉 value 為 null 的資料，這裡可安全取值
+  const valueOf = (d: HeatmapCell): number => d.value as number;
+
+  cellLayer.selectAll<SVGTextElement, HeatmapCell>('.cell-value')
+    .data(textData, cellKey)
     .join(
       // Enter: 建立新文字
       enter => enter.append('text')
         .attr('class', 'cell-value')
-        .attr('x', d => xScale.value(d.x) + xScale.value.bandwidth() / 2)
-        .attr('y', d => yScale.value(d.y) + yScale.value.bandwidth() / 2)
+        .attr('x', textX)
+        .attr('y', textY)
         .attr('text-anchor', 'middle')
         .attr('dominant-baseline', 'middle')
         .style('font-weight', '500')
         .style('pointer-events', 'none')
         .style('user-select', 'none')
-        .style('fill', d => getContrastColor(colorScale.value(d.value)))
-        .style('font-size', `${Math.min(cellWidth, cellHeight) / 3}px`)
+        .style('fill', d => getContrastColor(colorScale.value(valueOf(d))))
+        .style('font-size', fontSize)
         .style('opacity', 0)
-        .text(d => props.cellValueFormat(d.value)),
+        .text(d => props.cellValueFormat(valueOf(d))),
       // Update: 更新現有文字
       update => update,
       // Exit: 移除不需要的文字
@@ -506,28 +636,40 @@ const renderCellValues = (renderData, cellWidth, cellHeight) => {
     // 對所有文字（enter + update）套用更新
     .transition()
     .duration(props.animationDuration)
-    .attr('x', d => xScale.value(d.x) + xScale.value.bandwidth() / 2)
-    .attr('y', d => yScale.value(d.y) + yScale.value.bandwidth() / 2)
-    .style('fill', d => getContrastColor(colorScale.value(d.value)))
-    .style('font-size', `${Math.min(cellWidth, cellHeight) / 3}px`)
+    .attr('x', textX)
+    .attr('y', textY)
+    .style('fill', d => getContrastColor(colorScale.value(valueOf(d))))
+    .style('font-size', fontSize)
     .style('opacity', 1)
-    .text(d => props.cellValueFormat(d.value));
+    .text(d => props.cellValueFormat(valueOf(d)));
 };
 
 
 /**
  * 計算對比色（用於單元格內文字）
  */
-const getContrastColor = (hexColor) => {
+const getContrastColor = (hexColor: string): string => {
   const rgb = d3.rgb(hexColor);
   const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
   return brightness > 128 ? '#000000' : '#ffffff';
 };
 
+/** 把整層單元格的高亮狀態復原 */
+const clearCellHighlight = (): void => {
+  if (!cellLayerRef.value) return;
+  d3.select(cellLayerRef.value)
+    .selectAll('.heatmap-cell')
+    .style('opacity', 1)
+    .style('stroke', props.cellBorderColor)
+    .style('stroke-width', props.cellBorderWidth);
+};
+
 /**
  * 處理單元格懸停事件
+ *
+ * this 指向被懸停的 <rect>，因此必須用 function 而非箭頭函式。
  */
-const handleCellHover = function(event, d) {
+function handleCellHover(this: SVGRectElement, event: MouseEvent, d: HeatmapCell): void {
   if (!props.enableTooltip) return;
 
   // 高亮效果
@@ -536,35 +678,37 @@ const handleCellHover = function(event, d) {
     .style('stroke-width', 2);
 
   // 根據高亮模式設置效果
-  const cellLayer = d3.select(cellLayerRef.value);
-  const allCells = cellLayer.selectAll('.heatmap-cell');
-  
+  if (!cellLayerRef.value) return;
+  const allCells = d3.select(cellLayerRef.value)
+    .selectAll<SVGRectElement, HeatmapCell>('.heatmap-cell');
+  const self = cell.node();
+
   if (props.highlightMode === 'row' || props.highlightMode === 'both') {
     allCells
-      .filter(function(datum) { 
-        return datum.y === d.y && this !== cell.node();
+      .filter(function(datum) {
+        return datum.y === d.y && this !== self;
       })
       .style('opacity', 0.5);
   }
-  
+
   if (props.highlightMode === 'column' || props.highlightMode === 'both') {
     allCells
-      .filter(function(datum) { 
-        return datum.x === d.x && this !== cell.node();
+      .filter(function(datum) {
+        return datum.x === d.x && this !== self;
       })
       .style('opacity', 0.5);
   }
 
   // 顯示 Tooltip
-  tooltipData.value = d.rawData || { 
-    [props.xField]: d.x, 
-    [props.yField]: d.y, 
-    [props.valueField]: d.value 
+  tooltipData.value = d.rawData || {
+    [props.xField]: d.x,
+    [props.yField]: d.y,
+    [props.valueField]: d.value
   };
   tooltipVisible.value = true;
 
-  emit('cell-hover', { 
-    event, 
+  emit('cell-hover', {
+    event,
     data: d.rawData || d,
     clientX: event.clientX,
     clientY: event.clientY
@@ -576,40 +720,43 @@ const handleCellHover = function(event, d) {
       pageY: event.pageY
     }
   });
-};
+}
 
 /**
  * 處理單元格離開事件
  */
-const handleCellLeave = function(_event, _d) {
+function handleCellLeave(this: SVGRectElement): void {
   // 恢復樣式
   d3.select(this)
     .style('stroke', props.cellBorderColor)
     .style('stroke-width', props.cellBorderWidth);
 
-  d3.select(cellLayerRef.value)
-    .selectAll('.heatmap-cell')
-    .style('opacity', 1);
+  clearCellHighlight();
 
   tooltipVisible.value = false;
   emit('tooltip-hide');
-};
+}
 
 /**
  * 處理單元格點擊事件
  */
-const handleCellClick = function(event, d) {
+const handleCellClick = (event: MouseEvent, d: HeatmapCell): void => {
   emit('cell-click', { event, data: d.rawData || d });
 };
+
+/** 座標軸的刻度格式化；沒給就原樣輸出 */
+const tickFormatter = (
+  format: ((value: string) => string) | null
+): ((value: string) => string) => format ?? ((value: string) => value);
 
 /**
  * 渲染 X 軸
  */
-const renderXAxis = () => {
+const renderXAxis = (): void => {
   if (!xAxisRef.value) return;
 
   const xAxis = d3.axisBottom(xScale.value)
-    .tickFormat(props.xAxisFormat || (d => d));
+    .tickFormat(tickFormatter(props.xAxisFormat));
 
   const xAxisSelection = d3.select(xAxisRef.value);
   xAxisSelection
@@ -644,11 +791,11 @@ const renderXAxis = () => {
 /**
  * 渲染 Y 軸
  */
-const renderYAxis = () => {
+const renderYAxis = (): void => {
   if (!yAxisRef.value) return;
 
   const yAxis = d3.axisLeft(yScale.value)
-    .tickFormat(props.yAxisFormat || (d => d));
+    .tickFormat(tickFormatter(props.yAxisFormat));
 
   const yAxisSelection = d3.select(yAxisRef.value);
   yAxisSelection
@@ -674,20 +821,21 @@ const renderYAxis = () => {
 
 /**
  * 渲染色階圖例
- * 🔧 優化：使用 linearGradient 而非 100 個 rect
+ * 以 linearGradient 繪製色階條，而非逐格 rect
  */
-const renderColorLegend = () => {
+const renderColorLegend = (): void => {
   if (!props.showColorLegend || !colorLegendRef.value) return;
 
   const legendSelection = d3.select(colorLegendRef.value);
   legendSelection.selectAll('*').remove();
 
   const [min, max] = valueDomainComputed.value;
+  const isRight = props.colorLegendPosition === 'right';
   // 根據圖表大小動態調整圖例尺寸
-  const legendWidth = props.colorLegendPosition === 'right' ? 20 : Math.min(chartWidth.value * 0.5, 300);
-  const legendHeight = props.colorLegendPosition === 'right' ? Math.min(chartHeight.value * 0.6, 200) : 20;
-  const legendX = props.colorLegendPosition === 'right' ? chartWidth.value + 20 : chartWidth.value / 2 - legendWidth / 2;
-  const legendY = props.colorLegendPosition === 'right' ? chartHeight.value / 2 - legendHeight / 2 : chartHeight.value + 55;
+  const legendWidth = isRight ? 20 : Math.min(chartWidth.value * 0.5, 300);
+  const legendHeight = isRight ? Math.min(chartHeight.value * 0.6, 200) : 20;
+  const legendX = isRight ? chartWidth.value + 20 : chartWidth.value / 2 - legendWidth / 2;
+  const legendY = isRight ? chartHeight.value / 2 - legendHeight / 2 : chartHeight.value + 55;
 
   // 使用 gradient 繪製色階條
   legendSelection.append('rect')
@@ -698,24 +846,24 @@ const renderColorLegend = () => {
     .style('fill', `url(#legend-gradient-${chartId.value})`);
 
   // 刻度軸
-  const legendScale = props.colorLegendPosition === 'right' 
+  const legendScale = isRight
     ? d3.scaleLinear().domain([min, max]).range([legendY, legendY + legendHeight])
     : d3.scaleLinear().domain([min, max]).range([legendX, legendX + legendWidth]);
 
-  const legendAxis = props.colorLegendPosition === 'right'
+  const legendAxis = isRight
     ? d3.axisRight(legendScale).ticks(5)
     : d3.axisBottom(legendScale).ticks(5);
 
-  const axisX = props.colorLegendPosition === 'right' ? legendX + legendWidth : 0;
-  const axisY = props.colorLegendPosition === 'right' ? 0 : legendY + legendHeight;
+  const axisX = isRight ? legendX + legendWidth : 0;
+  const axisY = isRight ? 0 : legendY + legendHeight;
 
   legendSelection.append('g')
     .attr('transform', `translate(${axisX}, ${axisY})`)
     .call(legendAxis);
 
   if (props.colorLegendTitle) {
-    const titleX = props.colorLegendPosition === 'right' ? legendX + legendWidth / 2 : legendX-20 ;
-    const titleY = props.colorLegendPosition === 'right' ? legendY - 10 : legendY+10 ;
+    const titleX = isRight ? legendX + legendWidth / 2 : legendX - 20;
+    const titleY = isRight ? legendY - 10 : legendY + 10;
 
     legendSelection.append('text')
       .attr('x', titleX)
@@ -731,7 +879,7 @@ const renderColorLegend = () => {
 /**
  * 渲染圖表標題
  */
-const renderTitle = () => {
+const renderTitle = (): void => {
   if (!props.title || !titleLayerRef.value) return;
 
   const titleSelection = d3.select(titleLayerRef.value);
@@ -749,13 +897,15 @@ const renderTitle = () => {
 
 /**
  * 初始化 Brush（僅在首次或重新創建時調用）
- * 🔧 優化：保存 brush 實例，分離初始化和更新
  */
-const initBrush = () => {
+const initBrush = (): void => {
   if (!props.enableBrush || !brushLayerRef.value) return;
 
-  // 創建新的 brush 實例並保存
+  // 建立 brush 實例並保存。
+  // extent 在 call() 之前就給定：少掉一次「先套用、再設 extent、再套用」，
+  // 也不必依賴 d3 的 defaultExtent 去讀 svg.width.baseVal。
   brushInstance.value = d3.brush()
+    .extent([[0, 0], [chartWidth.value, chartHeight.value]])
     .on('end', handleBrushSelection);
 
   // 清空現有內容並綁定新 brush
@@ -763,19 +913,16 @@ const initBrush = () => {
   brushLayer.selectAll('*').remove();
   brushLayer.call(brushInstance.value);
 
-  // 設置初始範圍
-  updateBrushExtent();
-  
   // 設置 Tooltip 穿透檢測
-  setupTooltipDetection(brushLayer.select('.overlay'));
+  setupTooltipDetection(brushLayer.select<SVGRectElement>('.overlay'));
 };
 
 /**
  * 更新 Brush 可拖曳範圍（當 chart 尺寸改變時）
- * 🔧 優化：只更新 extent，不重新創建 brush
+ * 只更新 extent，不重新創建 brush
  */
-const updateBrushExtent = () => {
-  if (!brushInstance.value || !brushLayerRef.value || !xScale.value || !yScale.value) return;
+const updateBrushExtent = (): void => {
+  if (!brushInstance.value || !brushLayerRef.value) return;
 
   // 更新 brush extent
   brushInstance.value.extent([[0, 0], [chartWidth.value, chartHeight.value]]);
@@ -786,19 +933,17 @@ const updateBrushExtent = () => {
 
 /**
  * 渲染 Brush（框選縮放）功能
- * 🔧 重構：改為僅在首次調用 initBrush
  */
-const renderBrush = () => {
+const renderBrush = (): void => {
   if (!props.enableBrush) {
     // 禁用 brush 時清理
     if (brushLayerRef.value) {
-      const brushLayer = d3.select(brushLayerRef.value);
-      brushLayer.selectAll('*').remove();
+      d3.select(brushLayerRef.value).selectAll('*').remove();
     }
     brushInstance.value = null;
     return;
   }
-  
+
   if (!brushInstance.value) {
     initBrush();
   } else {
@@ -808,105 +953,84 @@ const renderBrush = () => {
 
 /**
  * 設置 Brush overlay 的 Tooltip 穿透檢測
+ *
+ * brush 的 overlay 蓋在單元格上面（否則接不到拖曳事件），因此 hover 要靠
+ * elementFromPoint 手動穿透：暫時關掉 overlay 的 pointer-events，問出底下
+ * 是哪一格，再打開。
  */
-const setupTooltipDetection = (overlay) => {
+const setupTooltipDetection = (
+  overlay: d3.Selection<SVGRectElement, unknown, null, undefined>
+): void => {
   let isDragging = false;
-  let currentHoverElement = null;
-  
+  let currentHoverElement: Element | null = null;
+
+  /** 離開所有單元格：復原高亮並收掉 tooltip */
+  const leaveAllCells = (): void => {
+    if (!currentHoverElement) return;
+    clearCellHighlight();
+    currentHoverElement = null;
+    tooltipVisible.value = false;
+    emit('tooltip-hide');
+  };
+
   overlay
     .on('mousedown.tooltip', () => { isDragging = true; })
     .on('mouseup.tooltip', () => {
       isDragging = false;
-      // 清除當前高亮
-      if (currentHoverElement) {
-        d3.select(cellLayerRef.value)
-          .selectAll('.heatmap-cell')
-          .style('opacity', 1)
-          .style('stroke', props.cellBorderColor)
-          .style('stroke-width', props.cellBorderWidth);
-        currentHoverElement = null;
-        tooltipVisible.value = false;
-        emit('tooltip-hide');
-      }
+      leaveAllCells();
     })
-    .on('mousemove.tooltip', function(event) {
+    .on('mousemove.tooltip', function(event: MouseEvent) {
       if (isDragging) return;
-      
+
       // 臨時穿透檢測底層元素
       d3.select(this).style('pointer-events', 'none');
       const elementBelow = document.elementFromPoint(event.clientX, event.clientY);
       d3.select(this).style('pointer-events', 'all');
-      
+
       // 檢查是否為熱力圖單元格
       if (elementBelow?.classList.contains('heatmap-cell')) {
-        if (elementBelow !== currentHoverElement) {
-          // 離開前一個單元格
-          if (currentHoverElement) {
-            d3.select(cellLayerRef.value)
-              .selectAll('.heatmap-cell')
-              .style('opacity', 1)
-              .style('stroke', props.cellBorderColor)
-              .style('stroke-width', props.cellBorderWidth);
-          }
-          
-          // 進入新單元格
-          currentHoverElement = elementBelow;
-          const boundData = d3.select(elementBelow).datum();
-          if (boundData) {
-            // 手動觸發 hover 效果
-            handleCellHover.call(elementBelow, event, boundData);
-          }
+        if (elementBelow === currentHoverElement) return;
+
+        // 離開前一個單元格
+        if (currentHoverElement) clearCellHighlight();
+
+        // 進入新單元格
+        currentHoverElement = elementBelow;
+        const boundData = d3.select(elementBelow).datum() as HeatmapCell | undefined;
+        if (boundData) {
+          // 手動觸發 hover 效果（this 要指向該單元格）
+          handleCellHover.call(elementBelow as SVGRectElement, event, boundData);
         }
       } else {
-        // 離開所有單元格
-        if (currentHoverElement) {
-          d3.select(cellLayerRef.value)
-            .selectAll('.heatmap-cell')
-            .style('opacity', 1)
-            .style('stroke', props.cellBorderColor)
-            .style('stroke-width', props.cellBorderWidth);
-          currentHoverElement = null;
-          tooltipVisible.value = false;
-          emit('tooltip-hide');
-        }
+        leaveAllCells();
       }
     })
     .on('mouseleave.tooltip', () => {
       isDragging = false;
-      // 清除當前高亮
-      if (currentHoverElement) {
-        d3.select(cellLayerRef.value)
-          .selectAll('.heatmap-cell')
-          .style('opacity', 1)
-          .style('stroke', props.cellBorderColor)
-          .style('stroke-width', props.cellBorderWidth);
-        currentHoverElement = null;
-        tooltipVisible.value = false;
-        emit('tooltip-hide');
-      }
+      leaveAllCells();
     });
 };
 
 /**
  * 處理 Brush 選取完成事件
- * 🔧 修正：使用保存的 brushInstance.value.move(null) 清除選取框
+ * 用保存的 brushInstance.move(null) 清除選取框
  */
-const handleBrushSelection = (event) => {
+const handleBrushSelection = (event: d3.D3BrushEvent<unknown>): void => {
   if (!event.selection) return;
 
-  const [[x0, y0], [x1, y1]] = event.selection;
+  const [[x0, y0], [x1, y1]] = event.selection as [[number, number], [number, number]];
 
   // 計算選取範圍內的 X、Y 類別
-  const selectedX = originalXDomain.value.filter(d => {
+  const selectedX = originalXDomain.value.filter((d) => {
     const bandStart = xScale.value(d);
-    const bandEnd = bandStart + xScale.value.bandwidth();
-    return bandEnd > x0 && bandStart < x1;
+    if (bandStart === undefined) return false;
+    return bandStart + xScale.value.bandwidth() > x0 && bandStart < x1;
   });
 
-  const selectedY = originalYDomain.value.filter(d => {
+  const selectedY = originalYDomain.value.filter((d) => {
     const bandStart = yScale.value(d);
-    const bandEnd = bandStart + yScale.value.bandwidth();
-    return bandEnd > y0 && bandStart < y1;
+    if (bandStart === undefined) return false;
+    return bandStart + yScale.value.bandwidth() > y0 && bandStart < y1;
   });
 
   if (selectedX.length === 0 || selectedY.length === 0) return;
@@ -931,25 +1055,25 @@ const handleBrushSelection = (event) => {
 /**
  * 重置圖表縮放狀態
  */
-const handleResetZoom = () => {
+const handleResetZoom = (): void => {
   currentXDomain.value = null;
   currentYDomain.value = null;
   resetBtnShow.value = false;
-  
+
   emit('zoom-reset');
 };
 
 /**
  * 主渲染函數
  */
-const render = () => {
+const render = (): void => {
   renderCells();
   renderXAxis();
   renderYAxis();
   renderColorLegend();
   renderTitle();
   renderBrush();
-  
+
   emit('chart-ready');
 };
 
@@ -966,6 +1090,7 @@ watchEffect(() => {
     colorScale.value,
     props.enableBrush,
   ];
+  void _deps;
 
   if (svgRef.value) {
     render();
@@ -983,11 +1108,11 @@ onMounted(() => {
       if (resizeDebounceTimer) {
         clearTimeout(resizeDebounceTimer);
       }
-      
+
       resizeDebounceTimer = setTimeout(() => {
-        // 🔧 防禦性檢查：確保組件未在 debounce 期間卸載
+        // 防禦性檢查：確保組件未在 debounce 期間卸載
         if (!containerRef.value) return;
-        
+
         for (const entry of entries) {
           const { width, height } = entry.contentRect;
           observedWidth.value = width;
@@ -996,16 +1121,15 @@ onMounted(() => {
         }
       }, props.debounceDelay);
     });
-    
+
     resizeObserver.observe(containerRef.value);
   }
-  
+
   render();
 });
 
 /**
  * 組件卸載時清理 ResizeObserver 和事件監聽器
- * 🔧 優化：添加 Brush 事件清理，避免內存洩漏
  */
 onUnmounted(() => {
   // 清理 ResizeObserver
@@ -1013,14 +1137,13 @@ onUnmounted(() => {
     resizeObserver.disconnect();
     resizeObserver = null;
   }
-  
+
   if (resizeDebounceTimer) {
     clearTimeout(resizeDebounceTimer);
     resizeDebounceTimer = null;
   }
 
-  // 🔧 優化清理順序：先清理實例事件，再清理 DOM 事件
-  // 清理 Brush 實例
+  // 清理順序：先清理實例事件，再清理 DOM 事件
   if (brushInstance.value) {
     brushInstance.value.on('end', null);
     brushInstance.value = null;
@@ -1028,13 +1151,14 @@ onUnmounted(() => {
 
   // 清理 Brush 相關 DOM 事件（使用 namespace）
   if (brushLayerRef.value) {
-    const layer = d3.select(brushLayerRef.value);
-    const overlay = layer.selectAll('.overlay');
+    const overlay = d3.select(brushLayerRef.value).selectAll('.overlay');
     if (!overlay.empty()) {
       overlay.on('.tooltip', null); // 清除所有 .tooltip namespace 的事件
     }
   }
 });
+
+defineExpose({ containerRef, svgRef });
 </script>
 
 <style scoped>

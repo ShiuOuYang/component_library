@@ -1,5 +1,6 @@
 import { computed, onMounted, onUnmounted, ref, type ComputedRef, type CSSProperties, type Ref } from 'vue'
 import * as d3 from 'd3'
+import { sortCategories } from '../../utils/sortCategories'
 import type {
   ChartDatum,
   ChartLayer,
@@ -313,19 +314,6 @@ export interface GridFacetProps<T = ChartDatum> {
   headerHeight?: number
 }
 
-/**
- * 分面座標值的排序。
- *
- * 🔧 原本直接用 Array.prototype.sort()，那是字典序 —— 數值分面會排成
- *    1, 10, 2, 3…，網格的欄列順序完全錯亂。這裡先判斷是否全為數值。
- */
-function sortFacetValues(values: unknown[]): unknown[] {
-  const allNumeric = values.every((v) => typeof v === 'number' || (typeof v === 'string' && v !== '' && !Number.isNaN(Number(v))))
-  if (allNumeric) {
-    return [...values].sort((a, b) => Number(a) - Number(b))
-  }
-  return [...values].sort((a, b) => String(a).localeCompare(String(b)))
-}
 
 /**
  * 依資料推算 Y domain，並在兩端留白。
@@ -373,13 +361,13 @@ export function useGridFacetLayout<T extends ChartDatum = ChartDatum>(
   const uniqueXValues = computed(() => {
     if (!props.xFacetVar || !props.data) return []
     const key = props.xFacetVar
-    return sortFacetValues([...new Set(props.data.map((d) => d[key]))])
+    return sortCategories([...new Set(props.data.map((d) => d[key]))])
   })
 
   const uniqueYValues = computed(() => {
     if (!props.yFacetVar || !props.data) return []
     const key = props.yFacetVar
-    return sortFacetValues([...new Set(props.data.map((d) => d[key]))])
+    return sortCategories([...new Set(props.data.map((d) => d[key]))])
   })
 
   const cols = computed(() => uniqueXValues.value.length || 1)

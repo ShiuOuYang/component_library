@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseTransformAttribute } from './svg-transform-polyfill.js'
+import { parseTransformAttribute } from './svg-polyfills.js'
 
 /**
  * 這個 polyfill 是所有圖表測試的地基：d3-transition 對 transform 插值時
@@ -79,5 +79,29 @@ describe('installSvgTransformPolyfill', () => {
     node.setAttribute('transform', 'translate(5, 7)')
     expect(node.transform.baseVal.consolidate().matrix).toMatchObject({ e: 5, f: 7 })
     expect(node.transform.baseVal.numberOfItems).toBe(1)
+  })
+})
+
+describe('installSvgGeometryPolyfill', () => {
+  it('width / height 讀得到 baseVal.value', () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    // 沒有屬性時為 0（jsdom 沒有排版，算不出實際值）
+    expect(svg.width.baseVal.value).toBe(0)
+
+    svg.setAttribute('width', '640')
+    svg.setAttribute('height', '480')
+    expect(svg.width.baseVal.value).toBe(640)
+    expect(svg.height.baseVal.value).toBe(480)
+    // animVal 在沒有 SMIL 動畫時與 baseVal 相同
+    expect(svg.height.animVal.value).toBe(480)
+  })
+
+  it('帶單位或百分比的長度取數字部分，無法解析則為 0', () => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+    svg.setAttribute('width', '100px')
+    expect(svg.width.baseVal.value).toBe(100)
+
+    svg.setAttribute('width', 'auto')
+    expect(svg.width.baseVal.value).toBe(0)
   })
 })

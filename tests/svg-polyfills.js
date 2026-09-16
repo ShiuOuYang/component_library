@@ -1,6 +1,8 @@
 /**
- * jsdom 沒有實作 SVGGraphicsElement.transform（SVGAnimatedTransformList），
- * 而 d3-interpolate 對 transform 屬性做插值時一定會讀它：
+ * jsdom 的 SVG 幾何 API 補丁
+ *
+ * 1) SVGGraphicsElement.transform（SVGAnimatedTransformList）
+ *    d3-interpolate 對 transform 屬性做插值時一定會讀它：
  *
  *   svgNode.setAttribute('transform', value)
  *   svgNode.transform.baseVal.consolidate()   // ← jsdom 回 undefined，於此拋錯
@@ -9,6 +11,10 @@
  * 待處理的 transition，導致座標軸只畫出第一個刻度就停住 —— 元件本身沒問題，
  * 但測試看到的 DOM 是殘缺的。因此在這裡補上最小可用的實作：
  * 把 transform 字串解析成矩陣，讓 consolidate() 回傳 d3 需要的 { matrix }。
+ *
+ * 2) SVGSVGElement 的 width / height / viewBox（SVGAnimatedLength / Rect）
+ *    d3-brush 沒給 extent 時會呼叫 defaultExtent()，它讀
+ *    svg.width.baseVal.value，同樣會拋錯，brush 根本建不起來。
  */
 
 const FUNCTION_RE = /(matrix|translate|scale|rotate|skewX|skewY)\s*\(([^)]*)\)/g
@@ -118,3 +124,36 @@ export function installSvgTransformPolyfill() {
 }
 
 export { parseTransformAttribute }
+
+// ===== SVGSVGElement.width / height / viewBox =====
+
+/** 把長度屬性讀成數字；百分比與空值都回 0（jsdom 沒有排版，算不出實際值） */
+function readLength(element, name) {
+  const raw = element.getAttribute(name)
+  if (raw === null) return 0
+  const numeric = parseFloat(raw)
+  return Number.isFinite(numeric) ? numeric : 0
+}
+
+function defineAnimatedLength(prototype, name) {
+  if (Object.getOwnPropertyDescriptor(prototype, name)) return
+  Object.defineProperty(prototype, name, {
+    configurable: true,
+    get() {
+      const value = readLength(this, name)
+      // animVal 與 baseVal 在沒有 SMIL 動畫時相同
+      return { baseVal: { value }, animVal: { value } }
+    },
+  })
+}
+
+/**
+ * jsdom 已經有 viewBox（回傳 SVGRect），只缺 width / height，
+ * 因此這裡只補這兩個。
+ */
+export function installSvgGeometryPolyfill() {
+  if (typeof SVGSVGElement === 'undefined') return
+
+  defineAnimatedLength(SVGSVGElement.prototype, 'width')
+  defineAnimatedLength(SVGSVGElement.prototype, 'height')
+}
