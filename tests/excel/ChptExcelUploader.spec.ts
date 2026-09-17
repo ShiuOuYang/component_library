@@ -216,19 +216,54 @@ describe('ChptExcelUploader', () => {
 
   describe('非 Excel 內容', () => {
     /**
-     * ⚠️ 這是目前的實際行為，不是理想行為。
-     *    XLSX.read 對任意位元組都很寬容：不會拋錯，而是回傳一份
-     *    只有空白 Sheet1 的 workbook。因此把 .txt 改名成 .xlsx 丟進來，
-     *    使用者會收到 upload-success 與空陣列，完全看不出檔案其實沒讀成功。
-     *    要分辨「真的是空表」與「根本不是表」得另外檢查檔案簽章
-     *    （xlsx 是 ZIP，開頭為 PK\x03\x04；xls 是 OLE）。
+     * 改動前：XLSX.read 對任意位元組都很寬容 —— 不拋錯，而是回傳一份只有
+     * 空白 Sheet1 的 workbook。於是 .txt 改名成 .xlsx 丟進來，使用端收到的是
+     * upload-success 加一個空陣列，看起來像「這個 Excel 是空的」，
+     * 而不是「這根本不是 Excel」。兩者該採取的行動完全不同。
+     *
+     * 改動後：解析前先檢查檔案簽章（xlsx 是 ZIP 的 PK\x03\x04；xls 是 OLE2），
+     * 不符就走 error 路徑。
      */
-    it('內容不是 Excel 時不會拋錯，而是得到空陣列（現狀）', async () => {
+    it('內容不是 Excel 時發出 error 而非 upload-success', async () => {
       const wrapper = await mountUploader()
       await uploadFile(wrapper, makeBrokenFile())
 
-      expect(wrapper.emitted('data-loaded')![0][0]).toEqual([])
-      expect(wrapper.emitted('upload-success')).toBeTruthy()
+      expect(wrapper.emitted('data-loaded')).toBeFalsy()
+      expect(wrapper.emitted('upload-success')).toBeFalsy()
+      expect(wrapper.emitted('upload-error')).toBeTruthy()
+      expect(wrapper.emitted('error')![0][0]).toContain('不是 Excel')
+      wrapper.unmount()
+    })
+
+    it('把 .txt 改名成 .xlsx 也擋得住', async () => {
+      const wrapper = await mountUploader()
+      const renamed = new File([new TextEncoder().encode('a,b\n1,2')], 'fake.xlsx')
+      await uploadFile(wrapper, renamed)
+
+      expect(wrapper.emitted('upload-success')).toBeFalsy()
+      expect(wrapper.emitted('error')![0][0]).toContain('不是 Excel')
+      wrapper.unmount()
+    })
+
+    it('比簽章短的檔案不會誤判為合法', async () => {
+      const wrapper = await mountUploader()
+      // 只有 PK\x03 兩個字元，不足 4 bytes
+      await uploadFile(wrapper, new File([new Uint8Array([0x50, 0x4b])], 'tiny.xlsx'))
+
+      expect(wrapper.emitted('upload-success')).toBeFalsy()
+      expect(wrapper.emitted('upload-error')).toBeTruthy()
+      wrapper.unmount()
+    })
+
+    it('OLE2 簽章（舊版 .xls）不會被簽章檢查擋掉', async () => {
+      const wrapper = await mountUploader()
+      // 簽章合法但後面不是完整的 BIFF 內容：應該通過簽章檢查、
+      // 由 XLSX.read 自己去判斷，而不是被我們的白名單擋在門外。
+      const ole = new Uint8Array(512)
+      ole.set([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])
+      await uploadFile(wrapper, new File([ole], 'legacy.xls'))
+
+      expect(wrapper.emitted('error')?.[0]?.[0] ?? '').not.toContain('不是 Excel')
       wrapper.unmount()
     })
 
@@ -246,8 +281,45 @@ describe('ChptExcelUploader', () => {
       await uploadFile(wrapper, makeBrokenFile())
       await uploadFile(wrapper, makeXlsxFile([{ a: 1 }]))
 
-      expect(wrapper.emitted('data-loaded')).toHaveLength(2)
-      expect(wrapper.emitted('data-loaded')![1][0]).toEqual([{ a: 1 }])
+      expect(wrapper.emitted('data-loaded')).toHaveLength(1)
+      expect(wrapper.emitted('data-loaded')![0][0]).toEqual([{ a: 1 }])
+      wrapper.unmount()
+    })
+  })
+
+  describe('鍵盤可達性', () => {
+    /**
+     * 整個元件的觸發點是 file input 的 <label>。原本 input 是 class="hidden"
+     * （display: none），而 display: none 的元素不可聚焦 —— 鍵盤使用者
+     * 根本無法選檔，違反 WCAG 2.1.1。
+     */
+    it('file input 不使用 display:none 隱藏', async () => {
+      const wrapper = await mountUploader()
+      const input = wrapper.find('input[type="file"]')
+
+      expect(input.classes()).not.toContain('hidden')
+      expect(input.classes()).toContain('sr-only')
+      wrapper.unmount()
+    })
+
+    it('file input 可以取得焦點', async () => {
+      const wrapper = await mountUploader()
+      const input = wrapper.find('input[type="file"]').element as HTMLInputElement
+      input.focus()
+
+      expect(document.activeElement).toBe(input)
+      wrapper.unmount()
+    })
+
+    it('label 排在 input 之後，peer-focus-visible 才有作用', async () => {
+      const wrapper = await mountUploader()
+      // Tailwind 的 peer-* 只對「peer 之後」的兄弟節點生效
+      const children = Array.from(wrapper.element.children).map((el) =>
+        el.tagName.toLowerCase()
+      )
+
+      expect(children.indexOf('input')).toBeLessThan(children.indexOf('label'))
+      expect(wrapper.find('label').classes()).toContain('peer-focus-visible:ring-2')
       wrapper.unmount()
     })
   })

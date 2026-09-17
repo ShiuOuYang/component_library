@@ -1,8 +1,23 @@
 <template>
   <div class="flex items-center gap-2">
+    <!--
+      ⚠️ 原本是 class="hidden"（display: none）。display: none 的元素不可聚焦，
+         而整個元件的觸發點是這個 input 的 <label> —— 也就是說鍵盤使用者
+         完全無法選檔，違反 WCAG 2.1.1（所有功能都要能用鍵盤操作）。
+         改用 sr-only 的定位手法把它藏起來但保留在可聚焦序列中，
+         並讓 label 在 input 取得焦點時顯示 focus ring（見 label 的 peer-focus-visible）。
+    -->
+    <input
+      :id="id"
+      type="file"
+      accept=".xlsx,.xls"
+      class="peer sr-only"
+      :disabled="loading"
+      @change="handleFileUpload"
+    />
     <label
       :for="id"
-      class="group relative flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm cursor-pointer"
+      class="group relative flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm cursor-pointer peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 peer-focus-visible:ring-offset-2"
       :class="[
         sizeClasses[props.size],
         variantClasses[props.variant],
@@ -37,14 +52,6 @@
 
       <span>{{ loading ? props.loadingText : props.label }}</span>
     </label>
-    <input
-      :id="id"
-      type="file"
-      accept=".xlsx,.xls"
-      class="hidden"
-      :disabled="loading"
-      @change="handleFileUpload"
-    />
     <span v-if="fileName && !loading && props.showFileName" class="text-xs text-neutral-600">{{ fileName }}</span>
   </div>
 </template>
@@ -138,6 +145,31 @@ const variantClasses: Record<UploaderVariant, string> = {
   primary: 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent',
 }
 
+/**
+ * 檔案簽章（magic number）白名單。
+ *
+ * ⚠️ input 上的 accept=".xlsx,.xls" 只是檔案選擇器的過濾提示，使用者切成
+ *    「所有檔案」照樣選得到任何東西，拖放更是完全繞過。而 XLSX.read 對垃圾
+ *    位元組非常寬容：不會拋錯，而是回傳一份只有空白 Sheet1 的 workbook。
+ *    結果把 .txt 改名成 .xlsx 丟進來，使用端收到的是 upload-success 加一個
+ *    空陣列 —— 看起來像「這個 Excel 是空的」，而不是「這根本不是 Excel」。
+ *    兩者要採取的行動完全不同，所以必須在解析前先擋掉。
+ */
+const FILE_SIGNATURES: readonly { readonly bytes: readonly number[]; readonly label: string }[] = [
+  // .xlsx / .xlsm：本質是 ZIP，開頭為 PK\x03\x04
+  { bytes: [0x50, 0x4b, 0x03, 0x04], label: 'xlsx' },
+  // .xls（BIFF8）：OLE2 複合文件
+  { bytes: [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1], label: 'xls' },
+]
+
+/** 位元組開頭是否符合任一支援的格式 */
+function hasSupportedSignature(data: Uint8Array): boolean {
+  return FILE_SIGNATURES.some(
+    ({ bytes }) =>
+      data.length >= bytes.length && bytes.every((b, i) => data[i] === b)
+  )
+}
+
 async function handleFileUpload(event: Event): Promise<void> {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
@@ -152,8 +184,18 @@ async function handleFileUpload(event: Event): Promise<void> {
   reader.onload = (e) => {
     try {
       const data = new Uint8Array(e.target?.result as ArrayBuffer)
+
+      if (!hasSupportedSignature(data)) {
+        throw new Error('檔案格式不是 Excel（僅支援 .xlsx 與 .xls）')
+      }
+
       const workbook = XLSX.read(data, { type: 'array' })
       const firstSheetName = workbook.SheetNames[0]
+      // 簽章對了但一張工作表都沒有：sheet_to_json(undefined) 會拋出
+      // 難以理解的內部錯誤，這裡先換成使用端看得懂的訊息。
+      if (firstSheetName === undefined) {
+        throw new Error('這個 Excel 檔沒有任何工作表')
+      }
       const worksheet = workbook.Sheets[firstSheetName]
       const jsonData = XLSX.utils.sheet_to_json(worksheet)
       emit('data-loaded', jsonData)

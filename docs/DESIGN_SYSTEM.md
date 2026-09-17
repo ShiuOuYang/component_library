@@ -128,6 +128,14 @@ selection.transition().duration(duration.chartUpdate)
 - **不要**用 `@layer utilities` 定義與 Tailwind 內建同名的 class。
 - SVG 元素不能用 Tailwind class（JIT 掃不到動態產生的元素），一律寫在 `<style scoped>` 搭配 `:deep()`。
 - **按鈕與輸入框的高度不要用 `py-*` 撐**，一律用 `h-control-*`（見下節）。
+- **每個 `<button>` 都要明確寫 `type`**。HTML 的預設值是 `type="submit"`，
+  使用端把元件放進 `<form>` 時點下去會誤觸表單送出、整頁重新載入。
+  由 `npm run check:buttons` 在 CI 擋住（用 Vue 的 template compiler 檢查，不是正規式）。
+- **純圖示按鈕要做成正方形**：`h-control-xs min-w-control-xs`。
+  WCAG 2.5.8 的 24×24 是兩個方向都要算，只給高度的話 `h-control-xs px-1` 還是只有 24×18。
+- **不要用 `display: none`(`class="hidden"`) 藏可聚焦元素**（例如 file input）。
+  `display: none` 的元素不在可聚焦序列裡，鍵盤使用者完全無法操作（WCAG 2.1.1）。
+  要視覺上隱藏但保留可聚焦性請用 `sr-only`。
 
 ## 控制項高度（按鈕 / 輸入框 / 下拉）
 
@@ -158,6 +166,16 @@ selection.transition().duration(duration.chartUpdate)
 
 手寫 CSS 時用對應的變數：`var(--control-height-sm)`、
 `var(--control-padding-x-sm)`、`var(--control-font-size-sm)`。
+
+純圖示按鈕（`×` / `‹` / `›`）要補 `min-w-control-*` 做成正方形：
+
+```html
+<!-- ✅ 24×24 -->
+<button type="button" aria-label="清空" class="inline-flex items-center justify-center h-control-xs min-w-control-xs text-xs">×</button>
+
+<!-- ❌ 24×18，寬度不足；也不要用 w-4 h-4（16×16） -->
+<button type="button" aria-label="清空" class="h-control-xs px-1 text-[9px]">×</button>
+```
 
 過渡期的全域 class 也已對齊：`.btn`（= sm）、`.btn-xs` / `.btn-md` / `.btn-lg`、
 `.input`（= sm）。
