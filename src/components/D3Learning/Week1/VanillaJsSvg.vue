@@ -26,9 +26,9 @@
     <div class="mb-4">
       <div ref="chart1Container" class="border border-gray-200 bg-white h-[200px] mb-2"></div>
       <div class="flex gap-2">
-        <button @click="createCircle" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">創建圓形</button>
-        <button @click="createRect" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">創建矩形</button>
-        <button @click="clearChart1" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">清除所有</button>
+        <button type="button" @click="createCircle" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">創建圓形</button>
+        <button type="button" @click="createRect" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">創建矩形</button>
+        <button type="button" @click="clearChart1" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">清除所有</button>
       </div>
     </div>
 
@@ -66,9 +66,9 @@ svg.appendChild(circle);  // 會正確顯示</code></pre>
     <div class="mb-4">
       <div ref="chart2Container" class="border border-gray-200 bg-white h-[300px] mb-2"></div>
       <div class="flex gap-2">
-        <button @click="generateBarChart" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">生成長條圖</button>
-        <button @click="updateData" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">更新數據</button>
-        <button @click="sortBars" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">排序長條</button>
+        <button type="button" @click="generateBarChart" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">生成長條圖</button>
+        <button type="button" @click="updateData" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">更新數據</button>
+        <button type="button" @click="sortBars" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">排序長條</button>
       </div>
     </div>
 
@@ -122,11 +122,11 @@ container.appendChild(svg);</code></pre>
         <div class="flex items-center gap-2">
           <label>新增數據：</label>
           <input type="number" v-model="newValue" min="0" max="100" class="border rounded px-2 py-1 w-20">
-          <button @click="addDataPoint" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">新增</button>
+          <button type="button" @click="addDataPoint" class="px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600 transition">新增</button>
         </div>
-        <button @click="removeLastBar" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition">刪除最後一個</button>
-        <button @click="randomizeData" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">隨機數據</button>
-        <button @click="clearAllBars" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">清除所有</button>
+        <button type="button" @click="removeLastBar" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition">刪除最後一個</button>
+        <button type="button" @click="randomizeData" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">隨機數據</button>
+        <button type="button" @click="clearAllBars" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition">清除所有</button>
       </div>
     </div>
 

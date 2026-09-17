@@ -27,7 +27,7 @@
 
         <!-- 頁面選項 -->
         <div class="py-1">
-          <button
+          <button type="button"
             v-for="page in resolvedPages"
             :key="page.path"
             @click="navigateToPage(page.path)"

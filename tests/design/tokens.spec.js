@@ -156,4 +156,20 @@ describe('control：控制項幾何', () => {
       expect(darkVars[`--control-height-${size}`]).toBeUndefined()
     }
   })
+
+  /**
+   * 純圖示按鈕（× / ‹ / ›）要做成正方形才符合 WCAG 2.5.8 —— 24×24 是兩個
+   * 方向都要算的，只給高度的話 `h-control-xs px-1` 仍然只有 24×18。
+   * 因此 tailwind.config 除了 height / minHeight 還要產出 minWidth。
+   */
+  it('Tailwind 同時產出 height / minHeight / minWidth 三組 control 工具類', async () => {
+    const { default: config } = await import('../../tailwind.config.js')
+    const { height, minHeight, minWidth } = config.theme.extend
+
+    for (const size of Object.keys(control)) {
+      expect(height[`control-${size}`]).toBe(control[size].height)
+      expect(minHeight[`control-${size}`]).toBe(control[size].height)
+      expect(minWidth[`control-${size}`]).toBe(control[size].height)
+    }
+  })
 })

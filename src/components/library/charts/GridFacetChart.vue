@@ -99,7 +99,7 @@
     </div>
 
     <!-- 重置按鈕（全域） -->
-    <button
+    <button type="button"
       v-if="showResetButton && hasAnyZoom()"
       @click="handleResetZoom"
       class="reset-button"

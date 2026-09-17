@@ -60,6 +60,10 @@ jobs:
       - name: Docs routes
         run: npm run check:docs
 
+      # <button> 少寫 type 會在使用端的 <form> 裡誤觸表單送出
+      - name: Button type
+        run: npm run check:buttons
+
       - name: Lint
         run: npm run lint
 

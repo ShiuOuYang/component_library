@@ -197,10 +197,10 @@ watchEffect(() => {
       <div class="border-2 border-purple-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-purple-600">🎨 互動範例：純 D3 渲染模式</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="updateMode1Data" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+          <button type="button" @click="updateMode1Data" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
             更新資料
           </button>
-          <button @click="resetMode1" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetMode1" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -324,16 +324,16 @@ watchEffect(() => {
       <div class="border-2 border-purple-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-purple-600">🎨 互動範例：混合模式（推薦）</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="updateMode2Data" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+          <button type="button" @click="updateMode2Data" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
             更新資料
           </button>
-          <button @click="addMode2Bar" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <button type="button" @click="addMode2Bar" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
             新增長條
           </button>
-          <button @click="removeMode2Bar" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+          <button type="button" @click="removeMode2Bar" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
             刪除長條
           </button>
-          <button @click="resetMode2" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetMode2" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -478,10 +478,10 @@ const yTicks = computed(() => yScale.value.ticks(5));
       <div class="border-2 border-purple-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-purple-600">🎨 互動範例：純 Vue 渲染模式</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="updateMode3Data" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+          <button type="button" @click="updateMode3Data" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
             更新資料
           </button>
-          <button @click="resetMode3" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetMode3" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>

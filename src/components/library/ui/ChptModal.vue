@@ -125,7 +125,7 @@
             </div>
 
             <div class="flex items-center gap-1">
-              <button
+              <button type="button"
                 v-if="showMinimizeButton"
                 @click="toggleMinimize"
                 class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-warning-50 active:bg-warning-100 transition-all text-neutral-500 hover:text-warning-600"
@@ -135,7 +135,7 @@
                   <path stroke-linecap="round" d="M5 12h14"/>
                 </svg>
               </button>
-              <button
+              <button type="button"
                 v-if="showMaximizeButton"
                 @click="toggleMaximize"
                 class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 active:bg-neutral-300/60 transition-all text-neutral-500 hover:text-neutral-700"
@@ -149,7 +149,7 @@
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
                 </svg>
               </button>
-              <button
+              <button type="button"
                 v-if="showCloseButton"
                 @click="handleClose"
                 class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-danger-50 active:bg-danger-100 transition-all text-neutral-500 hover:text-danger-500"

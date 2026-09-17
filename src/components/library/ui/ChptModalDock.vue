@@ -57,7 +57,7 @@
 
                 <!-- 操作按鈕 -->
                 <div class="flex items-center gap-0.5 pr-2 shrink-0">
-                  <button
+                  <button type="button"
                     @click.stop="handleRestore(modal.id)"
                     class="w-6 h-6 flex items-center justify-center rounded-md
                            hover:bg-primary-50 transition-colors text-neutral-400 hover:text-primary-500"
@@ -67,7 +67,7 @@
                       <rect x="4" y="4" width="16" height="16" rx="2"/>
                     </svg>
                   </button>
-                  <button
+                  <button type="button"
                     @click.stop="handleClose(modal.id)"
                     class="w-6 h-6 flex items-center justify-center rounded-md
                            hover:bg-danger-50 transition-colors text-neutral-400 hover:text-danger-500"
@@ -84,7 +84,7 @@
         </Transition>
 
         <!-- 口袋按鈕 -->
-        <button
+        <button type="button"
           @click="isExpanded = !isExpanded"
           class="group flex items-center gap-2 px-3.5 py-2 bg-white/95 backdrop-blur-sm
                  rounded-full shadow-lg border border-neutral-200/80

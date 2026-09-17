@@ -173,10 +173,10 @@ const darkShade = `<span class="text-primary-600 dark:text-primary-400">連結</
 <div class="bg-neutral-100 dark:bg-neutral-800">卡片</div>`
 
 const focusCode = `<!-- ❌ 焦點完全看不見 -->
-<button class="focus:outline-none">送出</button>
+<button type="button" class="focus:outline-none">送出</button>
 
 <!-- ✅ 有替代的焦點樣式 -->
-<button class="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2">
+<button type="button" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2">
   送出
 </button>`
 

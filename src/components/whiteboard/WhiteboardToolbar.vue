@@ -2,7 +2,7 @@
   <header class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
     <div class="flex flex-wrap items-center gap-3">
       <div class="flex flex-wrap items-center gap-2">
-        <button
+        <button type="button"
           v-for="item in tools"
           :key="item.id"
           class="px-3 py-2 rounded-lg text-sm font-medium border transition-colors"
@@ -17,7 +17,7 @@
 
       <div class="flex items-center gap-2">
         <span class="text-sm text-gray-600">顏色</span>
-        <button
+        <button type="button"
           v-for="swatch in swatches"
           :key="swatch"
           class="w-6 h-6 rounded-full border-2 transition-transform hover:scale-110"
@@ -43,25 +43,25 @@
       </div>
 
       <div class="ml-auto flex items-center gap-2">
-        <button class="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100" @click="$emit('paste-image')">
+        <button type="button" class="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100" @click="$emit('paste-image')">
           貼上圖片
         </button>
-        <button class="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100" @click="$emit('upload-image')">
+        <button type="button" class="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100" @click="$emit('upload-image')">
           上傳圖片
         </button>
-        <button class="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100" @click="$emit('undo')">
+        <button type="button" class="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100" @click="$emit('undo')">
           復原
         </button>
-        <button class="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100" @click="$emit('clear')">
+        <button type="button" class="px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-100" @click="$emit('clear')">
           清空
         </button>
-        <button class="px-3 py-2 rounded-lg text-sm font-medium bg-teal-600 text-white hover:bg-teal-700" @click="$emit('export-png')">
+        <button type="button" class="px-3 py-2 rounded-lg text-sm font-medium bg-teal-600 text-white hover:bg-teal-700" @click="$emit('export-png')">
           匯出本頁 PNG
         </button>
-        <button class="px-3 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700" @click="$emit('export-all-png')">
+        <button type="button" class="px-3 py-2 rounded-lg text-sm font-medium bg-emerald-600 text-white hover:bg-emerald-700" @click="$emit('export-all-png')">
           匯出全部 PNG
         </button>
-        <button class="px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700" @click="$emit('export-svg')">
+        <button type="button" class="px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700" @click="$emit('export-svg')">
           匯出本頁 SVG
         </button>
       </div>

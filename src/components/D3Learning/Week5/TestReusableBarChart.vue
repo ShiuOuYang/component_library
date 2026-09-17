@@ -62,9 +62,9 @@
       <div class="bg-white p-6 rounded-lg shadow">
         <h2 class="text-xl font-semibold mb-4 text-gray-700">4. 動態數據更新</h2>
         <div class="flex gap-2 mb-4">
-          <button @click="randomizeData" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition">隨機數據</button>
-          <button @click="addData" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition">新增一筆</button>
-          <button @click="removeData" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">移除一筆</button>
+          <button type="button" @click="randomizeData" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition">隨機數據</button>
+          <button type="button" @click="addData" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition">新增一筆</button>
+          <button type="button" @click="removeData" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition">移除一筆</button>
         </div>
         <ReusableBarChart 
           :data="dynamicData" 

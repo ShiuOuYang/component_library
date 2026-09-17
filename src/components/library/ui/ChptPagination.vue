@@ -4,8 +4,8 @@
     class="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-3 sm:px-6"
   >
     <div class="flex flex-1 justify-between sm:hidden">
-      <button @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-md border border-neutral-300 bg-white h-control-sm px-4 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">上一頁</button>
-      <button @click="nextPage" :disabled="currentPage === totalPages" class="relative ml-3 inline-flex items-center rounded-md border border-neutral-300 bg-white h-control-sm px-4 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">下一頁</button>
+      <button type="button" @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-md border border-neutral-300 bg-white h-control-sm px-4 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">上一頁</button>
+      <button type="button" @click="nextPage" :disabled="currentPage === totalPages" class="relative ml-3 inline-flex items-center rounded-md border border-neutral-300 bg-white h-control-sm px-4 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">下一頁</button>
     </div>
     <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
       <div class="flex items-center gap-4">
@@ -22,7 +22,7 @@
       </div>
       <div>
         <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="分頁導航">
-          <button @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-l-md h-control-sm px-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-l-md h-control-sm px-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="sr-only">上一頁</span>
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd"/></svg>
           </button>
@@ -37,7 +37,7 @@
             >{{ page }}</button>
             <span v-else aria-hidden="true" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-neutral-700 ring-1 ring-inset ring-neutral-300">...</span>
           </template>
-          <button @click="nextPage" :disabled="currentPage === totalPages" class="relative inline-flex items-center rounded-r-md h-control-sm px-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" @click="nextPage" :disabled="currentPage === totalPages" class="relative inline-flex items-center rounded-r-md h-control-sm px-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="sr-only">下一頁</span>
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
           </button>
@@ -48,24 +48,24 @@
 
   <!-- Compact 模式（原 PaginationControls） -->
   <nav v-else aria-label="分頁導航" class="flex items-center gap-2.5">
-    <div v-if="showSummary && totalItems > 0" class="text-xs text-neutral-500 mr-1 px-1.5 rounded h-6 flex items-center border border-neutral-300" :class="bgColor">共 {{ totalItems }} 筆</div>
+    <div v-if="showSummary && totalItems > 0" class="text-xs text-neutral-500 mr-1 px-2 rounded h-control-sm flex items-center border border-neutral-300" :class="bgColor">共 {{ totalItems }} 筆</div>
 
-    <div v-if="showPageSize" class="flex items-center gap-1 text-xs text-neutral-700 border border-neutral-300 rounded px-1.5 h-6" :class="bgColor">
+    <div v-if="showPageSize" class="flex items-center gap-1 text-xs text-neutral-700 border border-neutral-300 rounded px-2 h-control-sm" :class="bgColor">
       <span>每頁</span>
-      <input type="number" :value="itemsPerPage" min="1" max="1000" aria-label="每頁筆數" class="w-9 h-4.5 border border-neutral-300 rounded-sm text-center px-0.5 text-xs bg-white focus:outline-none focus:border-primary-500" @change="handlePageSizeInput" />
+      <input type="number" :value="itemsPerPage" min="1" max="1000" aria-label="每頁筆數" class="w-12 h-control-xs border border-neutral-300 rounded-sm text-center px-1 text-xs bg-white focus:outline-none focus:border-primary-500" @change="handlePageSizeInput" />
       <span>筆</span>
     </div>
 
     <div class="flex items-center rounded border border-neutral-300 overflow-hidden" :class="bgColor">
-      <button :class="btnClass" class="border-r" @click="changePage(1)" :disabled="currentPage === 1" title="第一頁" :aria-label="'第一頁'"><span aria-hidden="true" class="text-xs">«</span></button>
-      <button :class="btnClass" class="border-r" @click="changePage(currentPage - 1)" :disabled="currentPage === 1" title="上一頁" :aria-label="'上一頁'"><span aria-hidden="true" class="text-xs">‹</span></button>
-      <div class="flex items-center h-6 px-1 bg-white border-r border-neutral-300">
-        <input type="number" :value="currentPage" min="1" :max="totalPages" aria-label="目前頁碼" class="w-7 h-4.5 text-center border border-neutral-300 rounded-sm text-xs px-0.5 focus:outline-none focus:border-primary-500" @change="handlePageInput" />
+      <button type="button" :class="btnClass" class="border-r" @click="changePage(1)" :disabled="currentPage === 1" title="第一頁" :aria-label="'第一頁'"><span aria-hidden="true" class="text-xs">«</span></button>
+      <button type="button" :class="btnClass" class="border-r" @click="changePage(currentPage - 1)" :disabled="currentPage === 1" title="上一頁" :aria-label="'上一頁'"><span aria-hidden="true" class="text-xs">‹</span></button>
+      <div class="flex items-center h-control-sm px-1 bg-white border-r border-neutral-300">
+        <input type="number" :value="currentPage" min="1" :max="totalPages" aria-label="目前頁碼" class="w-10 h-control-xs text-center border border-neutral-300 rounded-sm text-xs px-1 focus:outline-none focus:border-primary-500" @change="handlePageInput" />
         <span class="mx-1 text-neutral-700 text-xs">/</span>
         <span class="text-xs text-neutral-700">{{ totalPages || 0 }}</span>
       </div>
-      <button :class="btnClass" class="border-r" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || totalPages === 0" title="下一頁" :aria-label="'下一頁'"><span aria-hidden="true" class="text-xs">›</span></button>
-      <button :class="btnClass" @click="changePage(totalPages)" :disabled="currentPage === totalPages || totalPages === 0" title="最後一頁" :aria-label="'最後一頁'"><span aria-hidden="true" class="text-xs">»</span></button>
+      <button type="button" :class="btnClass" class="border-r" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || totalPages === 0" title="下一頁" :aria-label="'下一頁'"><span aria-hidden="true" class="text-xs">›</span></button>
+      <button type="button" :class="btnClass" @click="changePage(totalPages)" :disabled="currentPage === totalPages || totalPages === 0" title="最後一頁" :aria-label="'最後一頁'"><span aria-hidden="true" class="text-xs">»</span></button>
     </div>
   </nav>
 </template>
@@ -123,20 +123,40 @@ const emit = defineEmits<{
   (e: 'change', page: number): void
 }>()
 
+/** 每頁筆數的合法範圍，與 compact 模式輸入框的 min / max 一致 */
+const MIN_PAGE_SIZE = 1
+const MAX_PAGE_SIZE = 1000
+
+/**
+ * 實際生效的每頁筆數。
+ *
+ * ⚠️ 不能直接信任 props.itemsPerPage：compact 模式的 <input type="number">
+ *    上的 min/max 只是瀏覽器提示，使用者照樣能打 0 或負數送出 change。
+ *    itemsPerPage = 0 會讓 Math.ceil(n / 0) 變成 Infinity，而 `|| 0` 擋不掉
+ *    （Infinity 是 truthy），畫面上的總頁數就會直接顯示 "Infinity"，
+ *    上一頁／下一頁的 disabled 判斷也跟著失效。
+ */
+const effectivePageSize = computed(() => {
+  const size = Math.floor(Number(props.itemsPerPage))
+  if (!Number.isFinite(size) || size < MIN_PAGE_SIZE) return MIN_PAGE_SIZE
+  return Math.min(size, MAX_PAGE_SIZE)
+})
+
 /** 總頁數 */
-const totalPages = computed(() =>
-  Math.ceil(props.totalItems / props.itemsPerPage) || 0
-)
+const totalPages = computed(() => {
+  if (props.totalItems <= 0) return 0
+  return Math.ceil(props.totalItems / effectivePageSize.value)
+})
 
 /** 起始項目 */
 const startItem = computed(() => {
-  if (props.totalItems === 0) return 0
-  return (props.currentPage - 1) * props.itemsPerPage + 1
+  if (props.totalItems <= 0) return 0
+  return (props.currentPage - 1) * effectivePageSize.value + 1
 })
 
 /** 結束項目 */
 const endItem = computed(() => {
-  const end = props.currentPage * props.itemsPerPage
+  const end = props.currentPage * effectivePageSize.value
   return end > props.totalItems ? props.totalItems : end
 })
 
@@ -169,7 +189,7 @@ const displayedPages = computed<(number | string)[]>(() => {
 })
 
 const btnClass =
-  'h-6 min-w-6 flex items-center justify-center bg-transparent border-none border-neutral-300 cursor-pointer px-1.5 text-neutral-700 transition-colors text-xs hover:bg-primary-50 hover:text-primary-500 disabled:text-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100'
+  'h-control-sm min-w-control-sm flex items-center justify-center bg-transparent border-none border-neutral-300 cursor-pointer px-1.5 text-neutral-700 transition-colors text-xs hover:bg-primary-50 hover:text-primary-500 disabled:text-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100'
 
 /**
  * 切換頁碼。
@@ -201,9 +221,31 @@ function handlePageInput(event: Event): void {
   if (!isNaN(val)) changePage(val)
 }
 
+/**
+ * compact 模式的每頁筆數輸入。
+ *
+ * 輸入框上的 min="1" max="1000" 只是瀏覽器提示，使用者仍可打 0、負數或
+ * 極大值送出，所以這裡自己夾在合法範圍內再送出去 —— 不要把壞值丟給使用端。
+ * 切換每頁筆數會改變總頁數，因此一併把頁碼歸零回第 1 頁，
+ * 行為與 full 模式的 updateItemsPerPage 一致。
+ */
 function handlePageSizeInput(event: Event): void {
-  const val = parseInt((event.target as HTMLInputElement).value, 10)
-  if (!isNaN(val)) emit('update:itemsPerPage', val)
+  const input = event.target as HTMLInputElement
+  const val = parseInt(input.value, 10)
+  if (isNaN(val)) {
+    // 清空或打了非數字：把輸入框還原成目前生效的值，不要送出 NaN
+    input.value = String(effectivePageSize.value)
+    return
+  }
+  const size = Math.min(Math.max(val, MIN_PAGE_SIZE), MAX_PAGE_SIZE)
+  // 夾過之後要把畫面上的值同步回來，否則輸入框會停在使用者打的 0
+  if (size !== val) input.value = String(size)
+  if (size === props.itemsPerPage) return
+  emit('update:itemsPerPage', size)
+  if (props.currentPage !== 1) {
+    emit('update:currentPage', 1)
+    emit('change', 1)
+  }
 }
 </script>
 

@@ -53,9 +53,9 @@
 
       <!-- 縮放控制 -->
       <div v-if="showControls" class="absolute bottom-3 right-3 flex gap-1.5 z-10">
-        <button @click="zoomIn" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors" title="放大">+</button>
-        <button @click="zoomOut" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors" title="縮小">−</button>
-        <button @click="resetView" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-sm transition-colors" title="重置視角">⟳</button>
+        <button type="button" @click="zoomIn" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors" title="放大">+</button>
+        <button type="button" @click="zoomOut" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors" title="縮小">−</button>
+        <button type="button" @click="resetView" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-sm transition-colors" title="重置視角">⟳</button>
       </div>
 
       <!-- SVG 畫布 -->

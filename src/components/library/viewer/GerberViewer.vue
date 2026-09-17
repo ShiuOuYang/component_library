@@ -67,7 +67,7 @@
         <div class="text-center p-6">
           <span class="text-4xl mb-3 block">⚠️</span>
           <p class="text-red-400 text-sm font-mono">{{ fatalError }}</p>
-          <button
+          <button type="button"
             @click="reload"
             class="mt-3 inline-flex items-center h-control-sm px-4 bg-red-600 hover:bg-red-500 text-white text-sm rounded transition-colors"
           >重試</button>
@@ -99,7 +99,7 @@
       <!-- 縮放控制 -->
       <div v-if="showControls" class="absolute bottom-3 right-3 flex gap-1.5">
         <!-- D02 移動軌跡切換（hasManualParsedLayers 時才顯示）-->
-        <button
+        <button type="button"
           v-if="hasMovePathSupport"
           @click="showMovePathState = !showMovePathState"
           class="h-8 px-2 text-xs font-mono rounded transition-colors"
@@ -108,17 +108,17 @@
             : 'bg-black/60 hover:bg-black/80 text-gray-400'"
           title="切換 D02 移動軌跡顯示"
         >D02</button>
-        <button
+        <button type="button"
           @click="zoomIn"
           class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors"
           title="放大"
         >+</button>
-        <button
+        <button type="button"
           @click="zoomOut"
           class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors"
           title="縮小"
         >−</button>
-        <button
+        <button type="button"
           @click="resetView"
           class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-sm transition-colors"
           title="重置視角"
