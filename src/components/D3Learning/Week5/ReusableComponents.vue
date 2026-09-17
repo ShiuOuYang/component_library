@@ -274,10 +274,10 @@ watchEffect(() => {
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎨 範例 1：基本使用</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="updateBarData" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <button type="button" @click="updateBarData" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
             更新資料
           </button>
-          <button @click="toggleLabels" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="toggleLabels" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             {{ showLabels1 ? '隱藏' : '顯示' }}標籤
           </button>
         </div>
@@ -331,7 +331,7 @@ watchEffect(() => {
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎨 範例 2：自訂配色</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="randomizeBarData2" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <button type="button" @click="randomizeBarData2" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
             隨機資料
           </button>
         </div>
@@ -572,13 +572,13 @@ watchEffect(() => {
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎨 範例 3：折線圖（時間序列）</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="generateLineData" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <button type="button" @click="generateLineData" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
             重新生成
           </button>
-          <button @click="toggleArea" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="toggleArea" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             {{ showArea3 ? '隱藏' : '顯示' }}面積
           </button>
-          <button @click="toggleDots" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+          <button type="button" @click="toggleDots" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
             {{ showDots3 ? '隱藏' : '顯示' }}資料點
           </button>
         </div>

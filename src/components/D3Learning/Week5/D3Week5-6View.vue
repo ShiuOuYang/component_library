@@ -10,7 +10,7 @@
 
     <!-- Tab 導航 -->
     <div class="flex gap-2 mb-6 border-b border-gray-200">
-      <button
+      <button type="button"
         v-for="tab in tabs"
         :key="tab.id"
         @click="activeTab = tab.id"

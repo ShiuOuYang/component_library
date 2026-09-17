@@ -8,7 +8,7 @@
             <h1 class="text-4xl font-bold text-gray-800 mb-2">Week 3-4: D3 核心邏輯</h1>
             <p class="text-gray-600">掌握 D3.js 的核心概念：Selections、Data Binding、Scales 和 Axes</p>
           </div>
-          <button 
+          <button type="button" 
             @click="$router.push('/d3-learning')"
             class="flex items-center px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow text-gray-700 hover:text-gray-900"
           >
@@ -22,7 +22,7 @@
 
       <!-- 導航標籤 -->
       <div class="mb-6 bg-white rounded-lg shadow p-2 flex gap-2">
-        <button
+        <button type="button"
           v-for="(tab, index) in tabs"
           :key="tab.id"
           @click="activeTab = tab.id"
@@ -72,7 +72,7 @@
 
       <!-- 導航按鈕 -->
       <div class="mt-6 flex justify-between">
-        <button
+        <button type="button"
           @click="previousTab"
           :disabled="activeTab === 'selections'"
           :class="[
@@ -88,7 +88,7 @@
           上一個主題
         </button>
         
-        <button
+        <button type="button"
           @click="nextTab"
           :disabled="activeTab === 'axes'"
           :class="[

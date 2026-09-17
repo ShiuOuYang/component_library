@@ -1,7 +1,7 @@
 <template>
   <div class="inline-block">
     <!-- 匯出按鈕 -->
-    <button
+    <button type="button"
       @click="handleExport"
       :disabled="isExporting || !hasData"
       :class="buttonClasses"

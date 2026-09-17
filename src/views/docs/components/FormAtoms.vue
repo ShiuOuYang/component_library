@@ -20,7 +20,7 @@
 
     <!-- 行動版：頂部錨點橫列 -->
     <div class="flex flex-wrap gap-2 mb-6 lg:hidden">
-      <button
+      <button type="button"
         v-for="c in comps"
         :key="c.id"
         class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors"

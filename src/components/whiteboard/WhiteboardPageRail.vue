@@ -6,7 +6,7 @@
     </div>
 
     <div class="flex-1 overflow-y-auto space-y-2 pr-1">
-      <button
+      <button type="button"
         v-for="(page, index) in pages"
         :key="page.id"
         class="w-full text-left rounded-lg border p-1 transition-shadow hover:shadow"
@@ -24,7 +24,7 @@
         </div>
         <div class="mt-1 flex items-center justify-between px-1">
           <span class="text-xs text-gray-600">第 {{ index + 1 }} 頁</span>
-          <button
+          <button type="button"
             class="text-xs text-red-500 hover:text-red-600"
             @click.stop="$emit('delete-page', index)"
           >
@@ -34,7 +34,7 @@
       </button>
     </div>
 
-    <button
+    <button type="button"
       class="w-full py-2 rounded-lg border border-dashed border-gray-300 text-sm text-gray-700 hover:bg-gray-100"
       @click="$emit('add-page')"
     >

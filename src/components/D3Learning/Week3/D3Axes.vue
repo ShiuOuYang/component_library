@@ -72,16 +72,16 @@ svg.append('g')
       <div class="border-2 border-orange-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-orange-600">🎨 互動範例：四種座標軸方向</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="axisDemo('bottom')" class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
+          <button type="button" @click="axisDemo('bottom')" class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
             axisBottom
           </button>
-          <button @click="axisDemo('left')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="axisDemo('left')" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             axisLeft
           </button>
-          <button @click="axisDemo('top')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <button type="button" @click="axisDemo('top')" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
             axisTop
           </button>
-          <button @click="axisDemo('right')" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+          <button type="button" @click="axisDemo('right')" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
             axisRight
           </button>
         </div>
@@ -179,16 +179,16 @@ svg.append('g')
       <div class="border-2 border-orange-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-orange-600">🎨 互動範例：使用 .call() 自訂樣式</h4>
         <div class="flex flex-wrap gap-2 mb-4">
-          <button @click="styleDemo1" class="px-3 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm">
+          <button type="button" @click="styleDemo1" class="px-3 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm">
             移除軸線
           </button>
-          <button @click="styleDemo2" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+          <button type="button" @click="styleDemo2" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
             延長刻度線（網格）
           </button>
-          <button @click="styleDemo3" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="styleDemo3" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             自訂顏色
           </button>
-          <button @click="resetDemo2" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
+          <button type="button" @click="resetDemo2" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
             重置
           </button>
         </div>
@@ -297,13 +297,13 @@ d3.timeFormat('%H:%M')         // 14:30</code></pre>
           />
         </div>
         <div class="flex gap-4 mb-4">
-          <button @click="formatDemo('percent')" class="px-3 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm">
+          <button type="button" @click="formatDemo('percent')" class="px-3 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 text-sm">
             百分比格式
           </button>
-          <button @click="formatDemo('currency')" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+          <button type="button" @click="formatDemo('currency')" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
             貨幣格式
           </button>
-          <button @click="formatDemo('decimal')" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="formatDemo('decimal')" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             小數格式
           </button>
         </div>
@@ -384,13 +384,13 @@ g.selectAll('.bar')
       <div class="border-2 border-orange-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-orange-600">🎨 互動範例：完整長條圖</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="fullChartDemo" class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
+          <button type="button" @click="fullChartDemo" class="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
             生成圖表
           </button>
-          <button @click="updateChartData" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="updateChartData" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             更新資料
           </button>
-          <button @click="resetDemo4" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetDemo4" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -416,13 +416,13 @@ g.selectAll('.bar')
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎯 練習區域</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="practiceGenerate" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <button type="button" @click="practiceGenerate" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
             生成圖表
           </button>
-          <button @click="practiceUpdate" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="practiceUpdate" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             更新資料
           </button>
-          <button @click="resetPractice" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetPractice" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>

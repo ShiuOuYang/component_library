@@ -10,7 +10,7 @@
         <div class="bg-white rounded-lg shadow-md p-4 sticky top-4">
           <h2 class="text-lg font-semibold mb-4 text-gray-700">課程目錄</h2>
           <nav class="flex flex-col space-y-2">
-            <button 
+            <button type="button" 
               v-for="tab in tabs" 
               :key="tab.id"
               @click="currentTab = tab.id"

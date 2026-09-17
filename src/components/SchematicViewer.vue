@@ -32,11 +32,11 @@
           style="display:none"
           @change="onFileChange"
         />
-        <button class="tb-btn tb-btn--import" @click="fileInputRef.click()">IMPORT</button>
+        <button type="button" class="tb-btn tb-btn--import" @click="fileInputRef.click()">IMPORT</button>
         <div class="divider"></div>
-        <button class="tb-btn" @click="zoomIn">＋</button>
-        <button class="tb-btn" @click="zoomOut">－</button>
-        <button class="tb-btn" @click="zoomFit">FIT</button>
+        <button type="button" class="tb-btn" @click="zoomIn">＋</button>
+        <button type="button" class="tb-btn" @click="zoomOut">－</button>
+        <button type="button" class="tb-btn" @click="zoomFit">FIT</button>
         <span class="zoom-readout">{{ zoomLevel }}%</span>
       </div>
     </header>

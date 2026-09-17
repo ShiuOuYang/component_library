@@ -96,25 +96,25 @@
       <div class="flex items-center gap-10 flex-wrap">
         <div class="flex flex-col items-center gap-2">
           <ChptBadge :count="5">
-            <button class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">🔔</button>
+            <button type="button" class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">🔔</button>
           </ChptBadge>
           <span class="text-xs text-neutral-500">計數</span>
         </div>
         <div class="flex flex-col items-center gap-2">
           <ChptBadge is-dot status="success">
-            <button class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">👤</button>
+            <button type="button" class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">👤</button>
           </ChptBadge>
           <span class="text-xs text-neutral-500">線上圓點</span>
         </div>
         <div class="flex flex-col items-center gap-2">
           <ChptBadge :count="102" :max="99">
-            <button class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">✉️</button>
+            <button type="button" class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">✉️</button>
           </ChptBadge>
           <span class="text-xs text-neutral-500">上限 99+</span>
         </div>
         <div class="flex flex-col items-center gap-2">
           <ChptBadge :count="3" status="primary">
-            <button class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">🛒</button>
+            <button type="button" class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">🛒</button>
           </ChptBadge>
           <span class="text-xs text-neutral-500">自訂狀態色</span>
         </div>

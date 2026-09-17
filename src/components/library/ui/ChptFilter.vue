@@ -58,7 +58,7 @@
         <h3 class="text-xs font-medium text-neutral-800">{{ label || '篩選' }}</h3>
         <div class="flex items-center gap-1">
           <span v-if="arrayValue.length > 0" class="px-1 py-0.5 bg-primary-100 text-primary-800 text-[10px] rounded">{{ arrayValue.length }}</span>
-          <button v-if="showClearAll && arrayValue.length > 0" type="button" aria-label="清空篩選" @click="clearAll" class="w-4 h-4 text-[9px] text-danger-600 hover:bg-danger-50 rounded leading-none">×</button>
+          <button type="button" v-if="showClearAll && arrayValue.length > 0" aria-label="清空篩選" @click="clearAll" class="w-4 h-4 text-[9px] text-danger-600 hover:bg-danger-50 rounded leading-none">×</button>
         </div>
       </div>
     </div>

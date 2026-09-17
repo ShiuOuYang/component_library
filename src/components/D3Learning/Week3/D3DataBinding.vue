@@ -78,13 +78,13 @@ d3.select('svg')
       <div class="border-2 border-blue-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-blue-600">🎨 互動範例：基本資料綁定</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="basicBinding" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="basicBinding" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             綁定資料並繪製
           </button>
-          <button @click="updateData1" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <button type="button" @click="updateData1" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
             更新資料
           </button>
-          <button @click="resetDemo1" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetDemo1" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -161,10 +161,10 @@ circles.attr('fill', (d, i) => {
       <div class="border-2 border-blue-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-blue-600">🎨 互動範例：回調函數參數</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="demoCallback" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="demoCallback" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             使用 d, i 參數
           </button>
-          <button @click="resetDemo2" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetDemo2" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -257,16 +257,16 @@ circles.exit()
       <div class="border-2 border-blue-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-blue-600">🎨 互動範例：Enter-Update-Exit 模式</h4>
         <div class="flex flex-wrap gap-2 mb-4">
-          <button @click="enterDemo" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="enterDemo" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             📥 Enter（新增資料）
           </button>
-          <button @click="updateDemo" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+          <button type="button" @click="updateDemo" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
             🔄 Update（更新資料）
           </button>
-          <button @click="exitDemo" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+          <button type="button" @click="exitDemo" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
             📤 Exit（減少資料）
           </button>
-          <button @click="resetDemo3" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
+          <button type="button" @click="resetDemo3" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
             重置
           </button>
         </div>
@@ -358,19 +358,19 @@ circles.exit().remove();</code></pre>
       <div class="border-2 border-blue-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-blue-600">🎨 互動範例：.join() 實戰</h4>
         <div class="flex flex-wrap gap-2 mb-4">
-          <button @click="joinDemo1" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+          <button type="button" @click="joinDemo1" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
             簡單 join
           </button>
-          <button @click="joinDemo2" class="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
+          <button type="button" @click="joinDemo2" class="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
             自訂 Enter 動畫
           </button>
-          <button @click="joinDemo3" class="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm">
+          <button type="button" @click="joinDemo3" class="px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm">
             完整控制（帶動畫）
           </button>
-          <button @click="randomizeData" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="randomizeData" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             🎲 隨機資料
           </button>
-          <button @click="resetDemo4" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
+          <button type="button" @click="resetDemo4" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
             重置
           </button>
         </div>
@@ -473,10 +473,10 @@ svg.selectAll('circle')
           <div>
             <h5 class="font-semibold text-red-700 mb-2">❌ 沒有 Key Function</h5>
             <div class="flex gap-2 mb-2">
-              <button @click="sortNoKey" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+              <button type="button" @click="sortNoKey" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
                 排序
               </button>
-              <button @click="shuffleNoKey" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+              <button type="button" @click="shuffleNoKey" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
                 打亂
               </button>
             </div>
@@ -485,10 +485,10 @@ svg.selectAll('circle')
           <div>
             <h5 class="font-semibold text-green-700 mb-2">✅ 有 Key Function</h5>
             <div class="flex gap-2 mb-2">
-              <button @click="sortWithKey" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+              <button type="button" @click="sortWithKey" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
                 排序
               </button>
-              <button @click="shuffleWithKey" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+              <button type="button" @click="shuffleWithKey" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
                 打亂
               </button>
             </div>
@@ -602,19 +602,19 @@ rect
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎯 練習區域：動態長條圖</h4>
         <div class="flex flex-wrap gap-2 mb-4">
-          <button @click="practiceAdd" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="practiceAdd" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             ➕ 新增資料
           </button>
-          <button @click="practiceUpdate" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+          <button type="button" @click="practiceUpdate" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
             🔄 隨機更新
           </button>
-          <button @click="practiceRemove" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+          <button type="button" @click="practiceRemove" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
             ➖ 刪除最後一個
           </button>
-          <button @click="practiceSort" class="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
+          <button type="button" @click="practiceSort" class="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
             📊 排序
           </button>
-          <button @click="resetPractice" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
+          <button type="button" @click="resetPractice" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
             重置
           </button>
         </div>

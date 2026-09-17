@@ -15,51 +15,51 @@
         <span class="px-2 text-xs font-semibold text-neutral-600">Excel 編輯器</span>
 
         <!-- 復原 / 重做 -->
-        <button class="tb-btn" :disabled="!canUndo" @mousedown.prevent="undo" title="復原 (Ctrl+Z)">↩</button>
-        <button class="tb-btn" :disabled="!canRedo" @mousedown.prevent="redo" title="重做 (Ctrl+Y)">↪</button>
+        <button type="button" class="tb-btn" :disabled="!canUndo" @mousedown.prevent="undo" title="復原 (Ctrl+Z)">↩</button>
+        <button type="button" class="tb-btn" :disabled="!canRedo" @mousedown.prevent="redo" title="重做 (Ctrl+Y)">↪</button>
 
         <span class="tb-sep"></span>
 
         <!-- 剪下 / 複製 / 貼上 -->
-        <button class="tb-btn" @mousedown.prevent="cutSelection" title="剪下 (Ctrl+X)">✂</button>
-        <button class="tb-btn" @mousedown.prevent="copySelection" title="複製 (Ctrl+C)">⧉</button>
-        <button class="tb-btn" @mousedown.prevent="pasteSelection" title="貼上 (Ctrl+V)">📋</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="cutSelection" title="剪下 (Ctrl+X)">✂</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="copySelection" title="複製 (Ctrl+C)">⧉</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="pasteSelection" title="貼上 (Ctrl+V)">📋</button>
 
         <span class="tb-sep"></span>
 
         <!-- 字型樣式 -->
-        <button class="tb-btn" :class="{ active: activeCellStyle.bold }" @mousedown.prevent="toggleStyle('bold')" title="粗體 (Ctrl+B)"><b>B</b></button>
-        <button class="tb-btn" :class="{ active: activeCellStyle.italic }" @mousedown.prevent="toggleStyle('italic')" title="斜體 (Ctrl+I)"><i>I</i></button>
-        <button class="tb-btn" :class="{ active: activeCellStyle.underline }" @mousedown.prevent="toggleStyle('underline')" title="底線 (Ctrl+U)"><u>U</u></button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.bold }" @mousedown.prevent="toggleStyle('bold')" title="粗體 (Ctrl+B)"><b>B</b></button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.italic }" @mousedown.prevent="toggleStyle('italic')" title="斜體 (Ctrl+I)"><i>I</i></button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.underline }" @mousedown.prevent="toggleStyle('underline')" title="底線 (Ctrl+U)"><u>U</u></button>
 
         <span class="tb-sep"></span>
 
         <!-- 對齊 -->
-        <button class="tb-btn" :class="{ active: activeCellStyle.align === 'left' }" @mousedown.prevent="setAlign('left')" title="靠左">⇤</button>
-        <button class="tb-btn" :class="{ active: activeCellStyle.align === 'center' }" @mousedown.prevent="setAlign('center')" title="置中">⇔</button>
-        <button class="tb-btn" :class="{ active: activeCellStyle.align === 'right' }" @mousedown.prevent="setAlign('right')" title="靠右">⇥</button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.align === 'left' }" @mousedown.prevent="setAlign('left')" title="靠左">⇤</button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.align === 'center' }" @mousedown.prevent="setAlign('center')" title="置中">⇔</button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.align === 'right' }" @mousedown.prevent="setAlign('right')" title="靠右">⇥</button>
 
         <span class="tb-sep"></span>
 
         <!-- 插入列 / 欄 -->
-        <button class="tb-btn" @mousedown.prevent="insertRow" title="上方插入列">↑列</button>
-        <button class="tb-btn" @mousedown.prevent="insertColumn" title="左側插入欄">+欄</button>
-        <button class="tb-btn" @mousedown.prevent="deleteRow" title="刪除列">−列</button>
-        <button class="tb-btn" @mousedown.prevent="deleteColumn" title="刪除欄">−欄</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="insertRow" title="上方插入列">↑列</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="insertColumn" title="左側插入欄">+欄</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="deleteRow" title="刪除列">−列</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="deleteColumn" title="刪除欄">−欄</button>
 
         <span class="tb-sep"></span>
 
         <!-- 合併 / 排序 -->
-        <button class="tb-btn" @mousedown.prevent="toggleMerge" title="合併儲存格">⊞</button>
-        <button class="tb-btn" @mousedown.prevent="sortRange('asc')" title="依選取範圍升冪排序">A↑</button>
-        <button class="tb-btn" @mousedown.prevent="sortRange('desc')" title="依選取範圍降冪排序">A↓</button>
-        <button class="tb-btn" @mousedown.prevent="clearSelection" title="清除選取內容 (Delete)">🗑</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="toggleMerge" title="合併儲存格">⊞</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="sortRange('asc')" title="依選取範圍升冪排序">A↑</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="sortRange('desc')" title="依選取範圍降冪排序">A↓</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="clearSelection" title="清除選取內容 (Delete)">🗑</button>
 
         <span class="tb-sep"></span>
 
         <!-- 凍結窗格 -->
-        <button class="tb-btn" @mousedown.prevent="freezeToActive" title="凍結到目前儲存格左上方">凍結</button>
-        <button class="tb-btn" @mousedown.prevent="unfreezePanes" title="取消凍結">解凍</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="freezeToActive" title="凍結到目前儲存格左上方">凍結</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="unfreezePanes" title="取消凍結">解凍</button>
 
         <span class="tb-sep"></span>
 
@@ -88,7 +88,7 @@
           readonly
         />
         <span class="text-neutral-300">|</span>
-        <button
+        <button type="button"
           class="tb-btn !w-7"
           @click.stop="toggleFxPanel"
           title="插入函式"
@@ -148,10 +148,10 @@
     >
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs font-semibold text-neutral-600">選擇函式</span>
-        <button class="text-xs text-neutral-400 hover:text-neutral-600" @click="showFxPanel = false">✕</button>
+        <button type="button" class="text-xs text-neutral-400 hover:text-neutral-600" @click="showFxPanel = false">✕</button>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-1.5 max-h-40 overflow-auto">
-        <button
+        <button type="button"
           v-for="fn in FUNCTION_LIST"
           :key="fn.name"
           class="text-left px-2 py-1.5 text-xs bg-white border border-neutral-200 rounded hover:border-green-400 hover:bg-green-50 transition-colors"
@@ -239,7 +239,7 @@
 
     <!-- ===== 工作表頁籤 ===== -->
     <div v-if="showSheetTabs" class="flex items-center gap-1 px-2 py-1.5 border-t border-neutral-200 bg-neutral-50 overflow-x-auto">
-      <button class="sheet-add" @click="addSheet" title="新增工作表">＋</button>
+      <button type="button" class="sheet-add" @click="addSheet" title="新增工作表">＋</button>
       <div
         v-for="(sheet, idx) in sheets"
         :key="idx"
@@ -260,7 +260,7 @@
           @blur="confirmRenameSheet(idx)"
         />
         <span v-else class="px-2 py-0.5 rounded">{{ sheet.name }}</span>
-        <button v-if="sheets.length > 1" class="sheet-close" @mousedown.stop @click.stop="removeSheet(idx)" title="刪除工作表">×</button>
+        <button type="button" v-if="sheets.length > 1" class="sheet-close" @mousedown.stop @click.stop="removeSheet(idx)" title="刪除工作表">×</button>
       </div>
     </div>
   </div>

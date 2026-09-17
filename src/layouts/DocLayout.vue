@@ -19,7 +19,7 @@
               <p class="text-xs text-neutral-500">Vue 3 企業級組件</p>
             </div>
           </router-link>
-          <button
+          <button type="button"
             @click="toggleSidebar"
             class="p-2 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors"
             title="收合側邊欄"

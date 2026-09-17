@@ -56,13 +56,13 @@ d3.selectAll('circle')
       <div class="border-2 border-purple-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-purple-600">🎨 互動範例：基本選擇操作</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="demoSelect" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+          <button type="button" @click="demoSelect" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
             d3.select() - 選擇第一個
           </button>
-          <button @click="demoSelectAll" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="demoSelectAll" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             d3.selectAll() - 選擇全部
           </button>
-          <button @click="resetDemo1" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetDemo1" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -152,13 +152,13 @@ d3.select('svg')
       <div class="border-2 border-purple-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-purple-600">🎨 互動範例：方法鏈實戰</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="chainDemo1" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+          <button type="button" @click="chainDemo1" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
             樣式化圓形
           </button>
-          <button @click="chainDemo2" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="chainDemo2" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             添加文字標籤
           </button>
-          <button @click="resetDemo2" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetDemo2" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -418,13 +418,13 @@ console.log(groups.selectAll('circle'));
           <h4 class="font-bold text-lg mb-3 text-indigo-600">🎨 互動範例：_groups 和 _parents 視覺化</h4>
           
           <div class="flex gap-4 mb-4 flex-wrap">
-            <button @click="visualizeStructure" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+            <button type="button" @click="visualizeStructure" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
               視覺化選擇集結構
             </button>
-            <button @click="visualizeSubSelection" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+            <button type="button" @click="visualizeSubSelection" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
               視覺化子選擇結構
             </button>
-            <button @click="resetStructureDemo" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+            <button type="button" @click="resetStructureDemo" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
               重置
             </button>
           </div>
@@ -468,13 +468,13 @@ console.log(groups.selectAll('circle'));
       <div class="border-2 border-purple-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-purple-600">🎨 互動範例：選擇集檢視器</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="inspectSelection" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+          <button type="button" @click="inspectSelection" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
             檢視選擇集
           </button>
-          <button @click="eachDemo" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="eachDemo" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             使用 .each() 添加編號
           </button>
-          <button @click="resetDemo3" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetDemo3" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -724,10 +724,10 @@ d3.selectAll('.practice-rect')
           嘗試與下方的矩形互動：<strong>滑鼠懸停</strong>會變半透明，<strong>點擊</strong>會切換邊框狀態
         </p>
         <div class="flex gap-4 mb-4">
-          <button @click="setupEventDemo" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+          <button type="button" @click="setupEventDemo" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
             啟用互動
           </button>
-          <button @click="resetEventDemo" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetEventDemo" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -760,19 +760,19 @@ d3.selectAll('.practice-rect')
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎯 練習區域</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="practiceTask1" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="practiceTask1" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             任務 1: 漸層色
           </button>
-          <button @click="practiceTask2" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="practiceTask2" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             任務 2: 樣式美化
           </button>
-          <button @click="practiceTask3" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="practiceTask3" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             任務 3: 添加標籤
           </button>
-          <button @click="practiceTask4" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="practiceTask4" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             任務 4: 互動
           </button>
-          <button @click="resetPractice" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
+          <button type="button" @click="resetPractice" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
             重置
           </button>
         </div>

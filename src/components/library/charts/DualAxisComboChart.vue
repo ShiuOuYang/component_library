@@ -37,7 +37,7 @@
     
 
   
-<button
+<button type="button"
   v-if="resetBtnShow && enableBrush && showResetButton"
   @click="handleResetZoom"
   class="

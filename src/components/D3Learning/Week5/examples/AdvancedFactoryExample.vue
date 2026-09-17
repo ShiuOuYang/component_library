@@ -7,7 +7,7 @@
       <section class="mb-12 bg-white rounded-lg shadow-md p-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-gray-800">快速配置：銷售分析</h2>
-          <button 
+          <button type="button" 
             @click="scenario = 'sales'"
             class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
@@ -26,13 +26,13 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-gray-800">構建器模式：自定義配置</h2>
           <div class="flex gap-2">
-            <button 
+            <button type="button" 
               @click="toggleCurveType"
               class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
             >
               曲線類型: {{ curveType }}
             </button>
-            <button 
+            <button type="button" 
               @click="toggleColorScheme"
               class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             >
@@ -52,7 +52,7 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-gray-800">場景切換</h2>
           <div class="flex gap-2">
-            <button 
+            <button type="button" 
               v-for="s in scenarios"
               :key="s.key"
               @click="currentScenario = s.key"
@@ -99,19 +99,19 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold text-gray-800">響應式配置</h2>
           <div class="flex gap-2">
-            <button 
+            <button type="button" 
               @click="chartSize = 'small'"
               :class="sizeButtonClass('small')"
             >
               小
             </button>
-            <button 
+            <button type="button" 
               @click="chartSize = 'medium'"
               :class="sizeButtonClass('medium')"
             >
               中
             </button>
-            <button 
+            <button type="button" 
               @click="chartSize = 'large'"
               :class="sizeButtonClass('large')"
             >

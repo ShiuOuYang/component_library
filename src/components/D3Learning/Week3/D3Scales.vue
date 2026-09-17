@@ -192,13 +192,13 @@ xScale.nice();             // 將 domain 擴展到「好看」的整數</code></
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎨 互動範例：scaleLinear 長條圖</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="linearDemo1" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <button type="button" @click="linearDemo1" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
             生成隨機資料
           </button>
-          <button @click="toggleClamp" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="toggleClamp" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             切換 Clamp: {{ clampEnabled ? 'ON' : 'OFF' }}
           </button>
-          <button @click="resetDemo2" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetDemo2" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -485,13 +485,13 @@ const timeScale = d3.scaleTime()
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎨 互動範例：scaleTime 折線圖</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="timeDemo1" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          <button type="button" @click="timeDemo1" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
             最近 7 天
           </button>
-          <button @click="timeDemo2" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button type="button" @click="timeDemo2" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             最近 30 天
           </button>
-          <button @click="resetDemo4" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
+          <button type="button" @click="resetDemo4" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700">
             重置
           </button>
         </div>
@@ -567,16 +567,16 @@ console.log(autoColor('C'));  // 第三種顏色</code></pre>
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎨 互動範例：scaleOrdinal 分組長條圖</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="ordinalDemo1" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="ordinalDemo1" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             Category10
           </button>
-          <button @click="ordinalDemo2" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+          <button type="button" @click="ordinalDemo2" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
             Set3
           </button>
-          <button @click="ordinalDemo3" class="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
+          <button type="button" @click="ordinalDemo3" class="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm">
             Paired
           </button>
-          <button @click="resetDemo5" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
+          <button type="button" @click="resetDemo5" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
             重置
           </button>
         </div>
@@ -601,16 +601,16 @@ console.log(autoColor('C'));  // 第三種顏色</code></pre>
       <div class="border-2 border-green-200 rounded-lg p-4 mb-4">
         <h4 class="font-bold text-lg mb-3 text-green-600">🎯 練習區域：分組長條圖</h4>
         <div class="flex gap-4 mb-4">
-          <button @click="practiceUpdate1" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
+          <button type="button" @click="practiceUpdate1" class="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm">
             更新資料
           </button>
-          <button @click="practiceAddGroup" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+          <button type="button" @click="practiceAddGroup" class="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
             新增類別
           </button>
-          <button @click="practiceRemoveGroup" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+          <button type="button" @click="practiceRemoveGroup" class="px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
             移除類別
           </button>
-          <button @click="resetPractice" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
+          <button type="button" @click="resetPractice" class="px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm">
             重置
           </button>
         </div>

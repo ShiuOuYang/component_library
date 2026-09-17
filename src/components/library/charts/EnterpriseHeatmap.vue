@@ -54,7 +54,7 @@
     </svg>
 
     <!-- ✅ 重置縮放按鈕 -->
-    <button
+    <button type="button"
   v-if="resetBtnShow && enableBrush"
   @click="handleResetZoom"
   class="
