@@ -58,7 +58,12 @@
         <h3 class="text-xs font-medium text-neutral-800">{{ label || '篩選' }}</h3>
         <div class="flex items-center gap-1">
           <span v-if="arrayValue.length > 0" class="px-1 py-0.5 bg-primary-100 text-primary-800 text-[10px] rounded">{{ arrayValue.length }}</span>
-          <button type="button" v-if="showClearAll && arrayValue.length > 0" aria-label="清空篩選" @click="clearAll" class="w-4 h-4 text-[9px] text-danger-600 hover:bg-danger-50 rounded leading-none">×</button>
+          <!--
+            ⚠️ 原本是 w-4 h-4（16×16），低於 WCAG 2.5.8 的 24×24 最小點擊目標，
+               實際用滑鼠也很難點中。改成 control-xs 的正方形（24×24）。
+               字體從 text-[9px] 提到 text-xs，9px 的 × 在一般螢幕上幾乎看不見。
+          -->
+          <button type="button" v-if="showClearAll && arrayValue.length > 0" aria-label="清空篩選" @click="clearAll" class="inline-flex items-center justify-center h-control-xs min-w-control-xs text-xs text-danger-600 hover:bg-danger-50 rounded leading-none">×</button>
         </div>
       </div>
     </div>

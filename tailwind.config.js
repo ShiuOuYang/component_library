@@ -79,6 +79,16 @@ export default {
       minHeight: Object.fromEntries(
         Object.entries(control).map(([size, g]) => [`control-${size}`, g.height])
       ),
+      /**
+       * 純圖示按鈕（× / ‹ / › 這類沒有文字的）要用
+       * `h-control-xs min-w-control-xs` 做成正方形。
+       *
+       * WCAG 2.5.8 要求的是 24×24，兩個方向都要算 —— 只給高度的話，
+       * 一顆 `h-control-xs px-1` 的 × 只有 24×18，還是點不到。
+       */
+      minWidth: Object.fromEntries(
+        Object.entries(control).map(([size, g]) => [`control-${size}`, g.height])
+      ),
 
       // 語意化 z-index：z-modal / z-tooltip / z-dropdown
       zIndex,
