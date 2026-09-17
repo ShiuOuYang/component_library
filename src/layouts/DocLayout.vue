@@ -112,7 +112,7 @@
 
       <!-- 收合狀態的快捷圖標列表 -->
       <nav v-if="isSidebarCollapsed" class="flex-1 overflow-y-auto px-2 py-3 space-y-2 flex flex-col items-center">
-        <button
+        <button type="button"
           @click="toggleSidebar"
           class="p-2 text-neutral-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
           title="展開側邊欄"

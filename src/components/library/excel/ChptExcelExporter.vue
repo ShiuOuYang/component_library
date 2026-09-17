@@ -85,7 +85,7 @@
         </label>
         <div class="space-y-2 max-h-40 overflow-y-auto border border-neutral-200 rounded-lg p-3 bg-neutral-50">
           <div class="flex items-center justify-between mb-2 pb-2 border-b border-neutral-200">
-            <button
+            <button type="button"
               @click="toggleAllColumns"
               class="text-xs text-green-600 hover:text-green-700 font-medium transition-colors duration-200"
             >
@@ -114,13 +114,13 @@
 
       <template #footer>
         <div class="flex justify-end space-x-3">
-          <button
+          <button type="button"
             @click="showOptionsModal = false"
             class="inline-flex items-center h-control-sm px-4 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 hover:border-neutral-400 transition-all duration-200 shadow-sm"
           >
             取消
           </button>
-          <button
+          <button type="button"
             @click="confirmExport"
             :disabled="exportOptions.selectedColumns.length === 0"
             class="inline-flex items-center h-control-sm px-4 text-sm font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed disabled:border-neutral-300 border border-transparent"

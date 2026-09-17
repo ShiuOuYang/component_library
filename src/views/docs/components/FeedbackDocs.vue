@@ -359,7 +359,7 @@ const tagSample = `<ChptTag label="狀態" color="success" />
 <ChptTag label="可關閉" closable @close="handleClose" />`
 
 const badgeSample = `<ChptBadge :count="5">
-  <button>通知</button>
+  <button type="button">通知</button>
 </ChptBadge>
 
 <ChptBadge is-dot status="success">

@@ -42,21 +42,21 @@
 
         <!-- 控制面板 -->
         <div class="mt-6 flex gap-4">
-          <button 
+          <button type="button" 
             @click="toggleSeries('online')"
             :class="['px-4 py-2 rounded transition-colors', 
               showSeries.online ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700']"
           >
             線上銷售
           </button>
-          <button 
+          <button type="button" 
             @click="toggleSeries('offline')"
             :class="['px-4 py-2 rounded transition-colors',
               showSeries.offline ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-700']"
           >
             實體店銷售
           </button>
-          <button 
+          <button type="button" 
             @click="refreshData"
             class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition-colors"
           >
