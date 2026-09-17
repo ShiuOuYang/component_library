@@ -4,8 +4,9 @@ import { computed, readonly, ref, type ComputedRef, type Ref } from 'vue'
  * useDarkMode（CHPT 主題） - 深色模式的唯一真實來源
  *
  * 在此之前專案有四套互不相通的機制：tailwind.config 沒設 darkMode（落回 media）、
- * 切換鈕往 <body> 加 .dark-mode、元件寫 Tailwind 的 dark: 前綴、style.css 用
- * prefers-color-scheme。結果按下切換鈕時 dark: 一個都不會生效。
+ * 切換鈕往 <body> 加 .dark-mode、元件寫 Tailwind 的 dark: 前綴、舊的
+ * src/style.css（已移除）用 prefers-color-scheme。
+ * 結果按下切換鈕時 dark: 一個都不會生效。
  *
  * 現在統一為 class 策略：
  *   1. tailwind.config.js 設 darkMode: 'class'

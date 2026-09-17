@@ -2,7 +2,7 @@
  * Tailwind Plugin — 將設計令牌注入 :root 成為 CSS 變數
  *
  * 目的：讓 tokens.js 成為唯一真實來源，CSS 變數不再手動維護。
- * 產出的變數名稱與專案原本的 style.css 完全一致（--color-primary-600、
+ * 產出的變數名稱與專案原本的 src/style.css（已移除）完全一致（--color-primary-600、
  * --color-bg-primary、--shadow-sm、--radius-lg …），因此既有元件的
  * scoped CSS 不需要任何修改。
  *
