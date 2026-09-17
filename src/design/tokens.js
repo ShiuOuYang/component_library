@@ -219,6 +219,49 @@ const spacing = {
   24: '6rem',    // 96px
 }
 
+// ===== 控制項幾何（按鈕 / 輸入框 / 下拉等可點擊控制項）=====
+/**
+ * 控制項高度的唯一來源。
+ *
+ * 加這一組的原因：原本沒有任何「一顆按鈕該多高」的基準，於是每個元件各自
+ * 寫 padding（全庫掃出 20 種不同組合），ChptButton 的 sm 只有 24px、
+ * 還有 8px / 10px 這種點不到的尺寸。沒有基準可對齊時，新寫的（含 AI 生成的）
+ * 按鈕只能自己猜，畫面就會參差。
+ *
+ * 每階差 8px，對齊 4px 的排版節奏；全部 ≥ 24px，滿足 WCAG 2.5.8 的
+ * 最小點擊目標（24×24 CSS px）。
+ *
+ * paddingX 與 fontSize 一併定義，才不會出現「高度對了但左右很擠」的組合。
+ */
+const control = {
+  xs: {
+    height: '1.5rem',   // 24px — 密集表格內的行內操作
+    paddingX: '0.5rem', // 8px
+    fontSize: '0.75rem',   // text-xs
+  },
+  sm: {
+    height: '2rem',      // 32px — 工具列預設
+    paddingX: '0.75rem', // 12px
+    fontSize: '0.875rem',  // text-sm
+  },
+  md: {
+    height: '2.5rem',  // 40px — 表單與對話框預設
+    paddingX: '1rem',  // 16px
+    fontSize: '1rem',     // text-base
+  },
+  lg: {
+    height: '3rem',      // 48px — 主要行動鈕
+    paddingX: '1.5rem',  // 24px
+    fontSize: '1.125rem',   // text-lg
+  },
+  // 只有輸入類控制項用得到（ComponentSize 有 xl，按鈕沒有）
+  xl: {
+    height: '3.5rem',    // 56px
+    paddingX: '1.25rem', // 20px
+    fontSize: '1.25rem',    // text-xl
+  },
+}
+
 // ===== 圓角系統 =====
 // 🔧 這些值 100% 等於 Tailwind 預設，保留是為了讓 CSS 變數（--radius-*）可用；
 //    tailwind.config 不再重複宣告。
@@ -344,6 +387,7 @@ export const designTokens = {
   colors,
   viz,
   spacing,
+  control,
   borderRadius,
   shadows,
   typography,
@@ -369,6 +413,7 @@ export {
   darkViz,
   viz,
   spacing,
+  control,
   borderRadius,
   shadows,
   typography,

@@ -1,7 +1,7 @@
 import { designTokens } from './src/design/tokens.js'
 import tokensPlugin from './src/design/tokensPlugin.js'
 
-const { colors, shadows, typography, duration, zIndex } = designTokens
+const { colors, shadows, typography, duration, zIndex, control } = designTokens
 
 /**
  * Tailwind 設定
@@ -65,6 +65,20 @@ export default {
       spacing: {
         4.5: '1.125rem',
       },
+
+      /**
+       * 控制項高度：h-control-xs / sm / md / lg（24 / 32 / 40 / 48px）
+       *
+       * 按鈕、輸入框這類可點擊控制項一律用這組，不要各自寫 py-*。
+       * 理由見 tokens.js 的 control 區塊 —— 沒有共同基準時，每個元件
+       * 都會自己猜一組 padding，畫面就參差了。
+       */
+      height: Object.fromEntries(
+        Object.entries(control).map(([size, g]) => [`control-${size}`, g.height])
+      ),
+      minHeight: Object.fromEntries(
+        Object.entries(control).map(([size, g]) => [`control-${size}`, g.height])
+      ),
 
       // 語意化 z-index：z-modal / z-tooltip / z-dropdown
       zIndex,

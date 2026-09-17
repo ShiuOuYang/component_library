@@ -69,7 +69,7 @@
           <p class="text-red-400 text-sm font-mono">{{ fatalError }}</p>
           <button
             @click="reload"
-            class="mt-3 px-4 py-1.5 bg-red-600 hover:bg-red-500 text-white text-sm rounded transition-colors"
+            class="mt-3 inline-flex items-center h-control-sm px-4 bg-red-600 hover:bg-red-500 text-white text-sm rounded transition-colors"
           >重試</button>
         </div>
       </div>

@@ -83,7 +83,7 @@ function flattenShades(semantic, prefix, target) {
 /** 建立完整的 CSS 變數表 */
 export function buildCssVariables(tokens = designTokens) {
   const vars = {}
-  const { colors, viz, shadows, borderRadius, transitions, typography, zIndex, duration, spacing } = tokens
+  const { colors, viz, shadows, borderRadius, transitions, typography, zIndex, duration, spacing, control } = tokens
 
   // --- 顏色：品牌色階 ---
   flatten(colors.primary, 'color-primary', vars, null)
@@ -125,6 +125,15 @@ export function buildCssVariables(tokens = designTokens) {
 
   // --- 間距 ---
   flatten(spacing, 'spacing', vars)
+
+  // --- 控制項幾何 ---
+  // 產出 --control-height-sm / --control-padding-x-sm / --control-font-size-sm …
+  // 讓手寫 CSS 也對得上 Tailwind 的 h-control-* 工具類
+  Object.entries(control).forEach(([size, geometry]) => {
+    vars[`--control-height-${size}`] = geometry.height
+    vars[`--control-padding-x-${size}`] = geometry.paddingX
+    vars[`--control-font-size-${size}`] = geometry.fontSize
+  })
 
   // --- z-index ---
   flatten(zIndex, 'z', vars)

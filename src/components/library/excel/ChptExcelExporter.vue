@@ -116,14 +116,14 @@
         <div class="flex justify-end space-x-3">
           <button
             @click="showOptionsModal = false"
-            class="px-4 py-2 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 hover:border-neutral-400 transition-all duration-200 shadow-sm"
+            class="inline-flex items-center h-control-sm px-4 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 hover:border-neutral-400 transition-all duration-200 shadow-sm"
           >
             取消
           </button>
           <button
             @click="confirmExport"
             :disabled="exportOptions.selectedColumns.length === 0"
-            class="px-4 py-2 text-sm font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed disabled:border-neutral-300 border border-transparent"
+            class="inline-flex items-center h-control-sm px-4 text-sm font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed disabled:border-neutral-300 border border-transparent"
           >
             確認匯出
           </button>
@@ -209,11 +209,19 @@ const emit = defineEmits<{
 const isExporting = ref(false)
 const showOptionsModal = ref(false)
 
+/**
+ * 尺寸對應的幾何，高度一律取自 design tokens 的 control
+ * （xs 24 / sm 32 / md 40 / lg 48px），與 ChptButton 及其他控制項一致。
+ *
+ * 原本是自己寫一組 padding（py-1.5 + text-xs 只有 28px），全庫掃出 20 種
+ * 不同組合，並排時高度對不齊 —— 這就是畫面看起來參差的來源。
+ * 高度改由 h-control-* 決定，文字靠 flex 置中，因此不需要 py-*。
+ */
 const sizeClasses: Record<ExporterSize, string> = {
-  xs: 'px-2 py-1 text-xs rounded',
-  sm: 'px-3 py-1.5 text-xs rounded-md',
-  md: 'px-4 py-2 text-sm rounded-lg',
-  lg: 'px-6 py-3 text-base rounded-lg',
+  xs: 'h-control-xs px-2 text-xs rounded',
+  sm: 'h-control-sm px-3 text-sm rounded-md',
+  md: 'h-control-md px-4 text-base rounded-lg',
+  lg: 'h-control-lg px-6 text-lg rounded-lg',
 }
 
 const iconSizes: Record<ExporterSize, string> = {
