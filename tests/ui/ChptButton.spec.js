@@ -67,7 +67,52 @@ describe('ChptButton', () => {
     const classes = wrapper.find('button').classes()
 
     expect(classes.some((c) => c.includes('primary'))).toBe(true)
-    expect(classes).toContain('h-10') // md 的高度
+    expect(classes).toContain('h-control-md') // md 的高度
+  })
+
+  /**
+   * 尺寸階梯來自 design tokens 的 control（24 / 32 / 40 / 48px）。
+   *
+   * 這組測試是為了擋住舊狀況再回來：原本 sm 只有 24px（全庫 47 處在用，
+   * 畫面因此顯得很矮），另外還有 3xs=8px、2xs=10px 這種點不到、
+   * 也不符合 WCAG 2.5.8 最小點擊目標（24×24）的尺寸。
+   */
+  describe('尺寸階梯', () => {
+    it('每個尺寸都對映到 control 高度，不自己寫 h-*', () => {
+      const expected = {
+        xs: 'h-control-xs',
+        sm: 'h-control-sm',
+        md: 'h-control-md',
+        lg: 'h-control-lg',
+      }
+      for (const [size, heightClass] of Object.entries(expected)) {
+        const wrapper = mount(ChptButton, { props: { size, label: 'x' } })
+        expect(wrapper.find('button').classes()).toContain(heightClass)
+        wrapper.unmount()
+      }
+    })
+
+    it('過時的 3xs / 2xs 對映到 xs，不再產生 8px / 10px 的按鈕', () => {
+      for (const size of ['3xs', '2xs']) {
+        const wrapper = mount(ChptButton, { props: { size, label: 'x' } })
+        const classes = wrapper.find('button').classes()
+
+        expect(classes).toContain('h-control-xs')
+        // 舊實作留下的寫死高度不該再出現
+        expect(classes.some((c) => /^h-\[\d+px\]$/.test(c))).toBe(false)
+        wrapper.unmount()
+      }
+    })
+
+    it('高度由 h-control-* 決定，不再靠 py-* 撐開', () => {
+      for (const size of ['xs', 'sm', 'md', 'lg']) {
+        const wrapper = mount(ChptButton, { props: { size, label: 'x' } })
+        const classes = wrapper.find('button').classes()
+
+        expect(classes.some((c) => c.startsWith('py-'))).toBe(false)
+        wrapper.unmount()
+      }
+    })
   })
 
   it('badge 的計時器在卸載時被清除', () => {

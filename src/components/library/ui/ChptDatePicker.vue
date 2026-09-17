@@ -139,34 +139,42 @@ function handleUpdate(value: ChptDatePickerValue): void {
   cursor: not-allowed;
 }
 
+/*
+ * 尺寸沿用 design tokens 的 control 變數，與按鈕 / 輸入框同一套
+ * （24 / 32 / 40 / 48 / 56px）。
+ *
+ * ⚠️ 原本是寫死的 22 / 28 / 36 / 44 / 52px —— 全庫第三套高度標準，
+ *    與按鈕差 2~4px，並排時看得出來。
+ *    垂直 padding 設 0：高度已由 height 決定，dp__input 自己會置中文字。
+ */
 .chpt-date-picker--xs :deep(.dp__input) {
-  height: 22px;
-  font-size: 0.75rem;
-  padding: 0.125rem 0.5rem;
+  height: var(--control-height-xs);
+  font-size: var(--control-font-size-xs);
+  padding: 0 var(--control-padding-x-xs);
 }
 
 .chpt-date-picker--sm :deep(.dp__input) {
-  height: 28px;
-  font-size: 0.875rem;
-  padding: 0.25rem 0.5rem;
+  height: var(--control-height-sm);
+  font-size: var(--control-font-size-sm);
+  padding: 0 var(--control-padding-x-sm);
 }
 
 .chpt-date-picker--md :deep(.dp__input) {
-  height: 36px;
-  font-size: 1rem;
-  padding: 0.375rem 0.75rem;
+  height: var(--control-height-md);
+  font-size: var(--control-font-size-md);
+  padding: 0 var(--control-padding-x-md);
 }
 
 .chpt-date-picker--lg :deep(.dp__input) {
-  height: 44px;
-  font-size: 1.125rem;
-  padding: 0.5rem 1rem;
+  height: var(--control-height-lg);
+  font-size: var(--control-font-size-lg);
+  padding: 0 var(--control-padding-x-lg);
 }
 
 .chpt-date-picker--xl :deep(.dp__input) {
-  height: 52px;
-  font-size: 1.25rem;
-  padding: 0.5rem 1rem;
+  height: var(--control-height-xl);
+  font-size: var(--control-font-size-xl);
+  padding: 0 var(--control-padding-x-xl);
 }
 
 .chpt-date-picker :deep(.dp__theme_light) {

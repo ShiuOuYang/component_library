@@ -127,6 +127,44 @@ selection.transition().duration(duration.chartUpdate)
 - **不要**在 Tailwind config 重複宣告與預設值相同的東西（`neutral`、`emerald`、`green`、`borderRadius`）。
 - **不要**用 `@layer utilities` 定義與 Tailwind 內建同名的 class。
 - SVG 元素不能用 Tailwind class（JIT 掃不到動態產生的元素），一律寫在 `<style scoped>` 搭配 `:deep()`。
+- **按鈕與輸入框的高度不要用 `py-*` 撐**，一律用 `h-control-*`（見下節）。
+
+## 控制項高度（按鈕 / 輸入框 / 下拉）
+
+所有可點擊控制項共用一組高度，定義在 `src/design/tokens.js` 的 `control`：
+
+| 尺寸 | 高度 | 左右內距 | 字級 | 用途 |
+|---|---|---|---|---|
+| `xs` | 24px | 8px | `text-xs` | 密集表格內的行內操作 |
+| `sm` | 32px | 12px | `text-sm` | 工具列預設 |
+| `md` | 40px | 16px | `text-base` | 表單與對話框預設 |
+| `lg` | 48px | 24px | `text-lg` | 主要行動鈕 |
+| `xl` | 56px | 20px | `text-xl` | 僅輸入類控制項 |
+
+每階差 8px，全部 ≥ 24px（WCAG 2.5.8 最小點擊目標）。
+
+**寫法**：
+
+```html
+<!-- ✅ 高度用 h-control-*，文字靠 flex 置中 -->
+<button class="inline-flex items-center h-control-sm px-3 text-sm rounded-md">
+  匯出
+</button>
+
+<!-- ❌ 不要用 py-* 自己算高度：全庫曾因此長出 20 種不同組合，
+     並排時高度差 2~8px，畫面看起來參差 -->
+<button class="px-3 py-1.5 text-xs rounded-md">匯出</button>
+```
+
+手寫 CSS 時用對應的變數：`var(--control-height-sm)`、
+`var(--control-padding-x-sm)`、`var(--control-font-size-sm)`。
+
+過渡期的全域 class 也已對齊：`.btn`（= sm）、`.btn-xs` / `.btn-md` / `.btn-lg`、
+`.input`（= sm）。
+
+> 為什麼要有這組 token：原本沒有「一顆按鈕該多高」的基準，每個元件各自寫
+> padding，`ChptButton` 的 `sm` 只有 24px（全庫 47 處在用），還有 8px / 10px
+> 這種點不到的尺寸。沒有基準可對齊時，新寫的（含 AI 生成的）按鈕只能自己猜。
 
 ## z-index 層級（已修正衝突）
 

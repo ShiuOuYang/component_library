@@ -97,7 +97,9 @@ describe('ChptExcelUploader', () => {
       const wrapper = await mountUploader({ size: 'md', variant: 'solid-blue' })
 
       const classes = wrapper.find('label').classes().join(' ')
-      expect(classes).toContain('text-sm') // size=md
+      // 高度取自 control token（md = 40px），與 ChptButton 同一套
+      expect(classes).toContain('h-control-md')
+      expect(classes).toContain('text-base') // size=md
       expect(classes).toContain('bg-blue-600') // variant=solid-blue
       wrapper.unmount()
     })

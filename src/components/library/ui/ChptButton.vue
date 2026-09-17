@@ -54,7 +54,10 @@ interface ChptButtonProps {
   iconColor?: string
   /** 顏色 */
   color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning'
-  /** 尺寸 */
+  /**
+   * 尺寸（高度 24 / 32 / 40 / 48px，見 tokens.js 的 control）。
+   * `3xs` 與 `2xs` 已過時：原本只有 8px / 10px，點不到，現與 `xs` 等同。
+   */
   size?: '3xs' | '2xs' | 'xs' | 'sm' | 'md' | 'lg'
   /** 圓角 */
   rounded?: 'sm' | 'md' | 'lg' | 'full'
@@ -101,17 +104,28 @@ const emit = defineEmits<{
 }>()
 
 /** 尺寸對應 class */
-const sizeClass = computed(() => {
-  const map: Record<string, string> = {
-    '3xs': 'px-0.5 py-0 text-[6px] h-[8px] leading-none min-w-[12px]',
-    '2xs': 'px-1 py-0 text-[8px] h-[10px] leading-none min-w-[16px]',
-    xs: 'px-1.5 py-0 text-[10px] h-4 leading-tight',
-    sm: 'px-2 py-0.5 text-xs h-6',
-    md: 'px-4 py-2 text-base h-10',
-    lg: 'px-6 py-3 text-lg h-12',
-  }
-  return map[props.size] ?? map.md
-})
+/**
+ * 尺寸對應的幾何，全部來自 design tokens 的 control（24 / 32 / 40 / 48px）。
+ *
+ * 高度用 h-control-*（固定高），工具列上並排的按鈕才會對齊；文字靠
+ * base class 的 inline-flex + items-center 垂直居中，所以不需要 py-*。
+ *
+ * ⚠️ 原本這裡是各自寫死的 padding，sm 只有 24px（全庫 47 處在用，
+ *    就是「按鈕都很矮」的來源），另外還有 3xs=8px、2xs=10px、xs=16px ——
+ *    8px 高的按鈕點不到，也低於 WCAG 2.5.8 的 24×24 最小點擊目標。
+ *    現在 3xs / 2xs 一律對映到 xs（24px），保留這兩個值只為不讓既有
+ *    呼叫端直接壞掉。
+ */
+const SIZE_CLASS: Record<NonNullable<ChptButtonProps['size']>, string> = {
+  '3xs': 'h-control-xs px-2 text-xs',
+  '2xs': 'h-control-xs px-2 text-xs',
+  xs: 'h-control-xs px-2 text-xs',
+  sm: 'h-control-sm px-3 text-sm',
+  md: 'h-control-md px-4 text-base',
+  lg: 'h-control-lg px-6 text-lg',
+}
+
+const sizeClass = computed(() => SIZE_CLASS[props.size] ?? SIZE_CLASS.md)
 
 /** 圓角對應 class */
 const roundedClass = computed(() => {

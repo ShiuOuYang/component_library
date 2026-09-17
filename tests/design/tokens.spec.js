@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { colors, darkColors, darkViz, designTokens, darkTokens, viz } from '@/design/tokens'
+import { colors, control, darkColors, darkViz, designTokens, darkTokens, viz } from '@/design/tokens'
 import { buildCssVariables, buildDarkCssVariables } from '@/design/tokensPlugin'
 
 describe('設計令牌', () => {
@@ -101,5 +101,59 @@ describe('tokensPlugin 產出的 CSS 變數', () => {
     // DEFAULT 若對應成某個數字階會反過來蓋掉它
     expect(light['--color-primary-500']).toBe(colors.primary[500])
     expect(light['--color-primary']).toBe(colors.primary.DEFAULT)
+  })
+})
+
+/**
+ * 控制項幾何
+ *
+ * 加這組 token 的起因：原本沒有「一顆按鈕該多高」的基準，每個元件各自寫
+ * padding（全庫 20 種組合），ChptButton 的 sm 只有 24px、還有 8px / 10px
+ * 這種點不到的尺寸。這些測試把階梯釘住，避免又各自漂移。
+ */
+describe('control：控制項幾何', () => {
+  const EXPECTED_HEIGHT_PX = { xs: 24, sm: 32, md: 40, lg: 48, xl: 56 }
+  const cssVars = buildCssVariables()
+  const darkVars = buildDarkCssVariables()
+
+  it('高度就是約定的 24 / 32 / 40 / 48 / 56px', () => {
+    for (const [size, px] of Object.entries(EXPECTED_HEIGHT_PX)) {
+      expect(parseFloat(control[size].height) * 16).toBe(px)
+    }
+  })
+
+  it('每階差 8px，對齊 4px 的排版節奏', () => {
+    const heights = Object.values(EXPECTED_HEIGHT_PX)
+    for (let i = 1; i < heights.length; i++) {
+      expect(heights[i] - heights[i - 1]).toBe(8)
+    }
+  })
+
+  it('全部 ≥ 24px，滿足 WCAG 2.5.8 的最小點擊目標', () => {
+    for (const size of Object.keys(control)) {
+      expect(parseFloat(control[size].height) * 16).toBeGreaterThanOrEqual(24)
+    }
+  })
+
+  it('每個尺寸都同時定義高度、左右內距與字級', () => {
+    for (const size of Object.keys(control)) {
+      expect(control[size]).toHaveProperty('height')
+      expect(control[size]).toHaveProperty('paddingX')
+      expect(control[size]).toHaveProperty('fontSize')
+    }
+  })
+
+  it('CSS 變數都有產出，手寫 CSS 才對得上 Tailwind 的 h-control-*', () => {
+    for (const size of Object.keys(control)) {
+      expect(cssVars[`--control-height-${size}`]).toBe(control[size].height)
+      expect(cssVars[`--control-padding-x-${size}`]).toBe(control[size].paddingX)
+      expect(cssVars[`--control-font-size-${size}`]).toBe(control[size].fontSize)
+    }
+  })
+
+  it('控制項高度不隨主題翻轉（深色版不該覆寫它）', () => {
+    for (const size of Object.keys(control)) {
+      expect(darkVars[`--control-height-${size}`]).toBeUndefined()
+    }
   })
 })

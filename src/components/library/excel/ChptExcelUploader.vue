@@ -110,9 +110,17 @@ const fileName = ref('')
 const loading = ref(false)
 const id = computed(() => props.inputId)
 
+/**
+ * 尺寸對應的幾何，高度一律取自 design tokens 的 control
+ * （xs 24 / sm 32 / md 40 / lg 48px），與 ChptButton 及其他控制項一致。
+ *
+ * 原本是自己寫一組 padding（py-1.5 + text-xs 只有 28px），全庫掃出 20 種
+ * 不同組合，並排時高度對不齊 —— 這就是畫面看起來參差的來源。
+ * 高度改由 h-control-* 決定，文字靠 flex 置中，因此不需要 py-*。
+ */
 const sizeClasses: Record<UploaderSize, string> = {
-  sm: 'px-3 py-1.5 text-xs rounded-md',
-  md: 'px-4 py-2 text-sm rounded-lg',
+  sm: 'h-control-sm px-3 text-sm rounded-md',
+  md: 'h-control-md px-4 text-base rounded-lg',
 }
 
 const iconValues: Record<UploaderSize, string> = {

@@ -112,13 +112,21 @@ const id = useId()
 const errorId = `${id}-error`
 
 /** 尺寸對應 class */
+/**
+ * 尺寸對應的幾何，高度取自 design tokens 的 control
+ * （xs 24 / sm 32 / md 40 / lg 48 / xl 56px），與按鈕同一套。
+ *
+ * ⚠️ 原本靠 py-* 撐高度，算出來是 22 / 30 / 38 / 46px —— 比同尺寸的按鈕
+ *    各矮 2px。工具列上輸入框與按鈕並排時，就是這 2px 讓整列看起來沒對齊。
+ *    改用 h-control-* 後兩者完全一致（Tailwind 的 border-box 已把邊框算進去）。
+ */
 const sizeClass = computed(() => {
   const map: Record<ComponentSize, string> = {
-    xs: 'text-xs py-0.5 px-2',
-    sm: 'text-sm py-1 px-2',
-    md: 'text-base py-1.5 px-3',
-    lg: 'text-lg py-2 px-4',
-    xl: 'text-xl py-2.5 px-5',
+    xs: 'text-xs h-control-xs px-2',
+    sm: 'text-sm h-control-sm px-3',
+    md: 'text-base h-control-md px-4',
+    lg: 'text-lg h-control-lg px-6',
+    xl: 'text-xl h-control-xl px-5',
   }
   return map[props.size]
 })

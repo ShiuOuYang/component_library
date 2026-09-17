@@ -167,7 +167,9 @@ describe('ChptExcelExporter', () => {
       const button = wrapper.find('button')
 
       expect(button.text()).toContain('下載報表')
-      expect(button.classes().join(' ')).toContain('text-base') // size=lg
+      // 高度取自 control token（lg = 48px），與 ChptButton 同一套
+      expect(button.classes()).toContain('h-control-lg')
+      expect(button.classes().join(' ')).toContain('text-lg') // size=lg
       expect(button.classes().join(' ')).toContain('bg-blue-600') // variant=blue
       expect(button.classes()).toContain('my-extra')
       wrapper.unmount()
