@@ -15,7 +15,7 @@
         <div
           v-for="toast in toasts"
           :key="toast.id"
-          class="pointer-events-auto flex items-center gap-3 rounded-lg shadow-lg px-4 py-3 border bg-white"
+          class="pointer-events-auto flex items-center gap-3 rounded-lg shadow-lg px-4 py-3 border bg-surface-primary"
           :class="borderColor(toast.type)"
           :role="toast.type === 'danger' ? 'alert' : 'status'"
           :aria-live="toast.type === 'danger' ? 'assertive' : 'polite'"
@@ -26,11 +26,11 @@
 
           <!-- 訊息本體：原本整個元件從未渲染 toast.content，
                提示只會顯示一個圖示和關閉鈕，使用者看不到任何文字 -->
-          <span class="text-sm text-neutral-700 whitespace-pre-line">{{ toast.content }}</span>
+          <span class="text-sm text-content-primary whitespace-pre-line">{{ toast.content }}</span>
 
           <button
             type="button"
-            class="flex items-center text-neutral-400 hover:text-neutral-600 transition-colors"
+            class="flex items-center text-content-disabled hover:text-content-secondary transition-colors"
             aria-label="關閉提示"
             @click="remove(toast.id)"
           >

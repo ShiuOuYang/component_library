@@ -97,11 +97,11 @@ const sizeClass = computed(() => {
 const colorClass = computed(() => {
   if (props.color) return props.color
   const map: Record<BadgeStatus, string> = {
-    primary: 'bg-primary-500',
-    success: 'bg-success-500',
-    warning: 'bg-warning-500',
-    danger: 'bg-danger-500',
-    info: 'bg-info-500',
+    primary: 'bg-accent-solid',
+    success: 'bg-success-solid',
+    warning: 'bg-warning-solid',
+    danger: 'bg-danger-solid',
+    info: 'bg-info-solid',
     dark: 'bg-neutral-700',
   }
   return map[props.status] ?? map.danger

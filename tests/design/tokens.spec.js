@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { colors, control, darkColors, darkViz, designTokens, darkTokens, viz } from '@/design/tokens'
-import { buildCssVariables, buildDarkCssVariables } from '@/design/tokensPlugin'
+import { colors, control, darkColors, darkViz, designTokens, darkTokens, themed, viz } from '@/design/tokens'
+import {
+  buildCssVariables,
+  buildDarkCssVariables,
+  buildThemedChannelVariables,
+  hexToChannels,
+} from '@/design/tokensPlugin'
 
 describe('設計令牌', () => {
   it('品牌主色是藍（600 = #2563EB）', () => {
@@ -171,5 +176,147 @@ describe('control：控制項幾何', () => {
       expect(minHeight[`control-${size}`]).toBe(control[size].height)
       expect(minWidth[`control-${size}`]).toBe(control[size].height)
     }
+  })
+})
+
+/**
+ * 主題化角色（themed）
+ *
+ * 這組測試存在的理由，是深色模式原本「看起來有做，其實完全沒生效」：
+ * tokensPlugin 有把 darkColors 產到 .dark，但 tailwind.config 的語意別名
+ * 指向的是淺色十六進位常數，所以 bg-surface-primary 編出來是寫死的白色。
+ * 整份 CSS 裡真正讀 var(--color-text-primary) 的規則只有 1 條。
+ *
+ * 下面每一條都是針對「會讓深色模式再次默默失效」的具體失敗模式。
+ */
+describe('themed：主題化角色', () => {
+  const light = buildThemedChannelVariables('light')
+  const dark = buildThemedChannelVariables('dark')
+
+  it('每個角色都同時定義 light 與 dark', () => {
+    for (const [role, value] of Object.entries(themed)) {
+      expect(value, role).toHaveProperty('light')
+      expect(value, role).toHaveProperty('dark')
+    }
+  })
+
+  it('所有值都是 6 位十六進位（通道轉換的前提）', () => {
+    for (const [role, value] of Object.entries(themed)) {
+      expect(value.light, `${role}.light`).toMatch(/^#[0-9A-Fa-f]{6}$/)
+      expect(value.dark, `${role}.dark`).toMatch(/^#[0-9A-Fa-f]{6}$/)
+    }
+  })
+
+  it('hexToChannels 產出空白分隔的 RGB 通道值', () => {
+    expect(hexToChannels('#171717')).toBe('23 23 23')
+    expect(hexToChannels('#FFFFFF')).toBe('255 255 255')
+    expect(hexToChannels('#60A5FA')).toBe('96 165 250')
+  })
+
+  it('hexToChannels 拒絕非十六進位，不要靜靜產出壞值', () => {
+    expect(() => hexToChannels('rgb(0,0,0)')).toThrow()
+    expect(() => hexToChannels('#FFF')).toThrow()
+  })
+
+  /**
+   * ⚠️ 必須存通道值而不是十六進位：透明度修飾會編成
+   *    rgb(var(--x) / 0.8)，而 rgb() 不吃十六進位，整條規則會被丟掉。
+   *    全庫有 39 處在用 bg-white/80、bg-black/60 這類寫法。
+   */
+  it('產出的是通道值而非十六進位', () => {
+    for (const [name, value] of Object.entries(light)) {
+      expect(value, name).toMatch(/^\d{1,3} \d{1,3} \d{1,3}$/)
+    }
+  })
+
+  it('兩個主題都產出同一組變數名', () => {
+    expect(Object.keys(dark).sort()).toEqual(Object.keys(light).sort())
+  })
+
+  it('背景與文字在深色下真的不同（不是抄同一份）', () => {
+    expect(light['--t-surface-primary']).toBe('255 255 255')
+    expect(dark['--t-surface-primary']).toBe('23 23 23')
+    expect(light['--t-content-primary']).toBe('23 23 23')
+    expect(dark['--t-content-primary']).toBe('245 245 245')
+  })
+
+  it('品牌前景在深色底往較亮的階移', () => {
+    // 淺色 primary-700 → 深色 primary-400
+    expect(themed.accent.light).toBe('#1D4ED8')
+    expect(themed.accent.dark).toBe('#60A5FA')
+  })
+
+  /**
+   * ⚠️ 實心底不能隨主題變亮 —— 上面配的是白字，
+   *    底色一亮白字就不夠對比。這與 accent（前景）刻意不同。
+   */
+  it('實心底在兩個主題維持同一個深色階', () => {
+    for (const role of ['accent-solid', 'success-solid', 'warning-solid', 'danger-solid', 'info-solid']) {
+      expect(themed[role].light, role).toBe(themed[role].dark)
+    }
+  })
+
+  it('實心底上的文字兩個主題都是白色', () => {
+    expect(themed['content-on-solid'].light).toBe('#FFFFFF')
+    expect(themed['content-on-solid'].dark).toBe('#FFFFFF')
+  })
+
+  /**
+   * ⚠️ 這是遷移過程中真的踩到的坑：第一版把 bg-primary-50 與
+   *    bg-primary-100 都對映到 accent-subtle，於是
+   *    `bg-accent-subtle hover:bg-accent-subtle` —— hover 完全沒有效果。
+   */
+  it('淡底的 hover 狀態與底色不同值', () => {
+    for (const t of ['accent', 'success', 'warning', 'danger', 'info']) {
+      expect(themed[`${t}-subtle-hover`].light, t).not.toBe(themed[`${t}-subtle`].light)
+      expect(themed[`${t}-subtle-hover`].dark, t).not.toBe(themed[`${t}-subtle`].dark)
+    }
+  })
+
+  it('淡底在深色下是深的（否則深色模式會出現大片亮色塊）', () => {
+    for (const t of ['accent', 'success', 'warning', 'danger', 'info']) {
+      const [r, g, b] = hexToChannels(themed[`${t}-subtle`].dark).split(' ').map(Number)
+      // 深色淡底的亮度應明顯低於淺色版
+      expect((r + g + b) / 3, `${t}-subtle.dark`).toBeLessThan(120)
+    }
+  })
+})
+
+describe('tailwind.config：語意 class 必須指向變數', () => {
+  it('主題化角色編成 rgb(var(--t-*) / <alpha-value>)', async () => {
+    const { default: config } = await import('../../tailwind.config.js')
+    const c = config.theme.extend.colors
+
+    expect(c.surface.primary).toBe('rgb(var(--t-surface-primary) / <alpha-value>)')
+    expect(c.content.primary).toBe('rgb(var(--t-content-primary) / <alpha-value>)')
+    expect(c.stroke.focus).toBe('rgb(var(--t-stroke-focus) / <alpha-value>)')
+    expect(c.accent.DEFAULT).toBe('rgb(var(--t-accent) / <alpha-value>)')
+    expect(c.accent['on-subtle']).toBe('rgb(var(--t-accent-on-subtle) / <alpha-value>)')
+  })
+
+  /**
+   * ⚠️ 命名規則：有數字的色階固定不變。
+   *    合併時如果直接 `...themedColors()` 展開，會把 success 的 50~900
+   *    整組蓋掉 —— 全庫 349 處 bg-success-500 之類的寫法會一起壞掉。
+   */
+  it('帶數字的色階仍是固定色碼，沒有被主題化角色蓋掉', async () => {
+    const { default: config } = await import('../../tailwind.config.js')
+    const c = config.theme.extend.colors
+
+    expect(c.primary[600]).toBe('#2563EB')
+    expect(c.success[500]).toBe('#22C55E')
+    expect(c.danger[500]).toBe('#EF4444')
+    // 完整色階都還在
+    for (const step of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]) {
+      expect(c.success[step], `success.${step}`).toMatch(/^#[0-9A-Fa-f]{6}$/)
+    }
+  })
+
+  it('主題化角色不會覆蓋掉 DEFAULT 以外的數字階', async () => {
+    const { default: config } = await import('../../tailwind.config.js')
+    const c = config.theme.extend.colors
+    // DEFAULT 是主題化的，數字階不是
+    expect(c.success.DEFAULT).toContain('var(--t-success)')
+    expect(c.success[600]).not.toContain('var(')
   })
 })

@@ -28,7 +28,7 @@
     </svg>
     <span
       v-if="props.text"
-      :class="['text-neutral-500', textSizeClass]"
+      :class="['text-content-tertiary', textSizeClass]"
     >
       {{ props.text }}
     </span>

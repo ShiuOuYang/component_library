@@ -46,7 +46,7 @@ const props = withDefaults(defineProps<ChptSkeletonProps>(), {
   rows: 3,
   rowWidth: 100,
   rowHeight: 16,
-  color: 'bg-neutral-200',
+  color: 'bg-surface-tertiary',
   fullWidth: false,
 })
 

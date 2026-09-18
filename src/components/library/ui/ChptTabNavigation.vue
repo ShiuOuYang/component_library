@@ -2,7 +2,7 @@
   <div class="relative inline-block">
     <!-- 標籤頁導航 -->
     <div
-      class="flex items-center p-1.5 bg-neutral-100/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-xl border border-neutral-200/50 dark:border-neutral-700/50 shadow-inner"
+      class="flex items-center p-1.5 bg-surface-tertiary/80 dark:bg-neutral-800/80 backdrop-blur-sm rounded-xl border border-stroke-light/50 dark:border-neutral-700/50 shadow-inner"
       role="tablist"
     >
       <component
@@ -16,8 +16,8 @@
         :class="[
           props.fontSize,
           isActive(tab.path)
-            ? 'bg-white dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.1)] ring-1 ring-black/5 dark:ring-white/10 transform scale-[1.02]'
-            : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-white/40 dark:hover:bg-neutral-900/40'
+            ? 'bg-surface-primary dark:bg-neutral-900 text-content-primary dark:text-neutral-100 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.1)] ring-1 ring-black/5 dark:ring-surface-primary/10 transform scale-[1.02]'
+            : 'text-content-tertiary dark:text-content-disabled hover:text-content-primary dark:hover:text-neutral-200 hover:bg-surface-primary/40 dark:hover:bg-neutral-900/40'
         ]"
         @click="handleSelect(tab)"
       >

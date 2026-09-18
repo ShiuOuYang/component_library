@@ -26,7 +26,7 @@
 // 🔧 專案 package.json 是 "type": "module"，ESM 解析需要完整副檔名，
 //    寫成 'tailwindcss/plugin' 會 ERR_MODULE_NOT_FOUND
 import plugin from 'tailwindcss/plugin.js'
-import { designTokens, darkTokens } from './tokens.js'
+import { designTokens, darkTokens, themed } from './tokens.js'
 
 /** kebab-case 轉換：successHover → success-hover */
 const toKebab = (str) => str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
@@ -78,6 +78,38 @@ function flattenShades(semantic, prefix, target) {
       }
     })
   })
+}
+
+/**
+ * #RRGGBB → "R G B"（空白分隔的通道值）
+ *
+ * ⚠️ 為什麼不能直接把十六進位塞進變數給 Tailwind 用：
+ *    Tailwind 的透明度修飾（bg-surface-primary/80）會編成
+ *        rgb(var(--x) / 0.8)
+ *    而 rgb() 不吃十六進位，`rgb(#FFFFFF / 0.8)` 是無效值、整條規則會被丟掉。
+ *    全庫有 39 處在用 bg-white/80、bg-black/60 這類寫法，所以必須存通道值。
+ *
+ *    十六進位版本（--color-bg-primary）仍然保留 —— styles/components.css
+ *    的 .btn / .input / .card 有 19 處在用，那些是直接寫在 CSS 裡、不經過
+ *    Tailwind，吃十六進位沒問題。
+ */
+export function hexToChannels(hex) {
+  const m = /^#([0-9a-f]{6})$/i.exec(String(hex).trim())
+  if (!m) throw new Error(`themed token 必須是 6 位十六進位色碼，收到：${hex}`)
+  const n = parseInt(m[1], 16)
+  return `${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255}`
+}
+
+/**
+ * 產出主題化角色的通道變數。
+ * @param {'light'|'dark'} theme
+ */
+export function buildThemedChannelVariables(theme) {
+  const vars = {}
+  Object.entries(themed).forEach(([role, value]) => {
+    vars[`--t-${role}`] = hexToChannels(value[theme])
+  })
+  return vars
 }
 
 /** 建立完整的 CSS 變數表 */
@@ -175,10 +207,19 @@ export function buildDarkCssVariables(tokens = darkTokens) {
 
 export default plugin(function ({ addBase }) {
   addBase({
-    ':root': { ...buildCssVariables(), 'color-scheme': 'light' },
+    ':root': {
+      ...buildCssVariables(),
+      // 主題化角色的通道值，供 tailwind.config 的 content / surface / stroke /
+      // accent / 語意色使用（見 hexToChannels 的說明）
+      ...buildThemedChannelVariables('light'),
+      'color-scheme': 'light',
+    },
 
     // darkMode: 'class' —— 由 useDarkMode() 在 <html> 上掛 .dark
-    '.dark': buildDarkCssVariables(),
+    '.dark': {
+      ...buildDarkCssVariables(),
+      ...buildThemedChannelVariables('dark'),
+    },
   })
 })
 

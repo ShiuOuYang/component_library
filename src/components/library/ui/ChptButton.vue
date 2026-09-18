@@ -142,24 +142,24 @@ const roundedClass = computed(() => {
 const colorClass = computed(() => {
   const colorMap: Record<string, { solid: string; outline: string }> = {
     primary: {
-      solid: 'bg-primary-500 border-primary-500 text-white hover:bg-primary-600 active:bg-primary-700',
-      outline: 'bg-white/80 text-primary-600 border border-primary-500 hover:bg-primary-500 hover:text-white',
+      solid: 'bg-accent-solid border-stroke-focus text-white hover:bg-accent-solid active:bg-accent-solid-hover',
+      outline: 'bg-surface-primary/80 text-accent border border-stroke-focus hover:bg-accent-solid hover:text-white',
     },
     secondary: {
       solid: 'bg-secondary-500 border-secondary-500 text-white hover:bg-secondary-600 active:bg-secondary-700',
-      outline: 'bg-white/80 text-secondary-600 border border-secondary-500 hover:bg-secondary-500 hover:text-white',
+      outline: 'bg-surface-primary/80 text-secondary-600 border border-secondary-500 hover:bg-secondary-500 hover:text-white',
     },
     success: {
-      solid: 'bg-success-500 border-success-500 text-white hover:bg-success-600 active:bg-success-700',
-      outline: 'bg-white/80 text-success-600 border border-success-500 hover:bg-success-500 hover:text-white',
+      solid: 'bg-success-solid border-success text-white hover:bg-success-solid active:bg-success-700',
+      outline: 'bg-surface-primary/80 text-success border border-success hover:bg-success-solid hover:text-white',
     },
     danger: {
-      solid: 'bg-danger-500 border-danger-500 text-white hover:bg-danger-600 active:bg-danger-700',
-      outline: 'bg-white/80 text-danger-600 border border-danger-500 hover:bg-danger-500 hover:text-white',
+      solid: 'bg-danger-solid border-danger text-white hover:bg-danger-solid active:bg-danger-700',
+      outline: 'bg-surface-primary/80 text-danger border border-danger hover:bg-danger-solid hover:text-white',
     },
     warning: {
-      solid: 'bg-warning-500 border-warning-500 text-white hover:bg-warning-600 active:bg-warning-700',
-      outline: 'bg-white/80 text-warning-600 border border-warning-500 hover:bg-warning-500 hover:text-white',
+      solid: 'bg-warning-solid border-warning text-white hover:bg-warning-solid active:bg-warning-700',
+      outline: 'bg-surface-primary/80 text-warning border border-warning hover:bg-warning-solid hover:text-white',
     },
   }
 
@@ -172,7 +172,7 @@ const buttonClasses = computed(() => [
   // focus-visible:* 這組是必要的：focus:outline-none 會蓋掉 base.css 的全域
   // :focus-visible 外框，沒有替代樣式的話鍵盤使用者完全看不到焦點位置。
   'flex items-center transition-all duration-300 relative',
-  'focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-500',
+  'focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-stroke-focus',
   sizeClass.value,
   colorClass.value,
   roundedClass.value,
@@ -193,14 +193,14 @@ const gapClass = computed(() => (props.icon && props.label ? 'gap-2' : ''))
 /** 角標樣式 */
 const badgeClass = computed(() => {
   const bgColorMap: Record<string, string> = {
-    primary: 'bg-primary-500',
+    primary: 'bg-accent-solid',
     secondary: 'bg-secondary-500',
-    success: 'bg-success-500',
-    warning: 'bg-warning-500',
-    danger: 'bg-danger-500',
-    info: 'bg-info-500',
+    success: 'bg-success-solid',
+    warning: 'bg-warning-solid',
+    danger: 'bg-danger-solid',
+    info: 'bg-info-solid',
   }
-  const bg = bgColorMap[props.badgeBgColor] ?? 'bg-danger-500'
+  const bg = bgColorMap[props.badgeBgColor] ?? 'bg-danger-solid'
   const text = props.badgeTextColor === 'black' ? 'text-black' : 'text-white'
   return `${bg} ${text} rounded-full`
 })

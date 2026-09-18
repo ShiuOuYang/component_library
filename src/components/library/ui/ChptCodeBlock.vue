@@ -1,6 +1,6 @@
 <template>
   <div class="bg-neutral-900 rounded-xl p-4 overflow-x-auto">
-    <pre class="text-green-400 text-sm"><code>{{ formattedCode }}</code></pre>
+    <pre class="text-success text-sm"><code>{{ formattedCode }}</code></pre>
 
     <!-- 可選的提示信息區塊 -->
     <div
@@ -88,7 +88,7 @@ const tipTypeClass = computed(() => {
     warning: 'bg-yellow-900/30 border-yellow-600',
     info: 'bg-indigo-900/30 border-indigo-600',
     success: 'bg-green-900/30 border-green-600',
-    error: 'bg-red-900/30 border-red-600',
+    error: 'bg-red-900/30 border-danger',
   }
   return map[props.tipType] ?? map.info
 })

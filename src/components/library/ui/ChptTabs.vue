@@ -2,7 +2,7 @@
   <div>
     <!-- 導覽列 -->
     <div
-      class="flex border-b border-neutral-200"
+      class="flex border-b border-stroke-light"
       :class="{ 'justify-center': props.centered }"
       role="tablist"
     >
@@ -13,8 +13,8 @@
         class="px-4 py-2.5 text-sm transition-colors relative cursor-pointer whitespace-nowrap"
         :class="[
           isActive(index)
-            ? 'text-primary-600 font-medium'
-            : 'text-neutral-500 hover:text-neutral-700',
+            ? 'text-accent font-medium'
+            : 'text-content-tertiary hover:text-content-primary',
           isDisabled(tab) ? 'opacity-50 cursor-not-allowed' : '',
         ]"
         role="tab"
@@ -33,7 +33,7 @@
         <!-- 底線 indicator -->
         <span
           class="absolute left-0 right-0 -bottom-[1px] h-0.5 rounded-full transition-all"
-          :class="isActive(index) ? 'bg-primary-600' : 'bg-transparent'"
+          :class="isActive(index) ? 'bg-accent-solid' : 'bg-transparent'"
         />
       </button>
     </div>

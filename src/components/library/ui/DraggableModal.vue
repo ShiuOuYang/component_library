@@ -114,13 +114,13 @@ const props = withDefaults(defineProps<Props>(), {
   zIndex: 30,
   defaultMaximized: false,
   headerBgColor: 'from-primary-50 to-primary-100',
-  headerTextColor: 'text-neutral-800',
-  borderClass: 'border border-neutral-300',
+  headerTextColor: 'text-content-primary',
+  borderClass: 'border border-stroke-default',
   roundedClass: 'rounded-lg',
   shadowClass: 'shadow-2xl',
   backdropOpacity: 0.5,
   contentPadding: 'p-4',
-  footerBgColor: 'bg-neutral-50',
+  footerBgColor: 'bg-surface-secondary',
 })
 
 const emit = defineEmits<{

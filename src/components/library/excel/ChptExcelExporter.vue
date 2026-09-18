@@ -44,70 +44,70 @@
     >
       <template #title>
         <div class="flex items-center">
-          <i class="fas fa-file-excel text-green-600 mr-2"></i>
+          <i class="fas fa-file-excel text-success mr-2"></i>
           Excel 匯出設定
         </div>
       </template>
 
       <!-- 檔案名稱設定 -->
       <div class="mb-4">
-        <label class="block text-sm font-medium text-neutral-700 mb-2">
-          <i class="fas fa-file-signature text-neutral-500 mr-1"></i>
+        <label class="block text-sm font-medium text-content-primary mb-2">
+          <i class="fas fa-file-signature text-content-tertiary mr-1"></i>
           檔案名稱
         </label>
         <input
           v-model="exportOptions.filename"
           type="text"
-          class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+          class="w-full px-3 py-2 border border-stroke-default rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-success focus:border-success transition-all duration-200"
           placeholder="輸入檔案名稱..."
         />
       </div>
 
       <!-- 工作表名稱設定 -->
       <div class="mb-4">
-        <label class="block text-sm font-medium text-neutral-700 mb-2">
-          <i class="fas fa-table text-neutral-500 mr-1"></i>
+        <label class="block text-sm font-medium text-content-primary mb-2">
+          <i class="fas fa-table text-content-tertiary mr-1"></i>
           工作表名稱
         </label>
         <input
           v-model="exportOptions.sheetName"
           type="text"
-          class="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200"
+          class="w-full px-3 py-2 border border-stroke-default rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-success focus:border-success transition-all duration-200"
           placeholder="輸入工作表名稱..."
         />
       </div>
 
       <!-- 欄位選擇 -->
       <div class="mb-6">
-        <label class="block text-sm font-medium text-neutral-700 mb-2">
-          <i class="fas fa-columns text-neutral-500 mr-1"></i>
+        <label class="block text-sm font-medium text-content-primary mb-2">
+          <i class="fas fa-columns text-content-tertiary mr-1"></i>
           匯出欄位
         </label>
-        <div class="space-y-2 max-h-40 overflow-y-auto border border-neutral-200 rounded-lg p-3 bg-neutral-50">
-          <div class="flex items-center justify-between mb-2 pb-2 border-b border-neutral-200">
+        <div class="space-y-2 max-h-40 overflow-y-auto border border-stroke-light rounded-lg p-3 bg-surface-secondary">
+          <div class="flex items-center justify-between mb-2 pb-2 border-b border-stroke-light">
             <button type="button"
               @click="toggleAllColumns"
-              class="text-xs text-green-600 hover:text-green-700 font-medium transition-colors duration-200"
+              class="text-xs text-success hover:text-success font-medium transition-colors duration-200"
             >
               <i :class="['fas mr-1', allColumnsSelected ? 'fa-check-square' : 'fa-square']"></i>
               {{ allColumnsSelected ? '取消全選' : '全選' }}
             </button>
-            <span class="text-xs text-neutral-500">
+            <span class="text-xs text-content-tertiary">
               已選 {{ exportOptions.selectedColumns.length }} / {{ availableColumns.length }}
             </span>
           </div>
           <label
             v-for="column in availableColumns"
             :key="column.key"
-            class="flex items-center space-x-2 text-sm cursor-pointer hover:bg-green-50 p-2 rounded transition-colors duration-200"
+            class="flex items-center space-x-2 text-sm cursor-pointer hover:bg-success-subtle p-2 rounded transition-colors duration-200"
           >
             <input
               type="checkbox"
               v-model="exportOptions.selectedColumns"
               :value="column.key"
-              class="rounded border-neutral-300 text-green-600 focus:ring-green-500 transition-colors duration-200"
+              class="rounded border-stroke-default text-success focus:ring-success transition-colors duration-200"
             />
-            <span class="text-neutral-700">{{ column.title }}</span>
+            <span class="text-content-primary">{{ column.title }}</span>
           </label>
         </div>
       </div>
@@ -116,14 +116,14 @@
         <div class="flex justify-end space-x-3">
           <button type="button"
             @click="showOptionsModal = false"
-            class="inline-flex items-center h-control-sm px-4 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 hover:border-neutral-400 transition-all duration-200 shadow-sm"
+            class="inline-flex items-center h-control-sm px-4 text-sm font-medium text-content-primary bg-surface-primary border border-stroke-default rounded-lg hover:bg-surface-secondary hover:border-stroke-medium transition-all duration-200 shadow-sm"
           >
             取消
           </button>
           <button type="button"
             @click="confirmExport"
             :disabled="exportOptions.selectedColumns.length === 0"
-            class="inline-flex items-center h-control-sm px-4 text-sm font-medium bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow disabled:bg-neutral-300 disabled:text-neutral-500 disabled:cursor-not-allowed disabled:border-neutral-300 border border-transparent"
+            class="inline-flex items-center h-control-sm px-4 text-sm font-medium bg-success-solid hover:bg-success-solid text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow disabled:bg-surface-muted disabled:text-content-tertiary disabled:cursor-not-allowed disabled:border-stroke-default border border-transparent"
           >
             確認匯出
           </button>
@@ -232,14 +232,14 @@ const iconSizes: Record<ExporterSize, string> = {
 }
 
 const variantClasses: Record<ExporterVariant, string> = {
-  green: 'bg-green-600 hover:bg-green-700 text-white border border-transparent hover:shadow',
-  blue: 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent hover:shadow',
+  green: 'bg-success-solid hover:bg-success-solid text-white border border-transparent hover:shadow',
+  blue: 'bg-accent-solid hover:bg-accent-solid-hover text-white border border-transparent hover:shadow',
   primary: 'bg-indigo-600 hover:bg-indigo-700 text-white border border-transparent hover:shadow',
-  outline: 'bg-white hover:bg-neutral-50 text-neutral-700 border border-neutral-300 hover:border-neutral-400',
-  soft: 'bg-green-50 hover:bg-green-100 text-green-600 border border-green-200 hover:border-green-300',
+  outline: 'bg-surface-primary hover:bg-surface-secondary text-content-primary border border-stroke-default hover:border-stroke-medium',
+  soft: 'bg-success-subtle hover:bg-success-subtle-hover text-success border border-success-subtle-border hover:border-success-subtle-border',
 }
 
-const disabledClass = 'bg-neutral-300 text-neutral-500 border border-neutral-300'
+const disabledClass = 'bg-surface-muted text-content-tertiary border border-stroke-default'
 
 const buttonClasses = computed(() => [
   'group relative flex items-center justify-center font-medium transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed',

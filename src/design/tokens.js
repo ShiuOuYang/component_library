@@ -383,8 +383,126 @@ const breakpoints = {
   '2xl': '1536px',
 }
 
+// ===== 主題化角色（themed roles）=====
+/**
+ * 會隨主題翻轉的顏色角色。
+ *
+ * ⚠️ 加這一組的原因，是原本的深色模式其實完全沒有生效。
+ *    `tokensPlugin` 確實有把 darkColors 產到 `.dark` 之下，但
+ *    `tailwind.config.js` 的語意別名（content / surface / stroke）是直接指向
+ *    上面那組**淺色十六進位常數**，不是 `var(--color-*)`。實測編出來是：
+ *
+ *        .bg-surface-primary { background-color: rgb(255 255 255) }
+ *
+ *    也就是說，就算元件乖乖用了 `bg-surface-primary`（看起來最「正確」的寫法），
+ *    在深色模式下它還是白的。整份產出的 CSS 裡真正讀 `var(--color-text-primary)`
+ *    的規則只有 1 條（:root 的 body 預設色），深色 token 等於是死的。
+ *
+ * 命名規則 —— **有數字的色階固定不變，沒數字的角色才跟著主題翻轉**：
+ *
+ *   bg-primary-600     固定 #2563EB（想要鎖死某個顏色時用）
+ *   text-accent        淺色 600 / 深色 400（跟著主題翻轉）
+ *
+ * 角色的用途區分（這是深色模式最容易做錯的地方）：
+ *
+ *   accent          前景色：文字、邊框、icon，畫在頁面背景上
+ *                   → 深色底要往較亮的階移，否則對比不足
+ *   accent-solid    實心底色，上面配 content-on-solid（白字）
+ *                   → 兩個主題都維持深色階，白字才過 AA
+ *   accent-subtle   淡色底，上面配 accent-on-subtle
+ *
+ * 每個值都由 scripts/check-contrast.mjs 逐一驗算對比度，不是憑感覺挑的。
+ */
+const themed = {
+  // --- 文字 ---
+  'content-primary': { light: '#171717', dark: '#F5F5F5' },
+  'content-secondary': { light: '#525252', dark: '#D4D4D4' },
+  'content-tertiary': { light: '#737373', dark: '#A3A3A3' },
+  'content-disabled': { light: '#A3A3A3', dark: '#737373' },
+  /** 與頁面文字相反（淺色主題下是白字）；實心底上的文字請用 content-on-solid */
+  'content-inverse': { light: '#FFFFFF', dark: '#171717' },
+  /**
+   * 實心底（accent-solid / danger-solid …）上的文字。
+   * ⚠️ 兩個主題都是白色 —— 實心底本身不隨主題變亮，所以這裡不能用
+   *    content-inverse，那在深色主題下會變成深灰字配深藍底。
+   */
+  'content-on-solid': { light: '#FFFFFF', dark: '#FFFFFF' },
+
+  // --- 背景 ---
+  'surface-primary': { light: '#FFFFFF', dark: '#171717' },
+  'surface-secondary': { light: '#FAFAFA', dark: '#1F1F1F' },
+  'surface-tertiary': { light: '#F5F5F5', dark: '#262626' },
+  /**
+   * 軌道 / 停用填色 / 細分隔塊的底色（開關的 off 軌道、步驟連接線、
+   * 停用按鈕、工具列分隔線）。比 surface-tertiary 更明顯，但不是文字或邊框。
+   */
+  'surface-muted': { light: '#D4D4D4', dark: '#404040' },
+  'surface-highlighted': { light: '#EFF6FF', dark: '#1E3A8A' },
+
+  // --- 邊框 ---
+  'stroke-light': { light: '#E5E5E5', dark: '#262626' },
+  'stroke-default': { light: '#D4D4D4', dark: '#404040' },
+  'stroke-medium': { light: '#A3A3A3', dark: '#525252' },
+  'stroke-dark': { light: '#737373', dark: '#737373' },
+  /** 焦點框：WCAG 1.4.11 要求 ≥ 3:1，深色底用 primary-400 */
+  'stroke-focus': { light: '#2563EB', dark: '#60A5FA' },
+
+  // --- 品牌 ---
+  accent: { light: '#1D4ED8', dark: '#60A5FA' },
+  'accent-strong': { light: '#1E40AF', dark: '#93C5FD' },
+  'accent-solid': { light: '#2563EB', dark: '#2563EB' },
+  'accent-solid-hover': { light: '#1D4ED8', dark: '#1D4ED8' },
+  'accent-subtle': { light: '#EFF6FF', dark: '#1E3A8A' },
+  /** 淡底的 hover 狀態；不能和 accent-subtle 同值，否則 hover 看不出變化 */
+  'accent-subtle-hover': { light: '#DBEAFE', dark: '#1E40AF' },
+  /** 淡底區塊的外框 */
+  'accent-subtle-border': { light: '#BFDBFE', dark: '#1D4ED8' },
+  'accent-on-subtle': { light: '#1D4ED8', dark: '#DBEAFE' },
+
+  // --- 語意：成功 ---
+  success: { light: '#15803D', dark: '#4ADE80' },
+  'success-solid': { light: '#15803D', dark: '#15803D' },
+  'success-subtle': { light: '#F0FDF4', dark: '#14532D' },
+  /** 淡底的 hover 狀態；不能和 success-subtle 同值，否則 hover 看不出變化 */
+  'success-subtle-hover': { light: '#DCFCE7', dark: '#166534' },
+  /** 淡底區塊的外框 */
+  'success-subtle-border': { light: '#BBF7D0', dark: '#15803D' },
+  'success-on-subtle': { light: '#166534', dark: '#BBF7D0' },
+
+  // --- 語意：警告 ---
+  warning: { light: '#A16207', dark: '#FACC15' },
+  'warning-solid': { light: '#A16207', dark: '#A16207' },
+  'warning-subtle': { light: '#FEFCE8', dark: '#713F12' },
+  /** 淡底的 hover 狀態；不能和 warning-subtle 同值，否則 hover 看不出變化 */
+  'warning-subtle-hover': { light: '#FEF9C3', dark: '#854D0E' },
+  /** 淡底區塊的外框 */
+  'warning-subtle-border': { light: '#FEF08A', dark: '#A16207' },
+  'warning-on-subtle': { light: '#854D0E', dark: '#FEF08A' },
+
+  // --- 語意：危險 ---
+  danger: { light: '#B91C1C', dark: '#F87171' },
+  'danger-solid': { light: '#B91C1C', dark: '#B91C1C' },
+  'danger-subtle': { light: '#FEF2F2', dark: '#7F1D1D' },
+  /** 淡底的 hover 狀態；不能和 danger-subtle 同值，否則 hover 看不出變化 */
+  'danger-subtle-hover': { light: '#FEE2E2', dark: '#991B1B' },
+  /** 淡底區塊的外框 */
+  'danger-subtle-border': { light: '#FECACA', dark: '#B91C1C' },
+  'danger-on-subtle': { light: '#991B1B', dark: '#FECACA' },
+
+  // --- 語意：資訊 ---
+  info: { light: '#0369A1', dark: '#38BDF8' },
+  'info-solid': { light: '#0369A1', dark: '#0369A1' },
+  'info-subtle': { light: '#F0F9FF', dark: '#0C4A6E' },
+  /** 淡底的 hover 狀態；不能和 info-subtle 同值，否則 hover 看不出變化 */
+  'info-subtle-hover': { light: '#E0F2FE', dark: '#075985' },
+  /** 淡底區塊的外框 */
+  'info-subtle-border': { light: '#BAE6FD', dark: '#0369A1' },
+  'info-on-subtle': { light: '#075985', dark: '#BAE6FD' },
+}
+
 export const designTokens = {
   colors,
+  themed,
   viz,
   spacing,
   control,
@@ -408,6 +526,7 @@ export const darkTokens = {
 
 // 快捷具名匯出
 export {
+  themed,
   colors,
   darkColors,
   darkViz,

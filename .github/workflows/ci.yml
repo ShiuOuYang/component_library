@@ -64,6 +64,14 @@ jobs:
       - name: Button type
         run: npm run check:buttons
 
+      # 主題色在淺色／深色底上都必須達到 WCAG AA 對比度
+      - name: Theme contrast
+        run: npm run check:contrast
+
+      # 元件庫不得寫死淺色 palette，否則深色模式不會跟著翻轉
+      - name: Theme colors
+        run: npm run check:theme
+
       - name: Lint
         run: npm run lint
 

@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-1" :class="props.fullWidth ? 'w-full' : ''">
-    <label v-if="props.label" class="text-sm text-neutral-600 whitespace-nowrap">
+    <label v-if="props.label" class="text-sm text-content-secondary whitespace-nowrap">
       {{ props.label }}
     </label>
 
@@ -20,7 +20,7 @@
       @update:model-value="handleUpdate"
     />
 
-    <p v-if="props.errorText" class="text-xs text-danger-500">{{ props.errorText }}</p>
+    <p v-if="props.errorText" class="text-xs text-danger">{{ props.errorText }}</p>
   </div>
 </template>
 

@@ -3,12 +3,12 @@
     <!-- 載入狀態 -->
     <div v-if="isLoading" class="flex justify-center items-center py-8">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      <span class="ml-2 text-gray-600">{{ loadingText }}</span>
+      <span class="ml-2 text-content-secondary">{{ loadingText }}</span>
     </div>
 
     <!-- 空數據狀態 -->
-    <div v-else-if="paretoData.length === 0" class="flex flex-col justify-center items-center py-12 text-gray-500">
-      <svg class="w-16 h-16 mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div v-else-if="paretoData.length === 0" class="flex flex-col justify-center items-center py-12 text-content-tertiary">
+      <svg class="w-16 h-16 mb-4 text-content-disabled" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
       </svg>
       <p class="text-sm">{{ emptyText }}</p>
@@ -16,32 +16,32 @@
 
     <!-- Pareto 圖表 -->
     <div v-else class="pareto-container">
-      <div ref="chartContainer" class="w-full border border-gray-200 rounded bg-white" :style="chartStyle"></div>
+      <div ref="chartContainer" class="w-full border border-stroke-light rounded bg-surface-primary" :style="chartStyle"></div>
     </div>
 
     <!-- 統計資訊 -->
-    <div v-if="showStatistics && paretoData.length > 0" class="statistics mt-4 bg-gray-50 rounded-lg p-4">
-      <h4 class="text-sm font-medium text-gray-800 mb-2">{{ statisticsTitle }}</h4>
+    <div v-if="showStatistics && paretoData.length > 0" class="statistics mt-4 bg-surface-secondary rounded-lg p-4">
+      <h4 class="text-sm font-medium text-content-primary mb-2">{{ statisticsTitle }}</h4>
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
         <div>
-          <span class="text-gray-600">{{ countLabel }}:</span>
+          <span class="text-content-secondary">{{ countLabel }}:</span>
           <span class="ml-1 font-medium">{{ totalDefects }}</span>
         </div>
         <div>
-          <span class="text-gray-600">{{ typeLabel }}:</span>
+          <span class="text-content-secondary">{{ typeLabel }}:</span>
           <span class="ml-1 font-medium">{{ paretoData.length }}</span>
         </div>
         <div>
-          <span class="text-gray-600">閾值設定:</span>
-          <span class="ml-1 font-medium text-blue-600">{{ cumulativeThreshold }}%</span>
+          <span class="text-content-secondary">閾值設定:</span>
+          <span class="ml-1 font-medium text-accent">{{ cumulativeThreshold }}%</span>
         </div>
         <div>
-          <span class="text-gray-600">Top3佔比:</span>
-          <span class="ml-1 font-medium text-red-600">{{ top3Percentage.toFixed(1) }}%</span>
+          <span class="text-content-secondary">Top3佔比:</span>
+          <span class="ml-1 font-medium text-danger">{{ top3Percentage.toFixed(1) }}%</span>
         </div>
         <div>
-          <span class="text-gray-600">{{ maxLabel }}:</span>
-          <span class="ml-1 font-medium text-red-600">{{ maxDefect?.name || '-' }}</span>
+          <span class="text-content-secondary">{{ maxLabel }}:</span>
+          <span class="ml-1 font-medium text-danger">{{ maxDefect?.name || '-' }}</span>
         </div>
       </div>
     </div>

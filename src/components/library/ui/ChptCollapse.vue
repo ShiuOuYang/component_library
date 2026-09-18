@@ -1,5 +1,5 @@
 <template>
-  <div class="divide-y divide-neutral-100 rounded-lg border border-neutral-200 overflow-hidden bg-white">
+  <div class="divide-y divide-stroke-light rounded-lg border border-stroke-light overflow-hidden bg-surface-primary">
     <div
       v-for="(item, index) in props.items"
       :key="index"
@@ -10,10 +10,10 @@
         type="button"
         :aria-expanded="isOpen(index)"
         :aria-controls="panelId(index)"
-        class="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-neutral-50 focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-500"
+        class="w-full flex items-center justify-between px-4 py-3 text-left transition-colors hover:bg-surface-secondary focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-stroke-focus"
         @click="toggle(index)"
       >
-        <span class="font-medium text-neutral-800 text-sm">{{ item.title }}</span>
+        <span class="font-medium text-content-primary text-sm">{{ item.title }}</span>
         <ChptIcon
           :size="18"
           color="neutral-500"
@@ -39,7 +39,7 @@
           :id="panelId(index)"
           role="region"
           :aria-labelledby="headerId(index)"
-          class="px-4 pb-4 text-sm text-neutral-600"
+          class="px-4 pb-4 text-sm text-content-secondary"
         >
           <slot :name="`content-${index}`" :item="item">
             {{ item.content }}

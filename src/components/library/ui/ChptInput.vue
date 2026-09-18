@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col gap-1" :class="props.fullWidth ? 'w-full' : ''">
-    <label v-if="props.label" :for="id" class="text-sm text-neutral-600 whitespace-nowrap">
+    <label v-if="props.label" :for="id" class="text-sm text-content-secondary whitespace-nowrap">
       {{ props.label }}
     </label>
 
@@ -36,23 +36,23 @@
           props.prefixIcon ? 'pl-8' : '',
           props.clearable && props.modelValue ? 'pr-8' : '',
           props.errorText
-            ? 'border-danger-400 focus:border-danger-500 focus:ring-danger-500'
-            : 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500',
-          props.disabled ? 'bg-neutral-100 cursor-not-allowed text-neutral-400' : 'bg-white',
+            ? 'border-danger focus:border-danger focus:ring-danger'
+            : 'border-stroke-default focus:border-stroke-focus focus:ring-stroke-focus',
+          props.disabled ? 'bg-surface-tertiary cursor-not-allowed text-content-disabled' : 'bg-surface-primary',
         ]"
       />
 
       <button
         v-if="props.clearable && props.modelValue && !props.disabled"
         type="button"
-        class="absolute right-2 text-neutral-400 hover:text-neutral-600"
+        class="absolute right-2 text-content-disabled hover:text-content-secondary"
         @click="handleClear"
       >
         <ChptIcon :size="16">close</ChptIcon>
       </button>
     </div>
 
-    <p v-if="props.errorText" :id="errorId" role="alert" class="text-xs text-danger-500">
+    <p v-if="props.errorText" :id="errorId" role="alert" class="text-xs text-danger">
       {{ props.errorText }}
     </p>
   </div>

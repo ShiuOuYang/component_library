@@ -78,24 +78,24 @@ const sizeClass = computed(() => {
 /** 顏色對應 class（solid / outline） */
 const colorClass = computed(() => {
   const solidMap: Record<string, string> = {
-    primary: 'bg-primary-100 text-primary-700',
+    primary: 'bg-accent-subtle text-accent-strong',
     secondary: 'bg-secondary-100 text-secondary-600',
-    success: 'bg-success-100 text-success-700',
-    warning: 'bg-warning-100 text-warning-800',
-    danger: 'bg-danger-100 text-danger-700',
-    info: 'bg-info-100 text-info-700',
+    success: 'bg-success-subtle-hover text-success',
+    warning: 'bg-warning-subtle-hover text-warning-on-subtle',
+    danger: 'bg-danger-subtle-hover text-danger',
+    info: 'bg-info-subtle-hover text-info',
     dark: 'bg-neutral-700 text-neutral-100',
-    light: 'bg-neutral-50 text-neutral-600 border border-neutral-200',
+    light: 'bg-surface-secondary text-content-secondary border border-stroke-light',
   }
   const outlineMap: Record<string, string> = {
-    primary: 'bg-transparent text-primary-600 border border-primary-400',
+    primary: 'bg-transparent text-accent border border-primary-400',
     secondary: 'bg-transparent text-secondary-600 border border-secondary-300',
-    success: 'bg-transparent text-success-600 border border-success-400',
-    warning: 'bg-transparent text-warning-700 border border-warning-400',
-    danger: 'bg-transparent text-danger-600 border border-danger-400',
-    info: 'bg-transparent text-info-600 border border-info-400',
-    dark: 'bg-transparent text-neutral-700 border border-neutral-500',
-    light: 'bg-transparent text-neutral-500 border border-neutral-300',
+    success: 'bg-transparent text-success border border-success-400',
+    warning: 'bg-transparent text-warning border border-warning-400',
+    danger: 'bg-transparent text-danger border border-danger',
+    info: 'bg-transparent text-info border border-info-400',
+    dark: 'bg-transparent text-content-primary border border-neutral-500',
+    light: 'bg-transparent text-content-tertiary border border-stroke-default',
   }
   const map = props.isOutline ? outlineMap : solidMap
   return map[props.color] ?? map.primary

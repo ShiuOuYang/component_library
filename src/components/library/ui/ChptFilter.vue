@@ -1,13 +1,13 @@
 <template>
   <!-- select：單選下拉 -->
   <div v-if="type === 'select'" class="flex items-center gap-2">
-    <label v-if="label" :for="id" class="text-sm text-neutral-600 whitespace-nowrap">{{ label }}</label>
+    <label v-if="label" :for="id" class="text-sm text-content-secondary whitespace-nowrap">{{ label }}</label>
     <select
       :id="id"
       :value="modelValue"
       @change="handleSelectChange"
       :disabled="disabled"
-      class="border-neutral-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500"
+      class="border-stroke-default rounded-md shadow-sm focus:border-stroke-focus focus:ring-stroke-focus"
       :class="[sizeClass, fullWidth ? 'w-full' : '', selectClass]"
     >
       <option v-if="showAllOption" :value="allValue">{{ placeholder }}</option>
@@ -27,48 +27,48 @@
     <button
       type="button"
       @click="isOpen = !isOpen"
-      class="w-full text-left bg-white border border-neutral-300 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 hover:border-neutral-400 transition-colors"
+      class="w-full text-left bg-surface-primary border border-stroke-default rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-stroke-focus focus:border-stroke-focus hover:border-stroke-medium transition-colors"
       :class="sizeClass"
     >
       <div class="flex h-full items-center justify-between">
-        <span class="text-neutral-700 truncate">{{ displayText }}</span>
-        <span class="text-neutral-400">▼</span>
+        <span class="text-content-primary truncate">{{ displayText }}</span>
+        <span class="text-content-disabled">▼</span>
       </div>
     </button>
-    <div v-show="isOpen" class="absolute z-50 w-full mt-1 bg-white border border-neutral-300 rounded-md shadow-lg max-h-32 overflow-auto">
-      <div class="px-2 py-1 border-b border-neutral-200">
-        <label class="flex items-center hover:bg-neutral-50 cursor-pointer">
-          <input type="checkbox" :checked="isAllSelected" :indeterminate="isIndeterminate" @change="toggleAll" class="rounded border-neutral-300 text-primary-600 focus:ring-primary-500">
-          <span class="ml-2 text-xs font-medium text-neutral-700">全部</span>
+    <div v-show="isOpen" class="absolute z-50 w-full mt-1 bg-surface-primary border border-stroke-default rounded-md shadow-lg max-h-32 overflow-auto">
+      <div class="px-2 py-1 border-b border-stroke-light">
+        <label class="flex items-center hover:bg-surface-secondary cursor-pointer">
+          <input type="checkbox" :checked="isAllSelected" :indeterminate="isIndeterminate" @change="toggleAll" class="rounded border-stroke-default text-accent focus:ring-stroke-focus">
+          <span class="ml-2 text-xs font-medium text-content-primary">全部</span>
         </label>
       </div>
       <div class="py-1">
-        <label v-for="option in options" :key="getOptionValue(option)" class="flex items-center px-2 py-1 hover:bg-neutral-50 cursor-pointer">
-          <input type="checkbox" :checked="arrayValue.includes(getOptionValue(option))" @change="toggleOption(getOptionValue(option))" class="rounded border-neutral-300 text-primary-600 focus:ring-primary-500">
-          <span class="ml-2 text-xs text-neutral-700">{{ getOptionLabel(option) }}</span>
+        <label v-for="option in options" :key="getOptionValue(option)" class="flex items-center px-2 py-1 hover:bg-surface-secondary cursor-pointer">
+          <input type="checkbox" :checked="arrayValue.includes(getOptionValue(option))" @change="toggleOption(getOptionValue(option))" class="rounded border-stroke-default text-accent focus:ring-stroke-focus">
+          <span class="ml-2 text-xs text-content-primary">{{ getOptionLabel(option) }}</span>
         </label>
       </div>
     </div>
   </div>
 
   <!-- tag：帶搜尋的緊湊多選 -->
-  <div v-else class="w-full bg-white rounded-lg border border-neutral-200 shadow-sm">
-    <div class="px-2 py-1 border-b border-neutral-100">
+  <div v-else class="w-full bg-surface-primary rounded-lg border border-stroke-light shadow-sm">
+    <div class="px-2 py-1 border-b border-stroke-light">
       <div class="flex items-center justify-between">
-        <h3 class="text-xs font-medium text-neutral-800">{{ label || '篩選' }}</h3>
+        <h3 class="text-xs font-medium text-content-primary">{{ label || '篩選' }}</h3>
         <div class="flex items-center gap-1">
-          <span v-if="arrayValue.length > 0" class="px-1 py-0.5 bg-primary-100 text-primary-800 text-[10px] rounded">{{ arrayValue.length }}</span>
+          <span v-if="arrayValue.length > 0" class="px-1 py-0.5 bg-accent-subtle text-accent-on-subtle text-[10px] rounded">{{ arrayValue.length }}</span>
           <!--
             ⚠️ 原本是 w-4 h-4（16×16），低於 WCAG 2.5.8 的 24×24 最小點擊目標，
                實際用滑鼠也很難點中。改成 control-xs 的正方形（24×24）。
                字體從 text-[9px] 提到 text-xs，9px 的 × 在一般螢幕上幾乎看不見。
           -->
-          <button type="button" v-if="showClearAll && arrayValue.length > 0" aria-label="清空篩選" @click="clearAll" class="inline-flex items-center justify-center h-control-xs min-w-control-xs text-xs text-danger-600 hover:bg-danger-50 rounded leading-none">×</button>
+          <button type="button" v-if="showClearAll && arrayValue.length > 0" aria-label="清空篩選" @click="clearAll" class="inline-flex items-center justify-center h-control-xs min-w-control-xs text-xs text-danger hover:bg-danger-subtle rounded leading-none">×</button>
         </div>
       </div>
     </div>
-    <div class="px-2 py-1 border-b border-neutral-100">
-      <input v-model="searchText" type="text" :placeholder="placeholder" class="block w-full px-2 py-1 text-xs border border-neutral-300 rounded bg-white focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500">
+    <div class="px-2 py-1 border-b border-stroke-light">
+      <input v-model="searchText" type="text" :placeholder="placeholder" class="block w-full px-2 py-1 text-xs border border-stroke-default rounded bg-surface-primary focus:outline-none focus:ring-1 focus:ring-stroke-focus focus:border-stroke-focus">
     </div>
     <div class="px-2 py-1">
       <div class="space-y-0.5 max-h-18 overflow-y-auto">
@@ -76,19 +76,19 @@
           v-for="option in filteredOptions"
           :key="getOptionValue(option)"
           @click="toggleOption(getOptionValue(option))"
-          class="flex items-center px-1 py-0.5 border border-neutral-200 rounded text-xs cursor-pointer hover:border-primary-300"
-          :class="arrayValue.includes(getOptionValue(option)) ? 'border-primary-500 bg-primary-50 text-primary-900' : 'hover:bg-neutral-50 text-neutral-700'"
+          class="flex items-center px-1 py-0.5 border border-stroke-light rounded text-xs cursor-pointer hover:border-accent-subtle-border"
+          :class="arrayValue.includes(getOptionValue(option)) ? 'border-stroke-focus bg-accent-subtle text-accent-on-subtle' : 'hover:bg-surface-secondary text-content-primary'"
         >
-          <div class="w-2 h-2 rounded border mr-1 flex-shrink-0" :class="arrayValue.includes(getOptionValue(option)) ? 'bg-primary-500 border-primary-500' : 'border-neutral-300'"></div>
+          <div class="w-2 h-2 rounded border mr-1 flex-shrink-0" :class="arrayValue.includes(getOptionValue(option)) ? 'bg-accent-solid border-stroke-focus' : 'border-stroke-default'"></div>
           <span class="truncate">{{ getOptionLabel(option) }}</span>
         </div>
-        <div v-if="filteredOptions.length === 0" class="text-center py-1"><p class="text-xs text-neutral-500">無選項</p></div>
+        <div v-if="filteredOptions.length === 0" class="text-center py-1"><p class="text-xs text-content-tertiary">無選項</p></div>
       </div>
-      <div v-if="filteredOptions.length > 0" class="flex justify-between items-center mt-1 pt-1 border-t border-neutral-200">
-        <span class="text-xs text-neutral-500">{{ filteredOptions.length }}</span>
+      <div v-if="filteredOptions.length > 0" class="flex justify-between items-center mt-1 pt-1 border-t border-stroke-light">
+        <span class="text-xs text-content-tertiary">{{ filteredOptions.length }}</span>
         <div class="flex gap-1">
-          <button type="button" @click="selectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-primary-600 bg-primary-50 rounded hover:bg-primary-100">全選</button>
-          <button type="button" @click="unselectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-neutral-600 bg-neutral-50 rounded hover:bg-neutral-100">清空</button>
+          <button type="button" @click="selectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-accent bg-accent-subtle rounded hover:bg-accent-subtle-hover">全選</button>
+          <button type="button" @click="unselectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-content-secondary bg-surface-secondary rounded hover:bg-surface-tertiary">清空</button>
         </div>
       </div>
     </div>

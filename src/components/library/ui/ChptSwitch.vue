@@ -18,14 +18,14 @@
         @change="toggle"
       />
       <span
-        class="inline-block rounded-full bg-white shadow transform transition-transform duration-200 pointer-events-none"
+        class="inline-block rounded-full bg-surface-primary shadow transform transition-transform duration-200 pointer-events-none"
         :class="[knobSizeClass, props.modelValue ? knobOnTranslateClass : 'translate-x-0.5']"
       ></span>
     </span>
 
     <span
       v-if="props.label"
-      :class="props.disabled ? 'text-neutral-400' : 'text-neutral-700'"
+      :class="props.disabled ? 'text-content-disabled' : 'text-content-primary'"
     >
       {{ props.label }}
     </span>
@@ -110,14 +110,14 @@ const knobOnTranslateClass = computed(
 
 /** 開啟時軌道顏色 */
 const onColorMap: Record<ColorVariant, string> = {
-  primary: 'bg-primary-500',
+  primary: 'bg-accent-solid',
   secondary: 'bg-secondary-500',
-  success: 'bg-success-500',
-  danger: 'bg-danger-500',
-  warning: 'bg-warning-500',
-  info: 'bg-info-500',
+  success: 'bg-success-solid',
+  danger: 'bg-danger-solid',
+  warning: 'bg-warning-solid',
+  info: 'bg-info-solid',
   dark: 'bg-neutral-800',
-  light: 'bg-neutral-200',
+  light: 'bg-surface-tertiary',
 }
 
 const onColorClass = computed(() => onColorMap[props.color] ?? onColorMap.primary)

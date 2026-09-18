@@ -100,7 +100,7 @@ describe('ChptExcelUploader', () => {
       // 高度取自 control token（md = 40px），與 ChptButton 同一套
       expect(classes).toContain('h-control-md')
       expect(classes).toContain('text-base') // size=md
-      expect(classes).toContain('bg-blue-600') // variant=solid-blue
+      expect(classes).toContain('bg-accent-solid') // variant=solid-blue → 主題化品牌實心底
       wrapper.unmount()
     })
 

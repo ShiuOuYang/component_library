@@ -18,7 +18,7 @@
       />
     </div>
 
-    <span v-if="props.showLabel" class="text-xs text-neutral-600 tabular-nums whitespace-nowrap">
+    <span v-if="props.showLabel" class="text-xs text-content-secondary tabular-nums whitespace-nowrap">
       {{ displayPercent }}%
     </span>
   </div>
@@ -79,17 +79,17 @@ const barColorClass = computed(() => {
 
 
 
-    primary: 'bg-primary-500',
-    success: 'bg-success-500',
-    warning: 'bg-warning-500',
-    danger: 'bg-danger-500',
-    info: 'bg-info-500',
+    primary: 'bg-accent-solid',
+    success: 'bg-success-solid',
+    warning: 'bg-warning-solid',
+    danger: 'bg-danger-solid',
+    info: 'bg-info-solid',
   }
   return map[props.status] ?? map.primary
 })
 
 /** 軌道預設色 */
-const trackColorClass = computed(() => props.trackColor || 'bg-neutral-100')
+const trackColorClass = computed(() => props.trackColor || 'bg-surface-tertiary')
 </script>
 
 <style scoped>

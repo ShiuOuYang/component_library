@@ -2,13 +2,13 @@
   <div class="flex items-center gap-3 px-1 flex-wrap">
     <!-- 篩選器循環渲染 -->
     <div v-for="filter in props.filters" :key="filter.key" class="flex items-center gap-2">
-      <label class="text-sm font-medium text-neutral-700 whitespace-nowrap">
+      <label class="text-sm font-medium text-content-primary whitespace-nowrap">
         {{ filter.label }}:
       </label>
       <select
         :value="props.modelValue[filter.key]"
         @change="handleChange(filter.key, ($event.target as HTMLSelectElement).value)"
-        class="px-3 py-1.5 text-sm border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white transition-all shadow-sm hover:border-primary-400"
+        class="px-3 py-1.5 text-sm border border-stroke-default rounded-lg focus:outline-none focus:ring-2 focus:ring-stroke-focus focus:border-stroke-focus bg-surface-primary transition-all shadow-sm hover:border-primary-400"
       >
         <option value="All">
           {{ filter.allLabel || '全部' }}
@@ -26,8 +26,8 @@
     </div>
 
     <!-- 顯示計數（可選） -->
-    <div v-if="props.showCount" class="ml-auto text-sm text-neutral-600">
-      共 <span class="font-semibold text-primary-600">{{ props.count }}</span> 筆{{ props.countLabel }}
+    <div v-if="props.showCount" class="ml-auto text-sm text-content-secondary">
+      共 <span class="font-semibold text-accent">{{ props.count }}</span> 筆{{ props.countLabel }}
     </div>
   </div>
 </template>

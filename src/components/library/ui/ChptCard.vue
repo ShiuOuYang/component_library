@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-xl border border-neutral-200 bg-white shadow-sm"
+    class="rounded-xl border border-stroke-light bg-surface-primary shadow-sm"
     :class="[
       props.fullWidth ? 'w-full' : '',
       paddingClass,
@@ -11,11 +11,11 @@
     <slot name="header">
       <div
         v-if="props.title || $slots.extra"
-        class="flex items-center justify-between border-b border-neutral-100 px-5 py-3.5"
+        class="flex items-center justify-between border-b border-stroke-light px-5 py-3.5"
       >
         <div class="flex items-center gap-2">
           <ChptIcon v-if="props.icon" :size="18" color="neutral-500">{{ props.icon }}</ChptIcon>
-          <h3 v-if="props.title" class="font-semibold text-neutral-800 text-sm">
+          <h3 v-if="props.title" class="font-semibold text-content-primary text-sm">
             {{ props.title }}
           </h3>
         </div>
@@ -25,7 +25,7 @@
 
     <slot />
 
-    <div v-if="$slots.footer" class="border-t border-neutral-100 bg-neutral-50 rounded-b-xl px-5 py-3">
+    <div v-if="$slots.footer" class="border-t border-stroke-light bg-surface-secondary rounded-b-xl px-5 py-3">
       <slot name="footer" />
     </div>
   </div>

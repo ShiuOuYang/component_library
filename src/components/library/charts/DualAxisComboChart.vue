@@ -42,9 +42,9 @@
   @click="handleResetZoom"
   class="
     absolute top-2 right-2 px-3 py-1.5
-    bg-white/30 hover:bg-white/80
-    text-gray-600 text-sm
-    rounded-md border border-gray-200
+    bg-surface-primary/30 hover:bg-surface-primary/80
+    text-content-secondary text-sm
+    rounded-md border border-stroke-light
     backdrop-blur
     shadow-sm
     opacity-70 hover:opacity-100
@@ -1271,7 +1271,7 @@ const renderTitle = () => {
     .attr('x', chartWidth.value / 2)
     .attr('y', -20)
     .attr('text-anchor', 'middle')
-    .attr('class', 'chart-title text-xl font-semibold text-gray-800')
+    .attr('class', 'chart-title text-xl font-semibold text-content-primary')
     .text(d => d);
 };
 
@@ -1412,7 +1412,7 @@ const renderLegend = () => {
       item.select('.legend-text')
         .attr('x', 20)
         .attr('y', 12)
-        .attr('class', 'legend-text text-sm text-gray-700')
+        .attr('class', 'legend-text text-sm text-content-primary')
         .text(d.label);
     });
 };
