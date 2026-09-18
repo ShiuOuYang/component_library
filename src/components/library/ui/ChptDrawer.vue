@@ -31,19 +31,19 @@
             :aria-label="props.title ? undefined : props.ariaLabel"
             :aria-labelledby="props.title ? titleId : undefined"
             tabindex="-1"
-            class="absolute bg-white shadow-2xl flex flex-col focus:outline-none"
+            class="absolute bg-surface-primary shadow-2xl flex flex-col focus:outline-none"
             :class="[panelClasses]"
             :style="panelStyle"
           >
             <div
               v-if="props.title"
-              class="flex items-center justify-between px-5 py-4 border-b border-neutral-100"
+              class="flex items-center justify-between px-5 py-4 border-b border-stroke-light"
             >
-              <h3 :id="titleId" class="font-semibold text-neutral-800">{{ props.title }}</h3>
+              <h3 :id="titleId" class="font-semibold text-content-primary">{{ props.title }}</h3>
               <button
                 v-if="props.closable"
                 type="button"
-                class="flex items-center cursor-pointer text-neutral-400 hover:text-neutral-600 transition-colors"
+                class="flex items-center cursor-pointer text-content-disabled hover:text-content-secondary transition-colors"
                 :aria-label="'關閉'"
                 @click="handleClose"
               >
@@ -55,7 +55,7 @@
               <slot />
             </div>
 
-            <div v-if="$slots.footer" class="px-5 py-3 border-t border-neutral-100 bg-neutral-50">
+            <div v-if="$slots.footer" class="px-5 py-3 border-t border-stroke-light bg-surface-secondary">
               <slot name="footer" />
             </div>
           </div>
@@ -125,10 +125,10 @@ const emit = defineEmits<{
 /** 面板定位 class */
 const panelClasses = computed(() => {
   const map: Record<DrawerPlacement, string> = {
-    left: 'left-0 top-0 bottom-0 border-r border-neutral-200',
-    right: 'right-0 top-0 bottom-0 border-l border-neutral-200',
-    top: 'top-0 left-0 right-0 border-b border-neutral-200',
-    bottom: 'bottom-0 left-0 right-0 border-t border-neutral-200',
+    left: 'left-0 top-0 bottom-0 border-r border-stroke-light',
+    right: 'right-0 top-0 bottom-0 border-l border-stroke-light',
+    top: 'top-0 left-0 right-0 border-b border-stroke-light',
+    bottom: 'bottom-0 left-0 right-0 border-t border-stroke-light',
   }
   return map[props.placement]
 })

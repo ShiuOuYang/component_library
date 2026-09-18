@@ -63,9 +63,18 @@ function withThemedRoles(base) {
       out[group].DEFAULT = value
       continue
     }
-    // accent-on-subtle → onSubtle，Tailwind 才會產出 -on-subtle 後綴
-    const key = role.slice(group.length + 1).replace(/-([a-z])/g, (_, c) => c.toUpperCase())
-    out[group][key] = value
+    /**
+     * 直接用 kebab 後綴當 key：accent-on-subtle → colors.accent['on-subtle']，
+     * Tailwind 產出 text-accent-on-subtle。
+     *
+     * ⚠️ 不要轉 camelCase。Tailwind 不會把色彩 key 再 kebab 化回來，
+     *    onSubtle 產出的是 `text-accent-onSubtle` —— 於是元件裡寫的
+     *    `text-accent-on-subtle` 變成不存在的 class，在 template 裡
+     *    完全不會報錯、只是靜靜沒有顏色。這次是 ChptExcelEditor 的
+     *    @apply 才把它炸出來（@apply 找不到 class 會讓 build 失敗），
+     *    否則整批遷移會看起來成功但其實沒有套到色。
+     */
+    out[group][role.slice(group.length + 1)] = value
   }
   return out
 }

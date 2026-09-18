@@ -432,6 +432,11 @@ const themed = {
   'surface-primary': { light: '#FFFFFF', dark: '#171717' },
   'surface-secondary': { light: '#FAFAFA', dark: '#1F1F1F' },
   'surface-tertiary': { light: '#F5F5F5', dark: '#262626' },
+  /**
+   * 軌道 / 停用填色 / 細分隔塊的底色（開關的 off 軌道、步驟連接線、
+   * 停用按鈕、工具列分隔線）。比 surface-tertiary 更明顯，但不是文字或邊框。
+   */
+  'surface-muted': { light: '#D4D4D4', dark: '#404040' },
   'surface-highlighted': { light: '#EFF6FF', dark: '#1E3A8A' },
 
   // --- 邊框 ---
@@ -448,30 +453,50 @@ const themed = {
   'accent-solid': { light: '#2563EB', dark: '#2563EB' },
   'accent-solid-hover': { light: '#1D4ED8', dark: '#1D4ED8' },
   'accent-subtle': { light: '#EFF6FF', dark: '#1E3A8A' },
+  /** 淡底的 hover 狀態；不能和 accent-subtle 同值，否則 hover 看不出變化 */
+  'accent-subtle-hover': { light: '#DBEAFE', dark: '#1E40AF' },
+  /** 淡底區塊的外框 */
+  'accent-subtle-border': { light: '#BFDBFE', dark: '#1D4ED8' },
   'accent-on-subtle': { light: '#1D4ED8', dark: '#DBEAFE' },
 
   // --- 語意：成功 ---
   success: { light: '#15803D', dark: '#4ADE80' },
   'success-solid': { light: '#15803D', dark: '#15803D' },
   'success-subtle': { light: '#F0FDF4', dark: '#14532D' },
+  /** 淡底的 hover 狀態；不能和 success-subtle 同值，否則 hover 看不出變化 */
+  'success-subtle-hover': { light: '#DCFCE7', dark: '#166534' },
+  /** 淡底區塊的外框 */
+  'success-subtle-border': { light: '#BBF7D0', dark: '#15803D' },
   'success-on-subtle': { light: '#166534', dark: '#BBF7D0' },
 
   // --- 語意：警告 ---
   warning: { light: '#A16207', dark: '#FACC15' },
   'warning-solid': { light: '#A16207', dark: '#A16207' },
   'warning-subtle': { light: '#FEFCE8', dark: '#713F12' },
+  /** 淡底的 hover 狀態；不能和 warning-subtle 同值，否則 hover 看不出變化 */
+  'warning-subtle-hover': { light: '#FEF9C3', dark: '#854D0E' },
+  /** 淡底區塊的外框 */
+  'warning-subtle-border': { light: '#FEF08A', dark: '#A16207' },
   'warning-on-subtle': { light: '#854D0E', dark: '#FEF08A' },
 
   // --- 語意：危險 ---
   danger: { light: '#B91C1C', dark: '#F87171' },
   'danger-solid': { light: '#B91C1C', dark: '#B91C1C' },
   'danger-subtle': { light: '#FEF2F2', dark: '#7F1D1D' },
+  /** 淡底的 hover 狀態；不能和 danger-subtle 同值，否則 hover 看不出變化 */
+  'danger-subtle-hover': { light: '#FEE2E2', dark: '#991B1B' },
+  /** 淡底區塊的外框 */
+  'danger-subtle-border': { light: '#FECACA', dark: '#B91C1C' },
   'danger-on-subtle': { light: '#991B1B', dark: '#FECACA' },
 
   // --- 語意：資訊 ---
   info: { light: '#0369A1', dark: '#38BDF8' },
   'info-solid': { light: '#0369A1', dark: '#0369A1' },
   'info-subtle': { light: '#F0F9FF', dark: '#0C4A6E' },
+  /** 淡底的 hover 狀態；不能和 info-subtle 同值，否則 hover 看不出變化 */
+  'info-subtle-hover': { light: '#E0F2FE', dark: '#075985' },
+  /** 淡底區塊的外框 */
+  'info-subtle-border': { light: '#BAE6FD', dark: '#0369A1' },
   'info-on-subtle': { light: '#075985', dark: '#BAE6FD' },
 }
 

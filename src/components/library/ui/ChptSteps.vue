@@ -31,7 +31,7 @@
           v-if="index < props.steps.length - 1"
           aria-hidden="true"
           class="mx-2 h-0.5 rounded-full flex-1 min-w-[24px]"
-          :class="props.steps[index + 1]?.status === 'done' ? 'bg-primary-500' : 'bg-neutral-300'"
+          :class="props.steps[index + 1]?.status === 'done' ? 'bg-accent-solid' : 'bg-surface-muted'"
         />
       </li>
     </template>
@@ -76,9 +76,9 @@ const nodeSize = computed(() => 28)
 function nodeClass(step: StepItem): string {
   const size = `${nodeSize.value}px`
   const base = `w-[${size}] h-[${size}] text-sm`
-  if (step.status === 'done') return `${base} bg-primary-500 border-primary-500 text-white`
-  if (step.status === 'process') return `${base} border-primary-500 text-primary-500 bg-primary-50`
-  return `${base} border-neutral-300 text-neutral-400 bg-white`
+  if (step.status === 'done') return `${base} bg-accent-solid border-stroke-focus text-white`
+  if (step.status === 'process') return `${base} border-stroke-focus text-accent bg-accent-subtle`
+  return `${base} border-stroke-default text-content-disabled bg-surface-primary`
 }
 
 /** 外部容器樣式 */
@@ -99,9 +99,9 @@ function stepClass(step: StepItem): string {
 
 /** 標籤樣式 */
 function labelClass(step: StepItem): string {
-  if (step.status === 'done') return 'text-primary-600'
-  if (step.status === 'process') return 'text-primary-600 font-medium'
-  return 'text-neutral-400'
+  if (step.status === 'done') return 'text-accent'
+  if (step.status === 'process') return 'text-accent font-medium'
+  return 'text-content-disabled'
 }
 </script>
 

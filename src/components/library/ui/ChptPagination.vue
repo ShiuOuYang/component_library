@@ -1,28 +1,28 @@
 <template>
   <div
     v-if="variant === 'full'"
-    class="flex items-center justify-between border-t border-neutral-200 bg-white px-4 py-3 sm:px-6"
+    class="flex items-center justify-between border-t border-stroke-light bg-surface-primary px-4 py-3 sm:px-6"
   >
     <div class="flex flex-1 justify-between sm:hidden">
-      <button type="button" @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-md border border-neutral-300 bg-white h-control-sm px-4 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">上一頁</button>
-      <button type="button" @click="nextPage" :disabled="currentPage === totalPages" class="relative ml-3 inline-flex items-center rounded-md border border-neutral-300 bg-white h-control-sm px-4 text-sm font-medium text-neutral-700 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">下一頁</button>
+      <button type="button" @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-md border border-stroke-default bg-surface-primary h-control-sm px-4 text-sm font-medium text-content-primary hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-not-allowed">上一頁</button>
+      <button type="button" @click="nextPage" :disabled="currentPage === totalPages" class="relative ml-3 inline-flex items-center rounded-md border border-stroke-default bg-surface-primary h-control-sm px-4 text-sm font-medium text-content-primary hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-not-allowed">下一頁</button>
     </div>
     <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
       <div class="flex items-center gap-4">
-        <p v-if="showSummary" class="text-sm text-neutral-700">
+        <p v-if="showSummary" class="text-sm text-content-primary">
           顯示第 <span class="font-medium">{{ startItem }}</span> 至
           <span class="font-medium">{{ endItem }}</span> 項結果，共
           <span class="font-medium">{{ totalItems }}</span> 項
         </p>
         <div v-if="showPageSize" class="flex items-center gap-2">
-          <select :value="itemsPerPage" @change="updateItemsPerPage" class="block w-full rounded-md border-0 py-1 pl-2 pr-8 text-neutral-900 ring-1 ring-inset ring-neutral-300 focus:ring-2 focus:ring-primary-600 sm:text-sm sm:leading-6 cursor-pointer">
+          <select :value="itemsPerPage" @change="updateItemsPerPage" class="block w-full rounded-md border-0 py-1 pl-2 pr-8 text-content-primary ring-1 ring-inset ring-stroke-default focus:ring-2 focus:ring-stroke-focus sm:text-sm sm:leading-6 cursor-pointer">
             <option v-for="option in pageSizeOptions" :key="option" :value="option">{{ option }} 筆/頁</option>
           </select>
         </div>
       </div>
       <div>
         <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="分頁導航">
-          <button type="button" @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-l-md h-control-sm px-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-l-md h-control-sm px-2 text-content-disabled ring-1 ring-inset ring-stroke-default hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="sr-only">上一頁</span>
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd"/></svg>
           </button>
@@ -33,11 +33,11 @@
               :aria-label="`第 ${page} 頁`"
               :aria-current="page === currentPage ? 'page' : undefined"
               @click="changePage(page)"
-              :class="[page === currentPage ? 'relative z-10 inline-flex items-center bg-primary-600 px-4 py-2 text-sm font-semibold text-white' : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-neutral-900 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50']"
+              :class="[page === currentPage ? 'relative z-10 inline-flex items-center bg-accent-solid px-4 py-2 text-sm font-semibold text-white' : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-content-primary ring-1 ring-inset ring-stroke-default hover:bg-surface-secondary']"
             >{{ page }}</button>
-            <span v-else aria-hidden="true" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-neutral-700 ring-1 ring-inset ring-neutral-300">...</span>
+            <span v-else aria-hidden="true" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-content-primary ring-1 ring-inset ring-stroke-default">...</span>
           </template>
-          <button type="button" @click="nextPage" :disabled="currentPage === totalPages" class="relative inline-flex items-center rounded-r-md h-control-sm px-2 text-neutral-400 ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          <button type="button" @click="nextPage" :disabled="currentPage === totalPages" class="relative inline-flex items-center rounded-r-md h-control-sm px-2 text-content-disabled ring-1 ring-inset ring-stroke-default hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="sr-only">下一頁</span>
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"/></svg>
           </button>
@@ -48,21 +48,21 @@
 
   <!-- Compact 模式（原 PaginationControls） -->
   <nav v-else aria-label="分頁導航" class="flex items-center gap-2.5">
-    <div v-if="showSummary && totalItems > 0" class="text-xs text-neutral-500 mr-1 px-2 rounded h-control-sm flex items-center border border-neutral-300" :class="bgColor">共 {{ totalItems }} 筆</div>
+    <div v-if="showSummary && totalItems > 0" class="text-xs text-content-tertiary mr-1 px-2 rounded h-control-sm flex items-center border border-stroke-default" :class="bgColor">共 {{ totalItems }} 筆</div>
 
-    <div v-if="showPageSize" class="flex items-center gap-1 text-xs text-neutral-700 border border-neutral-300 rounded px-2 h-control-sm" :class="bgColor">
+    <div v-if="showPageSize" class="flex items-center gap-1 text-xs text-content-primary border border-stroke-default rounded px-2 h-control-sm" :class="bgColor">
       <span>每頁</span>
-      <input type="number" :value="itemsPerPage" min="1" max="1000" aria-label="每頁筆數" class="w-12 h-control-xs border border-neutral-300 rounded-sm text-center px-1 text-xs bg-white focus:outline-none focus:border-primary-500" @change="handlePageSizeInput" />
+      <input type="number" :value="itemsPerPage" min="1" max="1000" aria-label="每頁筆數" class="w-12 h-control-xs border border-stroke-default rounded-sm text-center px-1 text-xs bg-surface-primary focus:outline-none focus:border-stroke-focus" @change="handlePageSizeInput" />
       <span>筆</span>
     </div>
 
-    <div class="flex items-center rounded border border-neutral-300 overflow-hidden" :class="bgColor">
+    <div class="flex items-center rounded border border-stroke-default overflow-hidden" :class="bgColor">
       <button type="button" :class="btnClass" class="border-r" @click="changePage(1)" :disabled="currentPage === 1" title="第一頁" :aria-label="'第一頁'"><span aria-hidden="true" class="text-xs">«</span></button>
       <button type="button" :class="btnClass" class="border-r" @click="changePage(currentPage - 1)" :disabled="currentPage === 1" title="上一頁" :aria-label="'上一頁'"><span aria-hidden="true" class="text-xs">‹</span></button>
-      <div class="flex items-center h-control-sm px-1 bg-white border-r border-neutral-300">
-        <input type="number" :value="currentPage" min="1" :max="totalPages" aria-label="目前頁碼" class="w-10 h-control-xs text-center border border-neutral-300 rounded-sm text-xs px-1 focus:outline-none focus:border-primary-500" @change="handlePageInput" />
-        <span class="mx-1 text-neutral-700 text-xs">/</span>
-        <span class="text-xs text-neutral-700">{{ totalPages || 0 }}</span>
+      <div class="flex items-center h-control-sm px-1 bg-surface-primary border-r border-stroke-default">
+        <input type="number" :value="currentPage" min="1" :max="totalPages" aria-label="目前頁碼" class="w-10 h-control-xs text-center border border-stroke-default rounded-sm text-xs px-1 focus:outline-none focus:border-stroke-focus" @change="handlePageInput" />
+        <span class="mx-1 text-content-primary text-xs">/</span>
+        <span class="text-xs text-content-primary">{{ totalPages || 0 }}</span>
       </div>
       <button type="button" :class="btnClass" class="border-r" @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages || totalPages === 0" title="下一頁" :aria-label="'下一頁'"><span aria-hidden="true" class="text-xs">›</span></button>
       <button type="button" :class="btnClass" @click="changePage(totalPages)" :disabled="currentPage === totalPages || totalPages === 0" title="最後一頁" :aria-label="'最後一頁'"><span aria-hidden="true" class="text-xs">»</span></button>
@@ -189,7 +189,7 @@ const displayedPages = computed<(number | string)[]>(() => {
 })
 
 const btnClass =
-  'h-control-sm min-w-control-sm flex items-center justify-center bg-transparent border-none border-neutral-300 cursor-pointer px-1.5 text-neutral-700 transition-colors text-xs hover:bg-primary-50 hover:text-primary-500 disabled:text-neutral-400 disabled:cursor-not-allowed disabled:bg-neutral-100'
+  'h-control-sm min-w-control-sm flex items-center justify-center bg-transparent border-none border-stroke-default cursor-pointer px-1.5 text-content-primary transition-colors text-xs hover:bg-accent-subtle hover:text-accent disabled:text-content-disabled disabled:cursor-not-allowed disabled:bg-surface-tertiary'
 
 /**
  * 切換頁碼。

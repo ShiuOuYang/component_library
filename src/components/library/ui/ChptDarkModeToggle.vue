@@ -2,7 +2,7 @@
   <div class="flex flex-col items-center gap-2" :class="{ 'relative z-10': variant === 'fancy' }">
     <!-- 控制選項 -->
     <div v-if="showControls" class="controls mb-2">
-      <label class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-300">
+      <label class="flex items-center gap-2 text-sm text-content-primary dark:text-neutral-300">
         <input
           type="checkbox"
           :checked="mode === 'system'"
@@ -59,7 +59,7 @@
       @click="handleToggle"
       :class="[
         'px-4 py-2 rounded-lg border transition-all duration-300 font-medium min-w-[100px] cursor-pointer',
-        isDarkMode ? 'bg-neutral-700 border-neutral-600 text-neutral-50' : 'bg-neutral-100 border-neutral-300 text-neutral-700'
+        isDarkMode ? 'bg-neutral-700 border-neutral-600 text-neutral-50' : 'bg-surface-tertiary border-stroke-default text-content-primary'
       ]"
     >
       {{ isDarkMode ? '🌙 Dark' : '☀️ Light' }}

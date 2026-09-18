@@ -10,7 +10,7 @@
         class="relative flex items-center justify-center rounded-full border-2"
         :class="[
           sizeClass,
-          isChecked(item) ? borderColorClass : 'border-neutral-300',
+          isChecked(item) ? borderColorClass : 'border-stroke-default',
           item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
         ]"
       >
@@ -32,7 +32,7 @@
 
       <span
         v-if="props.isLabelShow"
-        :class="['select-none', props.labelSize, item.disabled ? 'text-neutral-400' : props.labelColor]"
+        :class="['select-none', props.labelSize, item.disabled ? 'text-content-disabled' : props.labelColor]"
       >
         {{ item.label }}
       </span>
@@ -101,7 +101,7 @@ const props = withDefaults(defineProps<ChptRadioProps>(), {
   errors: () => [],
   isLabelShow: true,
   labelSize: 'text-sm',
-  labelColor: 'text-neutral-700',
+  labelColor: 'text-content-primary',
   direction: 'row',
 })
 
@@ -157,14 +157,14 @@ const colorMap: Record<ColorVariant, { border: string; dot: string }> = {
 
 
 
-  primary: { border: 'border-primary-500', dot: 'bg-primary-500' },
+  primary: { border: 'border-stroke-focus', dot: 'bg-accent-solid' },
   secondary: { border: 'border-secondary-500', dot: 'bg-secondary-500' },
-  success: { border: 'border-success-500', dot: 'bg-success-500' },
-  danger: { border: 'border-danger-500', dot: 'bg-danger-500' },
-  warning: { border: 'border-warning-500', dot: 'bg-warning-500' },
-  info: { border: 'border-info-500', dot: 'bg-info-500' },
+  success: { border: 'border-success', dot: 'bg-success-solid' },
+  danger: { border: 'border-danger', dot: 'bg-danger-solid' },
+  warning: { border: 'border-warning', dot: 'bg-warning-solid' },
+  info: { border: 'border-info-500', dot: 'bg-info-solid' },
   dark: { border: 'border-neutral-800', dot: 'bg-neutral-800' },
-  light: { border: 'border-neutral-300', dot: 'bg-neutral-300' },
+  light: { border: 'border-stroke-default', dot: 'bg-neutral-300' },
 }
 
 const borderColorClass = computed(() => colorMap[props.color]?.border ?? colorMap.primary.border)

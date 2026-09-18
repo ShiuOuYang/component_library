@@ -1,7 +1,7 @@
 <template>
   <div
     ref="containerRef"
-    class="chpt-excel-editor w-full rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden select-none"
+    class="chpt-excel-editor w-full rounded-xl border border-stroke-light bg-surface-primary shadow-sm overflow-hidden select-none"
     @mousedown="onGridMouseDown"
     @mousemove="onGridMouseMove"
     @mouseup="onGridMouseUp"
@@ -10,9 +10,9 @@
     tabindex="0"
   >
     <!-- ===== 主工具列 ===== -->
-    <div v-if="showToolbar" class="border-b border-neutral-200 bg-neutral-50">
-      <div class="flex flex-wrap items-center gap-1 px-2 py-1.5 border-b border-neutral-200">
-        <span class="px-2 text-xs font-semibold text-neutral-600">Excel 編輯器</span>
+    <div v-if="showToolbar" class="border-b border-stroke-light bg-surface-secondary">
+      <div class="flex flex-wrap items-center gap-1 px-2 py-1.5 border-b border-stroke-light">
+        <span class="px-2 text-xs font-semibold text-content-secondary">Excel 編輯器</span>
 
         <!-- 復原 / 重做 -->
         <button type="button" class="tb-btn" :disabled="!canUndo" @mousedown.prevent="undo" title="復原 (Ctrl+Z)">↩</button>
@@ -65,7 +65,7 @@
 
         <!-- 數值格式 -->
         <select
-          class="h-7 px-2 text-xs text-neutral-700 bg-white border border-neutral-200 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+          class="h-7 px-2 text-xs text-content-primary bg-surface-primary border border-stroke-light rounded focus:outline-none focus:ring-1 focus:ring-success"
           :value="activeNumFmt"
           @change="setNumFmt(($event.target as HTMLSelectElement).value)"
           title="套用數字格式"
@@ -81,13 +81,13 @@
       </div>
 
       <!-- ===== 名稱框 + 公式列 ===== -->
-      <div class="relative flex items-center gap-1 px-2 py-1 border-b border-neutral-200 bg-white">
+      <div class="relative flex items-center gap-1 px-2 py-1 border-b border-stroke-light bg-surface-primary">
         <input
-          class="w-24 px-2 py-1 text-xs font-mono text-neutral-700 bg-neutral-50 border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500 text-center"
+          class="w-24 px-2 py-1 text-xs font-mono text-content-primary bg-surface-secondary border border-stroke-default rounded focus:outline-none focus:ring-1 focus:ring-success text-center"
           :value="activeCellRef"
           readonly
         />
-        <span class="text-neutral-300">|</span>
+        <span class="text-content-disabled">|</span>
         <button type="button"
           class="tb-btn !w-7"
           @click.stop="toggleFxPanel"
@@ -99,7 +99,7 @@
           v-model="formulaBarValue"
           :disabled="!singleCellSelected"
           ref="formulaInputRef"
-          class="flex-1 px-2 py-1 text-sm text-neutral-800 border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-green-500"
+          class="flex-1 px-2 py-1 text-sm text-content-primary border border-stroke-default rounded focus:outline-none focus:ring-1 focus:ring-success"
           placeholder="輸入數值或公式，如 =SUM(A1:A3)"
           @input="onFormulaInput"
           @keydown.enter.prevent="commitFormulaBar"
@@ -114,29 +114,29 @@
         <!-- 自動完成建議 -->
         <div
           v-if="formulaSuggestions.length > 0"
-          class="absolute z-50 mt-1 w-72 max-h-56 overflow-auto bg-white border border-neutral-300 rounded-lg shadow-lg py-1"
+          class="absolute z-50 mt-1 w-72 max-h-56 overflow-auto bg-surface-primary border border-stroke-default rounded-lg shadow-lg py-1"
           style="top: 100%"
         >
           <div
             v-for="(fn, idx) in formulaSuggestions"
             :key="fn.name"
-            class="px-3 py-1.5 cursor-pointer hover:bg-green-50"
-            :class="{ 'bg-green-100': idx === activeSuggestionIndex }"
+            class="px-3 py-1.5 cursor-pointer hover:bg-success-subtle"
+            :class="{ 'bg-success-subtle-hover': idx === activeSuggestionIndex }"
             @mousedown.prevent="applySuggestion(fn)"
           >
-            <span class="font-mono font-semibold text-green-700">{{ fn.name }}</span>
-            <span class="text-xs text-neutral-500 ml-2">{{ fn.description }}</span>
+            <span class="font-mono font-semibold text-success">{{ fn.name }}</span>
+            <span class="text-xs text-content-tertiary ml-2">{{ fn.description }}</span>
           </div>
         </div>
 
         <!-- 函式參數提示 -->
         <div
           v-if="formulaHint"
-          class="absolute left-24 right-2 z-40 mt-1 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg shadow-sm flex items-center gap-2"
+          class="absolute left-24 right-2 z-40 mt-1 px-3 py-1.5 bg-info-subtle border border-info-subtle-border rounded-lg shadow-sm flex items-center gap-2"
           style="top: 100%"
         >
-          <span class="font-mono font-semibold text-blue-700">{{ formulaHint.name }}({{ formulaHint.args }})</span>
-          <span class="text-xs text-blue-600">{{ formulaHint.description }}</span>
+          <span class="font-mono font-semibold text-info-on-subtle">{{ formulaHint.name }}({{ formulaHint.args }})</span>
+          <span class="text-xs text-accent">{{ formulaHint.description }}</span>
         </div>
       </div>
     </div>
@@ -144,21 +144,21 @@
     <!-- ===== 插入函式面板 ===== -->
     <div
       v-if="showFxPanel"
-      class="border-b border-neutral-200 bg-neutral-50 px-3 py-2 relative z-40"
+      class="border-b border-stroke-light bg-surface-secondary px-3 py-2 relative z-40"
     >
       <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold text-neutral-600">選擇函式</span>
-        <button type="button" class="text-xs text-neutral-400 hover:text-neutral-600" @click="showFxPanel = false">✕</button>
+        <span class="text-xs font-semibold text-content-secondary">選擇函式</span>
+        <button type="button" class="text-xs text-content-disabled hover:text-content-secondary" @click="showFxPanel = false">✕</button>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-1.5 max-h-40 overflow-auto">
         <button type="button"
           v-for="fn in FUNCTION_LIST"
           :key="fn.name"
-          class="text-left px-2 py-1.5 text-xs bg-white border border-neutral-200 rounded hover:border-green-400 hover:bg-green-50 transition-colors"
+          class="text-left px-2 py-1.5 text-xs bg-surface-primary border border-stroke-light rounded hover:border-green-400 hover:bg-success-subtle transition-colors"
           @click="insertFunction(fn.name)"
         >
-          <span class="font-mono font-semibold text-green-700">{{ fn.name }}</span>
-          <span class="block text-[10px] text-neutral-500">{{ fn.description }}</span>
+          <span class="font-mono font-semibold text-success">{{ fn.name }}</span>
+          <span class="block text-[10px] text-content-tertiary">{{ fn.description }}</span>
         </button>
       </div>
     </div>
@@ -238,7 +238,7 @@
     </div>
 
     <!-- ===== 工作表頁籤 ===== -->
-    <div v-if="showSheetTabs" class="flex items-center gap-1 px-2 py-1.5 border-t border-neutral-200 bg-neutral-50 overflow-x-auto">
+    <div v-if="showSheetTabs" class="flex items-center gap-1 px-2 py-1.5 border-t border-stroke-light bg-surface-secondary overflow-x-auto">
       <button type="button" class="sheet-add" @click="addSheet" title="新增工作表">＋</button>
       <div
         v-for="(sheet, idx) in sheets"
@@ -1785,14 +1785,14 @@ defineExpose({
 <style scoped>
 /* ===== 工具列按鈕 ===== */
 .tb-btn {
-  @apply inline-flex items-center justify-center w-8 h-7 px-1 text-sm font-medium text-neutral-700 bg-white border border-neutral-200 rounded transition-colors duration-150;
-  @apply hover:bg-neutral-100 hover:border-neutral-300 disabled:opacity-40 disabled:cursor-not-allowed;
+  @apply inline-flex items-center justify-center w-8 h-7 px-1 text-sm font-medium text-content-primary bg-surface-primary border border-stroke-light rounded transition-colors duration-150;
+  @apply hover:bg-surface-tertiary hover:border-stroke-default disabled:opacity-40 disabled:cursor-not-allowed;
 }
 .tb-btn.active {
-  @apply bg-green-100 text-green-700 border-green-300;
+  @apply bg-success-subtle-hover text-success border-success-subtle-border;
 }
 .tb-sep {
-  @apply w-px h-5 bg-neutral-300 mx-1;
+  @apply w-px h-5 bg-surface-muted mx-1;
 }
 
 .excel-grid {
@@ -1813,37 +1813,37 @@ defineExpose({
   border-spacing: 0;
 }
 .grid-corner {
-  @apply sticky z-30 top-0 left-0 w-10 min-w-[40px] h-6 min-h-[24px] bg-neutral-100 border border-neutral-300;
+  @apply sticky z-30 top-0 left-0 w-10 min-w-[40px] h-6 min-h-[24px] bg-surface-tertiary border border-stroke-default;
 }
 .grid-col-header {
-  @apply sticky top-0 text-center text-xs font-semibold text-neutral-600 bg-neutral-100 border-t border-r border-b border-neutral-300 h-6 min-h-[24px] px-1 whitespace-nowrap;
+  @apply sticky top-0 text-center text-xs font-semibold text-content-secondary bg-surface-tertiary border-t border-r border-b border-stroke-default h-6 min-h-[24px] px-1 whitespace-nowrap;
   z-index: 22;
   position: sticky;
   user-select: none;
 }
 .grid-row-header {
-  @apply sticky z-20 left-0 text-center text-xs font-semibold text-neutral-600 bg-neutral-100 border-l border-r border-b border-neutral-300 w-10 min-w-[40px] px-1;
+  @apply sticky z-20 left-0 text-center text-xs font-semibold text-content-secondary bg-surface-tertiary border-l border-r border-b border-stroke-default w-10 min-w-[40px] px-1;
   position: sticky;
   user-select: none;
 }
 .grid-cell {
-  @apply border-r border-b border-neutral-200 p-0 m-0 align-middle;
+  @apply border-r border-b border-stroke-light p-0 m-0 align-middle;
   height: 24px;
   min-height: 24px;
   position: relative;
 }
 .cell-display {
-  @apply block w-full h-full px-1.5 py-0.5 text-sm text-neutral-800 overflow-hidden whitespace-nowrap;
+  @apply block w-full h-full px-1.5 py-0.5 text-sm text-content-primary overflow-hidden whitespace-nowrap;
   line-height: 1.4;
 }
 .cell-editor {
-  @apply w-full h-full px-1.5 py-0.5 text-sm text-neutral-900 border-2 border-green-500 bg-white outline-none;
+  @apply w-full h-full px-1.5 py-0.5 text-sm text-content-primary border-2 border-success bg-surface-primary outline-none;
 }
 .cell-selected {
-  @apply bg-green-100/40;
+  @apply bg-success-subtle-hover/40;
 }
 .cell-active {
-  @apply outline outline-2 outline-offset-[-2px] outline-green-600 bg-white;
+  @apply outline outline-2 outline-offset-[-2px] outline-green-600 bg-surface-primary;
 }
 
 /* 拖曳填充把手 */
@@ -1889,19 +1889,19 @@ defineExpose({
 
 /* ===== 工作表頁籤 ===== */
 .sheet-add {
-  @apply flex items-center justify-center w-6 h-6 text-lg font-bold text-neutral-500 hover:text-green-600 hover:bg-green-50 rounded transition-colors;
+  @apply flex items-center justify-center w-6 h-6 text-lg font-bold text-content-tertiary hover:text-success hover:bg-success-subtle rounded transition-colors;
 }
 .sheet-tab {
-  @apply flex items-center gap-1 px-1 py-0.5 text-sm text-neutral-600 border border-neutral-300 rounded-md cursor-pointer transition-colors;
+  @apply flex items-center gap-1 px-1 py-0.5 text-sm text-content-secondary border border-stroke-default rounded-md cursor-pointer transition-colors;
 }
 .sheet-tab.active {
-  @apply bg-green-600 text-white border-green-600;
+  @apply bg-success-solid text-white border-green-600;
 }
 .sheet-close {
-  @apply flex items-center justify-center w-4 h-4 text-xs rounded hover:bg-white/20;
+  @apply flex items-center justify-center w-4 h-4 text-xs rounded hover:bg-surface-primary/20;
 }
 
 .sheet-rename-input {
-  @apply w-24 px-1.5 py-0.5 text-xs text-neutral-700 bg-white border border-green-300 rounded outline-none;
+  @apply w-24 px-1.5 py-0.5 text-xs text-content-primary bg-surface-primary border border-success-subtle-border rounded outline-none;
 }
 </style>

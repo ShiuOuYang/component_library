@@ -17,7 +17,7 @@
     />
     <label
       :for="id"
-      class="group relative flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm cursor-pointer peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-primary-500 peer-focus-visible:ring-offset-2"
+      class="group relative flex items-center justify-center transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-sm cursor-pointer peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-stroke-focus peer-focus-visible:ring-offset-2"
       :class="[
         sizeClasses[props.size],
         variantClasses[props.variant],
@@ -52,7 +52,7 @@
 
       <span>{{ loading ? props.loadingText : props.label }}</span>
     </label>
-    <span v-if="fileName && !loading && props.showFileName" class="text-xs text-neutral-600">{{ fileName }}</span>
+    <span v-if="fileName && !loading && props.showFileName" class="text-xs text-content-secondary">{{ fileName }}</span>
   </div>
 </template>
 
@@ -136,13 +136,13 @@ const iconValues: Record<UploaderSize, string> = {
 }
 
 const variantClasses: Record<UploaderVariant, string> = {
-  'solid-green': 'bg-green-600 hover:bg-green-700 text-white border border-transparent',
-  'solid-blue': 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent',
-  'solid-red': 'bg-red-600 hover:bg-red-700 text-white border border-transparent',
-  'soft-blue': 'bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 hover:border-blue-300',
-  'outline-gray': 'bg-white hover:bg-neutral-50 text-neutral-700 border border-neutral-300 hover:border-neutral-400',
-  ghost: 'bg-transparent hover:bg-neutral-100/10 text-neutral-300 hover:text-white border border-transparent',
-  primary: 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent',
+  'solid-green': 'bg-success-solid hover:bg-success-solid text-white border border-transparent',
+  'solid-blue': 'bg-accent-solid hover:bg-accent-solid-hover text-white border border-transparent',
+  'solid-red': 'bg-danger-solid hover:bg-red-700 text-white border border-transparent',
+  'soft-blue': 'bg-info-subtle hover:bg-info-subtle-hover text-accent border border-info-subtle-border hover:border-info-subtle-border',
+  'outline-gray': 'bg-surface-primary hover:bg-surface-secondary text-content-primary border border-stroke-default hover:border-stroke-medium',
+  ghost: 'bg-transparent hover:bg-surface-tertiary/10 text-content-disabled hover:text-white border border-transparent',
+  primary: 'bg-accent-solid hover:bg-accent-solid-hover text-white border border-transparent',
 }
 
 /**

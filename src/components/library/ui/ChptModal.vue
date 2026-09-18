@@ -35,18 +35,18 @@
             :aria-label="props.title ? undefined : props.ariaLabel"
             :aria-labelledby="props.title ? titleId : undefined"
             tabindex="-1"
-            class="relative bg-white rounded-xl shadow-2xl flex flex-col max-h-[85vh] focus:outline-none"
+            class="relative bg-surface-primary rounded-xl shadow-2xl flex flex-col max-h-[85vh] focus:outline-none"
             :style="dialogBoxStyle"
           >
             <div
               v-if="props.title"
-              class="flex items-center justify-between px-5 py-4 border-b border-neutral-100"
+              class="flex items-center justify-between px-5 py-4 border-b border-stroke-light"
             >
-              <h3 :id="titleId" class="font-semibold text-neutral-800">{{ props.title }}</h3>
+              <h3 :id="titleId" class="font-semibold text-content-primary">{{ props.title }}</h3>
               <button
                 v-if="props.closable"
                 type="button"
-                class="flex items-center cursor-pointer text-neutral-400 hover:text-neutral-600 transition-colors"
+                class="flex items-center cursor-pointer text-content-disabled hover:text-content-secondary transition-colors"
                 :aria-label="'關閉'"
                 @click="handleClose"
               >
@@ -58,7 +58,7 @@
               <slot />
             </div>
 
-            <div v-if="$slots.footer" class="px-5 py-3 border-t border-neutral-100 bg-neutral-50 rounded-b-xl">
+            <div v-if="$slots.footer" class="px-5 py-3 border-t border-stroke-light bg-surface-secondary rounded-b-xl">
               <slot name="footer" />
             </div>
           </div>
@@ -98,21 +98,21 @@
           :aria-label="props.title ? undefined : props.ariaLabel"
           :aria-labelledby="props.title ? titleId : undefined"
           tabindex="-1"
-          class="relative bg-white overflow-hidden pointer-events-auto focus:outline-none"
+          class="relative bg-surface-primary overflow-hidden pointer-events-auto focus:outline-none"
           :class="[roundedClass, shadowClass, borderClass]"
           :style="windowStyle"
           @mousedown="handleBringToFront"
         >
           <div
             ref="headerRef"
-            class="flex items-center justify-between px-4 py-3 bg-gradient-to-r border-b border-neutral-200 cursor-move select-none"
+            class="flex items-center justify-between px-4 py-3 bg-gradient-to-r border-b border-stroke-light cursor-move select-none"
             :class="headerBgColor"
             @mousedown="startDrag"
           >
             <div class="flex items-center gap-2">
               <div
                 v-show="props.draggable"
-                class="text-neutral-400 hover:text-neutral-600 transition-colors"
+                class="text-content-disabled hover:text-content-secondary transition-colors"
                 title="拖曳移動"
               >
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -128,7 +128,7 @@
               <button type="button"
                 v-if="showMinimizeButton"
                 @click="toggleMinimize"
-                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-warning-50 active:bg-warning-100 transition-all text-neutral-500 hover:text-warning-600"
+                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-warning-subtle active:bg-warning-subtle-hover transition-all text-content-tertiary hover:text-warning"
                 :title="isMinimized ? '還原' : '縮小到口袋'"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -138,7 +138,7 @@
               <button type="button"
                 v-if="showMaximizeButton"
                 @click="toggleMaximize"
-                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-neutral-200/60 active:bg-neutral-300/60 transition-all text-neutral-500 hover:text-neutral-700"
+                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-tertiary/60 active:bg-surface-muted/60 transition-all text-content-tertiary hover:text-content-primary"
                 :title="isMaximized ? '還原' : '最大化'"
               >
                 <svg v-if="isMaximized" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -152,7 +152,7 @@
               <button type="button"
                 v-if="showCloseButton"
                 @click="handleClose"
-                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-danger-50 active:bg-danger-100 transition-all text-neutral-500 hover:text-danger-500"
+                class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-danger-subtle active:bg-danger-subtle-hover transition-all text-content-tertiary hover:text-danger"
                 title="關閉"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -168,7 +168,7 @@
             </div>
             <div
               v-if="hasFooterSlot"
-              class="px-4 py-3 border-t border-neutral-200"
+              class="px-4 py-3 border-t border-stroke-light"
               :class="footerBgColor"
             >
               <slot name="footer"></slot>
@@ -180,7 +180,7 @@
             class="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize opacity-60 hover:opacity-100 transition-opacity"
             @mousedown="startResize"
           >
-            <svg class="w-4 h-4 text-neutral-400 rotate-45" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 text-content-disabled rotate-45" fill="currentColor" viewBox="0 0 20 20">
               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
             </svg>
           </div>
@@ -303,12 +303,12 @@ const props = withDefaults(defineProps<ChptModalProps>(), {
   maxHeight: undefined,
   defaultMaximized: false,
   headerBgColor: 'from-primary-50 to-primary-100',
-  headerTextColor: 'text-neutral-800',
-  borderClass: 'border border-neutral-300',
+  headerTextColor: 'text-content-primary',
+  borderClass: 'border border-stroke-default',
   roundedClass: 'rounded-lg',
   shadowClass: 'shadow-2xl',
   contentPadding: 'p-4',
-  footerBgColor: 'bg-neutral-50',
+  footerBgColor: 'bg-surface-secondary',
 })
 
 const emit = defineEmits<{

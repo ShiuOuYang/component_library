@@ -137,11 +137,11 @@ const iconValues: Record<LogoutButtonSize, string> = {
 }
 
 const variantClasses: Record<LogoutButtonVariant, string> = {
-  'soft-red': 'bg-danger-50 hover:bg-danger-100 text-danger-600 border border-danger-200 hover:border-danger-300',
-  'solid-red': 'bg-danger-600 hover:bg-danger-700 text-white border border-transparent shadow-sm hover:shadow',
-  'outline-gray': 'bg-white hover:bg-neutral-50 text-neutral-700 border border-neutral-300 hover:border-neutral-400',
-  ghost: 'bg-transparent hover:bg-neutral-100/10 text-neutral-300 hover:text-white border border-transparent',
-  primary: 'bg-primary-600 hover:bg-primary-700 text-white border border-transparent shadow-sm hover:shadow',
+  'soft-red': 'bg-danger-subtle hover:bg-danger-subtle-hover text-danger border border-danger-subtle-border hover:border-danger-subtle-border',
+  'solid-red': 'bg-danger-solid hover:bg-danger-700 text-white border border-transparent shadow-sm hover:shadow',
+  'outline-gray': 'bg-surface-primary hover:bg-surface-secondary text-content-primary border border-stroke-default hover:border-stroke-medium',
+  ghost: 'bg-transparent hover:bg-surface-tertiary/10 text-content-disabled hover:text-white border border-transparent',
+  primary: 'bg-accent-solid hover:bg-accent-solid-hover text-white border border-transparent shadow-sm hover:shadow',
 }
 
 async function handleLogout(): Promise<void> {

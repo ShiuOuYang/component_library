@@ -14,10 +14,10 @@
     <div class="rounded shadow-sm overflow-hidden">
       <div :style="tableContainerStyle" @scroll="handleScroll">
         <table>
-          <thead class="bg-neutral-50 shadow-sm">
+          <thead class="bg-surface-secondary shadow-sm">
             <tr>
               <th
-                class="py-[2px] px-[1px] bg-white border-b border-neutral-200"
+                class="py-[2px] px-[1px] bg-surface-primary border-b border-stroke-light"
                 v-for="column of innerColumns"
                 :key="column.dataIndex"
                 :class="headerStickyClass(column)"
@@ -25,7 +25,7 @@
               >
                 <div
                   class="relative flex items-center justify-center p-1 rounded transition-all duration-200"
-                  :class="[column.defaultFixed ? 'bg-primary-50' : 'hover:bg-neutral-100']"
+                  :class="[column.defaultFixed ? 'bg-accent-subtle' : 'hover:bg-surface-tertiary']"
                   :style="{ width: `${column.width}px` }"
                   @mouseover="mouseoverFixedIcon(column)"
                   @mouseleave="mouseleaveFixedIcon(column)"
@@ -33,7 +33,7 @@
                   <div class="flex items-center">
                     <span
                       class="truncate font-normal"
-                      :class="[headerFontSizeClass, column.defaultFixed ? 'text-primary-600 font-semibold' : 'text-neutral-700']"
+                      :class="[headerFontSizeClass, column.defaultFixed ? 'text-accent font-semibold' : 'text-content-primary']"
                     >
                       {{ column.title }}
                     </span>
@@ -47,14 +47,14 @@
                   >
                     <div
                       v-if="!column.defaultFixed"
-                      class="absolute cursor-pointer hover:bg-neutral-300/30 bg-white rounded-md border flex justify-center items-center right-0 top-0 w-3 h-3 z-50"
+                      class="absolute cursor-pointer hover:bg-surface-muted/30 bg-surface-primary rounded-md border flex justify-center items-center right-0 top-0 w-3 h-3 z-50"
                       @click="fixedColumn(column)"
                     >
                       <ChptIcon weight="500" color="neutral-500" size="10">keep</ChptIcon>
                     </div>
                     <div
                       v-else
-                      class="absolute cursor-pointer hover:bg-neutral-300/30 bg-white rounded-md border flex justify-center items-center right-0 top-0 w-3 h-3 z-50"
+                      class="absolute cursor-pointer hover:bg-surface-muted/30 bg-surface-primary rounded-md border flex justify-center items-center right-0 top-0 w-3 h-3 z-50"
                       @click="unFixedColumn(column)"
                     >
                       <ChptIcon weight="500" color="neutral-500" size="10">keep_off</ChptIcon>
@@ -64,7 +64,7 @@
                   <!-- 篩選按鈕 -->
                   <template v-if="props.isFilter && !hasActiveFilter(column.dataIndex)">
                     <div
-                      class="absolute cursor-pointer hover:bg-neutral-300/30 bg-white rounded-md border flex justify-center items-center right-0 bottom-0 w-3 h-3"
+                      class="absolute cursor-pointer hover:bg-surface-muted/30 bg-surface-primary rounded-md border flex justify-center items-center right-0 bottom-0 w-3 h-3"
                       @click="clickHandler($event, column)"
                     >
                       <ChptIcon weight="500" color="neutral-500" size="12">arrow_drop_down</ChptIcon>
@@ -72,7 +72,7 @@
                   </template>
                   <template v-if="props.isFilter && hasActiveFilter(column.dataIndex)">
                     <div
-                      class="absolute cursor-pointer hover:bg-neutral-300/30 bg-white rounded-md border flex justify-center items-center right-0 bottom-0 w-3 h-3"
+                      class="absolute cursor-pointer hover:bg-surface-muted/30 bg-surface-primary rounded-md border flex justify-center items-center right-0 bottom-0 w-3 h-3"
                       @click="clickHandler($event, column)"
                     >
                       <ChptIcon weight="300" color="neutral-500" size="12">filter_alt</ChptIcon>
@@ -84,12 +84,12 @@
           </thead>
 
           <tbody class="sticky top-4" :class="divideClasses">
-            <tr v-for="(row, rowIndex) in displayData" :key="rowIndex" class="hover:bg-neutral-50">
+            <tr v-for="(row, rowIndex) in displayData" :key="rowIndex" class="hover:bg-surface-secondary">
               <td
                 v-for="column in innerColumns"
                 :key="column.dataIndex"
                 class="p-0"
-                :class="[column.defaultFixed ? 'sticky left-0 bg-white z-10' : '', cellFontSizeClass]"
+                :class="[column.defaultFixed ? 'sticky left-0 bg-surface-primary z-10' : '', cellFontSizeClass]"
                 :style="{
                   width: `${column.width}px`,
                   left: `${getAccumulatedWidthByDataIndex(column)}px`,
@@ -101,7 +101,7 @@
                   :row="row"
                   :row-index="rowIndex"
                 >
-                  <div class="text-center text-neutral-700 whitespace-nowrap leading-tight py-0.5">
+                  <div class="text-center text-content-primary whitespace-nowrap leading-tight py-0.5">
                     {{ column.format ? column.format(row[column.dataIndex]) : row[column.dataIndex] }}
                   </div>
                 </slot>
@@ -125,7 +125,7 @@
       @close="clickHandler($event)"
     >
       <template #default>
-        <div class="p-0 text-sm text-neutral-700 min-w-[200px]">
+        <div class="p-0 text-sm text-content-primary min-w-[200px]">
           <div class="flex items-center justify-end gap-1 mb-1.5">
             <input
               type="text"
@@ -136,7 +136,7 @@
             <button
               type="button"
               title="全選"
-              class="p-1 cursor-pointer hover:bg-neutral-100 rounded transition-all active:scale-90 active:bg-neutral-200"
+              class="p-1 cursor-pointer hover:bg-surface-tertiary rounded transition-all active:scale-90 active:bg-surface-tertiary"
               @click="selectAllHandler"
             >
               <ChptIcon weight="500" size="20" color="neutral-400">done_all</ChptIcon>
@@ -144,7 +144,7 @@
             <button
               type="button"
               title="關閉"
-              class="p-1 cursor-pointer hover:bg-neutral-100 rounded transition-all active:scale-90 active:bg-neutral-200"
+              class="p-1 cursor-pointer hover:bg-surface-tertiary rounded transition-all active:scale-90 active:bg-surface-tertiary"
               @click="clickHandler($event)"
             >
               <ChptIcon weight="500" size="20" color="neutral-400">close</ChptIcon>
@@ -490,10 +490,10 @@ const tableContainerStyle = computed<CSSProperties>(() => {
 /** header 固定 class */
 function headerStickyClass(column: ChptFixedTableColumn): string[] {
   if (currentScrollDirection.value === 'vertical') {
-    return [column.defaultFixed ? 'sticky top-0 bg-white z-20' : 'sticky top-0 bg-white z-10']
+    return [column.defaultFixed ? 'sticky top-0 bg-surface-primary z-20' : 'sticky top-0 bg-surface-primary z-10']
   }
   if (currentScrollDirection.value === 'horizontal') {
-    return [column.defaultFixed ? 'sticky top-0 left-0 bg-white z-20' : 'sticky top-0 bg-white z-10']
+    return [column.defaultFixed ? 'sticky top-0 left-0 bg-surface-primary z-20' : 'sticky top-0 bg-surface-primary z-10']
   }
   return []
 }

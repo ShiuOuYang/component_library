@@ -11,11 +11,11 @@
       {{ props.icon }}
     </ChptIcon>
 
-    <p class="text-neutral-500 font-medium mb-1" :class="textSizeClass">
+    <p class="text-content-tertiary font-medium mb-1" :class="textSizeClass">
       <slot>{{ props.title }}</slot>
     </p>
 
-    <p v-if="props.description" class="text-sm text-neutral-400 max-w-md">
+    <p v-if="props.description" class="text-sm text-content-disabled max-w-md">
       {{ props.description }}
     </p>
 

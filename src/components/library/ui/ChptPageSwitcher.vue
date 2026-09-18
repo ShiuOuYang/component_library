@@ -14,7 +14,7 @@
     <transition name="slide-fade">
       <div
         v-if="isExpanded"
-        class="absolute left-2 top-0 bg-white/98 backdrop-blur-md rounded-r-xl shadow-2xl border-2 border-primary-200 overflow-hidden"
+        class="absolute left-2 top-0 bg-surface-primary/95 backdrop-blur-md rounded-r-xl shadow-2xl border-2 border-accent-subtle-border overflow-hidden"
         style="min-width: 220px"
       >
         <!-- 頂部標題 -->
@@ -34,8 +34,8 @@
             :class="[
               'w-full px-4 py-2.5 text-left text-sm transition-all duration-200 flex items-center gap-3',
               isCurrentPage(page.path)
-                ? 'bg-primary-50 text-primary-700 font-medium border-l-4 border-primary-600'
-                : 'text-neutral-700 hover:bg-neutral-50 hover:text-primary-600 border-l-4 border-transparent'
+                ? 'bg-accent-subtle text-accent-strong font-medium border-l-4 border-stroke-focus'
+                : 'text-content-primary hover:bg-surface-secondary hover:text-accent border-l-4 border-transparent'
             ]"
           >
             <!-- 圖標（未提供時留一個等寬的空位，讓各列標題仍然對齊） -->
@@ -48,7 +48,7 @@
             <!-- 當前頁面指示器 -->
             <svg
               v-if="isCurrentPage(page.path)"
-              class="w-4 h-4 text-primary-600"
+              class="w-4 h-4 text-accent"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -62,7 +62,7 @@
         </div>
 
         <!-- 底部提示 -->
-        <div class="px-4 py-2 bg-neutral-50 text-xs text-neutral-500 border-t border-neutral-200">
+        <div class="px-4 py-2 bg-surface-secondary text-xs text-content-tertiary border-t border-stroke-light">
           {{ props.footerHint }}
         </div>
       </div>

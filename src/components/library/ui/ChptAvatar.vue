@@ -24,7 +24,7 @@
     <!-- 線上狀態圓點 -->
     <span
       v-if="props.showStatus"
-      class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white"
+      class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-surface-primary"
       :class="statusColorClass"
     ></span>
   </span>
@@ -97,13 +97,13 @@ const shapeClass = computed(() =>
 /** 文字頭像背景色 */
 const variantBgClass = computed(() => {
   const map: Record<AvatarVariant, string> = {
-    primary: 'bg-primary-100',
+    primary: 'bg-accent-subtle',
     secondary: 'bg-secondary-100',
-    success: 'bg-success-100',
-    warning: 'bg-warning-100',
-    danger: 'bg-danger-100',
-    info: 'bg-info-100',
-    neutral: 'bg-neutral-200',
+    success: 'bg-success-subtle-hover',
+    warning: 'bg-warning-subtle-hover',
+    danger: 'bg-danger-subtle-hover',
+    info: 'bg-info-subtle-hover',
+    neutral: 'bg-surface-tertiary',
   }
   return map[props.variant] ?? map.neutral
 })
@@ -111,20 +111,20 @@ const variantBgClass = computed(() => {
 /** 文字頭像文字色 */
 const variantTextClass = computed(() => {
   const map: Record<AvatarVariant, string> = {
-    primary: 'text-primary-700',
+    primary: 'text-accent-strong',
     secondary: 'text-secondary-600',
-    success: 'text-success-700',
-    warning: 'text-warning-800',
-    danger: 'text-danger-700',
-    info: 'text-info-700',
-    neutral: 'text-neutral-700',
+    success: 'text-success',
+    warning: 'text-warning-on-subtle',
+    danger: 'text-danger',
+    info: 'text-info',
+    neutral: 'text-content-primary',
   }
   return map[props.variant] ?? map.neutral
 })
 
 /** 狀態圓點色 */
 const statusColorClass = computed(
-  () => props.statusColor || 'bg-success-500'
+  () => props.statusColor || 'bg-success-solid'
 )
 
 /** 名稱縮寫（最多取前兩個詞的首字母） */

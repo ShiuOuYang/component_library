@@ -21,9 +21,10 @@
     "check:docs": "node scripts/check-docs-routes.mjs",
     "check:buttons": "node scripts/check-button-type.mjs",
     "check:contrast": "node scripts/check-contrast.mjs",
+    "check:theme": "node scripts/check-theme-colors.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "npm run typecheck && npm run check:boundary && npm run check:legacy && npm run check:docs && npm run check:buttons && npm run check:contrast && npm run lint && npm run test:coverage && npm run build"
+    "verify": "npm run typecheck && npm run check:boundary && npm run check:legacy && npm run check:docs && npm run check:buttons && npm run check:contrast && npm run check:theme && npm run lint && npm run test:coverage && npm run build"
   },
   "peerDependencies": {
     "vue": "^3.5.0",

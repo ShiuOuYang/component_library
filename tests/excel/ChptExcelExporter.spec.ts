@@ -170,7 +170,7 @@ describe('ChptExcelExporter', () => {
       // 高度取自 control token（lg = 48px），與 ChptButton 同一套
       expect(button.classes()).toContain('h-control-lg')
       expect(button.classes().join(' ')).toContain('text-lg') // size=lg
-      expect(button.classes().join(' ')).toContain('bg-blue-600') // variant=blue
+      expect(button.classes()).toContain('bg-accent-solid') // variant=solid-blue → 主題化品牌實心底
       expect(button.classes()).toContain('my-extra')
       wrapper.unmount()
     })
@@ -179,8 +179,9 @@ describe('ChptExcelExporter', () => {
       const wrapper = await mountExporter({ data: [], variant: 'blue' })
 
       const classes = wrapper.find('button').classes().join(' ')
-      expect(classes).toContain('bg-neutral-300')
-      expect(classes).not.toContain('bg-blue-600')
+      // 停用樣式現在走主題化角色（surface-muted 是軌道／停用填色）
+      expect(classes).toContain('bg-surface-muted')
+      expect(classes).not.toContain('bg-accent-solid')
       wrapper.unmount()
     })
   })

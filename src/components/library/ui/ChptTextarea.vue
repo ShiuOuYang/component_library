@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col gap-1" :class="props.fullWidth ? 'w-full' : ''">
     <div v-if="props.label || props.showCount" class="flex justify-between items-center">
-      <label v-if="props.label" :for="id" class="text-sm text-neutral-600 whitespace-nowrap">
+      <label v-if="props.label" :for="id" class="text-sm text-content-secondary whitespace-nowrap">
         {{ props.label }}
       </label>
-      <span v-if="props.showCount" class="text-xs text-neutral-400">
+      <span v-if="props.showCount" class="text-xs text-content-disabled">
         {{ String(props.modelValue || '').length }}/{{ props.maxlength }}
       </span>
     </div>
@@ -29,13 +29,13 @@
         props.fullWidth ? 'w-full' : '',
         props.autosize ? 'overflow-hidden' : '',
         props.errorText
-          ? 'border-danger-400 focus:border-danger-500 focus:ring-danger-500'
-          : 'border-neutral-300 focus:border-primary-500 focus:ring-primary-500',
-        props.disabled ? 'bg-neutral-100 cursor-not-allowed text-neutral-400' : 'bg-white',
+          ? 'border-danger focus:border-danger focus:ring-danger'
+          : 'border-stroke-default focus:border-stroke-focus focus:ring-stroke-focus',
+        props.disabled ? 'bg-surface-tertiary cursor-not-allowed text-content-disabled' : 'bg-surface-primary',
       ]"
     />
 
-    <p v-if="props.errorText" :id="errorId" role="alert" class="text-xs text-danger-500">
+    <p v-if="props.errorText" :id="errorId" role="alert" class="text-xs text-danger">
       {{ props.errorText }}
     </p>
   </div>

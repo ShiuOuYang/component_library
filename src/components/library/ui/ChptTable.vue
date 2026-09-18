@@ -1,7 +1,7 @@
 <template>
   <div class="w-full font-sans mb-5 flex flex-col" :class="[props.containerBgColor, props.containerRounded, props.containerShadow, props.fontSize]">
     <!-- 搜尋和分頁控制區 -->
-    <div class="flex justify-between items-center px-3 py-2 border-b border-neutral-100" :class="props.controlBgColor">
+    <div class="flex justify-between items-center px-3 py-2 border-b border-stroke-light" :class="props.controlBgColor">
       <div class="flex items-center gap-2.5">
         <!-- 搜尋容器 -->
         <div class="relative flex items-center">
@@ -9,7 +9,7 @@
             type="text"
             v-model="searchQuery"
             :placeholder="searchPlaceholder"
-            class="w-48 h-7 px-2.5 border border-neutral-300 rounded text-xs text-neutral-700 bg-white transition-colors shadow-inner focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-100"
+            class="w-48 h-7 px-2.5 border border-stroke-default rounded text-xs text-content-primary bg-surface-primary transition-colors shadow-inner focus:outline-none focus:border-stroke-focus focus:ring-2 focus:ring-primary-100"
             @keyup.enter="performSearch"
           />
         </div>
@@ -25,7 +25,7 @@
           :current-page="currentPage"
           :items-per-page="pageSize"
           :total-items="sortedAndFilteredData.length"
-          bg-color="bg-neutral-50"
+          bg-color="bg-surface-secondary"
           @update:current-page="handlePageChange"
           @update:items-per-page="handlePageSizeChange"
         />
@@ -35,7 +35,7 @@
     </div>
 
     <!-- 表格內容 -->
-    <div class="w-full overflow-x-auto mb-0 border-t border-b border-neutral-200">
+    <div class="w-full overflow-x-auto mb-0 border-t border-b border-stroke-light">
       <table class="w-full border-collapse text-xs whitespace-nowrap min-w-max">
         <thead>
           <tr>
@@ -44,13 +44,13 @@
               :key="index"
               :style="column.style"
               :class="[
-                'bg-gradient-to-b font-medium py-2 px-1.5 text-center border-b border-neutral-300 sticky top-0 z-10 whitespace-nowrap tracking-wide shadow-sm',
+                'bg-gradient-to-b font-medium py-2 px-1.5 text-center border-b border-stroke-default sticky top-0 z-10 whitespace-nowrap tracking-wide shadow-sm',
                 props.headerBgGradient,
                 props.headerTextColor,
                 {
                   'cursor-pointer select-none relative hover:from-primary-50 hover:to-primary-100': isColumnClickable(column),
                   'from-primary-50 to-primary-100': getColumnSortInfo(column.key) !== null,
-                  'text-primary-500': getColumnSortInfo(column.key) !== null
+                  'text-accent': getColumnSortInfo(column.key) !== null
                 }
               ]"
               scope="col"
@@ -73,21 +73,21 @@
                   <!-- 排序優先順序編號（多欄排序時顯示） -->
                   <span
                     v-if="sortColumns.length > 1 && getColumnSortInfo(column.key) !== null"
-                    class="text-[9px] leading-none text-primary-500 font-bold min-w-[10px] text-center"
+                    class="text-[9px] leading-none text-accent font-bold min-w-[10px] text-center"
                   >{{ getColumnSortInfo(column.key)!.index + 1 }}</span>
                   <!-- 上下箭頭 -->
                   <span class="flex flex-col items-center gap-0">
                     <span
                       class="text-[10px] leading-none transition-all duration-200"
                       :class="getColumnSortInfo(column.key)?.direction === 'asc' 
-                        ? 'text-primary-500 font-bold opacity-100'
-                        : 'text-neutral-500'"
+                        ? 'text-accent font-bold opacity-100'
+                        : 'text-content-tertiary'"
                     >▲</span>
                     <span
                       class="text-[10px] leading-none transition-all duration-200"
                       :class="getColumnSortInfo(column.key)?.direction === 'desc' 
-                        ? 'text-primary-500 font-bold opacity-100'
-                        : 'text-neutral-500'"
+                        ? 'text-accent font-bold opacity-100'
+                        : 'text-content-tertiary'"
                     >▼</span>
                   </span>
                 </span>
@@ -97,7 +97,7 @@
         </thead>
         <tbody>
           <tr v-if="paginatedData.length === 0">
-            <td :colspan="displayColumns.length" class="py-5 text-center text-neutral-500 italic bg-neutral-50">{{ noDataText }}</td>
+            <td :colspan="displayColumns.length" class="py-5 text-center text-content-tertiary italic bg-surface-secondary">{{ noDataText }}</td>
           </tr>
           <template v-else>
             <slot
@@ -117,7 +117,7 @@
     </div>
     
     <!-- 分頁控制區 (下方) -->
-    <div v-if="paginationPosition === 'bottom' || paginationPosition === 'both'" class="flex justify-between items-center px-3 py-2 border-t border-neutral-200" :class="props.bottomControlBgColor">
+    <div v-if="paginationPosition === 'bottom' || paginationPosition === 'both'" class="flex justify-between items-center px-3 py-2 border-t border-stroke-light" :class="props.bottomControlBgColor">
       <div class="flex items-center gap-2.5">
         <slot name="bottom-left-controls"></slot>
       </div>
@@ -128,7 +128,7 @@
           :current-page="currentPage"
           :items-per-page="pageSize"
           :total-items="sortedAndFilteredData.length"
-          bg-color="bg-white"
+          bg-color="bg-surface-primary"
           @update:current-page="handlePageChange"
           @update:items-per-page="handlePageSizeChange"
         />
@@ -224,15 +224,15 @@ const props = withDefaults(defineProps<{
   customFilter: null,
   defaultSort: () => ({ column: null, direction: 'asc' }),
   paginationPosition: 'top',
-  containerBgColor: 'bg-white',
+  containerBgColor: 'bg-surface-primary',
   containerRounded: 'rounded-lg',
   containerShadow: 'shadow-sm',
-  headerBgGradient: 'from-neutral-50 to-neutral-100',
-  headerTextColor: 'text-neutral-600',
+  headerBgGradient: 'from-surface-secondary to-surface-tertiary',
+  headerTextColor: 'text-content-secondary',
   evenRowBgColor: 'rgb(250 250 250)',
   hoverRowBgColor: 'rgb(232 245 239)',
-  controlBgColor: 'bg-white',
-  bottomControlBgColor: 'bg-neutral-50',
+  controlBgColor: 'bg-surface-primary',
+  bottomControlBgColor: 'bg-surface-secondary',
   fontSize: 'text-xs'
 })
 

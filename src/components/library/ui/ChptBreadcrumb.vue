@@ -9,7 +9,7 @@
       <!-- 最後一項為目前位置 -->
       <span
         v-if="index === props.items.length - 1"
-        class="text-neutral-800 font-medium text-sm"
+        class="text-content-primary font-medium text-sm"
       >
         <slot :name="`item-${index}`" :item="item">
           {{ item.label }}
@@ -20,7 +20,7 @@
       <router-link
         v-else-if="item.to"
         :to="item.to"
-        class="text-neutral-500 hover:text-primary-600 transition-colors text-sm cursor-pointer"
+        class="text-content-tertiary hover:text-accent transition-colors text-sm cursor-pointer"
       >
         <slot :name="`item-${index}`" :item="item">
           {{ item.label }}
@@ -29,7 +29,7 @@
 
       <span
         v-else
-        class="text-neutral-500 hover:text-primary-600 transition-colors text-sm cursor-pointer"
+        class="text-content-tertiary hover:text-accent transition-colors text-sm cursor-pointer"
         @click="handleClick(item)"
       >
         <slot :name="`item-${index}`" :item="item">

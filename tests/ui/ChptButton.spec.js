@@ -66,7 +66,9 @@ describe('ChptButton', () => {
     const wrapper = mount(ChptButton, { props: { color: 'nope', size: 'huge' } })
     const classes = wrapper.find('button').classes()
 
-    expect(classes.some((c) => c.includes('primary'))).toBe(true)
+    // 品牌色現在走主題化角色 accent（淺色 primary-600 / 深色 primary-400），
+    // 不再是寫死的 primary-600 —— 見 tokens.js 的 themed
+    expect(classes.some((c) => c.includes('accent'))).toBe(true)
     expect(classes).toContain('h-control-md') // md 的高度
   })
 

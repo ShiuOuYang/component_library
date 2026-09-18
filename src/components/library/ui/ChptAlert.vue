@@ -84,10 +84,10 @@ const emit = defineEmits<{
 /** 外框樣式 */
 const alertClass = computed(() => {
   const map: Record<AlertType, string> = {
-    success: 'bg-success-50 border-success-200 text-success-800',
-    info: 'bg-info-50 border-info-200 text-info-800',
-    warning: 'bg-warning-50 border-warning-200 text-warning-800',
-    danger: 'bg-danger-50 border-danger-200 text-danger-800',
+    success: 'bg-success-subtle border-success-subtle-border text-success-on-subtle',
+    info: 'bg-info-subtle border-info-subtle-border text-info-on-subtle',
+    warning: 'bg-warning-subtle border-warning-subtle-border text-warning-on-subtle',
+    danger: 'bg-danger-subtle border-danger-subtle-border text-danger-on-subtle',
   }
   return map[props.type]
 })
@@ -98,7 +98,7 @@ const iconColorClass = computed(() => {
     success: 'text-success-500',
     info: 'text-info-500',
     warning: 'text-warning-500',
-    danger: 'text-danger-500',
+    danger: 'text-danger',
   }
   return map[props.type]
 })

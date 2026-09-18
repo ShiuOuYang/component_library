@@ -24,9 +24,9 @@
         role="dialog"
         :aria-labelledby="messageId"
         tabindex="-1"
-        class="absolute z-30 mt-2 left-1/2 -translate-x-1/2 bg-white rounded-lg shadow-2xl border border-neutral-200 p-4 w-60 focus:outline-none"
+        class="absolute z-30 mt-2 left-1/2 -translate-x-1/2 bg-surface-primary rounded-lg shadow-2xl border border-stroke-light p-4 w-60 focus:outline-none"
       >
-        <p :id="messageId" class="text-sm text-neutral-700 mb-3">
+        <p :id="messageId" class="text-sm text-content-primary mb-3">
           <slot name="message">{{ props.message }}</slot>
         </p>
         <div class="flex justify-end gap-2">

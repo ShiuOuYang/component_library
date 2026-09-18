@@ -133,6 +133,8 @@ selection.transition().duration(duration.chartUpdate)
   由 `npm run check:buttons` 在 CI 擋住（用 Vue 的 template compiler 檢查，不是正規式）。
 - **純圖示按鈕要做成正方形**：`h-control-xs min-w-control-xs`。
   WCAG 2.5.8 的 24×24 是兩個方向都要算，只給高度的話 `h-control-xs px-1` 還是只有 24×18。
+- **元件裡不要寫死淺色**（`bg-white`、`text-neutral-700`）。一律用主題化角色，
+  否則深色模式下那一塊不會跟著翻轉。由 `npm run check:theme` 在 CI 擋住。
 - **不要用 `display: none`(`class="hidden"`) 藏可聚焦元素**（例如 file input）。
   `display: none` 的元素不在可聚焦序列裡，鍵盤使用者完全無法操作（WCAG 2.1.1）。
   要視覺上隱藏但保留可聚焦性請用 `sr-only`。
@@ -183,6 +185,98 @@ selection.transition().duration(duration.chartUpdate)
 > 為什麼要有這組 token：原本沒有「一顆按鈕該多高」的基準，每個元件各自寫
 > padding，`ChptButton` 的 `sm` 只有 24px（全庫 47 處在用），還有 8px / 10px
 > 這種點不到的尺寸。沒有基準可對齊時，新寫的（含 AI 生成的）按鈕只能自己猜。
+
+## 深色模式
+
+`darkMode: 'class'` —— 由 `useDarkMode()` 在 `<html>` 掛 `.dark`。
+
+### 命名規則：有數字 = 固定，無數字 = 跟主題
+
+```html
+<div class="bg-primary-600">   <!-- 永遠 #2563EB -->
+<div class="text-accent">      <!-- 淺色 primary-700 / 深色 primary-400 -->
+```
+
+帶數字的色階是「我就是要這個顏色」的逃生門；主題化角色才會隨 `.dark` 翻轉。
+
+### 角色對照
+
+| 用途 | 角色 | 說明 |
+|---|---|---|
+| 文字 | `content-primary` / `-secondary` / `-tertiary` / `-disabled` | 主要到次要 |
+| 實心底上的文字 | `content-on-solid` | **兩個主題都是白色**（見下方） |
+| 背景 | `surface-primary` / `-secondary` / `-tertiary` / `-highlighted` | |
+| 軌道 / 停用填色 | `surface-muted` | 開關軌道、步驟連接線、停用按鈕 |
+| 邊框 | `stroke-light` / `-default` / `-medium` / `-focus` | `-focus` 是焦點框 |
+| 品牌前景 | `accent` / `accent-strong` | 文字、邊框、icon |
+| 品牌實心底 | `accent-solid` / `accent-solid-hover` | 配 `text-white` |
+| 品牌淡底 | `accent-subtle` / `-subtle-hover` / `-subtle-border` / `-on-subtle` | |
+| 語意色 | `success` / `warning` / `danger` / `info` + 同樣的 `-solid` / `-subtle` / `-on-subtle` | |
+
+### 三種用途不能混用
+
+深色模式最容易做錯的地方：
+
+```html
+<!-- ✅ 前景：深色底要往較亮的階移，所以用 accent -->
+<span class="text-accent">連結</span>
+
+<!-- ✅ 實心底：底色兩個主題都維持深色階，所以白字一直成立 -->
+<button class="bg-accent-solid text-white">送出</button>
+
+<!-- ❌ 錯：accent 在深色下是 primary-400（亮藍），白字對比只有 2.1:1 -->
+<button class="bg-accent text-white">送出</button>
+
+<!-- ✅ 淡底：配 on-subtle，不要配 -800 這種寫死的深色 -->
+<div class="bg-danger-subtle text-danger-on-subtle border border-danger-subtle-border">
+
+<!-- ❌ 錯：深色下 bg-danger-subtle 是 #7F1D1D，text-danger-800 是 #991B1B，看不見 -->
+<div class="bg-danger-subtle text-danger-800">
+```
+
+### 常見對照
+
+| 舊寫法 | 換成 |
+|---|---|
+| `bg-white` | `bg-surface-primary` |
+| `bg-neutral-50` | `bg-surface-secondary` |
+| `bg-neutral-100` | `bg-surface-tertiary` |
+| `bg-neutral-300` | `bg-surface-muted` |
+| `text-neutral-900` / `-800` / `-700` | `text-content-primary` |
+| `text-neutral-600` | `text-content-secondary` |
+| `text-neutral-500` | `text-content-tertiary` |
+| `text-neutral-400` | `text-content-disabled` |
+| `border-neutral-200` | `border-stroke-light` |
+| `border-neutral-300` | `border-stroke-default` |
+| `focus:border-primary-500` | `focus:border-stroke-focus` |
+| `bg-primary-50` | `bg-accent-subtle` |
+| `bg-primary-100`（hover） | `bg-accent-subtle-hover` |
+| `text-primary-600` | `text-accent` |
+
+### 可以保留原樣的
+
+- `text-white` / `text-black` —— 實心底上的文字，實心底不隨主題變亮
+- `bg-black/60` —— modal 遮罩、canvas 疊層，兩個主題都該是黑的
+- 元件自己的皮膚變體 —— `<ChptTooltip theme="light">`、`<ChptTag color="dark">`
+  是呼叫端指定的外觀，不是 app 主題。接上主題化角色反而會毀掉 prop 的意義
+
+### 兩道 CI 關卡
+
+- `npm run check:theme` —— 元件庫不得出現寫死的淺色 class
+- `npm run check:contrast` —— 每個「前景 × 背景」在兩個主題都要達 WCAG AA
+  （目前 58 組，最緊的是淺色警告前景 4.92:1）
+
+新增或修改主題化角色時，對比度檢查會直接告訴你哪一組不合格。
+
+### 坑
+
+**`@apply` 找不到 class 會讓 build 失敗，template 裡卻不會。** 所以寫錯的
+主題化 class（例如色彩 key 用了 camelCase，產出 `text-accent-onSubtle`）
+在模板中只會靜靜沒有顏色。改完務必確認 build 產物真的含
+`.text-accent-on-subtle{...}`，不要只看原始碼有寫。
+
+**Tailwind 預設的 opacity 階沒有 98。** `bg-surface-primary/98` 不會產出任何
+規則。可用的階是 0/5/10/20/25/30/40/50/60/70/75/80/90/95/100。
 
 ## z-index 層級（已修正衝突）
 

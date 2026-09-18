@@ -10,7 +10,7 @@
         class="relative flex items-center justify-center rounded border-2"
         :class="[
           `w-${props.size} h-${props.size}`,
-          isChecked(item) ? `bg-${props.bgColor} border-${props.bgColor}` : 'bg-white border-neutral-300',
+          isChecked(item) ? `bg-${props.bgColor} border-${props.bgColor}` : 'bg-surface-primary border-stroke-default',
           item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
         ]"
       >
@@ -34,7 +34,7 @@
 
       <span
         v-if="props.isLabelShow"
-        :class="['select-none', { 'text-neutral-500': item.disabled }]"
+        :class="['select-none', { 'text-content-tertiary': item.disabled }]"
       >
         {{ item.label }}
       </span>
@@ -99,7 +99,7 @@ const props = withDefaults(defineProps<ChptCheckboxProps>(), {
   errors: () => [],
   isLabelShow: true,
   labelSize: 'text-sm',
-  labelColor: 'text-neutral-700',
+  labelColor: 'text-content-primary',
   direction: 'row',
 })
 

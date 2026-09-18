@@ -71,6 +71,13 @@ const PAIRS = [
   ['資訊前景 × 主背景', 'info', 'surface-primary', AA_TEXT],
   ['資訊前景 × 資訊淡底', 'info-on-subtle', 'info-subtle', AA_TEXT],
 
+  // --- 淡底的 hover 狀態：背景變了，文字仍須達標 ---
+  ['品牌前景 × 品牌淡底hover', 'accent-on-subtle', 'accent-subtle-hover', AA_TEXT],
+  ['成功前景 × 成功淡底hover', 'success-on-subtle', 'success-subtle-hover', AA_TEXT],
+  ['警告前景 × 警告淡底hover', 'warning-on-subtle', 'warning-subtle-hover', AA_TEXT],
+  ['危險前景 × 危險淡底hover', 'danger-on-subtle', 'danger-subtle-hover', AA_TEXT],
+  ['資訊前景 × 資訊淡底hover', 'info-on-subtle', 'info-subtle-hover', AA_TEXT],
+
   // --- 實心底上的白字（按鈕）---
   ['實心底白字 × 實心成功底', 'content-on-solid', 'success-solid', AA_TEXT],
   ['實心底白字 × 實心警告底', 'content-on-solid', 'warning-solid', AA_TEXT],
