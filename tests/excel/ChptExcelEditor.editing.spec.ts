@@ -444,3 +444,610 @@ describe('填充控點', () => {
     wrapper.unmount()
   })
 })
+
+// ---------------------------------------------------------------------------
+// 顯示
+// ---------------------------------------------------------------------------
+
+describe('數字格式與對齊', () => {
+  async function applyFormat(wrapper: Wrapper, r: number, c: number, fmt: string) {
+    await select(wrapper, r, c)
+    const sel = wrapper.findAll('select').find((s) => s.html().includes('0.00'))!
+    await sel.setValue(fmt)
+    await nextTick()
+  }
+
+  const align = (wrapper: Wrapper, r: number, c: number) =>
+    wrapper.find(`[data-rc="${r},${c}"] .cell-display`).attributes('style') ?? ''
+
+  /** ⚠️ 已證實：手打 42 套 0.00 仍顯示 42，只有公式結果吃格式 */
+  it('手打的數字套用數字格式', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '42')
+    await applyFormat(wrapper, 1, 1, '0.00')
+    expect(cellText(wrapper, 1, 1)).toBe('42.00')
+    wrapper.unmount()
+  })
+
+  it('數字預設靠右、文字預設靠左（Excel 通用格式）', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '42')
+    await typeInCell(wrapper, 1, 2, '蘋果')
+    await typeInCell(wrapper, 1, 3, '=A1*2')
+    expect(align(wrapper, 1, 1)).toContain('right')
+    expect(align(wrapper, 1, 2)).toContain('left')
+    expect(align(wrapper, 1, 3)).toContain('right')
+    wrapper.unmount()
+  })
+
+  it('明確指定的對齊優先於通用規則', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '42')
+    await select(wrapper, 1, 1)
+    await wrapper.find('button[title="置中"]').trigger('mousedown')
+    await nextTick()
+    expect(align(wrapper, 1, 1)).toContain('center')
+    wrapper.unmount()
+  })
+})
+
+describe('切換工作表', () => {
+  /**
+   * 用滑鼠點頁籤時輸入框會先 blur 而自動提交（真實瀏覽器確認過沒問題），
+   * 但透過公開 API switchSheet() 切換沒有 blur —— 原本內容會直接消失。
+   */
+  it('透過 API 切換時，編輯中的內容先提交到原本那張表', async () => {
+    const wrapper = await mountEditor()
+    api(wrapper).addSheet()
+    await nextTick()
+    api(wrapper).switchSheet(0)
+    await nextTick()
+
+    await wrapper.find('[data-rc="3,3"]').trigger('dblclick')
+    await nextTick()
+    await wrapper.find('input.cell-editor').setValue('IN_PROGRESS')
+    // 不 blur、不按 Enter，直接切換
+    api(wrapper).switchSheet(1)
+    await nextTick()
+    expect(cellText(wrapper, 3, 3)).toBe('') // 第二張表是空的
+
+    api(wrapper).switchSheet(0)
+    await nextTick()
+    expect(cellText(wrapper, 3, 3)).toBe('IN_PROGRESS')
+    wrapper.unmount()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 合併儲存格
+// ---------------------------------------------------------------------------
+
+async function selectRange(wrapper: Wrapper, r1: number, c1: number, r2: number, c2: number) {
+  await wrapper.find(`[data-rc="${r1},${c1}"]`).trigger('mousedown')
+  await wrapper.find(`[data-rc="${r2},${c2}"]`).trigger('mousedown', { shiftKey: true })
+  document.dispatchEvent(new MouseEvent('mouseup'))
+  await nextTick()
+}
+
+async function clickMerge(wrapper: Wrapper) {
+  await wrapper.find('button[title="合併儲存格"]').trigger('mousedown')
+  await nextTick()
+}
+
+describe('合併儲存格', () => {
+  /**
+   * ⚠️ 真實瀏覽器重現：合併 A1:C1 後，D1 從 D 欄底下跑到 B 欄底下（x 651 → 491），
+   *    D2 還在 D 欄 —— 主格沒有 colspan，被蓋住的格子只是 display:none。
+   */
+  it('主格用 colspan / rowspan 撐開，被蓋住的格子不算繪', async () => {
+    const wrapper = await mountEditor()
+    await selectRange(wrapper, 2, 2, 3, 4)
+    await clickMerge(wrapper)
+
+    const origin = wrapper.find('[data-rc="2,2"]')
+    expect(origin.attributes('colspan')).toBe('3')
+    expect(origin.attributes('rowspan')).toBe('2')
+    expect(wrapper.find('[data-rc="2,3"]').exists()).toBe(false)
+    expect(wrapper.find('[data-rc="3,4"]').exists()).toBe(false)
+    // 每一列的「格子數 + colspan」加起來都等於欄數，右邊的格子才不會移位
+    for (const tr of wrapper.findAll('tbody tr').slice(0, 4)) {
+      const covered = tr.findAll('td').reduce((n, td) => n + Number(td.attributes('colspan') ?? 1), 0)
+      const rowIdx = Number(tr.find('th').text())
+      expect(covered + (rowIdx === 3 ? 3 : 0)).toBe(5)
+    }
+    wrapper.unmount()
+  })
+
+  /**
+   * ⚠️ 原本其他格子的值原封不動留著：畫面上只看到左上角，
+   *    但 SUM 照樣算進去、匯出也照樣寫出。
+   */
+  it('只保留左上角的值，其他格子的值不再參與計算', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '1')
+    await typeInCell(wrapper, 1, 2, '2')
+    await typeInCell(wrapper, 1, 3, '3')
+    await typeInCell(wrapper, 2, 4, '=SUM(A1:C1)')
+    expect(cellText(wrapper, 2, 4)).toBe('6')
+
+    await selectRange(wrapper, 1, 1, 1, 3)
+    await clickMerge(wrapper)
+    expect(cellText(wrapper, 1, 1)).toBe('1')
+    expect(cellText(wrapper, 2, 4)).toBe('1')
+    wrapper.unmount()
+  })
+
+  it('左上角是空的，保留第一個有值的格子', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 2, 'B1')
+    await typeInCell(wrapper, 2, 1, 'A2')
+    await selectRange(wrapper, 1, 1, 2, 2)
+    await clickMerge(wrapper)
+    expect(cellText(wrapper, 1, 1)).toBe('B1')
+    wrapper.unmount()
+  })
+
+  it('選取合併格再按一次是取消合併，值留在左上角', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, 'X')
+    await selectRange(wrapper, 1, 1, 1, 3)
+    await clickMerge(wrapper)
+    await select(wrapper, 1, 1)
+    await clickMerge(wrapper)
+
+    expect(wrapper.find('[data-rc="1,1"]').attributes('colspan')).toBeUndefined()
+    expect(wrapper.find('[data-rc="1,2"]').exists()).toBe(true)
+    expect(cellText(wrapper, 1, 1)).toBe('X')
+    wrapper.unmount()
+  })
+
+  it('新的合併範圍吸收範圍內原有的合併', async () => {
+    const wrapper = await mountEditor()
+    await selectRange(wrapper, 2, 2, 2, 3)
+    await clickMerge(wrapper)
+    // A1:D3 包住 B2:C2 → 合併成一個 A1:D3
+    await selectRange(wrapper, 1, 1, 3, 4)
+    await clickMerge(wrapper)
+
+    const origin = wrapper.find('[data-rc="1,1"]')
+    expect(origin.attributes('colspan')).toBe('4')
+    expect(origin.attributes('rowspan')).toBe('3')
+    expect(wrapper.find('[data-rc="2,2"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('選取範圍只蓋到合併格的一部分時，擴大到整個合併格', async () => {
+    const wrapper = await mountEditor()
+    await selectRange(wrapper, 2, 2, 3, 3)
+    await clickMerge(wrapper)
+    // A1:B2 只蓋到 B2:C3 的左上角 → 合併 A1:C3
+    await selectRange(wrapper, 1, 1, 2, 2)
+    await clickMerge(wrapper)
+
+    const origin = wrapper.find('[data-rc="1,1"]')
+    expect(origin.attributes('colspan')).toBe('3')
+    expect(origin.attributes('rowspan')).toBe('3')
+    wrapper.unmount()
+  })
+
+  it('單一格子按合併不做任何事', async () => {
+    const wrapper = await mountEditor()
+    await select(wrapper, 2, 2)
+    await clickMerge(wrapper)
+    expect(wrapper.find('[data-rc="2,2"]').attributes('colspan')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('合併可以復原，被清掉的值回來', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, 'A')
+    await typeInCell(wrapper, 1, 2, 'B')
+    await selectRange(wrapper, 1, 1, 1, 2)
+    await clickMerge(wrapper)
+    api(wrapper).undo()
+    await nextTick()
+    expect(cellText(wrapper, 1, 2)).toBe('B')
+    expect(wrapper.find('[data-rc="1,1"]').attributes('colspan')).toBeUndefined()
+    wrapper.unmount()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 鍵盤操作
+// ---------------------------------------------------------------------------
+
+async function press(wrapper: Wrapper, key: string, mods: { shift?: boolean; ctrl?: boolean } = {}) {
+  root(wrapper).dispatchEvent(
+    new KeyboardEvent('keydown', { key, shiftKey: !!mods.shift, ctrlKey: !!mods.ctrl, bubbles: true, cancelable: true })
+  )
+  await nextTick()
+}
+
+async function pressInEditor(wrapper: Wrapper, key: string, mods: { shift?: boolean; ctrl?: boolean } = {}) {
+  const input = wrapper.find('input.cell-editor')
+  await input.trigger('keydown', { key, shiftKey: !!mods.shift, ctrlKey: !!mods.ctrl })
+  await nextTick()
+}
+
+/** 作用中儲存格的 data-rc */
+function active(wrapper: Wrapper): string {
+  return wrapper.find('.cell-active').attributes('data-rc') ?? ''
+}
+
+/** 最後一次 selection-change 的範圍 */
+function lastRange(wrapper: Wrapper): string {
+  const events = wrapper.emitted('selection-change') as { range: string }[][] | undefined
+  return events?.at(-1)?.[0].range ?? ''
+}
+
+function formulaBar(wrapper: Wrapper) {
+  return wrapper.find('input.formula-input')
+}
+
+describe('鍵盤：選取範圍', () => {
+  /**
+   * ⚠️ 原本沒有 Shift+方向鍵；Shift+點擊與拖曳則把作用中儲存格移到終點
+   *    （Excel 的作用中儲存格固定在起點，之後打字、Ctrl+D、合併都以它為準）。
+   */
+  it('Shift+方向鍵延伸選取範圍，作用中儲存格不動', async () => {
+    const wrapper = await mountEditor()
+    await select(wrapper, 2, 2)
+    await press(wrapper, 'ArrowDown', { shift: true })
+    await press(wrapper, 'ArrowRight', { shift: true })
+    expect(lastRange(wrapper)).toBe('B2:C3')
+    expect(active(wrapper)).toBe('2,2')
+    await press(wrapper, 'ArrowUp', { shift: true })
+    expect(lastRange(wrapper)).toBe('B2:C2')
+    wrapper.unmount()
+  })
+
+  it('往反方向延伸時以作用中儲存格為錨點', async () => {
+    const wrapper = await mountEditor()
+    await select(wrapper, 3, 3)
+    await press(wrapper, 'ArrowUp', { shift: true })
+    await press(wrapper, 'ArrowLeft', { shift: true })
+    expect(lastRange(wrapper)).toBe('B2:C3')
+    expect(active(wrapper)).toBe('3,3')
+    wrapper.unmount()
+  })
+
+  it('Shift+點擊：作用中儲存格留在起點', async () => {
+    const wrapper = await mountEditor()
+    await selectRange(wrapper, 1, 1, 3, 2)
+    expect(active(wrapper)).toBe('1,1')
+    expect(lastRange(wrapper)).toBe('A1:B3')
+    wrapper.unmount()
+  })
+
+  it('填充控點在選取範圍的右下角', async () => {
+    const wrapper = await mountEditor()
+    await selectRange(wrapper, 1, 1, 3, 2)
+    expect(wrapper.find('.fill-handle').element.closest('[data-rc]')?.getAttribute('data-rc')).toBe('3,2')
+    wrapper.unmount()
+  })
+
+  it('Ctrl+A 全選', async () => {
+    const wrapper = await mountEditor()
+    await select(wrapper, 2, 2)
+    await press(wrapper, 'a', { ctrl: true })
+    expect(lastRange(wrapper)).toBe('A1:E8')
+    wrapper.unmount()
+  })
+
+  it('Shift+空白鍵選取整列、Ctrl+空白鍵選取整欄', async () => {
+    const wrapper = await mountEditor()
+    await select(wrapper, 3, 2)
+    await press(wrapper, ' ', { shift: true })
+    expect(lastRange(wrapper)).toBe('A3:E3')
+    await select(wrapper, 3, 2)
+    await press(wrapper, ' ', { ctrl: true })
+    expect(lastRange(wrapper)).toBe('B1:B8')
+    expect(wrapper.find('input.cell-editor').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('Shift+方向鍵碰到合併格時一次跨過整個合併格', async () => {
+    const wrapper = await mountEditor()
+    await selectRange(wrapper, 2, 2, 3, 3)
+    await clickMerge(wrapper)
+    await select(wrapper, 2, 1)
+    await press(wrapper, 'ArrowRight', { shift: true })
+    expect(lastRange(wrapper)).toBe('A2:C3')
+    wrapper.unmount()
+  })
+})
+
+describe('鍵盤：移動', () => {
+  async function column(wrapper: Wrapper) {
+    // A1:A3 有資料、A4:A5 空、A6 有資料
+    for (const r of [1, 2, 3, 6]) await typeInCell(wrapper, r, 1, 'x' + r)
+  }
+
+  it('Ctrl+方向鍵跳到資料區的邊緣', async () => {
+    const wrapper = await mountEditor()
+    await column(wrapper)
+    await select(wrapper, 1, 1)
+    await press(wrapper, 'ArrowDown', { ctrl: true })
+    expect(active(wrapper)).toBe('3,1') // 連續資料的最後一格
+    await press(wrapper, 'ArrowDown', { ctrl: true })
+    expect(active(wrapper)).toBe('6,1') // 下一個有資料的格子
+    await press(wrapper, 'ArrowDown', { ctrl: true })
+    expect(active(wrapper)).toBe('8,1') // 沒有了 → 工作表邊界
+    await press(wrapper, 'ArrowUp', { ctrl: true })
+    expect(active(wrapper)).toBe('6,1')
+    wrapper.unmount()
+  })
+
+  it('Ctrl+Shift+方向鍵延伸到資料區的邊緣', async () => {
+    const wrapper = await mountEditor()
+    await column(wrapper)
+    await select(wrapper, 1, 1)
+    await press(wrapper, 'ArrowDown', { ctrl: true, shift: true })
+    expect(lastRange(wrapper)).toBe('A1:A3')
+    expect(active(wrapper)).toBe('1,1')
+    wrapper.unmount()
+  })
+
+  it('Home / Ctrl+Home / Ctrl+End', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 5, 4, 'last')
+    await select(wrapper, 3, 3)
+    await press(wrapper, 'Home')
+    expect(active(wrapper)).toBe('3,1')
+    await press(wrapper, 'End', { ctrl: true })
+    expect(active(wrapper)).toBe('5,4')
+    await press(wrapper, 'Home', { ctrl: true })
+    expect(active(wrapper)).toBe('1,1')
+    wrapper.unmount()
+  })
+
+  it('方向鍵跳過合併格', async () => {
+    const wrapper = await mountEditor()
+    await selectRange(wrapper, 1, 1, 2, 2)
+    await clickMerge(wrapper)
+    await select(wrapper, 1, 1)
+    await press(wrapper, 'ArrowDown')
+    expect(active(wrapper)).toBe('3,1')
+    await press(wrapper, 'ArrowUp')
+    expect(active(wrapper)).toBe('1,1')
+    await press(wrapper, 'ArrowRight')
+    expect(active(wrapper)).toBe('1,3')
+    wrapper.unmount()
+  })
+
+  it('Shift+Enter 往上、Shift+Tab 往左', async () => {
+    const wrapper = await mountEditor()
+    await select(wrapper, 3, 3)
+    await press(wrapper, 'Enter', { shift: true })
+    expect(active(wrapper)).toBe('2,3')
+    await press(wrapper, 'Tab', { shift: true })
+    expect(active(wrapper)).toBe('2,2')
+    wrapper.unmount()
+  })
+
+  it('多格選取時 Enter / Tab 在範圍內循環，選取範圍不變', async () => {
+    const wrapper = await mountEditor()
+    await selectRange(wrapper, 1, 1, 2, 2)
+    await press(wrapper, 'Enter')
+    expect(active(wrapper)).toBe('2,1')
+    await press(wrapper, 'Enter')
+    expect(active(wrapper)).toBe('1,2') // 到底換下一欄
+    await press(wrapper, 'Tab')
+    expect(active(wrapper)).toBe('2,1') // 到邊換下一列
+    await press(wrapper, 'Tab')
+    await press(wrapper, 'Tab')
+    expect(active(wrapper)).toBe('1,1') // 回到開頭
+    expect(wrapper.findAll('.cell-selected')).toHaveLength(3)
+    wrapper.unmount()
+  })
+
+  it('Tab 之後 Enter 回到開始 Tab 的那一欄', async () => {
+    const wrapper = await mountEditor()
+    await select(wrapper, 1, 2)
+    await wrapper.find('[data-rc="1,2"]').trigger('dblclick')
+    await nextTick()
+    await pressInEditor(wrapper, 'Tab')
+    await wrapper.find('[data-rc="1,3"]').trigger('dblclick')
+    await nextTick()
+    await pressInEditor(wrapper, 'Tab')
+    await press(wrapper, 'Enter')
+    expect(active(wrapper)).toBe('2,2')
+    wrapper.unmount()
+  })
+})
+
+describe('鍵盤：編輯', () => {
+  it('打字開始的「輸入模式」：方向鍵提交並移動', async () => {
+    const wrapper = await mountEditor()
+    await select(wrapper, 1, 1)
+    await press(wrapper, '7')
+    await wrapper.find('input.cell-editor').setValue('72')
+    await pressInEditor(wrapper, 'ArrowRight')
+    expect(wrapper.find('input.cell-editor').exists()).toBe(false)
+    expect(cellText(wrapper, 1, 1)).toBe('72')
+    expect(active(wrapper)).toBe('1,2')
+    wrapper.unmount()
+  })
+
+  it('F2 的「編輯模式」：方向鍵留在輸入框裡移動游標', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, 'abc')
+    await select(wrapper, 1, 1)
+    await press(wrapper, 'F2')
+    await pressInEditor(wrapper, 'ArrowLeft')
+    expect(wrapper.find('input.cell-editor').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('F2 進入編輯時游標在最後，不是全選（原本一按鍵就蓋掉整格）', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, 'abc')
+    await select(wrapper, 1, 1)
+    await press(wrapper, 'F2')
+    await nextTick()
+    const input = wrapper.find('input.cell-editor').element as HTMLInputElement
+    expect([input.selectionStart, input.selectionEnd]).toEqual([3, 3])
+    wrapper.unmount()
+  })
+
+  it('F4 切換參照的 $：A1 → $A$1 → A$1 → $A1 → A1', async () => {
+    const wrapper = await mountEditor()
+    await wrapper.find('[data-rc="2,2"]').trigger('dblclick')
+    await nextTick()
+    const input = wrapper.find('input.cell-editor')
+    await input.setValue('=SUM(A1)+B2')
+    const el = input.element as HTMLInputElement
+    const seen: string[] = []
+    for (let i = 0; i < 4; i++) {
+      el.setSelectionRange(6, 6) // 游標在 A1 裡
+      await pressInEditor(wrapper, 'F4')
+      seen.push(el.value)
+    }
+    expect(seen).toEqual(['=SUM($A$1)+B2', '=SUM(A$1)+B2', '=SUM($A1)+B2', '=SUM(A1)+B2'])
+    wrapper.unmount()
+  })
+
+  it('Ctrl+Enter 把內容寫進選取範圍的每一格，公式逐格平移', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '1')
+    await typeInCell(wrapper, 2, 1, '2')
+    await selectRange(wrapper, 1, 2, 2, 2)
+    await press(wrapper, '=')
+    await wrapper.find('input.cell-editor').setValue('=A1*10')
+    await pressInEditor(wrapper, 'Enter', { ctrl: true })
+    expect(cellText(wrapper, 1, 2)).toBe('10')
+    expect(cellText(wrapper, 2, 2)).toBe('20')
+    wrapper.unmount()
+  })
+
+  it('Backspace 只清作用中那一格並進入編輯；Delete 清整個選取範圍', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, 'a')
+    await typeInCell(wrapper, 2, 1, 'b')
+    await selectRange(wrapper, 1, 1, 2, 1)
+    await press(wrapper, 'Backspace')
+    const input = wrapper.find('input.cell-editor')
+    expect((input.element as HTMLInputElement).value).toBe('')
+    await pressInEditor(wrapper, 'Escape')
+    expect(cellText(wrapper, 2, 1)).toBe('b')
+
+    await press(wrapper, 'Delete')
+    expect(cellText(wrapper, 1, 1)).toBe('')
+    expect(cellText(wrapper, 2, 1)).toBe('')
+    wrapper.unmount()
+  })
+
+  it('Ctrl+D 向下填滿：複製第一列，公式相對參照平移', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '5')
+    await typeInCell(wrapper, 2, 1, '6')
+    await typeInCell(wrapper, 3, 1, '7')
+    await typeInCell(wrapper, 1, 2, '=A1*2')
+    await selectRange(wrapper, 1, 2, 3, 2)
+    await press(wrapper, 'd', { ctrl: true })
+    expect(cellText(wrapper, 2, 2)).toBe('12')
+    expect(cellText(wrapper, 3, 2)).toBe('14')
+    wrapper.unmount()
+  })
+
+  it('Ctrl+D 只選一格時從上一格複製；Ctrl+R 從左邊複製', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, 'top')
+    await select(wrapper, 2, 1)
+    await press(wrapper, 'd', { ctrl: true })
+    expect(cellText(wrapper, 2, 1)).toBe('top')
+    await select(wrapper, 1, 2)
+    await press(wrapper, 'r', { ctrl: true })
+    expect(cellText(wrapper, 1, 2)).toBe('top')
+    wrapper.unmount()
+  })
+
+  it('多格選取時公式列仍可編輯作用中儲存格（原本整個停用）', async () => {
+    const wrapper = await mountEditor()
+    await selectRange(wrapper, 1, 1, 2, 2)
+    const bar = formulaBar(wrapper)
+    expect(bar.attributes('disabled')).toBeUndefined()
+    await bar.setValue('hello')
+    await bar.trigger('keydown', { key: 'Enter' })
+    await nextTick()
+    expect(cellText(wrapper, 1, 1)).toBe('hello')
+    wrapper.unmount()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 排序
+// ---------------------------------------------------------------------------
+
+async function sortBy(wrapper: Wrapper, direction: 'asc' | 'desc') {
+  const title = direction === 'asc' ? '依選取範圍升冪排序' : '依選取範圍降冪排序'
+  await wrapper.find(`button[title="${title}"]`).trigger('mousedown')
+  await nextTick()
+}
+
+function columnText(wrapper: Wrapper, c: number, rows: number): string[] {
+  return Array.from({ length: rows }, (_, i) => cellText(wrapper, i + 1, c))
+}
+
+describe('排序', () => {
+  /** ⚠️ 原本用 Number(a) - Number(b)：空白格被當成 0，排在正數與負數之間 */
+  it('空白不論升降冪都排在最後', async () => {
+    const wrapper = await mountEditor()
+    for (const [r, v] of [[1, '3'], [3, '-1'], [4, '2']] as const) await typeInCell(wrapper, r, 1, v)
+    await selectRange(wrapper, 1, 1, 4, 1)
+    await sortBy(wrapper, 'asc')
+    expect(columnText(wrapper, 1, 4)).toEqual(['-1', '2', '3', ''])
+    await sortBy(wrapper, 'desc')
+    expect(columnText(wrapper, 1, 4)).toEqual(['3', '2', '-1', ''])
+    wrapper.unmount()
+  })
+
+  it('數字排在文字前面，文字不分大小寫', async () => {
+    const wrapper = await mountEditor()
+    for (const [r, v] of [[1, 'banana'], [2, '10'], [3, 'Apple'], [4, '9']] as const) await typeInCell(wrapper, r, 1, v)
+    await selectRange(wrapper, 1, 1, 4, 1)
+    await sortBy(wrapper, 'asc')
+    expect(columnText(wrapper, 1, 4)).toEqual(['9', '10', 'Apple', 'banana'])
+    wrapper.unmount()
+  })
+
+  it('依作用中儲存格所在的欄排序，整列一起移動', async () => {
+    const wrapper = await mountEditor()
+    for (const [r, a, b] of [[1, 'x', '3'], [2, 'y', '1'], [3, 'z', '2']] as const) {
+      await typeInCell(wrapper, r, 1, a)
+      await typeInCell(wrapper, r, 2, b)
+    }
+    // 從 B1 拖到 A3：作用中儲存格在 B 欄
+    await selectRange(wrapper, 1, 2, 3, 1)
+    await sortBy(wrapper, 'asc')
+    expect(columnText(wrapper, 2, 3)).toEqual(['1', '2', '3'])
+    expect(columnText(wrapper, 1, 3)).toEqual(['y', 'z', 'x'])
+    wrapper.unmount()
+  })
+
+  /** ⚠️ 原本公式原封不動搬到別列：=A1*10 搬到第 3 列還是參照 A1，結果錯位 */
+  it('公式跟著整列移動，相對參照指向同一列', async () => {
+    const wrapper = await mountEditor()
+    for (const [r, v] of [[1, '3'], [2, '1'], [3, '2']] as const) {
+      await typeInCell(wrapper, r, 1, v)
+      await typeInCell(wrapper, r, 2, `=A${r}*10`)
+    }
+    await selectRange(wrapper, 1, 1, 3, 2)
+    await sortBy(wrapper, 'asc')
+    expect(columnText(wrapper, 1, 3)).toEqual(['1', '2', '3'])
+    expect(columnText(wrapper, 2, 3)).toEqual(['10', '20', '30'])
+    wrapper.unmount()
+  })
+
+  it('範圍內有合併格時不排序（Excel 會拒絕）', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '2')
+    await typeInCell(wrapper, 3, 1, '1')
+    await selectRange(wrapper, 1, 2, 2, 3)
+    await clickMerge(wrapper)
+    await selectRange(wrapper, 1, 1, 3, 3)
+    await sortBy(wrapper, 'asc')
+    expect(columnText(wrapper, 1, 3)).toEqual(['2', '', '1'])
+    wrapper.unmount()
+  })
+})

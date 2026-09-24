@@ -99,7 +99,6 @@
         </button>
         <input
           v-model="formulaBarValue"
-          :disabled="!singleCellSelected"
           ref="formulaInputRef"
           class="formula-input flex-1 px-2 py-1 text-sm text-content-primary border border-stroke-default rounded focus:outline-none focus:ring-1 focus:ring-success"
           placeholder="輸入數值或公式，如 =SUM(A1:A3)"
@@ -201,18 +200,24 @@
                 @mousedown.stop.prevent="startResizeRow(r, $event)"
               ></span>
             </th>
+            <!--
+              合併範圍：主格用 colspan / rowspan 撐開，被蓋住的格子不算繪。
+              ⚠️ 原本主格沒有 colspan，只把被蓋住的格子設成 display:none ——
+                 那一列少了幾個 <td>，右邊的格子整排往左位移（合併 A1:C1 後 D1 跑到 B 欄底下）。
+            -->
+            <template v-for="c in colCount" :key="c">
             <td
-              v-for="c in colCount"
-              :key="c"
+              v-if="!isMergedChild(r, c)"
               class="grid-cell"
               :data-rc="r + ',' + c"
+              :colspan="mergeAt(r, c)?.cols"
+              :rowspan="mergeAt(r, c)?.rows"
               :class="[
                 cellClass(r, c),
-                isMergedChild(r, c) ? 'hidden' : '',
                 isFrozenCol(c) ? 'sticky-col' : '',
                 isFrozenRow(r) ? 'sticky-row' : ''
               ]"
-              :style="[cellStyle(r, c), cellColWidth(c), cellRowHeight(r), frozenCellStyle(r, c)]"
+              :style="[cellStyle(r, c), cellSpanSize(r, c), frozenCellStyle(r, c)]"
               @mousedown.prevent="onCellMouseDown(r, c, $event)"
               @dblclick="startEditing(r, c)"
             >
@@ -229,11 +234,12 @@
               </span>
               <!-- 拖曳填充把手 -->
               <span
-                v-if="r === activeR && c === activeC && editable"
+                v-if="r === fillHandleCell.r && c === fillHandleCell.c && editable"
                 class="fill-handle"
                 @mousedown.prevent.stop="onFillHandleMouseDown"
               ></span>
             </td>
+            </template>
           </tr>
         </tbody>
       </table>
@@ -279,6 +285,7 @@ import { applyStructuralChange } from './sheetOps'
 import { parseTSV, toTSV } from './clipboard'
 import { buildWorkbook } from './xlsxExport'
 import { extendSeries } from './autofill'
+import { formatValue, generalAlign, sortCompare, type CellAlign } from './values'
 import { shiftFormula } from './formula/refRewrite'
 
 /**
@@ -296,7 +303,6 @@ import { shiftFormula } from './formula/refRewrite'
  * - 匯出 .xlsx
  */
 
-type CellAlign = 'left' | 'center' | 'right'
 
 interface CellStyle {
   bold?: boolean
@@ -390,6 +396,11 @@ const activeC = ref(1)
 // ===== 編輯狀態 =====
 const editing = ref<{ r: number; c: number } | null>(null)
 const editValue = ref<string | number>('')
+/**
+ * 輸入模式（直接打字開始）：方向鍵提交並移動
+ * 編輯模式（F2 / 雙擊）：方向鍵在文字裡移動游標
+ */
+const editMode = ref<'enter' | 'edit'>('edit')
 const formulaBarValue = ref('')
 
 // ===== 互動狀態 =====
@@ -470,15 +481,38 @@ const singleCellSelected = computed(
   () => selection.startR === selection.endR && selection.startC === selection.endC
 )
 
-/** 合併主格：傳回所在合併範圍的左上角，否則同座標 */
-function mergeOrigin(r: number, c: number): { r: number; c: number } {
+type MergeRange = SheetData['merges'][string]
+
+/**
+ * 每個被合併的格子 → 它所屬的合併範圍。
+ * 算繪時每一格都要問「我在不在合併範圍裡」，原本每次都掃過全部合併範圍（格數 × 合併數）。
+ */
+const mergeIndex = computed(() => {
+  const index = new Map<string, MergeRange>()
   for (const key in activeSheet.value.merges) {
     const m = activeSheet.value.merges[key]
-    if (r >= m.r && r < m.r + m.rows && c >= m.c && c < m.c + m.cols) {
-      return { r: m.r, c: m.c }
+    for (let r = m.r; r < m.r + m.rows; r++) {
+      for (let c = m.c; c < m.c + m.cols; c++) index.set(r + ',' + c, m)
     }
   }
-  return { r, c }
+  return index
+})
+
+/** (r, c) 所在的合併範圍（沒有則 undefined） */
+function mergeContaining(r: number, c: number): MergeRange | undefined {
+  return mergeIndex.value.get(r + ',' + c)
+}
+
+/** (r, c) 是合併主格時傳回合併範圍 */
+function mergeAt(r: number, c: number): MergeRange | undefined {
+  const m = mergeContaining(r, c)
+  return m && m.r === r && m.c === c ? m : undefined
+}
+
+/** 合併主格：傳回所在合併範圍的左上角，否則同座標 */
+function mergeOrigin(r: number, c: number): { r: number; c: number } {
+  const m = mergeContaining(r, c)
+  return m ? { r: m.r, c: m.c } : { r, c }
 }
 
 function isMergedChild(r: number, c: number): boolean {
@@ -486,29 +520,21 @@ function isMergedChild(r: number, c: number): boolean {
   return o.r !== r || o.c !== c
 }
 
+/**
+ * 儲存格顯示的文字。
+ * 數字格式對「手打的數字」與「公式算出的數字」一視同仁（見 values.ts）。
+ */
 function cellDisplay(r: number, c: number): string | number {
   const o = mergeOrigin(r, c)
   const v = getCellValue(o.r, o.c)
-  const style = getCellStyle(o.r, o.c)
-  if (style && style.numFmt && typeof v === 'number') {
-    return formatNumber(v, style.numFmt)
-  }
-  return v === '' ? '' : v
+  if (v === '') return ''
+  return formatValue(v, getCellStyle(o.r, o.c).numFmt)
 }
 
-function formatNumber(v: number, fmt: string): string {
-  if (fmt === '0.00') return v.toFixed(2)
-  if (fmt === '0.0') return v.toFixed(1)
-  if (fmt === '#,##0') return Math.round(v).toLocaleString()
-  if (fmt === '#,##0.00') return v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  if (fmt === '0%') return (v * 100).toFixed(0) + '%'
-  if (fmt === '0.00%') return (v * 100).toFixed(2) + '%'
-  return String(v)
-}
-
+/** 有指定對齊就照指定；沒有就用 Excel「通用」格式的規則（數字靠右） */
 function cellAlign(r: number, c: number): CellAlign {
-  const style = getCellStyle(r, c)
-  return style.align || 'left'
+  const o = mergeOrigin(r, c)
+  return getCellStyle(o.r, o.c).align ?? generalAlign(getCellValue(o.r, o.c))
 }
 
 function cellStyle(r: number, c: number): Record<string, string> {
@@ -541,6 +567,17 @@ function cellColWidth(c: number): Record<string, string> {
 function cellRowHeight(r: number): Record<string, string> {
   const h = activeSheet.value.rowHeights[r] ?? 24
   return { height: h + 'px' }
+}
+
+/** 儲存格的寬高；合併主格是它涵蓋的所有欄寬 / 列高的總和 */
+function cellSpanSize(r: number, c: number): Record<string, string> {
+  const m = mergeAt(r, c)
+  if (!m) return { ...cellColWidth(c), ...cellRowHeight(r) }
+  let w = 0
+  for (let i = m.c; i < m.c + m.cols; i++) w += activeSheet.value.colWidths[i] ?? 80
+  let h = 0
+  for (let i = m.r; i < m.r + m.rows; i++) h += activeSheet.value.rowHeights[i] ?? 24
+  return { minWidth: w + 'px', width: w + 'px', height: h + 'px' }
 }
 
 function isFrozenCol(c: number): boolean {
@@ -616,26 +653,86 @@ function frozenCellStyle(r: number, c: number): Record<string, string> {
 }
 
 // ===== 選取邏輯 =====
-function normalizeSelection() {
-  const s = selection
-  const rs = Math.min(s.startR, s.endR)
-  const re = Math.max(s.startR, s.endR)
-  const cs = Math.min(s.startC, s.endC)
-  const ce = Math.max(s.startC, s.endC)
-  s.startR = rs
-  s.endR = re
-  s.startC = cs
-  s.endC = ce
+function clampR(r: number): number {
+  return Math.min(Math.max(r, 1), props.rowCount)
+}
+function clampC(c: number): number {
+  return Math.min(Math.max(c, 1), props.colCount)
 }
 
+/** 設定選取範圍（一律擴大到完整涵蓋相交的合併格） */
+function setSelectionRange(range: { rs: number; re: number; cs: number; ce: number }) {
+  const { rs, re, cs, ce } = expandToMerges(range)
+  selection.startR = rs
+  selection.endR = re
+  selection.startC = cs
+  selection.endC = ce
+}
+
+/** 點選單一儲存格：作用中儲存格與選取範圍都是它（在合併範圍內時是整個合併格） */
 function setActive(r: number, c: number) {
-  activeR.value = r
-  activeC.value = c
-  selection.startR = r
-  selection.startC = c
-  selection.endR = r
-  selection.endC = c
+  const o = mergeOrigin(clampR(r), clampC(c))
+  activeR.value = o.r
+  activeC.value = o.c
+  setSelectionRange({ rs: o.r, re: o.r, cs: o.c, ce: o.c })
   emitSelectionChange()
+  scrollActiveIntoView()
+}
+
+/**
+ * 選取範圍中「會動的那一角」：作用中儲存格的對角。
+ *
+ * ⚠️ 原本 Shift+點擊與拖曳都把作用中儲存格移到終點，而且沒有 Shift+方向鍵。
+ *    Excel 的作用中儲存格固定在起點（錨點），Shift+方向鍵 / Shift+點擊 / 拖曳
+ *    只移動對角 —— 之後輸入的內容、Ctrl+D 的來源、合併的判斷都以錨點為準。
+ */
+function selectionExtent(): { r: number; c: number } {
+  return {
+    r: activeR.value === selection.startR ? selection.endR : selection.startR,
+    c: activeC.value === selection.startC ? selection.endC : selection.startC,
+  }
+}
+
+/** 把選取範圍延伸到 (r, c)，作用中儲存格不動 */
+function extendSelection(r: number, c: number) {
+  r = clampR(r)
+  c = clampC(c)
+  setSelectionRange({
+    rs: Math.min(activeR.value, r),
+    re: Math.max(activeR.value, r),
+    cs: Math.min(activeC.value, c),
+    ce: Math.max(activeC.value, c),
+  })
+  emitSelectionChange()
+  scrollCellIntoView(r, c)
+}
+
+/** 選取範圍是不是只有作用中那一格（含合併格） */
+function isSingleArea(): boolean {
+  const m = mergeContaining(activeR.value, activeC.value)
+  const rows = m?.rows ?? 1
+  const cols = m?.cols ?? 1
+  return (
+    selection.startR === activeR.value &&
+    selection.startC === activeC.value &&
+    selection.endR - selection.startR + 1 === rows &&
+    selection.endC - selection.startC + 1 === cols
+  )
+}
+
+/** 填充控點在選取範圍的右下角（Excel）；原本跟著作用中儲存格 */
+const fillHandleCell = computed(() => mergeOrigin(selection.endR, selection.endC))
+
+function scrollCellIntoView(r: number, c: number) {
+  nextTick(() => {
+    const o = mergeOrigin(r, c)
+    const el = containerRef.value?.querySelector(`[data-rc="${o.r},${o.c}"]`) as HTMLElement | null
+    el?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+  })
+}
+
+function scrollActiveIntoView() {
+  scrollCellIntoView(activeR.value, activeC.value)
 }
 
 function emitSelectionChange() {
@@ -659,33 +756,26 @@ function selectAll() {
 }
 
 function selectColumn(c: number) {
-  selection.startR = 1
-  selection.endR = props.rowCount
-  selection.startC = c
-  selection.endC = c
-  activeR.value = 1
-  activeC.value = c
+  const o = mergeOrigin(1, c)
+  activeR.value = o.r
+  activeC.value = o.c
+  setSelectionRange({ rs: 1, re: props.rowCount, cs: c, ce: c })
   emitSelectionChange()
 }
 
 function selectRow(r: number) {
-  selection.startR = r
-  selection.endR = r
-  selection.startC = 1
-  selection.endC = props.colCount
-  activeR.value = r
-  activeC.value = 1
+  const o = mergeOrigin(r, 1)
+  activeR.value = o.r
+  activeC.value = o.c
+  setSelectionRange({ rs: r, re: r, cs: 1, ce: props.colCount })
   emitSelectionChange()
 }
 
 function onCellMouseDown(r: number, c: number, event: MouseEvent) {
   if (!props.editable) return
+  tabStartC = null
   if (event.shiftKey) {
-    selection.endR = r
-    selection.endC = c
-    activeR.value = r
-    activeC.value = c
-    normalizeSelection()
+    extendSelection(r, c)
   } else {
     isSelecting.value = true
     mouseDownCell.value = { r, c, shift: event.shiftKey }
@@ -711,18 +801,11 @@ function onDocumentMouseMove(e: MouseEvent) {
   if (!isSelecting.value || !mouseDownCell.value) return
   const pos = cellFromPoint(e.clientX, e.clientY)
   if (!pos) return
-  selection.endR = pos.r
-  selection.endC = pos.c
-  // active 儲存格為拖曳的終點
-  activeR.value = pos.r
-  activeC.value = pos.c
-  emitSelectionChange()
+  // 作用中儲存格留在拖曳起點（Excel 行為）
+  extendSelection(pos.r, pos.c)
 }
 
 function onDocumentMouseUp() {
-  if (isSelecting.value) {
-    normalizeSelection()
-  }
   isSelecting.value = false
   mouseDownCell.value = null
   document.removeEventListener('mousemove', onDocumentMouseMove)
@@ -878,14 +961,13 @@ function startEditing(r: number, c: number, initial?: string) {
   editing.value = { r: o.r, c: o.c }
   const value = initial !== undefined ? initial : getCellRaw(o.r, o.c)
   editValue.value = value
+  editMode.value = initial !== undefined ? 'enter' : 'edit'
   formulaBarValue.value = String(value)
   nextTick(() => {
     editorInputEl?.focus()
-    if (initial !== undefined) {
-      editorInputEl?.setSelectionRange(1, 1)
-    } else {
-      editorInputEl?.select()
-    }
+    // 游標放在最後（Excel 的 F2）；原本是全選，一按鍵就把整格內容蓋掉
+    const end = String(value).length
+    editorInputEl?.setSelectionRange(end, end)
   })
 }
 
@@ -912,29 +994,336 @@ async function commitEditing() {
   await nextTick()
 }
 
+/**
+ * 編輯中的按鍵。
+ *
+ *   Enter / Tab         提交並移動（多格選取時在選取範圍內循環）；Shift 反向
+ *   Ctrl+Enter          提交到選取範圍內的每一格（公式的相對參照逐格平移）
+ *   方向鍵              「輸入模式」（直接打字開始的）提交並移動；「編輯模式」（F2 / 雙擊）移動游標
+ *   F2                  切換輸入模式 / 編輯模式
+ *   F4                  切換游標所在參照的 $（A1 → $A$1 → A$1 → $A1 → A1）
+ */
 function onEditorKeydown(e: KeyboardEvent) {
   if (e.key === 'Enter') {
     e.preventDefault()
     e.stopPropagation()
+    if (e.ctrlKey || e.metaKey) {
+      commitToSelection()
+      return
+    }
     commitEditing()
-    moveActive(1, 0)
+    moveEnter(e.shiftKey ? -1 : 1)
   } else if (e.key === 'Tab') {
     e.preventDefault()
     e.stopPropagation()
     commitEditing()
-    moveActive(0, e.shiftKey ? -1 : 1)
+    moveTab(e.shiftKey ? -1 : 1)
   } else if (e.key === 'Escape') {
     e.preventDefault()
     editing.value = null
     formulaBarValue.value = String(getCellRaw(activeR.value, activeC.value))
     containerRef.value?.focus()
+  } else if (e.key === 'F2') {
+    e.preventDefault()
+    editMode.value = editMode.value === 'enter' ? 'edit' : 'enter'
+  } else if (e.key === 'F4') {
+    e.preventDefault()
+    const input = e.target as HTMLInputElement
+    const next = toggleAbsoluteAt(String(editValue.value), input.selectionStart ?? 0)
+    if (next) {
+      editValue.value = next.text
+      nextTick(() => input.setSelectionRange(next.caret, next.caret))
+    }
+  } else if (ARROWS[e.key] && editMode.value === 'enter' && !String(editValue.value).startsWith('=')) {
+    // 公式在 Excel 裡是「指向模式」（方向鍵插入參照），這裡還沒有 —— 公式先讓方向鍵移動游標，不提交
+    e.preventDefault()
+    e.stopPropagation()
+    commitEditing()
+    const [dr, dc] = ARROWS[e.key]
+    moveActive(dr, dc)
   }
 }
 
+const ARROWS: Record<string, [number, number]> = {
+  ArrowUp: [-1, 0],
+  ArrowDown: [1, 0],
+  ArrowLeft: [0, -1],
+  ArrowRight: [0, 1],
+}
+
+/** 往 (dr, dc) 移動一格；在合併格上時跳過整個合併範圍 */
 function moveActive(dr: number, dc: number) {
-  const r = Math.min(Math.max(activeR.value + dr, 1), props.rowCount)
-  const c = Math.min(Math.max(activeC.value + dc, 1), props.colCount)
-  setActive(r, c)
+  const m = mergeContaining(activeR.value, activeC.value)
+  let r = activeR.value
+  let c = activeC.value
+  if (m && dr > 0) r = m.r + m.rows - 1
+  if (m && dc > 0) c = m.c + m.cols - 1
+  setActive(r + dr, c + dc)
+  containerRef.value?.focus()
+}
+
+/**
+ * Tab 之後按 Enter 回到開始 Tab 的那一欄（Excel：一列一列輸入表單時的行為）。
+ * 任何其他移動都會重設。
+ */
+let tabStartC: number | null = null
+
+/**
+ * Enter：往下（Shift 往上）。
+ * 多格選取時在選取範圍內移動，到底換下一欄，選取範圍不變。
+ */
+function moveEnter(dir: 1 | -1) {
+  if (!isSingleArea()) {
+    cycleInSelection('col', dir)
+    return
+  }
+  if (tabStartC !== null && dir === 1) {
+    const c = tabStartC
+    tabStartC = null
+    const m = mergeContaining(activeR.value, activeC.value)
+    setActive((m ? m.r + m.rows - 1 : activeR.value) + 1, c)
+    containerRef.value?.focus()
+    return
+  }
+  tabStartC = null
+  moveActive(dir, 0)
+}
+
+/** Tab：往右（Shift 往左）。多格選取時在選取範圍內移動，到邊換列 */
+function moveTab(dir: 1 | -1) {
+  if (!isSingleArea()) {
+    cycleInSelection('row', dir)
+    return
+  }
+  if (tabStartC === null) tabStartC = activeC.value
+  moveActive(0, dir)
+}
+
+/**
+ * 在選取範圍內循環移動作用中儲存格，選取範圍不變。
+ * major = 'col'：先往下，到底換欄（Enter）；major = 'row'：先往右，到邊換列（Tab）。
+ * 會跳過被合併格蓋住的格子。
+ */
+function cycleInSelection(major: 'row' | 'col', dir: 1 | -1) {
+  const { startR: rs, endR: re, startC: cs, endC: ce } = selection
+  const rows = re - rs + 1
+  const cols = ce - cs + 1
+  const total = rows * cols
+  // 把格子攤平成一維序號
+  const toIndex = (r: number, c: number) =>
+    major === 'col' ? (c - cs) * rows + (r - rs) : (r - rs) * cols + (c - cs)
+  const fromIndex = (i: number) =>
+    major === 'col'
+      ? { r: rs + (i % rows), c: cs + Math.floor(i / rows) }
+      : { r: rs + Math.floor(i / cols), c: cs + (i % cols) }
+  let i = toIndex(activeR.value, activeC.value)
+  for (let step = 0; step < total; step++) {
+    i = (((i + dir) % total) + total) % total
+    const { r, c } = fromIndex(i)
+    if (!isMergedChild(r, c)) {
+      activeR.value = r
+      activeC.value = c
+      break
+    }
+  }
+  emitSelectionChange()
+  scrollActiveIntoView()
+  containerRef.value?.focus()
+}
+
+/** 儲存格本身有沒有內容（Excel 的 Ctrl+方向鍵看的是儲存格，不是顯示值） */
+function hasContent(r: number, c: number): boolean {
+  return getCellRaw(r, c) !== ''
+}
+
+/**
+ * Ctrl+方向鍵：跳到資料區的邊緣（Excel 規則）
+ *   - 目前這格與下一格都有內容 → 沿著連續的資料走到最後一格
+ *   - 否則 → 跳到下一個有內容的格子；沒有就到工作表邊界
+ */
+function dataEdge(r: number, c: number, dr: number, dc: number): { r: number; c: number } {
+  const inside = (rr: number, cc: number) =>
+    rr >= 1 && rr <= props.rowCount && cc >= 1 && cc <= props.colCount
+  if (!inside(r + dr, c + dc)) return { r, c }
+  if (hasContent(r, c) && hasContent(r + dr, c + dc)) {
+    while (inside(r + dr, c + dc) && hasContent(r + dr, c + dc)) {
+      r += dr
+      c += dc
+    }
+    return { r, c }
+  }
+  r += dr
+  c += dc
+  while (!hasContent(r, c) && inside(r + dr, c + dc)) {
+    r += dr
+    c += dc
+  }
+  return { r, c }
+}
+
+/** 最後一個有內容的列與欄（Ctrl+End） */
+function usedRangeEnd(): { r: number; c: number } {
+  let r = 1
+  let c = 1
+  for (const key in activeSheet.value.cells) {
+    const raw = activeSheet.value.cells[key].raw
+    if (raw === undefined || raw === '') continue
+    const m = key.match(/^([A-Z]+)(\d+)$/)
+    if (!m) continue
+    r = Math.max(r, Number(m[2]))
+    c = Math.max(c, colIndexFromName(m[1]))
+  }
+  return { r, c }
+}
+
+/** 一頁有幾列（PageUp / PageDown） */
+function pageRows(): number {
+  const h = containerRef.value?.querySelector('.excel-grid')?.clientHeight ?? 0
+  return Math.max(1, Math.floor(h / 24) - 1) || 20
+}
+
+/**
+ * 導覽鍵：移動作用中儲存格；按著 Shift 時改成延伸選取範圍（作用中儲存格不動）。
+ * 回傳 false 表示不是導覽鍵。
+ */
+function navigate(e: KeyboardEvent): boolean {
+  const ctrl = e.ctrlKey || e.metaKey
+  const from = e.shiftKey ? selectionExtent() : { r: activeR.value, c: activeC.value }
+  let to: { r: number; c: number }
+  const arrow = ARROWS[e.key]
+  if (arrow) {
+    const [dr, dc] = arrow
+    if (ctrl) {
+      to = dataEdge(from.r, from.c, dr, dc)
+    } else if (!e.shiftKey) {
+      tabStartC = null
+      moveActive(dr, dc)
+      return true
+    } else {
+      // Shift+方向鍵：碰到合併格時要一次跨過整個合併格，選取範圍才會改變
+      const key = () => `${selection.startR},${selection.endR},${selection.startC},${selection.endC}`
+      const before = key()
+      let r = from.r
+      let c = from.c
+      while (key() === before) {
+        const nr = clampR(r + dr)
+        const nc = clampC(c + dc)
+        if (nr === r && nc === c) break
+        r = nr
+        c = nc
+        extendSelection(r, c)
+      }
+      tabStartC = null
+      containerRef.value?.focus()
+      return true
+    }
+  } else if (e.key === 'Home') {
+    to = ctrl ? { r: 1, c: 1 } : { r: from.r, c: 1 }
+  } else if (e.key === 'End' && ctrl) {
+    to = usedRangeEnd()
+  } else if (e.key === 'PageDown' || e.key === 'PageUp') {
+    to = { r: from.r + (e.key === 'PageDown' ? 1 : -1) * pageRows(), c: from.c }
+  } else {
+    return false
+  }
+  tabStartC = null
+  if (e.shiftKey) extendSelection(to.r, to.c)
+  else setActive(to.r, to.c)
+  containerRef.value?.focus()
+  return true
+}
+
+/**
+ * F4：把游標所在（或緊接在游標前）的儲存格參照依序切換成
+ *     A1 → $A$1 → A$1 → $A1 → A1
+ */
+function toggleAbsoluteAt(text: string, caret: number): { text: string; caret: number } | null {
+  const re = /(\$?)([A-Za-z]{1,3})(\$?)(\d+)/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(text))) {
+    const start = m.index
+    const end = start + m[0].length
+    // 更長識別字的一部分（LOG10、ATAN2）不算
+    if (/[A-Za-z0-9_]/.test(text[start - 1] ?? '')) continue
+    if (/[A-Za-z0-9_(]/.test(text[end] ?? '')) continue
+    if (caret < start || caret > end) continue
+    const [, absCol, col, absRow, row] = m
+    // 狀態位元：2 = 欄絕對、1 = 列絕對。循環 0 → 3 → 1 → 2 → 0
+    const state = (absCol ? 2 : 0) + (absRow ? 1 : 0)
+    const nextState = ({ 0: 3, 3: 1, 1: 2, 2: 0 } as Record<number, number>)[state]
+    const ref = (nextState & 2 ? '$' : '') + col + (nextState & 1 ? '$' : '') + row
+    return { text: text.slice(0, start) + ref + text.slice(end), caret: start + ref.length }
+  }
+  return null
+}
+
+/**
+ * Ctrl+D / Ctrl+R：向下 / 向右填滿（複製第一列 / 第一欄）。
+ * 選取範圍只有一列（一欄）時，來源是上面那一列（左邊那一欄）。
+ * 公式的相對參照逐格平移，格式一起複製（與 Excel 相同）。
+ */
+function fillFromEdge(axis: 'row' | 'col') {
+  if (!props.editable) return
+  const range = getSelectionRange()
+  let { rs, cs } = range
+  const { re, ce } = range
+  if (axis === 'row' && rs === re) rs = Math.max(1, rs - 1)
+  if (axis === 'col' && cs === ce) cs = Math.max(1, cs - 1)
+  if ((axis === 'row' && rs === re) || (axis === 'col' && cs === ce)) return
+  pushUndo()
+  const cells = activeSheet.value.cells
+  for (let r = rs; r <= re; r++) {
+    for (let c = cs; c <= ce; c++) {
+      const sr = axis === 'row' ? rs : r
+      const sc = axis === 'col' ? cs : c
+      if (sr === r && sc === c) continue
+      const src = cells[cellRef(sr, sc)]
+      const key = cellRef(r, c)
+      if (!src) {
+        delete cells[key]
+        continue
+      }
+      const raw =
+        typeof src.raw === 'string' && src.raw.startsWith('=')
+          ? '=' + shiftFormula(src.raw.slice(1), r - sr, c - sc)
+          : src.raw
+      const next: CellData = {}
+      if (raw !== undefined) next.raw = raw
+      if (src.style) next.style = { ...src.style }
+      cells[key] = next
+    }
+  }
+  emit('update:modelValue', toModelValue())
+}
+
+/**
+ * Ctrl+Enter：把編輯中的內容寫進選取範圍的每一格。
+ * 公式以作用中儲存格為準，其他格子的相對參照跟著平移。
+ */
+function commitToSelection() {
+  if (!editing.value) return
+  const value = String(editValue.value)
+  const { r: ar, c: ac } = editing.value
+  const { rs, re, cs, ce } = getSelectionRange()
+  pushUndo()
+  const cells = activeSheet.value.cells
+  for (let r = rs; r <= re; r++) {
+    for (let c = cs; c <= ce; c++) {
+      if (isMergedChild(r, c)) continue
+      const key = cellRef(r, c)
+      const raw = value.startsWith('=') ? '=' + shiftFormula(value.slice(1), r - ar, c - ac) : value
+      if (raw === '') {
+        const style = cells[key]?.style
+        if (style) cells[key] = { style }
+        else delete cells[key]
+      } else {
+        cells[key] = { ...(cells[key] || {}), raw }
+      }
+    }
+  }
+  editing.value = null
+  formulaBarValue.value = String(getCellRaw(activeR.value, activeC.value))
+  emit('update:modelValue', toModelValue())
   containerRef.value?.focus()
 }
 
@@ -1055,7 +1444,7 @@ function setNumFmt(numFmt: string) {
 
 // ===== 公式列 =====
 function commitFormulaBar() {
-  if (!singleCellSelected.value) return
+  // 多格選取時編輯的是作用中儲存格（Excel）；原本整個公式列被停用
   const r = activeR.value
   const c = activeC.value
   const key = cellRef(r, c)
@@ -1485,64 +1874,147 @@ function unfreezePanes() {
 }
 
 // ===== 合併儲存格 =====
+/** 把範圍擴大到完整涵蓋與它相交的合併範圍（Excel 的選取不會只選到合併格的一部分） */
+function expandToMerges(range: { rs: number; re: number; cs: number; ce: number }) {
+  let { rs, re, cs, ce } = range
+  let changed = true
+  while (changed) {
+    changed = false
+    for (const key in activeSheet.value.merges) {
+      const m = activeSheet.value.merges[key]
+      const mre = m.r + m.rows - 1
+      const mce = m.c + m.cols - 1
+      const intersects = m.r <= re && mre >= rs && m.c <= ce && mce >= cs
+      if (!intersects) continue
+      if (m.r < rs || mre > re || m.c < cs || mce > ce) {
+        rs = Math.min(rs, m.r)
+        re = Math.max(re, mre)
+        cs = Math.min(cs, m.c)
+        ce = Math.max(ce, mce)
+        changed = true
+      }
+    }
+  }
+  return { rs, re, cs, ce }
+}
+
+/**
+ * 「合併儲存格」按鈕（Excel 的「跨欄置中」切換）：
+ *   - 作用中儲存格在合併範圍內 → 取消選取範圍內的所有合併
+ *   - 否則把選取範圍合併成一格；範圍內原有的合併併入新的合併
+ *
+ * 合併只保留一個值：左上角那格；左上角是空的就取第一個有值的格子（由左到右、由上到下），
+ * 移到左上角。其餘格子的內容與格式清掉 —— 與 Excel 一致。
+ *
+ * ⚠️ 原本合併時其他格子的值原封不動留在 cells 裡：畫面上看不到，
+ *    但 SUM 照樣算進去、匯出也照樣寫出，取消合併後又冒出來。
+ */
 function toggleMerge() {
   if (!props.editable) return
-  const rs = Math.min(selection.startR, selection.endR)
-  const re = Math.max(selection.startR, selection.endR)
-  const cs = Math.min(selection.startC, selection.endC)
-  const ce = Math.max(selection.startC, selection.endC)
-  const key = cellRef(rs, cs)
-  pushUndo()
-  if (activeSheet.value.merges[key]) {
-    delete activeSheet.value.merges[key]
-  } else {
-    activeSheet.value.merges[key] = { r: rs, c: cs, rows: re - rs + 1, cols: ce - cs + 1 }
+  const merges = activeSheet.value.merges
+  const range = expandToMerges(getSelectionRange())
+  const within = (m: MergeRange) =>
+    m.r >= range.rs && m.r + m.rows - 1 <= range.re && m.c >= range.cs && m.c + m.cols - 1 <= range.ce
+
+  if (mergeContaining(activeR.value, activeC.value)) {
+    pushUndo()
+    for (const key of Object.keys(merges)) {
+      if (within(merges[key])) delete merges[key]
+    }
+    emit('update:modelValue', toModelValue())
+    return
   }
+
+  if (range.rs === range.re && range.cs === range.ce) return
+
+  pushUndo()
+  const cells = activeSheet.value.cells
+  const originKey = cellRef(range.rs, range.cs)
+  let kept: CellData['raw'] | undefined
+  for (let r = range.rs; r <= range.re && kept === undefined; r++) {
+    for (let c = range.cs; c <= range.ce; c++) {
+      const raw = cells[cellRef(r, c)]?.raw
+      if (raw !== undefined && raw !== '') {
+        kept = raw
+        break
+      }
+    }
+  }
+  for (let r = range.rs; r <= range.re; r++) {
+    for (let c = range.cs; c <= range.ce; c++) {
+      const key = cellRef(r, c)
+      if (key !== originKey) delete cells[key]
+    }
+  }
+  if (kept !== undefined) cells[originKey] = { ...cells[originKey], raw: kept }
+
+  for (const key of Object.keys(merges)) {
+    if (within(merges[key])) delete merges[key]
+  }
+  merges[originKey] = { r: range.rs, c: range.cs, rows: range.re - range.rs + 1, cols: range.ce - range.cs + 1 }
+
+  selection.startR = range.rs
+  selection.startC = range.cs
+  selection.endR = range.re
+  selection.endC = range.ce
+  activeR.value = range.rs
+  activeC.value = range.cs
   emit('update:modelValue', toModelValue())
 }
 
 // ===== 排序 =====
+/**
+ * 依作用中儲存格所在的那一欄排序選取範圍內的列（Excel「從 A 到 Z 排序」）。
+ *
+ * ⚠️ 原本的三個問題：
+ *   1. Number('') 是 0 —— 空白格被當成 0，排在正負數之間（見 values.ts）
+ *   2. 排序鍵固定是選取範圍的第一欄；Excel 用的是作用中儲存格那一欄
+ *   3. 整列搬家時公式原封不動：C2 的 =A2*B2 搬到第 5 列還是 =A2*B2，
+ *      算的是別人那一列的資料。Excel 會把相對參照當成「複製到新位置」改寫。
+ */
 function sortRange(direction: 'asc' | 'desc' = 'asc') {
   if (!props.editable) return
-  const rs = Math.min(selection.startR, selection.endR)
-  const re = Math.max(selection.startR, selection.endR)
-  const cs = Math.min(selection.startC, selection.endC)
-  const ce = Math.max(selection.startC, selection.endC)
+  const { rs, re, cs, ce } = getSelectionRange()
   if (re - rs < 1) return
-  pushUndo()
-  const rows: { r: number; cells: (CellData | null)[] }[] = []
-  for (let r = rs; r <= re; r++) {
-    const rowCells: (CellData | null)[] = []
-    for (let c = cs; c <= ce; c++) {
-      const cell = getCell(r, c)
-      rowCells.push(cell ? { ...cell } : null)
-    }
-    rows.push({ r, cells: rowCells })
+  // 範圍內有合併格時 Excel 拒絕排序（被蓋住的格子會被搬到合併範圍外）
+  for (const key in activeSheet.value.merges) {
+    const m = activeSheet.value.merges[key]
+    if (m.r <= re && m.r + m.rows - 1 >= rs && m.c <= ce && m.c + m.cols - 1 >= cs) return
   }
-  rows.sort((a, b) => {
-    const va = getCellValue(a.r, cs)
-    const vb = getCellValue(b.r, cs)
-    const order = compareValues(va, vb)
-    return direction === 'desc' ? -order : order
-  })
-  for (let i = 0; i < rows.length; i++) {
-    const src = rows[i]
-    for (let offset = 0; offset < src.cells.length; offset++) {
-      const c = cs + offset
-      const key = cellRef(rs + i, c)
-      const data = src.cells[offset]
-      if (data) activeSheet.value.cells[key] = data
-      else delete activeSheet.value.cells[key]
-    }
-  }
-  emit('update:modelValue', toModelValue())
-}
+  const keyC = activeC.value >= cs && activeC.value <= ce ? activeC.value : cs
 
-function compareValues(a: string | number, b: string | number): number {
-  const an = typeof a === 'number' ? a : Number(a)
-  const bn = typeof b === 'number' ? b : Number(b)
-  if (!isNaN(an) && !isNaN(bn)) return an - bn
-  return String(a).localeCompare(String(b))
+  // 排序鍵只算一次（比較函式裡重算公式會是 O(n log n) 次求值）
+  const rows = Array.from({ length: re - rs + 1 }, (_, i) => {
+    const r = rs + i
+    return {
+      r,
+      key: getCellValue(r, keyC),
+      cells: Array.from({ length: ce - cs + 1 }, (_, j) => {
+        const cell = getCell(r, cs + j)
+        return cell ? { ...cell } : null
+      }),
+    }
+  })
+  rows.sort((a, b) => sortCompare(a.key, b.key, direction))
+  if (rows.every((row, i) => row.r === rs + i)) return // 已經是這個順序
+
+  pushUndo()
+  rows.forEach((row, i) => {
+    const r = rs + i
+    row.cells.forEach((data, j) => {
+      const key = cellRef(r, cs + j)
+      if (!data) {
+        delete activeSheet.value.cells[key]
+        return
+      }
+      const raw = data.raw
+      activeSheet.value.cells[key] =
+        typeof raw === 'string' && raw.startsWith('=') && r !== row.r
+          ? { ...data, raw: '=' + shiftFormula(raw.slice(1), r - row.r, 0) }
+          : data
+    })
+  })
+  emit('update:modelValue', toModelValue())
 }
 
 // ===== 工作表操作 =====
@@ -1563,6 +2035,11 @@ function uniqueSheetName(base: string): string {
 }
 
 function switchSheet(idx: number) {
+  // 先把編輯中的內容寫回「目前這張」表，再切換（Excel 行為）。
+  // ⚠️ 用滑鼠點頁籤時輸入框會先 blur 而自動提交，但透過公開 API
+  //    switchSheet() 切換時沒有 blur，輸入到一半的內容原本會直接消失
+  //    （真實瀏覽器實測：C3 從 TYPED_THEN_API 變成空白）。
+  if (editing.value) commitEditing()
   activeSheetIndex.value = idx
   selection.startR = 1
   selection.startC = 1
@@ -1721,13 +2198,25 @@ function handleKeydown(e: KeyboardEvent) {
   if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
     return
   }
+  const ctrl = e.ctrlKey || e.metaKey
+  // Shift+空白鍵選取整列、Ctrl+空白鍵選取整欄（要在「打字開始編輯」之前判斷）
+  if (e.key === ' ' && (e.shiftKey || ctrl) && !(e.shiftKey && ctrl)) {
+    e.preventDefault()
+    if (e.shiftKey) selectRow(activeR.value)
+    else selectColumn(activeC.value)
+    return
+  }
   // 一般字元 / 數字：直接開始編輯 active 儲存格
-  if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+  if (e.key.length === 1 && !ctrl && !e.altKey) {
     e.preventDefault()
     startEditing(activeR.value, activeC.value, e.key)
     return
   }
-  if (e.ctrlKey || e.metaKey) {
+  if (navigate(e)) {
+    e.preventDefault()
+    return
+  }
+  if (ctrl) {
     const k = e.key.toLowerCase()
     if (k === 'z') {
       e.preventDefault()
@@ -1740,6 +2229,15 @@ function handleKeydown(e: KeyboardEvent) {
       // 不要 preventDefault：讓瀏覽器觸發原生 copy / cut / paste 事件，
       // 由 onCopy / onCut / pasteFromSystem 處理（才讀寫得到系統剪貼簿）
       return
+    } else if (k === 'a') {
+      e.preventDefault()
+      selectAll()
+    } else if (k === 'd') {
+      e.preventDefault()
+      fillFromEdge('row')
+    } else if (k === 'r') {
+      e.preventDefault()
+      fillFromEdge('col')
     } else if (k === 'b') {
       e.preventDefault()
       toggleStyle('bold')
@@ -1753,22 +2251,22 @@ function handleKeydown(e: KeyboardEvent) {
     return
   }
   switch (e.key) {
-    case 'ArrowUp': e.preventDefault(); moveActive(-1, 0); break
-    case 'ArrowDown': e.preventDefault(); moveActive(1, 0); break
-    case 'ArrowLeft': e.preventDefault(); moveActive(0, -1); break
-    case 'ArrowRight': e.preventDefault(); moveActive(0, 1); break
     case 'Tab':
       e.preventDefault()
-      moveActive(0, e.shiftKey ? -1 : 1)
+      moveTab(e.shiftKey ? -1 : 1)
       break
     case 'Enter':
       e.preventDefault()
-      moveActive(1, 0)
+      moveEnter(e.shiftKey ? -1 : 1)
       break
     case 'Delete':
-    case 'Backspace':
       e.preventDefault()
       clearSelection()
+      break
+    case 'Backspace':
+      // Excel：Backspace 只清掉作用中那一格並進入輸入模式（Delete 才是清除整個選取範圍）
+      e.preventDefault()
+      startEditing(activeR.value, activeC.value, '')
       break
     case 'F2':
       e.preventDefault()

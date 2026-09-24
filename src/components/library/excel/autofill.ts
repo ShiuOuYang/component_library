@@ -16,6 +16,8 @@
  * 公式的平移不在這裡處理（需要來源位置），由呼叫端用 shiftFormula 做。
  */
 
+import { asNumber } from './values'
+
 export type FillValue = string | number
 
 /** Excel 內建的自訂清單（中英文），比對時不分大小寫 */
@@ -30,12 +32,6 @@ const BUILTIN_LISTS: string[][] = [
   ['第一季', '第二季', '第三季', '第四季'],
 ]
 
-const NUMERIC = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/
-
-function asNumber(v: FillValue): number | null {
-  if (typeof v === 'number') return v
-  return NUMERIC.test(v) ? Number(v) : null
-}
 
 /** 避免 0.1+0.2 這種浮點尾巴出現在儲存格裡 */
 function clean(n: number): number {

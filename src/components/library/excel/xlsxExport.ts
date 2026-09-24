@@ -19,6 +19,7 @@
 import * as XLSX from 'xlsx-js-style'
 import { cellRef, parseRef } from './formula/cellRef'
 import { evaluateFormula } from './formula/formulaEngine'
+import { asNumber } from './values'
 
 export interface ExportCellStyle {
   bold?: boolean
@@ -52,11 +53,6 @@ const ERROR_CODES: Record<string, number> = {
   '#N/A': 0x2a,
 }
 
-/**
- * 看起來像數字的字串。
- * 與 Excel 輸入時的判斷一致：前後不能有空白、允許正負號、小數與科學記號。
- */
-const NUMERIC = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/
 
 /**
  * 引擎接受但 Excel 不認得的函式名。
@@ -106,7 +102,8 @@ export function toCellObject(
   }
 
   if (raw in ERROR_CODES) return { t: 'e', v: ERROR_CODES[raw], w: raw }
-  if (NUMERIC.test(raw)) return { t: 'n', v: Number(raw) }
+  const n = asNumber(raw)
+  if (n !== null) return { t: 'n', v: n }
   return { t: 's', v: raw }
 }
 
