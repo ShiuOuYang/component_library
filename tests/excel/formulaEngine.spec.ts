@@ -255,3 +255,31 @@ describe('evaluateFormula：錯誤與安全', () => {
     expect(evaluateFormula('A1/A2', s)).toBeNull()
   })
 })
+
+describe('絕對參照與 #REF!', () => {
+  const sheet = { cells: { A1: { raw: 10 }, B1: { raw: 20 }, A2: { raw: 5 } } }
+
+  /**
+   * ⚠️ 原本的參照正規式是 [A-Za-z]+\d+，對不到中間夾 $ 的 $A$1，
+   *    於是含絕對參照的公式整條求值失敗、畫面顯示公式原文。
+   *    $ 在真實試算表裡到處都是，這是最基本的相容性。
+   */
+  it('$A$1 / A$1 / $A1 求值結果與 A1 相同', () => {
+    expect(evaluateFormula('$A$1+B1', sheet)).toBe(30)
+    expect(evaluateFormula('A$1*2', sheet)).toBe(20)
+    expect(evaluateFormula('SUM($A$1:$A$2)', sheet)).toBe(15)
+  })
+
+  it('含 #REF! 的公式回傳 #REF!，不是顯示公式原文', () => {
+    expect(evaluateFormula('#REF!+A1', sheet)).toBe('#REF!')
+  })
+
+  /**
+   * 只驗證 #REF! 偵測不會被字串常值誤觸。
+   * 注意：引擎目前**完全不支援字串常值**（IF(1,"abc",0) 也回傳 null），
+   * 那是另一個待補的功能，所以這裡不斷言回傳值，只斷言不是被誤判成 #REF!。
+   */
+  it('字串常值裡的 #REF! 不會被誤判成參照錯誤', () => {
+    expect(evaluateFormula('IF(1,"#REF!",0)', sheet)).not.toBe('#REF!')
+  })
+})

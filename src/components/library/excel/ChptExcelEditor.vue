@@ -6,6 +6,8 @@
     @mousemove="onGridMouseMove"
     @mouseup="onGridMouseUp"
     @keydown="handleKeydown"
+    @copy="onCopy"
+    @cut="onCut"
     @paste="pasteFromSystem"
     tabindex="0"
   >
@@ -99,7 +101,7 @@
           v-model="formulaBarValue"
           :disabled="!singleCellSelected"
           ref="formulaInputRef"
-          class="flex-1 px-2 py-1 text-sm text-content-primary border border-stroke-default rounded focus:outline-none focus:ring-1 focus:ring-success"
+          class="formula-input flex-1 px-2 py-1 text-sm text-content-primary border border-stroke-default rounded focus:outline-none focus:ring-1 focus:ring-success"
           placeholder="輸入數值或公式，如 =SUM(A1:A3)"
           @input="onFormulaInput"
           @keydown.enter.prevent="commitFormulaBar"
@@ -271,8 +273,13 @@ import { ref, reactive, computed, nextTick, watch, onMounted, onBeforeUnmount } 
 import * as XLSX from 'xlsx-js-style'
 // 座標工具與公式引擎都是純運算，抽到 formula/ 之下獨立測試
 // （公式引擎原本整包寫在這個檔案裡，而且是用 new Function 求值）
-import { cellRef, colName, parseRef } from './formula/cellRef'
+import { cellRef, colName } from './formula/cellRef'
 import { evaluateFormula } from './formula/formulaEngine'
+import { applyStructuralChange } from './sheetOps'
+import { parseTSV, toTSV } from './clipboard'
+import { buildWorkbook } from './xlsxExport'
+import { extendSeries } from './autofill'
+import { shiftFormula } from './formula/refRewrite'
 
 /**
  * ChptExcelEditor（CHPT 主題）- 仿原生 Excel 試算表元件
@@ -410,8 +417,19 @@ function setRenameInput(el: unknown, idx: number) {
 }
 
 // ===== 復原 / 重做 =====
-const undoStack = ref<SheetData[]>([])
-const redoStack = ref<SheetData[]>([])
+/**
+ * 一筆復原紀錄 = 某一張工作表在某個時間點的完整快照。
+ *
+ * ⚠️ 原本只存 SheetData、沒記是哪一張表，restore() 一律寫進「目前這張」。
+ *    於是在第二張表輸入、切回第一張表按 Ctrl+Z，會把第二張表的快照
+ *    整張覆蓋到第一張 —— 真實瀏覽器實測：非空儲存格 2 → 0，資料全部消失。
+ */
+interface UndoEntry {
+  sheetIndex: number
+  data: SheetData
+}
+const undoStack = ref<UndoEntry[]>([])
+const redoStack = ref<UndoEntry[]>([])
 
 const canUndo = computed(() => undoStack.value.length > 0)
 const canRedo = computed(() => redoStack.value.length > 0)
@@ -575,7 +593,8 @@ function rowHeaderStyle(r: number): Record<string, string> {
     style.position = 'sticky'
     style.top = frozenTop(r) + 'px'
     style.left = '0px'
-    style.backgroundColor = '#f3f4f6'
+    // 走主題變數：寫死 #f3f4f6 在深色模式下會是一條亮灰色的凍結列標頭
+    style.backgroundColor = 'rgb(var(--t-surface-tertiary))'
     style.zIndex = '24'
   }
   return style
@@ -589,7 +608,9 @@ function frozenCellStyle(r: number, c: number): Record<string, string> {
   style.position = 'sticky'
   if (frozenCol) style.left = frozenLeft(c) + 'px'
   if (frozenRow) style.top = frozenTop(r) + 'px'
-  style.backgroundColor = '#ffffff'
+  // ⚠️ 原本寫死 #ffffff —— 深色模式下凍結的儲存格整塊是白的。
+  //    上一輪的 check:theme 只掃 Tailwind class，抓不到 inline style 的色碼。
+  style.backgroundColor = 'rgb(var(--t-surface-primary))'
   style.zIndex = frozenCol && frozenRow ? '26' : '12'
   return style
 }
@@ -723,13 +744,26 @@ function onGridMouseUp() {
 }
 
 // ===== 拖曳填充 =====
+/**
+ * 填充控點。
+ *
+ * ⚠️ 原本只會往下 / 往右循環複製：=A1+B1 往下拉還是 =A1+B1（結果全錯），
+ *    1、2 往下拉是 1、2、1、2，週一往下拉還是週一。
+ *
+ * 現在與 Excel 相同：
+ *   - 公式的相對參照跟著平移（shiftFormula）
+ *   - 數字、「項目 1」、星期、月份延伸成數列（autofill.ts）
+ *   - 四個方向都能拉；以拖曳距離較遠的那個軸為準
+ */
 const isFilling = ref(false)
 const fillOrigin = ref<{ rs: number; re: number; cs: number; ce: number } | null>(null)
+const fillTarget = ref<{ axis: 'row' | 'col'; dir: 1 | -1; to: number } | null>(null)
 
 function onFillHandleMouseDown() {
   if (!props.editable) return
   isFilling.value = true
   fillOrigin.value = getSelectionRange()
+  fillTarget.value = null
   document.addEventListener('mousemove', onFillMouseMove)
   document.addEventListener('mouseup', onFillMouseUp)
 }
@@ -739,64 +773,95 @@ function onFillMouseMove(e: MouseEvent) {
   const pos = cellFromPoint(e.clientX, e.clientY)
   if (!pos) return
   const { rs, re, cs, ce } = fillOrigin.value
-  const rows = re - rs + 1
-  const cols = ce - cs + 1
-  // 計算填充擴展範圍（向下 / 向右）
-  const endR = Math.max(pos.r, re)
-  const endC = Math.max(pos.c, ce)
-  // 即時顯示填充預覽範圍（可選：僅更新 selection 視覺）
-  selection.startR = rs
-  selection.startC = cs
-  selection.endR = endR
-  selection.endC = endC
-  activeR.value = endR
-  activeC.value = endC
+  const down = pos.r - re
+  const up = rs - pos.r
+  const right = pos.c - ce
+  const left = cs - pos.c
+  const vert = Math.max(down, up, 0)
+  const horiz = Math.max(right, left, 0)
+
+  // 還在來源範圍內：沒有要填
+  let next: typeof fillTarget.value = null
+  if (vert > 0 || horiz > 0) {
+    next =
+      vert >= horiz
+        ? { axis: 'row', dir: down > 0 ? 1 : -1, to: pos.r }
+        : { axis: 'col', dir: right > 0 ? 1 : -1, to: pos.c }
+  }
+  fillTarget.value = next
+
+  // 預覽：選取框涵蓋來源加上要填的範圍
+  selection.startR = next?.axis === 'row' && next.dir === -1 ? next.to : rs
+  selection.endR = next?.axis === 'row' && next.dir === 1 ? next.to : re
+  selection.startC = next?.axis === 'col' && next.dir === -1 ? next.to : cs
+  selection.endC = next?.axis === 'col' && next.dir === 1 ? next.to : ce
   emitSelectionChange()
-  void rows
-  void cols
 }
 
 function onFillMouseUp() {
-  if (isFilling.value && fillOrigin.value) {
-    performFill()
-  }
+  if (isFilling.value && fillOrigin.value && fillTarget.value) performFill()
   isFilling.value = false
   fillOrigin.value = null
+  fillTarget.value = null
   document.removeEventListener('mousemove', onFillMouseMove)
   document.removeEventListener('mouseup', onFillMouseUp)
 }
 
-/** 執行程式填充：沿選取範圍向下 / 向右重複填入 */
+/**
+ * 沿一條線（一欄或一列）往外填 count 格。
+ * @param line 來源座標，依填充軸由小到大排列
+ */
+function fillLine(line: { r: number; c: number }[], count: number, dir: 1 | -1, axis: 'row' | 'col') {
+  const n = line.length
+  const src = line.map((p) => getCell(p.r, p.c))
+  const values = src.map((cell) => cell?.raw ?? '')
+  const series = extendSeries(values, count, dir)
+  const anchor = dir === 1 ? line[n - 1] : line[0]
+
+  for (let k = 0; k < count; k++) {
+    const offset = dir * (k + 1)
+    const target = axis === 'row' ? { r: anchor.r + offset, c: anchor.c } : { r: anchor.r, c: anchor.c + offset }
+    if (target.r < 1 || target.c < 1 || target.r > props.rowCount || target.c > props.colCount) continue
+    const key = cellRef(target.r, target.c)
+
+    // 循環對應的來源：往下 / 右是 0,1,2,0…；往上 / 左是從最後一個往回
+    const si = dir === 1 ? k % n : n - 1 - (k % n)
+    const from = src[si]
+    const style = from?.style ? { ...from.style } : undefined
+
+    if (series) {
+      activeSheet.value.cells[key] = { raw: series[k], style }
+      continue
+    }
+    const raw = from?.raw
+    if (raw === undefined || raw === '') {
+      if (style) activeSheet.value.cells[key] = { style }
+      else delete activeSheet.value.cells[key]
+      continue
+    }
+    const shifted =
+      typeof raw === 'string' && raw.startsWith('=')
+        ? '=' + shiftFormula(raw.slice(1), target.r - line[si].r, target.c - line[si].c)
+        : raw
+    activeSheet.value.cells[key] = { raw: shifted, style }
+  }
+}
+
 function performFill() {
   const { rs, re, cs, ce } = fillOrigin.value!
-  const endR = Math.max(selection.endR, re)
-  const endC = Math.max(selection.endC, ce)
-  if (endR === re && endC === ce) return
-  const rows = re - rs + 1
-  const cols = ce - cs + 1
+  const t = fillTarget.value!
+  const count = t.axis === 'row' ? (t.dir === 1 ? t.to - re : rs - t.to) : t.dir === 1 ? t.to - ce : cs - t.to
+  if (count <= 0) return
   pushUndo()
-  // 向下填充
-  if (endR > re) {
-    for (let r = re + 1; r <= endR; r++) {
-      const srcR = rs + ((r - rs) % rows)
-      for (let c = cs; c <= ce; c++) {
-        const src = getCell(srcR, c)
-        const key = cellRef(r, c)
-        if (src) activeSheet.value.cells[key] = { ...src }
-        else delete activeSheet.value.cells[key]
-      }
+  if (t.axis === 'row') {
+    for (let c = cs; c <= ce; c++) {
+      const line = Array.from({ length: re - rs + 1 }, (_, i) => ({ r: rs + i, c }))
+      fillLine(line, count, t.dir, 'row')
     }
-  }
-  // 向右填充
-  if (endC > ce) {
-    for (let c = ce + 1; c <= endC; c++) {
-      const srcC = cs + ((c - cs) % cols)
-      for (let r = rs; r <= re; r++) {
-        const src = getCell(r, srcC)
-        const key = cellRef(r, c)
-        if (src) activeSheet.value.cells[key] = { ...src }
-        else delete activeSheet.value.cells[key]
-      }
+  } else {
+    for (let r = rs; r <= re; r++) {
+      const line = Array.from({ length: ce - cs + 1 }, (_, i) => ({ r, c: cs + i }))
+      fillLine(line, count, t.dir, 'col')
     }
   }
   emit('update:modelValue', toModelValue())
@@ -874,18 +939,21 @@ function moveActive(dr: number, dc: number) {
 }
 
 // ===== 復原 / 重做 =====
-function snapshot(): SheetData {
-  return JSON.parse(JSON.stringify(activeSheet.value))
+function snapshotOf(sheetIndex: number): UndoEntry {
+  return { sheetIndex, data: JSON.parse(JSON.stringify(sheets[sheetIndex])) }
 }
 
 function pushUndo() {
-  undoStack.value.push(snapshot())
+  undoStack.value.push(snapshotOf(activeSheetIndex.value))
   if (undoStack.value.length > 100) undoStack.value.shift()
   redoStack.value = []
 }
 
-function restore(snap: SheetData) {
-  const sheet = activeSheet.value
+/** 把快照寫回它原本所屬的工作表，並切換過去（Excel 也會帶你回到被復原的那張表） */
+function restore(entry: UndoEntry) {
+  const sheet = sheets[entry.sheetIndex]
+  if (!sheet) return
+  const snap = entry.data
   sheet.name = snap.name
   sheet.cells = snap.cells
   sheet.colWidths = snap.colWidths
@@ -893,20 +961,37 @@ function restore(snap: SheetData) {
   sheet.merges = snap.merges
   sheet.freezeRows = snap.freezeRows
   sheet.freezeCols = snap.freezeCols
+  if (activeSheetIndex.value !== entry.sheetIndex) switchSheet(entry.sheetIndex)
 }
 
 function undo() {
   if (!canUndo.value) return
-  redoStack.value.push(snapshot())
-  restore(undoStack.value.pop()!)
+  const entry = undoStack.value.pop()!
+  // 重做紀錄要存「被復原的那張表」現在的樣子，而不是目前顯示的表
+  redoStack.value.push(snapshotOf(entry.sheetIndex))
+  restore(entry)
   emit('update:modelValue', toModelValue())
 }
 
 function redo() {
   if (!canRedo.value) return
-  undoStack.value.push(snapshot())
-  restore(redoStack.value.pop()!)
+  const entry = redoStack.value.pop()!
+  undoStack.value.push(snapshotOf(entry.sheetIndex))
+  restore(entry)
   emit('update:modelValue', toModelValue())
+}
+
+/**
+ * 刪除工作表後修正復原紀錄：被刪那張表的紀錄丟掉，
+ * 後面的表索引往前移一格 —— 否則復原會寫進錯的表。
+ */
+function reindexHistory(removedIndex: number) {
+  const fix = (stack: UndoEntry[]) =>
+    stack
+      .filter((e) => e.sheetIndex !== removedIndex)
+      .map((e) => (e.sheetIndex > removedIndex ? { ...e, sheetIndex: e.sheetIndex - 1 } : e))
+  undoStack.value = fix(undoStack.value)
+  redoStack.value = fix(redoStack.value)
 }
 
 // ===== 格式化 =====
@@ -1107,7 +1192,19 @@ function insertFunction(name: string) {
 }
 
 // ===== 剪貼簿 =====
-const clipboard = ref<{ raw: string | number; style?: CellStyle }[][] | null>(null)
+/**
+ * 內部剪貼簿：保留原始公式與樣式，並記住來源位置，
+ * 貼上時才能把相對參照平移（B1 的 =A1*2 貼到 B2 → =A2*2）。
+ *
+ * text 是同一次複製寫進系統剪貼簿的文字。貼上時若系統剪貼簿的內容
+ * 與它相同，代表使用者貼的是自己剛複製的東西 → 走內部路徑（保留公式）；
+ * 否則是從外部（Excel、網頁）複製來的 → 當成純文字解析。
+ */
+interface ClipboardCell {
+  raw: string | number
+  style?: CellStyle
+}
+const clipboard = ref<{ origin: { r: number; c: number }; cells: ClipboardCell[][]; text: string } | null>(null)
 
 /** 取得目前選取範圍（歸一化後） */
 function getSelectionRange() {
@@ -1118,32 +1215,22 @@ function getSelectionRange() {
   return { rs, re, cs, ce }
 }
 
-/** 讀取選取範圍的顯示值矩陣 */
+/** 讀取選取範圍的顯示值矩陣（寫進系統剪貼簿的是畫面上看到的值，與 Excel 相同） */
 function getSelectionValues(): (string | number)[][] {
   const { rs, re, cs, ce } = getSelectionRange()
   const rows: (string | number)[][] = []
   for (let r = rs; r <= re; r++) {
     const row: (string | number)[] = []
-    for (let c = cs; c <= ce; c++) {
-      row.push(getCellValue(r, c))
-    }
+    for (let c = cs; c <= ce; c++) row.push(cellDisplay(r, c))
     rows.push(row)
   }
   return rows
 }
 
-/** 將矩陣轉為 TSV（tab 分隔）文字 */
-function valuesToTSV(rows: (string | number)[][]): string {
-  return rows.map((row) => row.map((v) => String(v)).join('\t')).join('\n')
-}
-
-/** 將矩陣轉為 HTML 表格（供貼到 Excel / Word 保留格式） */
+/** 將矩陣轉為 HTML 表格（供貼到 Excel / Word 保留格線） */
 function valuesToHTML(rows: (string | number)[][]): string {
   const body = rows
-    .map(
-      (row) =>
-        '<tr>' + row.map((v) => `<td>${escapeHtml(String(v))}</td>`).join('') + '</tr>'
-    )
+    .map((row) => '<tr>' + row.map((v) => `<td>${escapeHtml(String(v))}</td>`).join('') + '</tr>')
     .join('')
   return `<table>${body}</table>`
 }
@@ -1154,179 +1241,234 @@ function escapeHtml(s: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 }
 
-/** 寫入系統剪貼簿（TSV + HTML） */
-async function writeSystemClipboard(rows: (string | number)[][]) {
-  const tsv = valuesToTSV(rows)
-  const html = valuesToHTML(rows)
-  try {
-    if (navigator.clipboard && window.ClipboardItem) {
-      const item = new ClipboardItem({
-        'text/plain': new Blob([tsv], { type: 'text/plain' }),
-        'text/html': new Blob([html], { type: 'text/html' }),
-      })
-      await navigator.clipboard.write([item])
-    } else {
-      // 備援：execCommand（相容舊瀏覽器）
-      const ta = document.createElement('textarea')
-      ta.value = tsv
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
-    }
-  } catch (e) {
-    console.warn('寫入系統剪貼簿失敗', e)
-  }
-}
-
-function copySelection() {
-  if (editing.value) return
-  const rows = getSelectionValues()
-  clipboard.value = []
+/** 建立內部剪貼簿，回傳要寫進系統剪貼簿的文字與 HTML */
+function captureSelection(): { text: string; html: string } {
+  const values = getSelectionValues()
   const { rs, re, cs, ce } = getSelectionRange()
+  const cells: ClipboardCell[][] = []
   for (let r = rs; r <= re; r++) {
-    const row: { raw: string | number; style?: CellStyle }[] = []
+    const row: ClipboardCell[] = []
     for (let c = cs; c <= ce; c++) {
       const cell = getCell(r, c)
       row.push({ raw: cell?.raw ?? '', style: cell?.style ? { ...cell.style } : undefined })
     }
-    clipboard.value.push(row)
+    cells.push(row)
   }
-  writeSystemClipboard(rows)
+  const text = toTSV(values)
+  clipboard.value = { origin: { r: rs, c: cs }, cells, text }
+  return { text, html: valuesToHTML(values) }
+}
+
+/** 焦點在輸入框（儲存格編輯器、公式列、工作表改名）時，剪貼簿交給瀏覽器原生處理 */
+function isTextInputTarget(e: Event): boolean {
+  const t = e.target as HTMLElement | null
+  return !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)
+}
+
+/**
+ * 原生 copy 事件：同步寫入 clipboardData。
+ *
+ * 比 navigator.clipboard.write() 可靠 —— 後者是非同步、需要權限，
+ * 在部分瀏覽器與 iframe 內會直接失敗（原本只 console.warn）。
+ */
+function onCopy(e: ClipboardEvent) {
+  if (isTextInputTarget(e) || editing.value) return
+  const { text, html } = captureSelection()
+  e.clipboardData?.setData('text/plain', text)
+  e.clipboardData?.setData('text/html', html)
+  e.preventDefault()
+}
+
+function onCut(e: ClipboardEvent) {
+  if (isTextInputTarget(e) || editing.value || !props.editable) return
+  onCopy(e)
+  clearRange(getSelectionRange(), { keepStyle: false })
+}
+
+/** 工具列的「複製」按鈕：沒有原生事件可用，改走非同步剪貼簿 API */
+async function copySelection() {
+  if (editing.value) return
+  const { text, html } = captureSelection()
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+          'text/html': new Blob([html], { type: 'text/html' }),
+        }),
+      ])
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(text)
+    }
+  } catch (e) {
+    // 權限被拒時內部剪貼簿仍然可用（工具列的貼上按鈕走內部路徑）
+    console.warn('寫入系統剪貼簿失敗，改用內部剪貼簿', e)
+  }
 }
 
 function cutSelection() {
   if (!props.editable) return
   copySelection()
-  pushUndo()
+  clearRange(getSelectionRange(), { keepStyle: false })
+}
+
+/**
+ * 貼上內部剪貼簿：保留公式與樣式，相對參照依位移量平移。
+ * 目標範圍大於剪貼簿時平鋪填滿（Excel 行為）。
+ */
+function pasteInternal() {
+  if (!props.editable || !clipboard.value) return
+  const { origin, cells: cp } = clipboard.value
+  const cpRows = cp.length
+  const cpCols = cp[0]?.length ?? 0
+  if (cpRows === 0 || cpCols === 0) return
+
   const { rs, re, cs, ce } = getSelectionRange()
-  for (let r = rs; r <= re; r++) {
-    for (let c = cs; c <= ce; c++) delete activeSheet.value.cells[cellRef(r, c)]
+  // 選取範圍剛好是剪貼簿尺寸的整數倍才平鋪；否則只貼一份（Excel 行為）
+  const tileRows = (re - rs + 1) % cpRows === 0 ? re - rs + 1 : cpRows
+  const tileCols = (ce - cs + 1) % cpCols === 0 ? ce - cs + 1 : cpCols
+
+  pushUndo()
+  for (let i = 0; i < tileRows; i++) {
+    for (let j = 0; j < tileCols; j++) {
+      const r = rs + i
+      const c = cs + j
+      if (r > props.rowCount || c > props.colCount) continue
+      const src = cp[i % cpRows][j % cpCols]
+      const key = cellRef(r, c)
+      if (src.raw === '' && !src.style) {
+        delete activeSheet.value.cells[key]
+        continue
+      }
+      let raw = src.raw
+      if (typeof raw === 'string' && raw.startsWith('=')) {
+        const srcR = origin.r + (i % cpRows)
+        const srcC = origin.c + (j % cpCols)
+        raw = '=' + shiftFormula(raw.slice(1), r - srcR, c - srcC)
+      }
+      activeSheet.value.cells[key] = { raw, style: src.style ? { ...src.style } : undefined }
+    }
   }
   emit('update:modelValue', toModelValue())
 }
 
-function pasteSelection() {
-  if (!props.editable || !clipboard.value) return
+/** 貼上外部文字（從 Excel、網頁複製來的 TSV） */
+function pasteText(text: string) {
+  const rows = parseTSV(text)
+  if (rows.length === 0) return
+  const { rs, cs } = getSelectionRange()
   pushUndo()
-  const cp = clipboard.value
-  const cpRows = cp.length
-  const cpCols = cp[0]?.length ?? 0
-  // 目標範圍：若目前選取範圍大於剪貼簿，則填滿整個選取範圍（Excel 行為）
-  const { rs, re, cs, ce } = getSelectionRange()
-  const targetRows = re - rs + 1
-  const targetCols = ce - cs + 1
-  const effRows = Math.max(targetRows, cpRows)
-  const effCols = Math.max(targetCols, cpCols)
-  for (let i = 0; i < effRows; i++) {
-    for (let j = 0; j < effCols; j++) {
+  for (let i = 0; i < rows.length; i++) {
+    for (let j = 0; j < rows[i].length; j++) {
       const r = rs + i
       const c = cs + j
       if (r > props.rowCount || c > props.colCount) continue
       const key = cellRef(r, c)
-      // 依選取範圍大小自動平鋪（tile）剪貼簿內容
-      const val = cp[i % cpRows][j % cpCols]
-      if (!val) continue
-      if (val.raw === '' && !val.style) {
-        delete activeSheet.value.cells[key]
+      const v = rows[i][j]
+      // 區塊內的空白格清空目標格內容，但保留格式（與 Excel 貼上純文字相同）
+      if (v === '') {
+        const existing = activeSheet.value.cells[key]
+        if (existing?.style) activeSheet.value.cells[key] = { style: existing.style }
+        else delete activeSheet.value.cells[key]
       } else {
-        activeSheet.value.cells[key] = { raw: val.raw, style: val.style }
+        activeSheet.value.cells[key] = { ...(activeSheet.value.cells[key] || {}), raw: v }
       }
     }
   }
   emit('update:modelValue', toModelValue())
 }
 
-/** 從系統剪貼簿貼上（container 的 paste 事件觸發） */
-async function pasteFromSystem(e: ClipboardEvent) {
+/**
+ * 原生 paste 事件（Ctrl+V / 右鍵貼上 / 選單貼上都會走這裡）。
+ *
+ * ⚠️ 原本 handleKeydown 在 Ctrl+V 時 preventDefault()，
+ *    這會讓瀏覽器根本不觸發 paste 事件 —— 真實 Chromium 實測 paste 事件 0 次，
+ *    從 Excel 複製過來按 Ctrl+V 完全沒反應。這支 handler 雖然一直存在，
+ *    卻從來沒被鍵盤觸發過。
+ */
+function pasteFromSystem(e: ClipboardEvent) {
+  // 貼進公式列或儲存格編輯器時交給瀏覽器，不要順便貼進網格
+  if (isTextInputTarget(e) || editing.value) return
   if (!props.editable) return
-  const text = e.clipboardData?.getData('text/plain')
-  if (!text) return
+  const text = e.clipboardData?.getData('text/plain') ?? ''
   e.preventDefault()
-  const rows = text.split('\n').map((line) => line.split('\t'))
-  if (rows.length === 0 || (rows.length === 1 && rows[0].length === 1 && rows[0][0] === '')) return
-  pushUndo()
-  const topR = activeR.value
-  const leftC = activeC.value
-  for (let i = 0; i < rows.length; i++) {
-    for (let j = 0; j < rows[i].length; j++) {
-      const r = topR + i
-      const c = leftC + j
-      if (r > props.rowCount || c > props.colCount) continue
-      const key = cellRef(r, c)
-      const v = rows[i][j]
-      if (v === '') delete activeSheet.value.cells[key]
-      else activeSheet.value.cells[key] = { ...(activeSheet.value.cells[key] || {}), raw: v }
-    }
+  if (clipboard.value && text === clipboard.value.text) {
+    pasteInternal()
+  } else if (text) {
+    pasteText(text)
   }
-  emit('update:modelValue', toModelValue())
+}
+
+/** 工具列的「貼上」按鈕：讀不到系統剪貼簿時退回內部剪貼簿 */
+async function pasteSelection() {
+  if (!props.editable) return
+  try {
+    const text = navigator.clipboard ? await navigator.clipboard.readText() : ''
+    if (text && (!clipboard.value || text !== clipboard.value.text)) {
+      pasteText(text)
+      return
+    }
+  } catch {
+    // 沒有讀取權限：用內部剪貼簿
+  }
+  pasteInternal()
 }
 
 // ===== 插入 / 刪除列欄 =====
-function insertRow() {
+/**
+ * 插入 / 刪除列欄都走 applyStructuralChange（見 sheetOps.ts）。
+ *
+ * ⚠️ 原本四個函式各自只搬動儲存格的 key，公式、合併、列高欄寬、
+ *    凍結窗格全部留在原地 —— A3 的 =A1+A2 在上方插入一列後
+ *    從 30 默默變成 10（已在真實瀏覽器重現）。
+ *
+ * 與 Excel 相同：選取幾列就插入 / 刪除幾列，不再固定只動一列。
+ */
+function applyChange(axis: 'row' | 'col', mode: 'insert' | 'delete') {
   if (!props.editable) return
+  const { rs, re, cs, ce } = getSelectionRange()
+  const at = axis === 'row' ? rs : cs
+  const span = axis === 'row' ? re - rs + 1 : ce - cs + 1
   pushUndo()
-  const atR = activeR.value
-  const cells = activeSheet.value.cells
-  const newCells: Record<string, CellData> = {}
-  for (const key in cells) {
-    const { r, c } = parseRef(key)
-    if (r >= atR) newCells[cellRef(r + 1, c)] = cells[key]
-    else newCells[key] = cells[key]
+  const next = applyStructuralChange(activeSheet.value, {
+    axis,
+    at,
+    count: mode === 'insert' ? span : -span,
+  })
+  const sheet = activeSheet.value
+  sheet.cells = next.cells
+  sheet.rowHeights = next.rowHeights
+  sheet.colWidths = next.colWidths
+  sheet.merges = next.merges
+  sheet.freezeRows = next.freezeRows
+  sheet.freezeCols = next.freezeCols
+
+  // 刪除後游標留在原位置（Excel 行為），但不能超出網格
+  if (mode === 'delete') {
+    const r = Math.min(activeR.value, props.rowCount)
+    const c = Math.min(activeC.value, props.colCount)
+    setActive(axis === 'row' ? Math.min(rs, props.rowCount) : r, axis === 'col' ? Math.min(cs, props.colCount) : c)
   }
-  activeSheet.value.cells = newCells
   emit('update:modelValue', toModelValue())
+}
+
+function insertRow() {
+  applyChange('row', 'insert')
 }
 
 function deleteRow() {
-  if (!props.editable) return
-  pushUndo()
-  const atR = activeR.value
-  const cells = activeSheet.value.cells
-  const newCells: Record<string, CellData> = {}
-  for (const key in cells) {
-    const { r, c } = parseRef(key)
-    if (r === atR) continue
-    if (r > atR) newCells[cellRef(r - 1, c)] = cells[key]
-    else newCells[key] = cells[key]
-  }
-  activeSheet.value.cells = newCells
-  activeR.value = Math.max(1, activeR.value - 1)
-  emit('update:modelValue', toModelValue())
+  applyChange('row', 'delete')
 }
 
 function insertColumn() {
-  if (!props.editable) return
-  pushUndo()
-  const atC = activeC.value
-  const cells = activeSheet.value.cells
-  const newCells: Record<string, CellData> = {}
-  for (const key in cells) {
-    const { r, c } = parseRef(key)
-    if (c >= atC) newCells[cellRef(r, c + 1)] = cells[key]
-    else newCells[key] = cells[key]
-  }
-  activeSheet.value.cells = newCells
-  emit('update:modelValue', toModelValue())
+  applyChange('col', 'insert')
 }
 
 function deleteColumn() {
-  if (!props.editable) return
-  pushUndo()
-  const atC = activeC.value
-  const cells = activeSheet.value.cells
-  const newCells: Record<string, CellData> = {}
-  for (const key in cells) {
-    const { r, c } = parseRef(key)
-    if (c === atC) continue
-    if (c > atC) newCells[cellRef(r, c - 1)] = cells[key]
-    else newCells[key] = cells[key]
-  }
-  activeSheet.value.cells = newCells
-  activeC.value = Math.max(1, activeC.value - 1)
-  emit('update:modelValue', toModelValue())
+  applyChange('col', 'delete')
 }
 
 function freezeToActive() {
@@ -1518,6 +1660,7 @@ function onRowResizeUp() {
 function removeSheet(idx: number) {
   if (sheets.length <= 1) return
   const removed = sheets.splice(idx, 1)[0]
+  reindexHistory(idx)
   if (activeSheetIndex.value >= sheets.length) activeSheetIndex.value = sheets.length - 1
   emit('sheet-remove', { name: removed.name })
 }
@@ -1543,77 +1686,12 @@ function toModelValue(): Record<string, unknown>[] {
 }
 
 // ===== 匯出 .xlsx =====
-function getCellValueOfSheet(sheet: SheetData, r: number, c: number): string | number {
-  const key = cellRef(r, c)
-  const cell = sheet.cells[key]
-  if (!cell) return ''
-  const raw = cell.raw
-  if (typeof raw === 'string' && raw.startsWith('=') && props.enableFormula) {
-    const v = evaluateFormula(raw.slice(1), sheet)
-    return v === null ? raw : v
-  }
-  return raw ?? ''
-}
-
-function sheetToXlsxSheet(sheet: SheetData): XLSX.WorkSheet {
-  const aoa: (string | number)[][] = []
-  for (let r = 1; r <= props.rowCount; r++) {
-    const rowArr: (string | number)[] = []
-    for (let c = 1; c <= props.colCount; c++) {
-      rowArr.push(getCellValueOfSheet(sheet, r, c))
-    }
-    aoa.push(rowArr)
-  }
-  const ws = XLSX.utils.aoa_to_sheet(aoa)
-  const colsArr: { wch?: number }[] = []
-  for (let c = 1; c <= props.colCount; c++) {
-    const w = sheet.colWidths[c]
-    colsArr.push({ wch: w ? Math.round(w / 7) : undefined })
-  }
-  ws['!cols'] = colsArr
-  const merges = Object.values(sheet.merges).map((m) => ({
-    s: { r: m.r - 1, c: m.c - 1 },
-    e: { r: m.r + m.rows - 2, c: m.c + m.cols - 2 },
-  }))
-  if (merges.length) ws['!merges'] = merges
-  applySheetCellStyles(ws, sheet)
-  return ws
-}
-
-function applySheetCellStyles(ws: XLSX.WorkSheet, sheet: SheetData) {
-  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1')
-  for (let r = range.s.r; r <= range.e.r; r++) {
-    for (let c = range.s.c; c <= range.e.c; c++) {
-      const cell = sheet.cells[cellRef(r + 1, c + 1)]
-      if (!cell?.style) continue
-      const st = cell.style
-      const addr = XLSX.utils.encode_cell({ r, c })
-      const cellObj = ws[addr]
-      if (!cellObj) continue
-      const s: Record<string, unknown> = {
-        font: {
-          bold: st.bold || false,
-          italic: st.italic || false,
-          underline: st.underline ? true : undefined,
-          color: st.color ? { rgb: st.color.replace('#', '') } : undefined,
-        },
-        fill: st.bg ? { fgColor: { rgb: st.bg.replace('#', '') } } : undefined,
-        alignment: st.align ? { horizontal: st.align } : undefined,
-      }
-      if (st.numFmt) s.numFmt = st.numFmt
-      cellObj.s = s as XLSX.CellStyle
-    }
-  }
-}
+// 工作表 → WorkBook 的轉換在 xlsxExport.ts（純函式，可以對真正的 .xlsx 位元組做往返測試）
 
 async function performExport(): Promise<void> {
   try {
     emit('export-start')
-    const wb = XLSX.utils.book_new()
-    for (const sheet of sheets) {
-      const ws = sheetToXlsxSheet(sheet)
-      XLSX.utils.book_append_sheet(wb, ws, sheet.name)
-    }
+    const wb = buildWorkbook(sheets, props.enableFormula)
     const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')
     const filename = `${props.defaultFilename}_${timestamp}.xlsx`
     try {
@@ -1658,15 +1736,10 @@ function handleKeydown(e: KeyboardEvent) {
     } else if (k === 'y') {
       e.preventDefault()
       redo()
-    } else if (k === 'c') {
-      e.preventDefault()
-      copySelection()
-    } else if (k === 'x') {
-      e.preventDefault()
-      cutSelection()
-    } else if (k === 'v') {
-      e.preventDefault()
-      pasteSelection()
+    } else if (k === 'c' || k === 'x' || k === 'v') {
+      // 不要 preventDefault：讓瀏覽器觸發原生 copy / cut / paste 事件，
+      // 由 onCopy / onCut / pasteFromSystem 處理（才讀寫得到系統剪貼簿）
+      return
     } else if (k === 'b') {
       e.preventDefault()
       toggleStyle('bold')
@@ -1704,17 +1777,34 @@ function handleKeydown(e: KeyboardEvent) {
   }
 }
 
-function clearSelection() {
+/**
+ * 清除一個範圍。
+ *
+ * keepStyle: true  → 只清內容、保留格式（Delete 鍵；Excel 的「清除內容」）
+ * keepStyle: false → 內容與格式一起清（剪下）
+ *
+ * ⚠️ 原本 Delete 鍵連格式一起刪掉，與 Excel 不同：在 Excel 裡設好粗體與底色的
+ *    表頭，按 Delete 清掉文字後重新輸入，格式應該還在。
+ */
+function clearRange(
+  range: { rs: number; re: number; cs: number; ce: number },
+  { keepStyle }: { keepStyle: boolean }
+) {
   if (!props.editable) return
   pushUndo()
-  const rs = Math.min(selection.startR, selection.endR)
-  const re = Math.max(selection.startR, selection.endR)
-  const cs = Math.min(selection.startC, selection.endC)
-  const ce = Math.max(selection.startC, selection.endC)
-  for (let r = rs; r <= re; r++) {
-    for (let c = cs; c <= ce; c++) delete activeSheet.value.cells[cellRef(r, c)]
+  for (let r = range.rs; r <= range.re; r++) {
+    for (let c = range.cs; c <= range.ce; c++) {
+      const key = cellRef(r, c)
+      const style = activeSheet.value.cells[key]?.style
+      if (keepStyle && style) activeSheet.value.cells[key] = { style }
+      else delete activeSheet.value.cells[key]
+    }
   }
   emit('update:modelValue', toModelValue())
+}
+
+function clearSelection() {
+  clearRange(getSelectionRange(), { keepStyle: true })
 }
 
 // ===== 初始化 / watch =====
@@ -1853,8 +1943,9 @@ defineExpose({
   bottom: -1px;
   width: 6px;
   height: 6px;
-  background: #16a34a;
-  border: 1px solid #fff;
+  /* Excel 的填充控點是綠色；外圈用背景色隔開，深色模式下才不會是一圈白邊 */
+  background: rgb(var(--t-success-solid));
+  border: 1px solid rgb(var(--t-surface-primary));
   cursor: crosshair;
   z-index: 20;
 }
