@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { computed, ref } from 'vue'
-import { useChartScales } from '@/components/library/charts/composables/useChartScales'
+import { padDomainForBars, useChartScales } from '@/components/library/charts/composables/useChartScales'
 import type {
   ChartScalesProps,
   XDomain,
@@ -69,14 +69,15 @@ describe('useChartScales', () => {
       expect(api.rightLayers.value[0].type).toBe('line')
     })
 
-    it('沒有指定 yAxis 的圖層不會被分到任何一側', () => {
+    /** 回歸：原本省略 yAxis 的圖層兩側都不收，整層靜默消失（渲染函式卻預設畫在左軸） */
+    it('沒有指定 yAxis 的圖層歸到左軸', () => {
       const { api } = setup({
         layers: [{ type: 'bar', data: ROWS, xValue: (d) => d.category, yValue: (d) => d.value }],
       })
 
-      expect(api.leftLayers.value).toHaveLength(0)
+      expect(api.leftLayers.value).toHaveLength(1)
       expect(api.rightLayers.value).toHaveLength(0)
-      expect(api.yLeftScale.value).toBeNull()
+      expect(api.yLeftScale.value).not.toBeNull()
     })
   })
 
@@ -296,5 +297,29 @@ describe('useChartScales', () => {
       expect(api.originalXDomain.value).toEqual(['Q1', 'Q2', 'Q3'])
       expect(api.xScale.value?.domain()).toEqual(['Q1'])
     })
+  })
+})
+
+describe('padDomainForBars', () => {
+  const layer = (xs: number[]) => ({ type: 'bar', data: xs.map((t) => ({ t })), xValue: (d: { t: number }) => d.t })
+
+  it('有 bar 圖層時兩端各外推半個最小點距', () => {
+    expect(padDomainForBars([0, 10], [layer([0, 2, 10])])).toEqual([-1, 11])
+  })
+
+  it('沒有 bar 圖層、或只有一個點時原樣回傳', () => {
+    expect(padDomainForBars([0, 10], [{ ...layer([0, 2]), type: 'line' }])).toEqual([0, 10])
+    expect(padDomainForBars([5, 5], [layer([5])])).toEqual([5, 5])
+  })
+
+  it('Date domain 仍回傳 Date', () => {
+    const day = 86_400_000
+    const a = new Date(2026, 0, 1)
+    const b = new Date(2026, 0, 3)
+    const dateLayer = { type: 'bar', data: [{ t: a }, { t: new Date(a.getTime() + day) }, { t: b }], xValue: (d: { t: Date }) => d.t }
+    const [lo, hi] = padDomainForBars([a, b], [dateLayer])
+    expect(lo).toBeInstanceOf(Date)
+    expect((lo as Date).getTime()).toBe(a.getTime() - day / 2)
+    expect((hi as Date).getTime()).toBe(b.getTime() + day / 2)
   })
 })

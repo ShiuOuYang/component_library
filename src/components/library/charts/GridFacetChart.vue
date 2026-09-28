@@ -4,29 +4,46 @@
     class="grid-facet-chart"
     :class="{ 'auto-resize': autoResize }"
     :style="containerStyle"
+    role="group"
+    :aria-label="title || '網格分面圖'"
   >
-    <!-- 全域標題 -->
-    <!-- 
-     -->
+    <!-- 標題列：標題（左）+ 共用圖例（右）
+         ⚠️ 原本標題的模板整段被註解掉，title prop 傳了也不會顯示 -->
+    <div v-if="titleBarHeight" class="title-bar" :style="{ height: `${titleBarHeight}px` }">
+      <span class="title-text">{{ title }}</span>
+      <div v-if="sharedLegend && legendEntries.length" class="shared-legend" role="group" aria-label="圖例（點選可隱藏或顯示系列）">
+        <button
+          v-for="entry in legendEntries"
+          :key="entry.label"
+          type="button"
+          class="legend-chip"
+          :aria-pressed="!hiddenSeries.has(entry.label)"
+          @click="toggleSeries(entry.label)"
+        >
+          <span class="legend-swatch" :class="entry.type === 'line' ? 'is-line' : ''" :style="{ backgroundColor: entry.color }" aria-hidden="true"></span>
+          {{ entry.label }}
+        </button>
+      </div>
+    </div>
 
-    <!-- 列標題（X 軸分面變數） -->
-    <div 
-      v-for="(colValue, colIndex) in uniqueXValues" 
+    <!-- 列標題（X 軸分面變數）：有 xFacetLabel 時顯示「標籤：值」，否則只顯示值 -->
+    <div
+      v-for="(colValue, colIndex) in uniqueXValues"
       :key="`col-${colValue}`"
       class="col-header"
       :style="getColHeaderStyle(colIndex)"
     >
-      <span class="header-text">{{ xFacetLabel }}: {{ colValue }}</span>
+      <span class="header-text" :title="headerText(xFacetLabel, colValue)">{{ headerText(xFacetLabel, colValue) }}</span>
     </div>
-    
+
     <!-- 行標題（Y 軸分面變數） -->
-    <div 
-      v-for="(rowValue, rowIndex) in uniqueYValues" 
+    <div
+      v-for="(rowValue, rowIndex) in uniqueYValues"
       :key="`row-${rowValue}`"
       class="row-header"
       :style="getRowHeaderStyle(rowIndex)"
     >
-      <span class="header-text">{{ yFacetLabel }}: {{ rowValue }}</span>
+      <span class="header-text" :title="headerText(yFacetLabel, rowValue)">{{ headerText(yFacetLabel, rowValue) }}</span>
     </div>
     
     <!-- 圖表網格 -->
@@ -42,6 +59,8 @@
         { 'grid-col-last': facetData.col === cols - 1 }
       ]"
       :style="getGridCellStyle(facetData.row, facetData.col)"
+      role="group"
+      :aria-label="`${headerText(xFacetLabel, facetData.xValue)}，${headerText(yFacetLabel, facetData.yValue)}`"
     >
       <DualAxisComboChart
         :key="`chart-${facetData.id}-v${chartVersion}-reset${resetTrigger}`"
@@ -49,7 +68,7 @@
         :height="cellHeight"
         :auto-resize="false"
         :margin="getCellMargin(facetData.row, facetData.col)"
-        :layers="facetData.layers || []"
+        :layers="applySharedLegend(facetData.layers, hiddenSeries, sharedLegend)"
         :x-scale-type="xScaleType"
         :x-domain="getFacetXDomain(facetData)"
         :x-axis-format="xAxisFormat || undefined"
@@ -83,15 +102,20 @@
             <div
               v-if="tooltipVisible && tooltipData"
               class="default-tooltip"
-              :style="getTooltipStyle(tooltipData)"
+              role="tooltip"
+              :style="fixedTooltipStyle(tooltipData.position)"
             >
               <div class="tooltip-title">
-                {{ xFacetLabel }}: {{ facetData.xValue }} | 
-                {{ yFacetLabel }}: {{ facetData.yValue }}
+                {{ headerText(xFacetLabel, facetData.xValue) }} · {{ headerText(yFacetLabel, facetData.yValue) }}
               </div>
-              <div v-if="tooltipData.data" class="tooltip-content">
-                {{ formatTooltipValue(tooltipData.data, facetData) }}
-              </div>
+              <template v-for="(info, i) in [tooltipInfo(tooltipData, facetData)]" :key="i">
+                <div v-if="info.xRaw !== null" class="tooltip-x">{{ formatXValue(info.xRaw, xAxisFormat) }}</div>
+                <div v-for="row in info.rows" :key="row.label" class="tooltip-row">
+                  <span class="tooltip-swatch" :style="{ backgroundColor: row.color }" aria-hidden="true"></span>
+                  <span class="tooltip-label">{{ row.label }}</span>
+                  <span class="tooltip-value">{{ row.value }}</span>
+                </div>
+              </template>
             </div>
           </slot>
         </template>
@@ -99,28 +123,38 @@
     </div>
 
     <!-- 重置按鈕（全域） -->
-    <button type="button"
+    <button
       v-if="showResetButton && hasAnyZoom()"
-      @click="handleResetZoom"
+      type="button"
       class="reset-button"
+      :style="{ top: `${titleBarHeight + 6}px` }"
+      @click="handleResetZoom"
     >
-      🔄 Reset All
+      <span class="material-symbols-outlined" aria-hidden="true">zoom_out_map</span>
+      重設縮放
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { CSSProperties } from 'vue'
+import { computed, ref } from 'vue'
 import DualAxisComboChart from './DualAxisComboChart.vue';
-import { useFacetLayout, useGridFacetLayout } from './composables/faceChart/useFacetLayout'
+import { unionDomain, useFacetLayout, useGridFacetLayout } from './composables/faceChart/useFacetLayout'
 import type { GridFacet, GridFacetDatum } from './composables/faceChart/useFacetLayout'
 import type {
   FacetAxisDragEvent,
   FacetBrushEvent,
   FacetSyncMode,
 } from './composables/faceChart/useFacetBrush'
-import type { BrushMode, ChartDatum, TooltipPayload, XScaleType } from './types/chart.types'
+import type { BrushMode, TooltipPayload, XDomain, XScaleType, YDomain } from './types/chart.types'
 import { useFacetBrush } from './composables/faceChart/useFacetBrush';
+import {
+  applySharedLegend,
+  collectLegend,
+  fixedTooltipStyle,
+  formatXValue,
+  tooltipRows,
+} from './composables/faceChart/facetHelpers';
 
 interface GridFacetChartProps {
   // === 數據配置 ===
@@ -133,7 +167,7 @@ interface GridFacetChartProps {
   xFacetVar: string
   /** 決定列的欄位名稱（例如 'product'） */
   yFacetVar: string
-  /** 欄方向的標題 */
+  /** 欄方向的標題（給了才會顯示成「標題：值」） */
   xFacetLabel?: string
   /** 列方向的標題 */
   yFacetLabel?: string
@@ -158,6 +192,15 @@ interface GridFacetChartProps {
   xAxisLabelRotate?: number
   /** 是否顯示格線 */
   showGrid?: boolean
+  /**
+   * 各格的座標軸範圍（同 ggplot 的 facet_wrap(scales = …)）：
+   *   - free：每格依自己的資料（原本的行為；適合看各自的形狀）
+   *   - fixed：所有格用同一個 X / Y 範圍（適合互相比大小 —— 小倍數圖的標準做法）
+   *   - free_x / free_y：只有 X / 只有 Y 各自獨立
+   */
+  scales?: 'free' | 'fixed' | 'free_x' | 'free_y'
+  /** 所有格共用一份圖例（放在標題列右側），點選可同時隱藏 / 顯示某系列 */
+  sharedLegend?: boolean
 
   // === 互動配置 ===
   /** 是否啟用框選縮放 */
@@ -173,8 +216,8 @@ interface GridFacetChartProps {
 }
 
 const props = withDefaults(defineProps<GridFacetChartProps>(), {
-  xFacetLabel: 'X Facet',
-  yFacetLabel: 'Y Facet',
+  xFacetLabel: '',
+  yFacetLabel: '',
   width: 1200,
   height: 800,
   autoResize: true,
@@ -185,6 +228,8 @@ const props = withDefaults(defineProps<GridFacetChartProps>(), {
   xAxisFormat: null,
   xAxisLabelRotate: -45,
   showGrid: true,
+  scales: 'free',
+  sharedLegend: false,
   enableBrush: true,
   brushMode: 'xy',
   syncMode: 'both',
@@ -192,7 +237,15 @@ const props = withDefaults(defineProps<GridFacetChartProps>(), {
   showResetButton: true,
 })
 
-const emit = defineEmits(['selection-change', 'axis-drag', 'zoom-reset', 'chart-resize']);
+const emit = defineEmits<{
+  'selection-change': [payload: unknown]
+  'axis-drag': [payload: unknown]
+  'zoom-reset': []
+  'chart-resize': [size: { width: number; height: number }]
+}>();
+
+/** 標題列高度：有標題或共用圖例時才佔位 */
+const titleBarHeight = computed(() => (props.title || props.sharedLegend ? 36 : 0))
 
 // ===== 使用 Composables =====
 const {
@@ -201,7 +254,18 @@ const {
   effectiveHeight,
   containerStyle,
   chartVersion,
-} = useFacetLayout(props, emit);
+} = useFacetLayout(props, emit as (event: 'chart-resize', payload: { width: number; height: number }) => void);
+
+/** 版面計算要扣掉標題列（getter：保持對 props 的反應性） */
+const layoutProps = {
+  get data() { return props.data },
+  get xFacetVar() { return props.xFacetVar },
+  get yFacetVar() { return props.yFacetVar },
+  get xScaleType() { return props.xScaleType },
+  get headerWidth() { return props.headerWidth },
+  get headerHeight() { return props.headerHeight },
+  get titleHeight() { return titleBarHeight.value },
+}
 
 const {
   uniqueXValues,
@@ -215,7 +279,7 @@ const {
   getColHeaderStyle,
   getRowHeaderStyle,
   getCellMargin,
-} = useGridFacetLayout(props, effectiveWidth, effectiveHeight);
+} = useGridFacetLayout(layoutProps, effectiveWidth, effectiveHeight);
 
 const {
   resetTrigger,
@@ -228,60 +292,65 @@ const {
   handleResetZoom: handleReset,
 } = useFacetBrush();
 
-// ===== 計算每個圖表的 Domain =====
+const headerText = (label: string, value: unknown): string => (label ? `${label}：${String(value)}` : String(value))
+
+// ===== 共用座標範圍（scales） =====
+
+const sharedX = computed(() => unionDomain<XDomain>(gridFacets.value.map((f) => f.xDomain)))
+const sharedYLeft = computed(() => unionDomain<YDomain>(gridFacets.value.map((f) => f.yLeftDomain)))
+const sharedYRight = computed(() => unionDomain<YDomain>(gridFacets.value.map((f) => f.yRightDomain)))
+const fixX = computed(() => props.scales === 'fixed' || props.scales === 'free_y')
+const fixY = computed(() => props.scales === 'fixed' || props.scales === 'free_x')
+
+// ===== 計算每個圖表的 Domain（框選同步優先，其次是 scales 設定） =====
 const getFacetXDomain = (facet: GridFacet) => {
-  return getXDomain(props.syncMode, facet.col, facet.xDomain);
+  return getXDomain(props.syncMode, facet.col, fixX.value ? sharedX.value : facet.xDomain);
 };
 
 const getFacetYLeftDomain = (facet: GridFacet) => {
-  return getYLeftDomain(props.syncMode, facet.row, facet.yLeftDomain);
+  return getYLeftDomain(props.syncMode, facet.row, fixY.value ? sharedYLeft.value : facet.yLeftDomain);
 };
 
 const getFacetYRightDomain = (facet: GridFacet) => {
-  return getYRightDomain(props.syncMode, facet.row, facet.yRightDomain);
+  return getYRightDomain(props.syncMode, facet.row, fixY.value ? sharedYRight.value : facet.yRightDomain);
 };
 
+// ===== 共用圖例 =====
+
+const hiddenSeries = ref<Set<string>>(new Set())
+const legendEntries = computed(() => collectLegend(props.data.map((d) => d.layers)))
+
+function toggleSeries(label: string): void {
+  const next = new Set(hiddenSeries.value)
+  if (next.has(label)) next.delete(label)
+  else next.add(label)
+  hiddenSeries.value = next
+}
+
 // ===== 事件處理（包裝 Composable 函數） =====
+type BrushEmit = Parameters<typeof handleSelection>[5]
+
 const handleSelectionChange = (event: FacetBrushEvent, facetId: string): void => {
   const facet = gridFacets.value.find(f => f.id === facetId);
   if (facet) {
-    handleSelection(event, facetId, props.syncMode, facet.row, facet.col, emit);
+    handleSelection(event, facetId, props.syncMode, facet.row, facet.col, emit as unknown as BrushEmit);
   }
 };
 
 const handleAxisDrag = (event: FacetAxisDragEvent, facetId: string): void => {
   const facet = gridFacets.value.find(f => f.id === facetId);
   if (facet) {
-    handleDrag(event, facetId, props.syncMode, facet.row, facet.col, emit);
+    handleDrag(event, facetId, props.syncMode, facet.row, facet.col, emit as unknown as BrushEmit);
   }
 };
 
 const handleResetZoom = (): void => {
-  handleReset(emit);
+  handleReset(emit as unknown as BrushEmit);
 };
 
-// ===== Tooltip 樣式 =====
-
-/** tooltip 擺在游標右下方一點，避免蓋住被懸停的元素 */
-const getTooltipStyle = (tooltipData: TooltipPayload): CSSProperties => ({
-  left: `${tooltipData.position.pageX + 10}px`,
-  top: `${tooltipData.position.pageY - 10}px`,
-});
-
-const formatTooltipValue = (data: ChartDatum | undefined, facet: GridFacet): string => {
-  if (!data) return '';
-  
-  const layer = facet.layers?.[0];
-  if (layer?.yValue && typeof layer.yValue === 'function') {
-    const value = layer.yValue(data);
-    if (facet.yLeftAxisFormat) {
-      return facet.yLeftAxisFormat(value);
-    }
-    return String(value);
-  }
-  
-  return JSON.stringify(data);
-};
+// ===== 預設 tooltip =====
+const tooltipInfo = (payload: TooltipPayload, facet: GridFacet) =>
+  tooltipRows(payload, { yLeft: facet.yLeftAxisFormat, yRight: facet.yRightAxisFormat })
 
 // 容器元素對外開放，方便呼叫端量測尺寸或截圖
 defineExpose({ containerRef })
@@ -291,7 +360,7 @@ defineExpose({ containerRef })
 .grid-facet-chart {
   position: relative;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background-color: #fafafa;
+  background-color: rgb(var(--t-surface-secondary));
   
   &.auto-resize {
     width: 100%;
@@ -301,25 +370,41 @@ defineExpose({ containerRef })
   }
 }
 
-.chart-title {
+.title-bar {
   position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1f2937;
+  top: 0;
+  left: 0;
+  right: 0;
   z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+
+  .title-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1rem;
+    font-weight: 700;
+    color: rgb(var(--t-content-primary));
+  }
+
+  .shared-legend {
+    justify-content: flex-end;
+  }
 }
 
 .col-header,
 .row-header {
-  background-color: #f9fafb;
+  background-color: rgb(var(--t-surface-secondary));
   z-index: 10;
   
   .header-text {
     font-size: 0.875rem;
-    color: #374151;
+    color: rgb(var(--t-content-primary));
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -328,7 +413,7 @@ defineExpose({ containerRef })
 }
 
 .grid-cell {
-  background-color: #ffffff;
+  background-color: rgb(var(--t-surface-primary));
   transition: box-shadow 0.2s;
   
   &:hover {
@@ -354,69 +439,23 @@ defineExpose({ containerRef })
   :deep(.y-axis-left),
   :deep(.y-axis-right) {
     path.domain {
-      stroke: #9ca3af;
+      stroke: rgb(var(--t-stroke-medium));
       stroke-width: 1;
     }
     
     line {
-      stroke: #d1d5db;
+      stroke: rgb(var(--t-stroke-default));
       stroke-width: 1;
     }
   }
   
   // 網格線
   :deep(.grid-layer line) {
-    stroke: #e5e7eb;
+    stroke: rgb(var(--t-stroke-light));
     stroke-opacity: 0.5;
   }
 }
 
-.reset-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 8px 16px;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  cursor: pointer;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  transition: all 0.2s;
-  z-index: 30;
-  
-  &:hover {
-    background-color: #f9fafb;
-    border-color: #9ca3af;
-    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
-  }
-  
-  &:active {
-    transform: scale(0.95);
-  }
-}
-
-.default-tooltip {
-  position: absolute;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  padding: 0.5rem;
-  font-size: 0.875rem;
-  pointer-events: none;
-  z-index: 50;
-  
-  .tooltip-title {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    color: #1f2937;
-  }
-  
-  .tooltip-content {
-    color: #6b7280;
-  }
-}
 </style>
+
+<style lang="scss" scoped src="./facetShared.scss"></style>

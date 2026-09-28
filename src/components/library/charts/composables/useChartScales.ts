@@ -33,6 +33,33 @@ const SCALE_CONSTRUCTORS: Record<ContinuousScaleType, () => YScale> = {
 }
 
 /** 依名稱取得建構子，未知名稱退回 linear */
+/**
+ * 連續 X 軸上有 type:'bar' 圖層時，把 domain 兩端各往外推半個點距。
+ * 長條以資料點為中心畫，不推的話第一根與最後一根會有一半畫到座標軸外面。
+ * 沒有 bar 圖層、或只有一個點時原樣回傳。Date domain 仍回傳 Date。
+ */
+export function padDomainForBars<X extends number | Date, D>(
+  domain: [X, X],
+  layers: ReadonlyArray<{ type: string; data?: D[]; xValue?: (d: D) => unknown }>
+): [X, X] {
+  const xs = new Set<number>()
+  for (const layer of layers) {
+    if (layer.type !== 'bar' || !layer.data || !layer.xValue) continue
+    for (const d of layer.data) {
+      const v = Number(layer.xValue(d))
+      if (Number.isFinite(v)) xs.add(v)
+    }
+  }
+  const sorted = [...xs].sort((a, b) => a - b)
+  if (sorted.length < 2) return domain
+  let gap = Infinity
+  for (let i = 1; i < sorted.length; i++) gap = Math.min(gap, sorted[i] - sorted[i - 1])
+  if (!Number.isFinite(gap) || gap <= 0) return domain
+  const pad = gap / 2
+  const shift = (v: X, delta: number) => (v instanceof Date ? new Date(v.getTime() + delta) : (v as number) + delta) as X
+  return [shift(domain[0], -pad), shift(domain[1], pad)]
+}
+
 function resolveScale(type: string | undefined): () => YScale {
   return SCALE_CONSTRUCTORS[(type ?? 'linear') as ContinuousScaleType] ?? SCALE_CONSTRUCTORS.linear
 }
@@ -73,7 +100,9 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
   const originalYRightDomain = ref<YDomain | null>(null) as Ref<YDomain | null>
 
   /** 按 yAxis 分組圖層，方便分別算左右 Y 軸範圍 */
-  const leftLayers = computed(() => props.layers.filter((l) => l.yAxis === 'left'))
+  // 沒指定 yAxis 視為左軸（渲染函式本來就這樣預設）。原本要求 === 'left'，
+  // 省略 yAxis 的圖層被靜默丟掉：不畫、也不參與比例尺，文件範例照抄就是空圖
+  const leftLayers = computed(() => props.layers.filter((l) => l.yAxis !== 'right'))
   const rightLayers = computed(() => props.layers.filter((l) => l.yAxis === 'right'))
 
   /**
@@ -149,7 +178,7 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
       // [undefined, undefined]，以 [0, 0] 兜底避免 domain 變成 undefined）
       const numericX = (d: T): number => xValue(d) as unknown as number
       const [min, max] = d3.extent(allData, numericX)
-      baseDomain = props.xDomain ?? [min ?? 0, max ?? 0]
+      baseDomain = props.xDomain ?? padDomainForBars<number, T>([min ?? 0, max ?? 0], props.layers)
     }
 
     // 首次計算時記下原始 domain，供 brush 重置

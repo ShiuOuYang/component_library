@@ -1,0 +1,139 @@
+// 分面圖（FacetedChart / GridFacetChart）共用的樣式：共用圖例、預設 tooltip、重設縮放按鈕。
+// 兩個元件都以 <style scoped src="./facetShared.scss"> 引入。
+
+.shared-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.legend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 9999px;
+  border: 1px solid rgb(var(--t-stroke-light));
+  background-color: rgb(var(--t-surface-primary));
+  color: rgb(var(--t-content-primary));
+  font-size: 0.75rem;
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgb(var(--t-surface-tertiary));
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--t-stroke-focus));
+    outline-offset: 1px;
+  }
+
+  // 隱藏中的系列：文字刪除線、色塊變空心（不只靠顏色表示狀態）
+  &[aria-pressed='false'] {
+    color: rgb(var(--t-content-disabled));
+    text-decoration: line-through;
+
+    .legend-swatch {
+      background-color: transparent !important;
+      box-shadow: inset 0 0 0 1.5px rgb(var(--t-content-disabled));
+    }
+  }
+}
+
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+
+  &.is-line {
+    height: 3px;
+  }
+}
+
+// position: fixed —— tooltip 的 pageX / pageY 其實是視窗座標（clientX / clientY）。
+// ⚠️ 原本是 position: absolute，圖表不在頁面左上角時（幾乎所有實際版面）tooltip 會離游標很遠。
+.default-tooltip {
+  position: fixed;
+  min-width: 10rem;
+  max-width: 15rem;
+  background-color: rgb(var(--t-surface-primary));
+  color: rgb(var(--t-content-primary));
+  border: 1px solid rgb(var(--t-stroke-default));
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 0.5rem;
+  font-size: 0.8125rem;
+  pointer-events: none;
+  z-index: 600;
+
+  .tooltip-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .tooltip-x {
+    margin-bottom: 0.25rem;
+    color: rgb(var(--t-content-secondary));
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tooltip-swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+  }
+
+  .tooltip-label {
+    flex: 1;
+    color: rgb(var(--t-content-secondary));
+  }
+
+  .tooltip-value {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.reset-button {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  background-color: rgb(var(--t-surface-primary));
+  border: 1px solid rgb(var(--t-stroke-default));
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: rgb(var(--t-content-primary));
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s, border-color 0.2s;
+
+  &:hover {
+    background-color: rgb(var(--t-surface-secondary));
+    border-color: rgb(var(--t-stroke-medium));
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--t-stroke-focus));
+    outline-offset: 2px;
+  }
+
+  .material-symbols-outlined {
+    font-size: 16px;
+  }
+}

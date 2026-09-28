@@ -23,6 +23,8 @@ export {
   ChptTransfer,
   ChptAnchor, ChptBackTop, ChptConfirmHost, ChptImage, ChptImageViewer, ChptMenu,
   ChptTimePicker, ChptTreeSelect,
+  ChptAffix, ChptCarousel, ChptNotificationHost, ChptSplitter, ChptVirtualList,
+  ChptCopyButton, ChptCountdown, ChptEllipsis, ChptWatermark,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -42,6 +44,8 @@ export {
 // ===== shared =====
 export { useToast } from './shared/useToast'
 export { useConfirm } from './shared/useConfirm'
+export { useNotification } from './shared/useNotification'
+export type { NotificationOptions, NotificationAction } from './shared/useNotification'
 export type { ConfirmOptions } from './shared/useConfirm'
 export { useDarkMode, initDarkMode, THEME_STORAGE_KEY } from './shared/useDarkMode'
 export { useModalManager, generateModalId } from './shared/useModalManager'

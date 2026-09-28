@@ -1,3 +1,4 @@
+import { padDomainForBars } from '../useChartScales'
 import { computed, onMounted, onUnmounted, ref, type ComputedRef, type CSSProperties, type Ref } from 'vue'
 import * as d3 from 'd3'
 import { sortCategories } from '../../utils/sortCategories'
@@ -312,6 +313,8 @@ export interface GridFacetProps<T = ChartDatum> {
   xScaleType?: XScaleType
   headerWidth?: number
   headerHeight?: number
+  /** 表頭上方保留的高度（標題 / 共用圖例列） */
+  titleHeight?: number
 }
 
 
@@ -335,6 +338,42 @@ function padDomain(values: number[], padRatio: number): YDomain | undefined {
   const pad = span > 0 ? span * padRatio : Math.abs(max) * padRatio || 1
 
   return [min - pad, max + pad]
+}
+
+/**
+ * 左軸（柱狀圖的基線）的 domain：一定包含 0，只在遠離 0 的那一側留 10%。
+ *
+ * 🔧 原本寫成 [0, max * 1.1]：
+ *   - 有負值（差異量、損益）時，負的柱子整根被裁掉
+ *   - 全部是負值時 max * 1.1 比 0 還小，軸變成倒過來的 [0, -5.5]
+ */
+export function zeroBasedDomain(values: number[]): YDomain | undefined {
+  const finite = values.filter((v) => Number.isFinite(v))
+  if (finite.length === 0) return undefined
+  const lo = Math.min(0, d3.min(finite) as number)
+  const hi = Math.max(0, d3.max(finite) as number)
+  if (lo === hi) return [0, 1]
+  const pad = (hi - lo) * 0.1
+  return [lo < 0 ? lo - pad : 0, hi > 0 ? hi + pad : 0]
+}
+
+/**
+ * 多個分面的 domain 合成一個（scales: 'fixed' 用）。
+ * 連續值取最小 / 最大；類別（band）取聯集並保留出現順序。
+ */
+export function unionDomain<D extends XDomain | YDomain>(domains: (D | null | undefined)[]): D | undefined {
+  const list = domains.filter((d): d is D => Array.isArray(d) && d.length > 0)
+  if (!list.length) return undefined
+  const isBand = list.some((d) => d.length !== 2 || typeof d[0] === 'string')
+  if (isBand) return [...new Set(list.flat().map(String))] as unknown as D
+  const toNum = (v: unknown) => (v instanceof Date ? v.getTime() : Number(v))
+  let lo = list[0][0] as unknown
+  let hi = list[0][1] as unknown
+  for (const d of list) {
+    if (toNum(d[0]) < toNum(lo)) lo = d[0]
+    if (toNum(d[1]) > toNum(hi)) hi = d[1]
+  }
+  return [lo, hi] as unknown as D
 }
 
 export interface UseGridFacetLayoutReturn<T = ChartDatum> {
@@ -375,22 +414,30 @@ export function useGridFacetLayout<T extends ChartDatum = ChartDatum>(
 
   const headerWidth = computed(() => props.headerWidth ?? 80)
   const headerHeight = computed(() => props.headerHeight ?? 40)
+  const titleHeight = computed(() => props.titleHeight ?? 0)
+  /** 第一列圖表的上緣 = 標題列 + 欄表頭 */
+  const gridTop = computed(() => titleHeight.value + headerHeight.value)
 
   const cellWidth = computed(() => (effectiveWidth.value - headerWidth.value) / cols.value)
-  const cellHeight = computed(() => (effectiveHeight.value - headerHeight.value) / rows.value)
+  const cellHeight = computed(() => (effectiveHeight.value - gridTop.value) / rows.value)
 
-  /** 從圖層資料推算 X domain */
+  /**
+   * 從圖層資料推算 X domain。
+   * 🔧 原本只看第一個圖層：第二個圖層（例如右軸折線）的 X 範圍比較寬時，超出的點會被裁掉。
+   */
   function deriveXDomain(facet: GridFacetDatum<T>): XDomain | undefined {
-    const firstLayer = facet.layers?.[0]
-    if (!firstLayer?.data || !firstLayer.xValue) return undefined
+    const xValues: unknown[] = []
+    for (const layer of facet.layers ?? []) {
+      if (!layer.data || !layer.xValue) continue
+      const xValue = layer.xValue
+      layer.data.forEach((d) => xValues.push(xValue(d)))
+    }
+    if (xValues.length === 0) return undefined
 
-    const xValue = firstLayer.xValue
-    const xValues = firstLayer.data.map((d) => xValue(d))
-
-    if (props.xScaleType === 'band') return xValues as string[]
+    if (props.xScaleType === 'band') return [...new Set(xValues.map(String))]
 
     const [min, max] = d3.extent(xValues as unknown as number[])
-    return min === undefined || max === undefined ? undefined : [min, max]
+    return min === undefined || max === undefined ? undefined : padDomainForBars<number, T>([min, max], facet.layers ?? [])
   }
 
   /** 從 yAxis='left'（或未指定）的圖層推算左 Y domain */
@@ -422,10 +469,7 @@ export function useGridFacetLayout<T extends ChartDatum = ChartDatum>(
 
     if (allYValues.length === 0) return undefined
 
-    // 左軸從 0 起算（柱狀圖的基線），只在上方留白
-    const max = d3.max(allYValues)
-    if (max === undefined || Number.isNaN(max)) return undefined
-    return [0, max * 1.1]
+    return zeroBasedDomain(allYValues)
   }
 
   /** 從 yAxis='right' 的圖層推算右 Y domain */
@@ -480,7 +524,7 @@ export function useGridFacetLayout<T extends ChartDatum = ChartDatum>(
 
   const getGridCellStyle = (row: number, col: number): CSSProperties => ({
     position: 'absolute',
-    top: `${headerHeight.value + row * cellHeight.value}px`,
+    top: `${gridTop.value + row * cellHeight.value}px`,
     left: `${headerWidth.value + col * cellWidth.value}px`,
     width: `${cellWidth.value}px`,
     height: `${cellHeight.value}px`,
@@ -489,7 +533,7 @@ export function useGridFacetLayout<T extends ChartDatum = ChartDatum>(
 
   const getColHeaderStyle = (colIndex: number): CSSProperties => ({
     position: 'absolute',
-    top: '0px',
+    top: `${titleHeight.value}px`,
     left: `${headerWidth.value + colIndex * cellWidth.value}px`,
     width: `${cellWidth.value}px`,
     height: `${headerHeight.value}px`,
@@ -503,7 +547,7 @@ export function useGridFacetLayout<T extends ChartDatum = ChartDatum>(
 
   const getRowHeaderStyle = (rowIndex: number): CSSProperties => ({
     position: 'absolute',
-    top: `${headerHeight.value + rowIndex * cellHeight.value}px`,
+    top: `${gridTop.value + rowIndex * cellHeight.value}px`,
     left: '0px',
     width: `${headerWidth.value}px`,
     height: `${cellHeight.value}px`,

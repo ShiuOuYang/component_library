@@ -3,6 +3,7 @@ import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import EnterpriseHeatmap from '@/components/library/charts/EnterpriseHeatmap.vue'
 import type { HeatmapDatum } from '@/components/library/charts/EnterpriseHeatmap.vue'
+import { chartTheme } from '@/components/library/charts/chartTheme'
 
 /**
  * jsdom 沒有排版引擎，但 D3 仍會建立 SVG 節點與屬性，
@@ -387,7 +388,8 @@ describe('EnterpriseHeatmap', () => {
 
       const missing = wrapper
         .findAll('rect.heatmap-cell')
-        .find((c) => c.element.style.fill === 'rgb(224, 224, 224)')!
+        // 缺值格的底色是主題色（深色模式下跟著變），不再是寫死的 #e0e0e0
+        .find((c) => c.element.style.fill === chartTheme.surfaceMuted)!
       await missing.trigger('mouseenter')
 
       const payload = wrapper.emitted('tooltip-show')![0][0] as { data: HeatmapDatum }

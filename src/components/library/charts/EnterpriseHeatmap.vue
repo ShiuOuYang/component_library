@@ -81,6 +81,7 @@
 </template>
 
 <script setup lang="ts">
+import { chartTheme } from './chartTheme';
 import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue';
 import * as d3 from 'd3';
 import type { ChartMargin } from './types/chart.types';
@@ -235,7 +236,8 @@ const props = withDefaults(defineProps<EnterpriseHeatmapProps>(), {
   cellPadding: 2,
   cellBorderRadius: 2,
   cellBorderWidth: 1,
-  cellBorderColor: '#fff',
+  // 單元格之間的縫隙用圖表底色（深色模式下不是一格格白框）
+  cellBorderColor: chartTheme.surface,
   showCellValues: false,
   cellValueFormat: (value: number) => value.toFixed(1),
 
@@ -249,7 +251,7 @@ const props = withDefaults(defineProps<EnterpriseHeatmapProps>(), {
   enableTooltip: true,
   highlightMode: 'cell',
 
-  missingValueColor: '#e0e0e0',
+  missingValueColor: chartTheme.surfaceMuted,
   showMissingValues: true,
 
   customRenderers: () => ({}),
@@ -674,7 +676,7 @@ function handleCellHover(this: SVGRectElement, event: MouseEvent, d: HeatmapCell
 
   // 高亮效果
   const cell = d3.select(this);
-  cell.style('stroke', '#000')
+  cell.style('stroke', chartTheme.text)
     .style('stroke-width', 2);
 
   // 根據高亮模式設置效果
@@ -783,7 +785,7 @@ const renderXAxis = (): void => {
       .style('text-anchor', 'middle')
       .style('font-size', '14px')
       .style('font-weight', '600')
-      .style('fill', '#374151')
+      .style('fill', chartTheme.text)
       .text(props.xAxisLabel);
   }
 };
@@ -814,7 +816,7 @@ const renderYAxis = (): void => {
       .style('text-anchor', 'middle')
       .style('font-size', '14px')
       .style('font-weight', '600')
-      .style('fill', '#374151')
+      .style('fill', chartTheme.text)
       .text(props.yAxisLabel);
   }
 };
@@ -871,7 +873,7 @@ const renderColorLegend = (): void => {
       .style('text-anchor', 'middle')
       .style('font-size', '12px')
       .style('font-weight', '600')
-      .style('fill', '#374151')
+      .style('fill', chartTheme.text)
       .text(props.colorLegendTitle);
   }
 };
@@ -891,7 +893,7 @@ const renderTitle = (): void => {
     .style('text-anchor', 'middle')
     .style('font-size', '18px')
     .style('font-weight', '700')
-    .style('fill', '#1f2937')
+    .style('fill', chartTheme.text)
     .text(props.title);
 };
 
@@ -1178,39 +1180,39 @@ defineExpose({ containerRef, svgRef });
 :deep(.x-axis) text,
 :deep(.y-axis) text {
   font-size: 12px;
-  fill: #6b7280;
+  fill: rgb(var(--t-content-secondary));
 }
 
 :deep(.x-axis) path,
 :deep(.y-axis) path {
-  stroke: #d1d5db;
+  stroke: rgb(var(--t-stroke-medium));
 }
 
 :deep(.x-axis) line,
 :deep(.y-axis) line {
-  stroke: #d1d5db;
+  stroke: rgb(var(--t-stroke-medium));
 }
 
 :deep(.color-legend) text {
   font-size: 11px;
-  fill: #6b7280;
+  fill: rgb(var(--t-content-secondary));
 }
 
 :deep(.color-legend) path,
 :deep(.color-legend) line {
-  stroke: #9ca3af;
+  stroke: rgb(var(--t-stroke-medium));
 }
 
 /* ✅ Brush 樣式 */
 :deep(.brush-layer .selection) {
-  fill: #3b82f6;
+  fill: rgb(var(--t-accent-solid));
   fill-opacity: 0.15;
-  stroke: #3b82f6;
+  stroke: rgb(var(--t-accent-solid));
   stroke-width: 2;
 }
 
 :deep(.brush-layer .handle) {
-  fill: #3b82f6;
+  fill: rgb(var(--t-accent-solid));
   fill-opacity: 0.6;
 }
 

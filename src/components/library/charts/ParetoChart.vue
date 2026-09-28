@@ -49,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import { chartTheme } from './chartTheme'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import * as d3 from 'd3'
 import { buildParetoData } from './composables/useParetoData'
@@ -299,8 +300,8 @@ const drawParetoChart = async (): Promise<void> => {
       .append('svg')
       .attr('width', width)
       .attr('height', height)
-      .style('background-color', '#fafafa')
-      .style('border', '1px solid #e5e7eb')
+      .style('background-color', chartTheme.surfaceMuted)
+      .style('border', `1px solid ${chartTheme.grid}`)
       
     // console.log('ParetoChart - SVG 已創建')
 
@@ -372,7 +373,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('text-anchor', 'middle')
       .attr('font-size', '10px')
       .attr('font-weight', 'bold')
-      .attr('fill', '#374151')
+      .style('fill', chartTheme.text)
       .text((d) => d.count)
 
     // 繪製累積百分比線
@@ -385,7 +386,7 @@ const drawParetoChart = async (): Promise<void> => {
       .datum(paretoData.value)
       .attr('class', 'cumulative-line')
       .attr('fill', 'none')
-      .attr('stroke', '#dc2626')
+      .style('stroke', chartTheme.danger)
       .attr('stroke-width', 2)
       .attr('d', line)
 
@@ -398,7 +399,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('cx', barCenterX)
       .attr('cy', (d) => yScalePercent(d.cumulative))
       .attr('r', 3)
-      .attr('fill', '#dc2626')
+      .style('fill', chartTheme.danger)
 
     // 添加累積百分比標籤
     g.selectAll<SVGTextElement, ParetoChartDatum>('.cumulative-label')
@@ -410,7 +411,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('y', (d) => yScalePercent(d.cumulative) - 8)
       .attr('text-anchor', 'middle')
       .attr('font-size', '9px')
-      .attr('fill', '#dc2626')
+      .style('fill', chartTheme.danger)
       .text((d) => `${d.cumulative.toFixed(1)}%`)
 
     // 添加累積閾值參考線
@@ -421,7 +422,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('x2', innerWidth)
       .attr('y1', thresholdY)
       .attr('y2', thresholdY)
-      .attr('stroke', '#f59e0b')
+      .style('stroke', chartTheme.warning)
       .attr('stroke-width', 2)
       .attr('stroke-dasharray', '5,5')
       .attr('opacity', 0.8)
@@ -434,7 +435,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('text-anchor', 'end')
       .attr('font-size', '11px')
       .attr('font-weight', 'bold')
-      .attr('fill', '#f59e0b')
+      .style('fill', chartTheme.warning)
       .text(`${props.cumulativeThreshold}% ${props.thresholdLabel}`)
 
     // 添加 X 軸
@@ -458,7 +459,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('y', -40)
       .attr('x', -innerHeight / 2)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#000000')
+      .style('fill', chartTheme.text)
       .style('font-size', '12px')
       .text(props.yAxisLeftLabel)
 
@@ -472,7 +473,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('y', 40)
       .attr('x', -innerHeight / 2)
       .attr('text-anchor', 'middle')
-      .attr('fill', '#000000')
+      .style('fill', chartTheme.text)
       .style('font-size', '12px')
       .text(props.yAxisRightLabel)
 
@@ -616,39 +617,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* .pareto-chart {
-  width: 100%;
-}
-
-.pareto-container {
-  width: 100%;
-}
-
-.statistics {
-  border-top: 1px solid #e5e7eb;
-} */
-
-/* 圖表樣式 */
-/* :deep(.x-axis text) {
-  font-size: 10px;
-  fill: #6b7280;
-}
-
-:deep(.y-axis-left text) {
-  font-size: 10px;
-  fill: #374151;
-}
-
-:deep(.y-axis-right text) {
-  font-size: 10px;
-  fill: #dc2626;
-}
-
-:deep(.bar) {
-  transition: opacity 0.2s ease;
-}
-
-:deep(.threshold-line) {
-  opacity: 0.7;
-} */
+/*
+ * 軸線與刻度文字沿用 d3-axis 預設的 currentColor，跟著外層文字色（主題）走；
+ * 其餘顏色見 chartTheme.ts。原本這裡是整段註解掉的寫死色值，已移除。
+ */
 </style>

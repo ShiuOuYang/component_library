@@ -57,11 +57,13 @@ const ROOTS = [
  * 用 rgb(var(--t-<角色>)) 取主題色。允許：
  *   - 黑色系的陰影與遮罩 rgba(0, 0, 0, …)：兩個主題都該是黑的
  *   - 同一行註明 theme-ok 的刻意固定色（例如品牌色的光暈）
- * 圖表（charts/）另有 D3 以 .attr() 設定的顏色，需要整批處理，暫不在此列。
+ *
+ * 圖表（charts/）原本整個跳過；軸線、格線、文字、tooltip 已改走主題色（見 charts/chartTheme.ts），
+ * 現在與其他元件一樣檢查。
  */
 const STYLE_COLOR = /#[0-9a-fA-F]{3,8}\b|rgba?\(\s*\d+[\s,]+\d+[\s,]+\d+[^)]*\)/g
 const STYLE_COLOR_OK = /^rgba?\(\s*0[\s,]+0[\s,]+0\b/
-const STYLE_SKIP_DIRS = ['src/components/library/charts/']
+const STYLE_SKIP_DIRS = []
 
 /** 整份跳過的檔案（理由見上方 3、4、6） */
 const ALLOWED_FILES = new Set([
@@ -81,6 +83,8 @@ const ALLOWED_FILES = new Set([
   'src/components/library/viewer/GerberViewer.vue',
   // 全螢幕看圖：黑底（照片的標準做法，兩個主題都一樣），上面的按鈕是白色系
   'src/components/library/ui/ChptImageViewer.vue',
+  // 疊在圖片上的控制鈕（箭頭、指示點）：底下是任意照片，固定用半透明黑底白字才看得到
+  'src/components/library/ui/ChptCarousel.vue',
   'src/components/library/viewer/PcbLayout.vue',
 ])
 
@@ -103,6 +107,13 @@ const PATTERN = new RegExp(
  * ⚠️ ChptInput 的放大鏡、ChptFixedTable 的釘選 / 篩選圖示都是這樣漏掉的：深色模式下仍是固定灰。
  */
 const COLOR_PROP = /\b(?:color|hover-color|hoverColor)="((?:white|neutral|gray|slate|zinc|stone)(?:-\d{2,3})?)"/g
+
+/**
+ * D3 的 .attr / .style 直接給寫死色值。
+ * ⚠️ 圖表原本的軸標籤（#374151）、格線（#e5e7eb）、點外圈（#fff）都是這樣寫的，
+ *    深色模式下字看不見、點外面一圈白邊。資料系列的顏色請走 props，不要寫在呼叫裡。
+ */
+const D3_LITERAL = /\.(?:attr|style)\(\s*'(?:fill|stroke|color|background-color)'\s*,\s*'(?:#[0-9a-fA-F]{3,8}|white|black)'\s*\)/g
 
 /** text-white / text-black 是實心底上的文字，兩個主題都正確 */
 const EXEMPT_CLASS = /^(?:text-(?:white|black))$/
@@ -159,6 +170,11 @@ for (const { dir, scope } of ROOTS) for (const file of await collectVueFiles(dir
   }
 
   lines.forEach((line, idx) => {
+    // D3 直接塞寫死色（.attr('fill', '#374151')）：圖表軸線 / 文字在深色模式下看不見的原因
+    for (const m of line.matchAll(D3_LITERAL)) {
+      if (line.includes('theme-ok')) continue
+      offenders.push({ where: `${rel}:${idx + 1}`, cls: `${m[0]}（改用 charts/chartTheme.ts 並以 .style() 設定）` })
+    }
     for (const m of line.matchAll(COLOR_PROP)) {
       offenders.push({ where: `${rel}:${idx + 1}`, cls: `color="${m[1]}"（ChptIcon → text-${m[1]}）` })
     }

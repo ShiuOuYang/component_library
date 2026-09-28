@@ -49,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import { chartTheme } from './chartTheme';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import * as d3 from 'd3';
 import type { ChartDatum, ChartMargin } from './types/chart.types';
@@ -393,7 +394,7 @@ const renderBars = (): void => {
           .attr('text-anchor', 'middle')
           .style('font-size', '12px')
           .style('font-weight', '600')
-          .style('fill', '#374151')
+          .style('fill', chartTheme.text)
           .style('pointer-events', 'none')
           .style('opacity', 0)
           .text((d) => props.valueFormat(valueOf(d)))
@@ -494,7 +495,7 @@ const renderLine = (): void => {
           .attr('cy', cumulativeY)
           .attr('r', 0)
           .style('fill', props.pointFillColor)
-          .style('stroke', '#fff')
+          .style('stroke', chartTheme.surface)
           .style('stroke-width', 2)
           .call(enter => enter.transition()
             .delay(props.animationDuration / 2)
@@ -671,7 +672,7 @@ const renderXAxis = (): void => {
       .style('text-anchor', 'middle')
       .style('font-size', '14px')
       .style('font-weight', '600')
-      .style('fill', '#374151')
+      .style('fill', chartTheme.text)
       .text(props.xAxisLabel);
   }
 };
@@ -755,7 +756,7 @@ const renderTitle = (): void => {
     .style('text-anchor', 'middle')
     .style('font-size', '18px')
     .style('font-weight', '700')
-    .style('fill', '#1f2937')
+    .style('fill', chartTheme.text)
     .text(props.title);
 };
 
@@ -944,7 +945,7 @@ onUnmounted(() => {
 :deep(.y-axis-left) text,
 :deep(.y-axis-right) text {
   font-size: 12px;
-  fill: #6b7280;
+  fill: rgb(var(--t-content-secondary));
 }
 
 :deep(.x-axis) path,
@@ -953,6 +954,6 @@ onUnmounted(() => {
 :deep(.y-axis-left) line,
 :deep(.y-axis-right) path,
 :deep(.y-axis-right) line {
-  stroke: #d1d5db;
+  stroke: rgb(var(--t-stroke-medium));
 }
 </style>
