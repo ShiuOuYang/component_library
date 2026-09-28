@@ -226,6 +226,13 @@ const navSections = [
         ],
       },
       {
+        to: '/docs/components/form', icon: '📝', label: '表單驗證與上傳',
+        anchors: [
+          { label: 'ChptForm', id: 'chpt-form' },
+          { label: 'ChptUpload', id: 'chpt-upload' },
+        ],
+      },
+      {
         to: '/docs/components/data-filter', icon: '📊', label: '資料呈現與過濾',
         anchors: [
           { label: 'ChptTable', id: 'chpt-table' },
@@ -241,6 +248,7 @@ const navSections = [
           { label: 'ChptStatistic', id: 'chpt-statistic' },
           { label: 'ChptDescriptions', id: 'chpt-descriptions' },
           { label: 'ChptTimeline', id: 'chpt-timeline' },
+          { label: 'ChptTree', id: 'chpt-tree' },
         ],
       },
       {
@@ -347,6 +355,7 @@ const navSections = [
 const collapsedShortcuts = [
   { to: '/docs', icon: '🏠', title: '首頁' },
   { to: '/docs/components/form-atoms', icon: '🧩', title: '基礎表單' },
+  { to: '/docs/components/form', icon: '📝', title: '表單驗證與上傳' },
   { to: '/docs/components/data-filter', icon: '📊', title: '資料呈現與過濾' },
   { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示' },
   { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件' },

@@ -122,11 +122,56 @@
         通往「進行中」節點的連接線會畫成虛線。
       </p>
     </section>
+
+    <!-- ============ ChptTree ============ -->
+    <section id="chpt-tree" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTree 樹狀清單</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>有階層的資料 —— 組織／廠區／產線、料號 BOM、權限設定。
+        單選用 <code>v-model</code>，多選勾選用 <code>v-model:checked</code>（父子三態連動），可篩選並高亮。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptTree } from '@/components/library'</code>
+      </p>
+
+      <div class="grid gap-6 md:grid-cols-2">
+        <div class="rounded-lg border border-stroke-light p-3">
+          <div class="mb-2 flex items-center justify-between gap-2">
+            <h3 class="text-sm font-semibold text-content-secondary">單選 + 篩選</h3>
+            <ChptInput v-model="treeFilter" placeholder="篩選產線" prefix-icon="search" size="xs" clearable />
+          </div>
+          <ChptTree v-model="selectedLine" :data="plantTree" :filter-text="treeFilter" default-expand-all aria-label="廠區與產線">
+            <template #extra="{ node }">
+              <ChptTag v-if="node.status" :label="node.status" :color="node.status === '停機' ? 'danger' : 'success'" size="xs" />
+            </template>
+          </ChptTree>
+          <p class="mt-2 text-xs text-content-tertiary">選取：{{ selectedLine ?? '（無）' }}</p>
+        </div>
+        <div class="rounded-lg border border-stroke-light p-3">
+          <h3 class="mb-2 text-sm font-semibold text-content-secondary">勾選（權限設定）</h3>
+          <ChptTree v-model:checked="grantedKeys" :data="permissionTree" checkable :selectable="false" default-expand-all aria-label="權限" />
+          <p class="mt-2 text-xs text-content-tertiary break-all">已勾選：{{ grantedKeys.join('、') || '（無）' }}</p>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <ChptCodeBlock :code="treeSample" />
+      </div>
+      <ApiTable title="Props" :rows="treeProps" />
+      <ApiTable title="Events" :rows="treeEvents" />
+      <ApiTable title="Slots / 方法" :rows="treeSlots" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>鍵盤照 WAI-ARIA tree：整棵樹一個 Tab 停駐點，↑↓ 移動、→ 展開／進入子節點、← 收合／回到父節點、
+        Home／End、Enter 選取、Space 勾選、* 展開同層、打字跳轉。停用節點不會被勾父節點時一起勾選；
+        <code>checked</code> 只含「完整勾選」的節點，部分勾選的父節點用 <code>getHalfCheckedKeys()</code> 取得。
+      </p>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ChptStatistic, ChptDescriptions, ChptTimeline, ChptTag, ChptCodeBlock } from '@/components/library'
+import { ref } from 'vue'
+import { ChptStatistic, ChptDescriptions, ChptTimeline, ChptTag, ChptCodeBlock, ChptTree, ChptInput } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
 // ---- ChptStatistic ----
@@ -231,5 +276,73 @@ const timelineItemRows = [
 const timelineSlots = [
   { name: 'dot', params: '{ item, index }', desc: '自訂節點' },
   { name: 'content', params: '{ item, index }', desc: '自訂內容' },
+]
+
+// ---- ChptTree ----
+const treeFilter = ref('')
+const selectedLine = ref(null)
+const plantTree = [
+  {
+    key: 'hsinchu', label: '新竹廠', icon: 'factory',
+    children: [
+      { key: 'hc-smt', label: 'SMT 區', children: [
+        { key: 'hc-smt-1', label: 'SMT Line 1', status: '運轉' },
+        { key: 'hc-smt-2', label: 'SMT Line 2', status: '停機' },
+      ] },
+      { key: 'hc-aoi', label: 'AOI 區', children: [{ key: 'hc-aoi-1', label: 'AOI Line 1', status: '運轉' }] },
+    ],
+  },
+  {
+    key: 'taichung', label: '台中廠', icon: 'factory',
+    children: [
+      { key: 'tc-smt-1', label: 'SMT Line 1', status: '運轉' },
+      { key: 'tc-test', label: '測試區（建置中）', disabled: true },
+    ],
+  },
+]
+const grantedKeys = ref(['report-view'])
+const permissionTree = [
+  { key: 'report', label: '報表', children: [
+    { key: 'report-view', label: '檢視' },
+    { key: 'report-export', label: '匯出' },
+  ] },
+  { key: 'order', label: '工單', children: [
+    { key: 'order-view', label: '檢視' },
+    { key: 'order-edit', label: '編輯' },
+    { key: 'order-delete', label: '刪除（需主管）', disabled: true },
+  ] },
+  { key: 'admin', label: '系統管理' },
+]
+const treeSample = `<ChptTree v-model="lineKey" :data="plants" :filter-text="keyword" default-expand-all aria-label="產線">
+  <template #extra="{ node }"><ChptTag :label="node.status" /></template>
+</ChptTree>
+
+<ChptTree v-model:checked="granted" :data="permissions" checkable :selectable="false" />
+
+const plants = [
+  { key: 'hsinchu', label: '新竹廠', children: [{ key: 'l1', label: 'SMT Line 1' }] },
+]`
+const treeProps = [
+  { name: 'data', type: 'TreeNode[]', def: '—', desc: '{ key, label, children?, disabled?, icon?, ...自訂欄位 }' },
+  { name: 'modelValue', type: 'string | number | null', def: 'null', desc: '單選的節點 key（v-model）' },
+  { name: 'selectable', type: 'boolean', def: 'true', desc: '可以點選節點' },
+  { name: 'checkable', type: 'boolean', def: 'false', desc: '顯示勾選框（v-model:checked）' },
+  { name: 'checked', type: 'Key[]', def: '[]', desc: '完整勾選的節點 key（含父節點）' },
+  { name: 'expanded', type: 'Key[]', def: '—', desc: '展開的節點（v-model:expanded；不給時自己管理）' },
+  { name: 'defaultExpandAll', type: 'boolean', def: 'false', desc: '預設全部展開' },
+  { name: 'filterText', type: 'string', def: "''", desc: '篩選：顯示符合的節點與祖先、自動展開、高亮' },
+  { name: 'indent / size', type: "number / 'sm' | 'md'", def: "20 / 'md'", desc: '每層縮排（px）／列高' },
+  { name: 'ariaLabel / emptyText', type: 'string', def: '—', desc: '樹的名稱（給報讀器）／沒有資料時的文字' },
+]
+const treeEvents = [
+  { name: 'update:modelValue / select', params: '(key) / (node)', desc: '選取節點' },
+  { name: 'update:checked / check', params: '(keys) / (node, checked, keys)', desc: '勾選變更' },
+  { name: 'update:expanded / expand', params: '(keys) / (node, expanded)', desc: '展開變更' },
+]
+const treeSlots = [
+  { name: '#label', params: '{ node, level }', desc: '自訂節點文字' },
+  { name: '#extra', params: '{ node, level }', desc: '節點右側（狀態標籤、操作按鈕）' },
+  { name: 'expandAll / collapseAll', params: '()', desc: '全部展開／收合（ref 方法）' },
+  { name: 'getCheckedNodes / getHalfCheckedKeys', params: '()', desc: '勾選的節點／部分勾選的父節點 key（ref 方法）' },
 ]
 </script>
