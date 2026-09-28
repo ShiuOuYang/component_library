@@ -11,6 +11,8 @@
  *    兩者在使用者眼中是同一種東西。
  */
 
+import { formatSerial, isDateFormat, MAX_SERIAL, parseDateText } from './formula/dates'
+
 /** 看起來像數字的字串：前後不能有空白，允許正負號、小數與科學記號（與 Excel 輸入時的判斷一致） */
 export const NUMERIC_RE = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/
 
@@ -43,13 +45,59 @@ export type CellAlign = 'left' | 'center' | 'right'
  */
 export function generalAlign(v: unknown): CellAlign {
   if (asNumber(v) !== null) return 'right'
+  // 手打的日期（2026-09-28）在 Excel 裡是日期值，靠右
+  if (typeof v === 'string' && parseDateText(v) !== null) return 'right'
   if (isErrorValue(v) || isBooleanValue(v)) return 'center'
   return 'left'
+}
+
+/**
+ * 公式最外層是日期函式時，沒有指定格式也顯示成日期（Excel 會自動幫這種儲存格套日期格式）。
+ * ⚠️ 否則 =TODAY() 顯示成 46293，使用者以為壞掉了。
+ */
+const DATE_FORMULA = /^=\s*(TODAY|DATE|EDATE|EOMONTH|WORKDAY|DATEVALUE)\s*\(/i
+const DATETIME_FORMULA = /^=\s*NOW\s*\(/i
+const TIME_FORMULA = /^=\s*(TIME|TIMEVALUE)\s*\(/i
+
+/**
+ * 整條公式是不是「一個函式呼叫」：=DATE(2026,1,1) 是，=DATE(2026,1,1)-A1 不是
+ * （後者是相差天數，不該顯示成日期）。字串裡的括號不算。
+ */
+function isSingleCall(raw: string): boolean {
+  const open = raw.indexOf('(')
+  if (open < 0) return false
+  let depth = 0
+  let inString = false
+  for (let i = open; i < raw.length; i++) {
+    const ch = raw[i]
+    if (ch === '"') inString = !inString
+    if (inString) continue
+    if (ch === '(') depth++
+    else if (ch === ')') {
+      depth--
+      if (depth === 0) return raw.slice(i + 1).trim() === ''
+    }
+  }
+  return false
+}
+
+export function impliedFormat(raw: unknown): string | undefined {
+  if (typeof raw !== 'string' || !isSingleCall(raw)) return undefined
+  if (DATE_FORMULA.test(raw)) return 'yyyy-mm-dd'
+  if (DATETIME_FORMULA.test(raw)) return 'yyyy-mm-dd hh:mm'
+  if (TIME_FORMULA.test(raw)) return 'hh:mm'
+  return undefined
 }
 
 /** 套用數字格式；非數字原樣回傳 */
 export function formatValue(v: string | number, fmt: string | undefined): string | number {
   if (!fmt) return v
+  // 日期格式：數字（序號）或手打的日期文字都能套
+  if (isDateFormat(fmt)) {
+    const serial = asNumber(v) ?? (typeof v === 'string' ? parseDateText(v) : null)
+    if (serial === null || serial < 0 || serial > MAX_SERIAL + 1) return v
+    return formatSerial(serial, fmt)
+  }
   const n = asNumber(v)
   if (n === null) return v
   switch (fmt) {

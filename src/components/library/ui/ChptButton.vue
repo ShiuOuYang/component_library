@@ -29,6 +29,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
+import { resolveSize, useConfig } from '@/components/library/shared/config'
 import ChptIcon from './ChptIcon.vue'
 import ChptSpinner from './ChptSpinner.vue'
 import type { ButtonNativeType } from '@/components/library/shared/types/ui.types'
@@ -87,7 +88,8 @@ const props = withDefaults(defineProps<ChptButtonProps>(), {
   iconPosition: 'left',
   iconColor: '',
   color: 'primary',
-  size: 'md',
+  // 沒傳時看 ChptConfigProvider，再沒有才是 'md'（見 shared/config.ts）
+  size: undefined,
   rounded: 'md',
   type: 'button',
   isOutline: false,
@@ -98,6 +100,9 @@ const props = withDefaults(defineProps<ChptButtonProps>(), {
   badgeBgColor: 'danger',
   badgeTextColor: 'white',
 })
+
+const config = useConfig()
+const size = computed(() => resolveSize(props.size, config, 'md'))
 
 const emit = defineEmits<{
   (e: 'click', event: MouseEvent): void
@@ -125,7 +130,7 @@ const SIZE_CLASS: Record<NonNullable<ChptButtonProps['size']>, string> = {
   lg: 'h-control-lg px-6 text-lg',
 }
 
-const sizeClass = computed(() => SIZE_CLASS[props.size] ?? SIZE_CLASS.md)
+const sizeClass = computed(() => SIZE_CLASS[size.value] ?? SIZE_CLASS.md)
 
 /** 圓角對應 class */
 const roundedClass = computed(() => {

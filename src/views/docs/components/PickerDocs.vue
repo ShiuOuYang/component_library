@@ -205,6 +205,24 @@
           PageUp／PageDown 換月（加 Shift 換年）。日期一律以本地時區計算，'2026-03-01' 不會因為 UTC 解析而變成 2 月 28 日。</p>
       </section>
 
+      <!-- ============ ChptInputTag ============ -->
+      <section id="chpt-inputtag" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <h2 class="text-2xl font-bold text-content-primary mb-1">ChptInputTag 標籤輸入</h2>
+        <p class="text-content-secondary text-sm mb-4">
+          <strong>使用時機：</strong>一次輸入多個自由值：序號、Email、關鍵字。Enter 或逗號加入，貼上「A, B; C」一次拆成多個。
+          選項是固定清單時改用 ChptSelect 多選。
+        </p>
+        <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4 grid gap-4 md:grid-cols-2">
+          <ChptInputTag v-model="state.serials" label="序號（格式 SN-數字，最多 5 個）" :max="5" :validate="checkSerial" full-width />
+          <ChptInputTag v-model="state.keywords" label="關鍵字" placeholder="輸入後按 Enter" full-width />
+        </div>
+        <ChptCodeBlock :code="inputTagSample" />
+        <ApiTable title="Props" :rows="inputTagProps" />
+        <ApiTable title="Events" :rows="inputTagEvents" />
+        <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>重複、超過上限或 validate 不通過的值不會加入，並以 aria-live 說明原因；
+          輸入框空白時 Backspace 第一次只標記最後一個標籤、第二次才刪，避免連按刪過頭。中文輸入法選字的 Enter 不會送出。</p>
+      </section>
+
       <!-- 引入方式 -->
       <section class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light">
         <h2 class="text-2xl font-bold text-content-primary mb-2">引入方式</h2>
@@ -226,10 +244,13 @@ import {
   ChptTimePicker,
   ChptTreeSelect,
   ChptCodeBlock,
+  ChptInputTag,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
 const state = reactive({
+  serials: ['SN-880001', 'SN-880002'],
+  keywords: ['回焊', '錫膏'],
   station: '',
   part: '',
   line: ['fab-a', 'smt', 'smt-1'],
@@ -495,4 +516,26 @@ const importSample = `import {
   ChptAutocomplete, ChptCascader, ChptTransfer, ChptColorPicker, ChptRate, ChptCalendar,
   ChptTimePicker, ChptTreeSelect
 } from '@/components/library'`
+
+// ===== ChptInputTag =====
+const checkSerial = (v) => (/^SN-\d+$/.test(v) ? true : '格式應為 SN-數字')
+const inputTagSample = `<ChptInputTag
+  v-model="serials"
+  label="序號"
+  :max="5"
+  :validate="v => /^SN-\\d+$/.test(v) || '格式應為 SN-數字'"
+/>`
+const inputTagProps = [
+  { name: 'modelValue', type: 'string[]', def: '[]', desc: '標籤（v-model）' },
+  { name: 'max', type: 'number', def: '—', desc: '最多幾個；到上限時輸入框唯讀，並顯示「n / max」' },
+  { name: 'separators', type: 'string[]', def: "[',', '，', ';', '；', '\\n']", desc: '輸入或貼上時遇到就切開' },
+  { name: 'validate', type: '(value) => true | string', def: '—', desc: '回傳字串表示拒絕（該字串就是原因）' },
+  { name: 'allowDuplicates / addOnBlur', type: 'boolean', def: 'false / true', desc: '允許重複；失焦時把打到一半的也加入' },
+  { name: 'label / placeholder / errorText / disabled / readonly / size / fullWidth', type: '—', def: '—', desc: '與 ChptInput 相同；放在 ChptFormItem 內自動接上標籤與驗證' },
+]
+const inputTagEvents = [
+  { name: 'update:modelValue', params: '(value: string[])', desc: '新增或移除後' },
+  { name: 'add / remove', params: '(value: string)', desc: '單一標籤加入 / 移除' },
+  { name: 'reject', params: '(value, reason)', desc: '沒有加入的值與原因' },
+]
 </script>

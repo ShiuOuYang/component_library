@@ -12,7 +12,7 @@
     </ChptIcon>
 
     <p class="text-content-tertiary font-medium mb-1" :class="textSizeClass">
-      <slot>{{ props.title }}</slot>
+      <slot>{{ props.title ?? config.locale.empty }}</slot>
     </p>
 
     <p v-if="props.description" class="text-sm text-content-disabled max-w-md">
@@ -27,6 +27,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useConfig } from '@/components/library/shared/config'
 import ChptIcon from './ChptIcon.vue'
 
 /**
@@ -55,7 +56,8 @@ interface ChptEmptyProps {
 
 const props = withDefaults(defineProps<ChptEmptyProps>(), {
   icon: 'inbox',
-  title: '暫無資料',
+  // 預設取自 ChptConfigProvider 的 locale（繁中為「暫無資料」）
+  title: undefined,
   description: '',
   iconSize: 48,
   iconColor: 'neutral-300',
@@ -63,6 +65,8 @@ const props = withDefaults(defineProps<ChptEmptyProps>(), {
 })
 
 /** iconSize 允許 number 或 string，比較前正規化為數值 */
+const config = useConfig()
+
 const numericIconSize = computed(() => Number(props.iconSize) || 0)
 
 const textSizeClass = computed(() => (numericIconSize.value >= 64 ? 'text-lg' : 'text-base'))

@@ -2,7 +2,7 @@
   <span
     v-if="props.loading"
     role="status"
-    :aria-label="props.text || '載入中'"
+    :aria-label="props.text || config.locale.loading"
     class="inline-flex items-center justify-center"
     :class="[props.fullWidth ? 'w-full' : '', props.center ? 'flex-col gap-2' : 'gap-2']"
   >
@@ -37,6 +37,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useConfig } from '@/components/library/shared/config'
 
 /**
  * ChptSpinner（CHPT 主題） - 載入指示器
@@ -70,6 +71,8 @@ const props = withDefaults(defineProps<ChptSpinnerProps>(), {
   fullWidth: false,
   center: false,
 })
+
+const config = useConfig()
 
 /** size 允許 number 或 string（例如 "32"），比較前一律正規化為數值 */
 const numericSize = computed(() => Number(props.size) || 0)

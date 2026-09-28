@@ -8,8 +8,8 @@
           <input
             type="text"
             v-model="searchQuery"
-            :placeholder="searchPlaceholder"
-            :aria-label="searchPlaceholder"
+            :placeholder="searchPlaceholderText"
+            :aria-label="searchPlaceholderText"
             class="w-48 h-7 px-2.5 border border-stroke-default rounded text-xs text-content-primary bg-surface-primary transition-colors shadow-inner focus:outline-none focus:border-stroke-focus focus:ring-2 focus:ring-primary-100"
             @keyup.enter="performSearch"
           />
@@ -18,12 +18,12 @@
         <!-- 勾選狀態：有勾才出現，數字變動時禮貌報讀 -->
         <div v-if="selectionEnabled" class="flex items-center gap-2 text-xs" aria-live="polite">
           <template v-if="selectedKeySet.size > 0">
-            <span class="text-content-secondary">已選 <span class="font-semibold text-accent">{{ selectedKeySet.size }}</span> 筆</span>
+            <span class="font-medium text-content-secondary">{{ locale.selectedCount(selectedKeySet.size) }}</span>
             <button
               type="button"
               class="rounded px-1.5 py-0.5 text-accent hover:bg-accent-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
               @click="clearSelection"
-            >清除</button>
+            >{{ locale.clear }}</button>
             <slot name="selection-actions" :keys="[...selectedKeySet]" :rows="selectedRows" :clear="clearSelection"></slot>
           </template>
         </div>
@@ -76,10 +76,10 @@
                 :checked="pageSelectionState === 'all'"
                 :indeterminate="pageSelectionState === 'some'"
                 :disabled="selectablePageKeys.length === 0"
-                aria-label="全選本頁"
+                :aria-label="locale.selectPage"
                 @change="togglePageSelection"
               />
-              <span v-else class="sr-only">選取</span>
+              <span v-else class="sr-only">{{ locale.select }}</span>
             </th>
             <th
               v-for="(column, index) in displayColumns"
@@ -167,7 +167,7 @@
         </thead>
         <tbody>
           <tr v-if="paginatedData.length === 0">
-            <td :colspan="totalColumnCount" class="py-5 text-center text-content-tertiary italic bg-surface-secondary">{{ props.loading ? '' : noDataText }}</td>
+            <td :colspan="totalColumnCount" class="py-5 text-center text-content-tertiary italic bg-surface-secondary">{{ props.loading ? '' : (props.noDataText ?? locale.noData) }}</td>
           </tr>
           <!--
             ⚠️ 原本資料列「只」能透過 table-row 插槽畫出來，沒有預設內容 ——
@@ -199,7 +199,7 @@
                       class="expand-toggle"
                       :aria-expanded="expandedKeySet.has(keyOf(item, index + startIndex))"
                       :aria-controls="expandIdOf(item, index + startIndex)"
-                      :aria-label="expandedKeySet.has(keyOf(item, index + startIndex)) ? '收合明細' : '展開明細'"
+                      :aria-label="expandedKeySet.has(keyOf(item, index + startIndex)) ? locale.collapseRow : locale.expandRow"
                       @click.stop="toggleExpand(item, index + startIndex)"
                     >
                       <span
@@ -259,7 +259,7 @@
         v-if="props.loading"
         class="absolute inset-0 z-20 flex items-center justify-center bg-surface-primary/60"
       >
-        <ChptSpinner loading :text="props.loadingText" />
+        <ChptSpinner loading :text="props.loadingText ?? locale.loading" />
       </div>
     </div>
 
@@ -293,6 +293,7 @@
 import { ref, computed, watch, useSlots, onMounted, onBeforeUnmount, getCurrentInstance, useId } from 'vue'
 import ChptPagination from './ChptPagination.vue'
 import ChptSpinner from './ChptSpinner.vue'
+import { useConfig } from '@/components/library/shared/config'
 
 // === 型別定義 ===
 type DataRow = Record<string, unknown> //=type DataRow = { [key: string]: unknown };
@@ -409,8 +410,9 @@ const props = withDefaults(defineProps<{
 }>(), {
   data: () => [],
   columns: () => [],
-  searchPlaceholder: '輸入關鍵字搜尋...',
-  noDataText: '無資料',
+  // 文字預設取自 ChptConfigProvider 的 locale（預設繁中）
+  searchPlaceholder: undefined,
+  noDataText: undefined,
   defaultPageSize: 5,
   customFilter: null,
   defaultSort: () => ({ column: null, direction: 'asc' }),
@@ -436,10 +438,14 @@ const props = withDefaults(defineProps<{
   remote: false,
   total: undefined,
   loading: false,
-  loadingText: '載入中',
+  loadingText: undefined,
   resizable: false,
   rowClass: undefined,
 })
+
+const config = useConfig()
+const locale = computed(() => config.value.locale)
+const searchPlaceholderText = computed(() => props.searchPlaceholder ?? locale.value.searchPlaceholder)
 
 const emit = defineEmits<{
   'update:page': [page: number]

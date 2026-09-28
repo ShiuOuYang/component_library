@@ -8,6 +8,7 @@
  *   - 錯誤會一路往外傳：#DIV/0! + 1 仍是 #DIV/0!
  */
 import type { ErrorCode } from './parser'
+import { parseDateText } from './dates'
 
 export class FormulaError {
   constructor(readonly code: ErrorCode) {}
@@ -73,6 +74,9 @@ export function toNumber(v: Scalar): number | FormulaError {
   if (NUMERIC_TEXT.test(v)) return Number(v)
   const pct = v.match(PERCENT_TEXT)
   if (pct) return Number(pct[1]) / 100
+  // 日期 / 時間文字轉成序號（Excel：="2026-09-28"+7 = 46300）
+  const date = parseDateText(v)
+  if (date !== null) return date
   return err('#VALUE!')
 }
 

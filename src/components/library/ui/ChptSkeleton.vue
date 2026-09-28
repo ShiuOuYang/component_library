@@ -4,7 +4,7 @@
     class="flex flex-col gap-3"
     :class="props.fullWidth ? 'w-full' : ''"
     role="status"
-    aria-label="載入中"
+    :aria-label="config.locale.loading"
   >
     <!-- 原本 color prop 從沒套上去：每一條都是透明的，骨架屏整塊看不見 -->
     <div
@@ -21,6 +21,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useConfig } from '@/components/library/shared/config'
 
 /**
  * ChptSkeleton（CHPT 主題） - 骨架屏 / 載入佔位元件
@@ -54,6 +55,8 @@ const props = withDefaults(defineProps<ChptSkeletonProps>(), {
   color: 'bg-surface-tertiary',
   fullWidth: false,
 })
+
+const config = useConfig()
 
 const percentMap = computed(() => {
   const widths = Array.isArray(props.rowWidth) ? props.rowWidth : Array(props.rows).fill(props.rowWidth)

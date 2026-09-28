@@ -53,7 +53,8 @@
         <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
           <p class="font-semibold text-content-primary mb-1">🧮 公式引擎與提示</p>
           <p class="text-xs text-content-secondary">
-            <code>SUM</code>／<code>AVERAGE</code>／<code>MIN</code>／<code>MAX</code>／<code>COUNT</code>／<code>IF</code>。
+            約 100 個函式：彙總（<code>SUM</code>／<code>SUMIFS</code>／<code>AVERAGEIF</code>…）、查找（<code>VLOOKUP</code>／<code>XLOOKUP</code>／<code>INDEX</code>+<code>MATCH</code>）、
+            邏輯、文字、日期。型別轉換與錯誤值傳遞照 Excel。
             輸入 <code>=</code> 自動完成函式、<code>(</code> 後顯示<strong>參數提示</strong>，或點「fx」開啟函式面板。
           </p>
         </div>
@@ -72,6 +73,21 @@
         <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
           <p class="font-semibold text-content-primary mb-1">📋 複製選取範圍</p>
           <p class="text-xs text-content-secondary">複製單格後多選貼上會自動<strong>填滿整個範圍</strong>；同時寫入<strong>系統剪貼簿</strong>（TSV＋HTML），可貼到 Excel／Word，也支援 <code>Ctrl+V</code> 貼入。</p>
+        </div>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">📅 日期與時間</p>
+          <p class="text-xs text-content-secondary">
+            <code>TODAY</code>／<code>NOW</code>／<code>DATE</code>／<code>EDATE</code>／<code>EOMONTH</code>／<code>DATEDIF</code>／<code>NETWORKDAYS</code>／<code>WORKDAY</code>／<code>WEEKDAY</code>…
+            日期是 Excel 序號（與 .xlsx 互通），<code>=B1-A1</code> 就是相差天數；手打 <code>2026-09-28</code> 可直接運算。
+            <code>=TODAY()</code> 這類儲存格自動顯示成日期，數字格式選單也有日期 / 時間格式。
+          </p>
+        </div>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">🔗 跨工作表參照</p>
+          <p class="text-xs text-content-secondary">
+            <code>=SUM(Sheet1!B2:B10)</code>、<code>='Q1 Data'!A1</code>。在 Sheet1 插入 / 刪除列欄時，別張表指向它的參照會跟著移動（復原也一起還原）；
+            工作表改名時所有公式跟著改名，刪除工作表則指向它的參照變成 <code>#REF!</code>。
+          </p>
         </div>
         <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
           <p class="font-semibold text-content-primary mb-1">📤 匯出 .xlsx</p>

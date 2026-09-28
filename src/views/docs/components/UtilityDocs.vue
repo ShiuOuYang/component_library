@@ -143,6 +143,34 @@
       <ChptCodeBlock class="mt-6" :code="smallUtilsSample" />
       <ApiTable title="Props" :rows="smallUtilsProps" />
     </section>
+
+    <!-- ============ ChptSpace ============ -->
+    <section id="chpt-space" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSpace 間距</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>一排按鈕、一組標籤、表單下方的動作列。間距用同一組尺度（xs 4 / sm 8 / md 16 / lg 24px），
+        取代到處手寫的 <code>flex gap-*</code>；<code>#split</code> 插槽在項目之間自動插分隔。
+      </p>
+      <div class="space-y-4 rounded-lg border border-stroke-light p-4">
+        <ChptSpace>
+          <ChptButton size="sm">儲存</ChptButton>
+          <ChptButton size="sm" is-outline>取消</ChptButton>
+          <ChptButton v-if="false" size="sm">不會出現（也不會多一個間距）</ChptButton>
+        </ChptSpace>
+        <ChptSpace size="xs">
+          <template #split><span class="text-content-disabled">|</span></template>
+          <a href="#chpt-space" class="text-sm text-accent hover:underline">編輯</a>
+          <a href="#chpt-space" class="text-sm text-accent hover:underline">複製</a>
+          <a href="#chpt-space" class="text-sm text-danger hover:underline">刪除</a>
+        </ChptSpace>
+        <ChptSpace wrap :size="['sm', 'xs']">
+          <ChptTag v-for="t in spaceTags" :key="t" :label="t" size="sm" />
+        </ChptSpace>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="spaceSample" />
+      <ApiTable title="Props / Slots" :rows="spaceProps" />
+    </section>
+
   </div>
 </template>
 
@@ -160,6 +188,7 @@ import {
   ChptButton,
   ChptTag,
   ChptCodeBlock,
+  ChptSpace,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -250,5 +279,24 @@ const smallUtilsProps = [
   { name: 'Ellipsis', type: 'text, lines?, expandable?, tooltip?, block?', def: 'lines 1', desc: 'event: toggle(expanded)' },
   { name: 'Countdown', type: 'value, title?, format?, warningThreshold?, size?', def: "format 'HH:mm:ss'", desc: 'events: finish / change(remaining)；role=timer' },
   { name: 'Watermark', type: 'content (string | string[]), rotate?, fontSize?, color?, gap?', def: 'rotate -22', desc: 'SVG 背景鋪滿、不擋點擊；嚇阻用，不是防護' },
+]
+
+// ===== ChptSpace =====
+const spaceTags = ['SMT', 'DIP', '組裝', '測試', '包裝', '出貨', '品保', '倉儲', '工程', '生管']
+const spaceSample = `<ChptSpace>
+  <ChptButton>儲存</ChptButton>
+  <ChptButton is-outline>取消</ChptButton>
+</ChptSpace>
+
+<ChptSpace size="xs">
+  <template #split>|</template>
+  <a>編輯</a><a>複製</a><a>刪除</a>
+</ChptSpace>`
+const spaceProps = [
+  { name: 'size', type: "'xs'|'sm'|'md'|'lg'|number|[水平, 垂直]", def: "'sm'", desc: '間距；陣列時第二個值是換行時的列距' },
+  { name: 'direction', type: "'horizontal'|'vertical'", def: "'horizontal'", desc: '方向' },
+  { name: 'align / justify', type: 'start|center|end|baseline|stretch / start|center|end|between', def: '水平置中 / —', desc: '對齊與分布' },
+  { name: 'wrap / block', type: 'boolean', def: 'false', desc: '換行；撐滿父層寬度' },
+  { name: '#split', type: 'slot', def: '—', desc: '項目之間的分隔（v-if 關掉的項目不算）' },
 ]
 </script>

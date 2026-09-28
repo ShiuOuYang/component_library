@@ -111,6 +111,36 @@
         </div>
       </div>
     </section>
+
+    <!-- ============ ChptConfigProvider ============ -->
+    <section id="chpt-config-provider" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptConfigProvider 全域設定</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>一個區塊（或整個 App）統一元件尺寸與內建文字。密集的後台表格頁用 sm、產線觸控面板用 lg；
+        給外籍同仁的頁面切英文。元件自己有傳的 prop 永遠優先；沒有 Provider 的頁面行為完全不變。
+      </p>
+      <div class="mb-3 flex flex-wrap items-center gap-4">
+        <ChptSegmented v-model="cfgSize" :options="[{ label: 'sm', value: 'sm' }, { label: 'md', value: 'md' }, { label: 'lg', value: 'lg' }]" aria-label="尺寸" size="xs" />
+        <ChptSegmented v-model="cfgLang" :options="[{ label: '繁中', value: 'zh' }, { label: 'English', value: 'en' }]" aria-label="語系" size="xs" />
+      </div>
+      <ChptConfigProvider :size="cfgSize" :locale="cfgLang === 'en' ? enUS : zhTW">
+        <div class="grid gap-4 rounded-lg border border-stroke-light p-4 md:grid-cols-2">
+          <div class="flex flex-wrap items-end gap-3">
+            <ChptInput model-value="" :label="cfgLang === 'en' ? 'Work order' : '工單'" />
+            <ChptButton color="primary">{{ cfgLang === 'en' ? 'Search' : '查詢' }}</ChptButton>
+          </div>
+          <ChptEmpty />
+          <div class="md:col-span-2">
+            <ChptTable :columns="[{ key: 'wo', title: cfgLang === 'en' ? 'Order' : '工單' }]" :data="[]" :default-page-size="5" />
+          </div>
+        </div>
+      </ChptConfigProvider>
+      <ChptCodeBlock class="mt-6" :code="configSample" />
+      <ApiTable title="Props" :rows="configProps" />
+      <p class="text-sm text-content-secondary mt-4"><strong>目前會讀取設定的元件：</strong>尺寸 —— ChptButton、ChptInput、ChptSelect、ChptInputNumber、ChptTextarea、ChptInputTag；
+        文字 —— ChptTable（含分頁）、ChptPagination、ChptEmpty、ChptSpinner、ChptSkeleton、ChptList。Provider 可以巢狀，內層只覆寫它有給的欄位。</p>
+    </section>
+
   </div>
 </template>
 
@@ -121,6 +151,14 @@ import {
   ChptDarkModeToggle,
   ChptHeaderLogoutButton,
   ChptCodeBlock,
+  ChptConfigProvider,
+  ChptSegmented,
+  ChptInput,
+  ChptButton,
+  ChptEmpty,
+  ChptTable,
+  zhTW,
+  enUS,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -181,5 +219,23 @@ const logoutProps = [
 const logoutEvents = [
   { name: 'logout', params: '()', desc: '使用者確認登出（onLogout 執行前）' },
   { name: 'error', params: '(error: unknown)', desc: 'onLogout 執行失敗；錯誤如何呈現由使用端決定' },
+]
+
+// ===== ChptConfigProvider =====
+const cfgSize = ref('md')
+const cfgLang = ref('zh')
+const configSample = `<!-- App.vue -->
+<ChptConfigProvider size="sm" :locale="enUS">
+  <RouterView />
+</ChptConfigProvider>
+
+<!-- 只改部分文字 -->
+<ChptConfigProvider :locale="{ empty: '尚無工單' }">…</ChptConfigProvider>
+
+import { ChptConfigProvider, enUS, zhTW, useConfig } from '@/components/library'`
+const configProps = [
+  { name: 'size', type: "'sm'|'md'|'lg'", def: '—', desc: '表單元件與按鈕的預設尺寸（元件自己的 size 優先）' },
+  { name: 'locale', type: 'Partial<ChptLocale>', def: 'zhTW', desc: '內建文字；可只給部分欄位。內建 zhTW、enUS' },
+  { name: 'useConfig()', type: 'composable', def: '—', desc: '自訂元件讀取目前設定（{ size, locale }）' },
 ]
 </script>

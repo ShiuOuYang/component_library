@@ -15,6 +15,19 @@
  */
 import type { Node } from './parser'
 import {
+  addMonths,
+  dateToSerial,
+  endOfMonth,
+  formatSerial,
+  isDateFormat,
+  MAX_SERIAL,
+  nowSerial,
+  parseDateText,
+  serialToParts,
+  timeToFraction,
+  todaySerial,
+} from './dates'
+import {
   BLANK,
   cleanNumber,
   compareValues,
@@ -380,12 +393,56 @@ function vector(range: RangeValue): Scalar[] | FormulaError {
 }
 
 // ---------------------------------------------------------------------------
+// 日期引數
+// ---------------------------------------------------------------------------
+
+/** 日期引數：數字（序號）或日期文字；超出 Excel 日期範圍是 #NUM! */
+function dateArg(ctx: FunctionContext, node: Node | undefined): number | FormulaError {
+  const n = num(ctx, node)
+  if (isError(n)) return n
+  if (n < 0 || n > MAX_SERIAL + 1) return err('#NUM!')
+  return n
+}
+
+function datePart(pick: (p: ReturnType<typeof serialToParts>) => number): FunctionDef {
+  return {
+    min: 1,
+    max: 1,
+    call: (args, ctx) => {
+      const d = dateArg(ctx, args[0])
+      return isError(d) ? d : pick(serialToParts(d))
+    },
+  }
+}
+
+/** 假日清單（範圍或單一值）→ 序號集合 */
+function holidayArg(ctx: FunctionContext, node: Node | undefined): Set<number> | FormulaError {
+  const out = new Set<number>()
+  if (isMissing(node)) return out
+  const range = rangeArg(ctx, node!)
+  if (isError(range)) return range
+  for (const v of rangeItems(range)) {
+    if (v === BLANK) continue
+    if (isError(v)) return v
+    const n = toNumber(v)
+    if (isError(n)) return n
+    out.add(Math.floor(n))
+  }
+  return out
+}
+
+function isWorkday(serial: number, holidays: Set<number>): boolean {
+  const w = serialToParts(serial).weekday
+  return w !== 0 && w !== 6 && !holidays.has(serial)
+}
+
+// ---------------------------------------------------------------------------
 // 數字格式（TEXT）
 // ---------------------------------------------------------------------------
 
 /**
  * TEXT 的數字格式：支援 0、#、千分位逗號、小數位數與百分比（"0.00"、"#,##0"、"0.0%"）。
- * 日期格式還不支援（編輯器沒有日期型別），原樣回傳數字。
+ * 日期格式（yyyy、mm、dd、hh、ss…）走 dates.ts 的 formatSerial。
  */
 function formatNumber(n: number, fmt: string): string {
   const m = fmt.match(/^([^0#,.%]*)([#0,]*)(?:\.(0+|#+))?(%?)([^0#,.%]*)$/)
@@ -1019,7 +1076,207 @@ export const FUNCTIONS: Record<string, FunctionDef> = {
       if (isError(v)) return v
       const n = toNumber(v)
       if (isError(n) || typeof v === 'boolean') return toText(v)
+      // 日期格式（"yyyy-mm-dd"、"hh:mm"）：原本不支援，TEXT(TODAY(),"yyyy/mm/dd") 只會吐出數字
+      if (isDateFormat(fmt)) {
+        if (n < 0 || n > MAX_SERIAL + 1) return err('#VALUE!')
+        return formatSerial(n, fmt)
+      }
       return formatNumber(n, fmt)
+    },
+  },
+
+  // ---- 日期與時間（值是 Excel 日期序號，見 dates.ts） ----
+  TODAY: { min: 0, max: 0, call: () => todaySerial() },
+  NOW: { min: 0, max: 0, call: () => nowSerial() },
+  DATE: {
+    min: 3,
+    max: 3,
+    call: (args, ctx) => {
+      const [y, m, d] = [num(ctx, args[0]), num(ctx, args[1]), num(ctx, args[2])]
+      const e = firstError(y, m, d)
+      if (e) return e
+      return dateToSerial(y as number, m as number, d as number) ?? err('#NUM!')
+    },
+  },
+  TIME: {
+    min: 3,
+    max: 3,
+    call: (args, ctx) => {
+      const [h, m, s] = [num(ctx, args[0]), num(ctx, args[1]), num(ctx, args[2])]
+      const e = firstError(h, m, s)
+      if (e) return e
+      if ((h as number) < 0 || (m as number) < 0 || (s as number) < 0) return err('#NUM!')
+      return timeToFraction(h as number, m as number, s as number)
+    },
+  },
+  DATEVALUE: {
+    min: 1,
+    max: 1,
+    call: (args, ctx) => {
+      const t = text(ctx, args[0])
+      if (isError(t)) return t
+      const serial = parseDateText(t)
+      return serial === null ? err('#VALUE!') : Math.floor(serial)
+    },
+  },
+  TIMEVALUE: {
+    min: 1,
+    max: 1,
+    call: (args, ctx) => {
+      const t = text(ctx, args[0])
+      if (isError(t)) return t
+      const serial = parseDateText(t)
+      return serial === null ? err('#VALUE!') : serial - Math.floor(serial)
+    },
+  },
+  YEAR: datePart((p) => p.year),
+  MONTH: datePart((p) => p.month),
+  DAY: datePart((p) => p.day),
+  HOUR: datePart((p) => p.hour),
+  MINUTE: datePart((p) => p.minute),
+  SECOND: datePart((p) => p.second),
+  WEEKDAY: {
+    min: 1,
+    max: 2,
+    call: (args, ctx) => {
+      const d = dateArg(ctx, args[0])
+      const type = num(ctx, args[1], 1)
+      const e = firstError(d, type)
+      if (e) return e
+      const w = serialToParts(d as number).weekday // 0 = 週日
+      switch (type) {
+        case 1: return w + 1 // 週日 = 1 … 週六 = 7
+        case 2: return w === 0 ? 7 : w // 週一 = 1 … 週日 = 7
+        case 3: return w === 0 ? 6 : w - 1 // 週一 = 0 … 週日 = 6
+        default: return err('#NUM!')
+      }
+    },
+  },
+  WEEKNUM: {
+    min: 1,
+    max: 2,
+    call: (args, ctx) => {
+      const d = dateArg(ctx, args[0])
+      const type = num(ctx, args[1], 1)
+      const e = firstError(d, type)
+      if (e) return e
+      if (type !== 1 && type !== 2) return err('#NUM!')
+      const p = serialToParts(d as number)
+      const jan1 = dateToSerial(p.year, 1, 1)!
+      const jan1Weekday = serialToParts(jan1).weekday
+      // type 1：週日開始一週；type 2：週一開始
+      const offset = type === 1 ? jan1Weekday : (jan1Weekday + 6) % 7
+      return Math.floor((Math.floor(d as number) - jan1 + offset) / 7) + 1
+    },
+  },
+  EDATE: {
+    min: 2,
+    max: 2,
+    call: (args, ctx) => {
+      const d = dateArg(ctx, args[0])
+      const m = num(ctx, args[1])
+      const e = firstError(d, m)
+      if (e) return e
+      return addMonths(d as number, m as number) ?? err('#NUM!')
+    },
+  },
+  EOMONTH: {
+    min: 2,
+    max: 2,
+    call: (args, ctx) => {
+      const d = dateArg(ctx, args[0])
+      const m = num(ctx, args[1])
+      const e = firstError(d, m)
+      if (e) return e
+      return endOfMonth(d as number, m as number) ?? err('#NUM!')
+    },
+  },
+  DAYS: {
+    min: 2,
+    max: 2,
+    call: (args, ctx) => {
+      const end = dateArg(ctx, args[0])
+      const start = dateArg(ctx, args[1])
+      const e = firstError(end, start)
+      if (e) return e
+      return Math.floor(end as number) - Math.floor(start as number)
+    },
+  },
+  DATEDIF: {
+    min: 3,
+    max: 3,
+    call: (args, ctx) => {
+      const start = dateArg(ctx, args[0])
+      const end = dateArg(ctx, args[1])
+      const unit = text(ctx, args[2])
+      const e = firstError(start, end, unit)
+      if (e) return e
+      const a = Math.floor(start as number)
+      const b = Math.floor(end as number)
+      if (a > b) return err('#NUM!')
+      const pa = serialToParts(a)
+      const pb = serialToParts(b)
+      // 完整的月數：日還沒到就少算一個月
+      let months = (pb.year - pa.year) * 12 + (pb.month - pa.month)
+      if (pb.day < pa.day) months -= 1
+      switch ((unit as string).toUpperCase()) {
+        case 'Y': return Math.floor(months / 12)
+        case 'M': return months
+        case 'D': return b - a
+        case 'YM': return months % 12
+        case 'MD': {
+          if (pb.day >= pa.day) return pb.day - pa.day
+          // 借上個月的天數
+          const prevMonthEnd = endOfMonth(b, -1)!
+          return serialToParts(prevMonthEnd).day - pa.day + pb.day
+        }
+        case 'YD': {
+          // 把起日搬到終日那一年（或前一年）後相差的天數
+          let anniversary = dateToSerial(pb.year, pa.month, pa.day)!
+          if (anniversary > b) anniversary = dateToSerial(pb.year - 1, pa.month, pa.day)!
+          return b - anniversary
+        }
+        default:
+          return err('#NUM!')
+      }
+    },
+  },
+  NETWORKDAYS: {
+    min: 2,
+    max: 3,
+    call: (args, ctx) => {
+      const start = dateArg(ctx, args[0])
+      const end = dateArg(ctx, args[1])
+      const holidays = holidayArg(ctx, args[2])
+      const e = firstError(start, end, holidays)
+      if (e) return e
+      let a = Math.floor(start as number)
+      let b = Math.floor(end as number)
+      const sign = a <= b ? 1 : -1
+      if (sign < 0) [a, b] = [b, a]
+      let count = 0
+      for (let d = a; d <= b; d++) if (isWorkday(d, holidays as Set<number>)) count++
+      return sign * count
+    },
+  },
+  WORKDAY: {
+    min: 2,
+    max: 3,
+    call: (args, ctx) => {
+      const start = dateArg(ctx, args[0])
+      const days = num(ctx, args[1])
+      const holidays = holidayArg(ctx, args[2])
+      const e = firstError(start, days, holidays)
+      if (e) return e
+      let d = Math.floor(start as number)
+      let left = Math.trunc(days as number)
+      const step = left >= 0 ? 1 : -1
+      while (left !== 0) {
+        d += step
+        if (d < 1 || d > MAX_SERIAL) return err('#NUM!')
+        if (isWorkday(d, holidays as Set<number>)) left -= step
+      }
+      return d
     },
   },
 
