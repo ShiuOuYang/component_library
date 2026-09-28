@@ -859,7 +859,8 @@ describe('其他函式的邊界', () => {
     expect(ev('TEXT("abc","0")')).toBe('abc')
     expect(ev('TEXT(0.5,"#.##")')).toBe('.5')
     expect(ev('TEXT(0,"#")')).toBe('')
-    expect(ev('TEXT(3,"yyyy")')).toBe('3')
+    // 原本不支援日期格式、原樣回傳數字；Excel 裡序號 3 是 1900-01-03
+    expect(ev('TEXT(3,"yyyy")')).toBe('1900')
   })
 
   it('邏輯函式沒有可判斷的值時是 #VALUE!', () => {

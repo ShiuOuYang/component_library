@@ -83,6 +83,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { resolveSize, useConfig } from '@/components/library/shared/config'
 import { useFormField } from '@/components/library/shared/formContext'
 import type { ComponentSize } from '@/components/library/shared/types/ui.types'
 
@@ -139,13 +140,17 @@ const props = withDefaults(defineProps<ChptInputNumberProps>(), {
   label: '',
   placeholder: '',
   unit: '',
-  size: 'sm',
+  // 沒傳時看 ChptConfigProvider，再沒有才是 'sm'（見 shared/config.ts）
+  size: undefined,
   controls: true,
   disabled: false,
   readonly: false,
   fullWidth: false,
   errorText: '',
 })
+
+const config = useConfig()
+const size = computed(() => resolveSize(props.size, config, 'sm'))
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: number | null): void
@@ -173,7 +178,7 @@ const sizeClass = computed(() => {
     lg: { height: 'h-control-lg', text: 'text-lg', button: 'min-w-control-lg text-xl' },
     xl: { height: 'h-control-xl', text: 'text-xl', button: 'min-w-control-xl text-2xl' },
   }
-  return map[props.size] ?? map.sm
+  return map[size.value] ?? map.sm
 })
 
 /** 小數位數：a 與 b 取較多者（0.1 + 0.02 要保留兩位） */

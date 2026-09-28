@@ -45,6 +45,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { resolveSize, useConfig } from '@/components/library/shared/config'
 import { useFormField } from '@/components/library/shared/formContext'
 import type { ComponentSize } from '@/components/library/shared/types/ui.types'
 /**
@@ -88,7 +89,8 @@ const props = withDefaults(defineProps<ChptTextareaProps>(), {
   modelValue: '',
   label: '',
   placeholder: '',
-  size: 'sm',
+  // 沒傳時看 ChptConfigProvider，再沒有才是 'sm'（見 shared/config.ts）
+  size: undefined,
   rows: 3,
   disabled: false,
   readonly: false,
@@ -98,6 +100,9 @@ const props = withDefaults(defineProps<ChptTextareaProps>(), {
   autosize: false,
   errorText: '',
 })
+
+const config = useConfig()
+const size = computed(() => resolveSize(props.size, config, 'sm'))
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
@@ -129,7 +134,7 @@ const sizeClass = computed(() => {
     lg: 'text-lg py-2 px-4',
     xl: 'text-xl py-2.5 px-5',
   }
-  return map[props.size]
+  return map[size.value]
 })
 
 /** 自動調整高度 */

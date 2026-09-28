@@ -171,6 +171,12 @@
 | `ChptEllipsis` | text, lines, expandable, tooltip, expandText, collapseText, block | toggle(expanded) | default |
 | `ChptCountdown` | value（目標時間）, title, format(`HH:mm:ss`/`D 天 HH:mm:ss`/`mm:ss`…), warningThreshold, finishedText, size, interval | finish, change(remaining) | default（`{ parts, remaining, text }`）；role=timer |
 | `ChptWatermark` | content(`string\|string[]`), rotate, fontSize, color, gap, zIndex | – | default（被覆蓋的內容） |
+| `ChptSpace` | direction(`horizontal/vertical`), size(`xs/sm/md/lg`/number/[水平,垂直]), align, justify, wrap, block | – | default、`split`（項目之間的分隔；v-if 關掉的不算） |
+| `ChptList` | items, itemKey, header, footer, bordered, split, size, loading, hasMore, infinite, loadMoreText, emptyText, grid | load-more | default（`{ item, index }`）、`actions`、`header`、`footer`、`empty`；預設版面讀 avatar/title/description/extra |
+| `ChptQRCode` | value, size, level(`L/M/Q/H`), color, bgColor, margin, icon, iconRatio, bordered, status(`active/expired/loading`), expiredText, title | refresh | SVG；中文以 UTF-8 編碼；有 icon 自動用 H；ref: `toDataURL()`、`download()` |
+| `ChptInputTag` | modelValue(string[]), label, placeholder, max, separators, allowDuplicates, validate, addOnBlur, disabled, readonly, size, fullWidth, errorText | update:modelValue, add, remove, reject(value, reason) | Enter / 逗號加入、貼上自動拆分、Backspace 兩段式刪除、IME 選字不送出 |
+| `ChptTour` | open(v-model), current(v-model), steps(`{ target?, title, description?, placement? }[]`), mask, closeOnMaskClick, finishText, gap | change, close(reason), finish | 對話框：焦點鎖定、Esc、← →、關閉後焦點歸還；找不到目標置中；slot `content` |
+| `ChptConfigProvider` + `useConfig()` | size(`sm/md/lg`), locale(`Partial<ChptLocale>`；內建 `zhTW`、`enUS`) | – | 尺寸：Button / Input / Select / InputNumber / Textarea / InputTag；文字：Table / Pagination / Empty / Spinner / Skeleton / List；巢狀合併、元件自己的 prop 優先 |
 
 ## 資料展示
 
@@ -216,7 +222,7 @@
 
 | 組件 | Props | Emits | Ref 方法 |
 |---|---|---|---|
-| `ChptExcelEditor` | modelValue, showToolbar, showSheetTabs, rowCount, colCount, editable, enableFormula, defaultFilename, defaultSheetName | update:modelValue, cell-change, selection-change, sheet-add, sheet-remove, export-start/complete/error | exportExcel, getData, getCell(r,c), undo, redo, addSheet, removeSheet, switchSheet, clear |
+| `ChptExcelEditor` | modelValue, showToolbar, showSheetTabs, rowCount, colCount, editable, enableFormula, defaultFilename, defaultSheetName | update:modelValue, cell-change, selection-change, sheet-add, sheet-remove, export-start/complete/error | exportExcel, getData, getCell(r,c), undo, redo, addSheet, removeSheet, switchSheet, clear；日期函式（TODAY/DATE/EDATE/EOMONTH/DATEDIF/NETWORKDAYS/WORKDAY…，Excel 序號）；跨表參照在插入刪除 / 改名 / 刪表時自動改寫 |
 | `ChptExcelExporter` | data, rawData, columns, defaultFilename, defaultSheetName, showOptions, size, variant, buttonLabel, buttonClass, cellStyles | export-start, export-complete, export-error | exportExcel, showExportOptions |
 | `ChptExcelUploader` | label, loadingText, inputId, size, variant, customClass, showFileName | upload-start, upload-success, upload-error, data-loaded, error | – |
 

@@ -206,12 +206,73 @@
         放大後可拖曳移動。
       </p>
     </section>
+
+    <!-- ============ ChptList ============ -->
+    <section id="chpt-list" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptList 清單</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>通知、待辦、最近活動這類「一筆一行」的清單。給 <code>items</code>（title / description / extra / avatar）就有預設版面，
+        也可以用插槽自己排；<code>hasMore</code> 接「載入更多」，加 <code>infinite</code> 捲到底自動載入。上萬筆請改用 ChptVirtualList。
+      </p>
+      <div class="grid gap-6 lg:grid-cols-2">
+        <ChptList :items="activities" header="最近活動" :has-more="activities.length < 9" :loading="listLoading" @load-more="loadActivities">
+          <template #actions="{ item }">
+            <ChptTag :label="item.level" :color="item.level === '警示' ? 'danger' : 'info'" size="xs" />
+          </template>
+        </ChptList>
+        <ChptList :items="machines" :grid="150" :bordered="false" :split="false" size="sm">
+          <template #default="{ item }">
+            <p class="font-medium text-content-primary">{{ item.name }}</p>
+            <p class="text-xs" :class="item.ok ? 'text-success' : 'text-danger'">{{ item.ok ? '運轉中' : '停機' }}</p>
+          </template>
+        </ChptList>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="listSample" />
+      <ApiTable title="Props / Events" :rows="listProps" />
+    </section>
+
+    <!-- ============ ChptQRCode ============ -->
+    <section id="chpt-qrcode" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptQRCode QR Code</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>工單、序號標籤、登入連結、報表分享。SVG 繪製任何尺寸都銳利；中文內容以 UTF-8 編碼，掃出來是原文。
+        深色模式也維持白底黑碼（很多掃描器讀不了反白的碼）。
+      </p>
+      <div class="flex flex-wrap items-start gap-6">
+        <div class="space-y-2 text-center">
+          <ChptQRCode ref="qrRef" :value="qrValue" :size="140" />
+          <ChptButton size="sm" is-outline @click="qrRef?.download('wo-qrcode.png')">下載 PNG</ChptButton>
+        </div>
+        <ChptQRCode value="工單 WO-2609-101｜SMT-02｜回焊爐" :size="140" level="Q" title="工單 WO-2609-101 標籤" />
+        <ChptQRCode value="https://example.com/login?token=abc" :size="140" :status="qrExpired ? 'expired' : 'active'" @refresh="qrExpired = false" />
+        <div class="w-64">
+          <ChptInput v-model="qrValue" label="內容" full-width />
+          <ChptSwitch v-model="qrExpired" label="模擬過期" class="mt-3" />
+        </div>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="qrSample" />
+      <ApiTable title="Props" :rows="qrProps" />
+    </section>
+
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { ChptStatistic, ChptDescriptions, ChptTimeline, ChptTag, ChptCodeBlock, ChptTree, ChptInput, ChptImage } from '@/components/library'
+import { ref, useTemplateRef } from 'vue'
+import {
+  ChptStatistic,
+  ChptDescriptions,
+  ChptTimeline,
+  ChptTag,
+  ChptCodeBlock,
+  ChptTree,
+  ChptInput,
+  ChptImage,
+  ChptList,
+  ChptQRCode,
+  ChptButton,
+  ChptSwitch,
+} from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
 // ---- ChptStatistic ----
@@ -427,5 +488,62 @@ const viewerProps = [
   { name: 'loop / thumbnails', type: 'boolean', def: 'true / true', desc: '頭尾循環／下方縮圖列' },
   { name: 'minScale / maxScale', type: 'number', def: '0.25 / 8', desc: '縮放範圍' },
   { name: 'Events', type: 'update:open / update:index / close', def: '—', desc: '' },
+]
+
+// ===== ChptList =====
+const levels = ['資訊', '警示']
+const makeActivity = (i) => ({
+  id: i,
+  title: ['SMT-01 換線完成', 'AOI 誤判率上升', '回焊爐溫度恢復', 'ICT 治具更換', '錫膏批號變更'][i % 5],
+  description: `${8 + (i % 9)}:${String((i * 7) % 60).padStart(2, '0')} · ${['王小明', '陳建宏', '李佩珊'][i % 3]}`,
+  extra: `${i * 3 + 2} 分鐘前`,
+  level: levels[i % 3 === 1 ? 1 : 0],
+})
+const activities = ref([0, 1, 2].map(makeActivity))
+const listLoading = ref(false)
+function loadActivities() {
+  listLoading.value = true
+  setTimeout(() => {
+    const n = activities.value.length
+    activities.value = [...activities.value, ...[n, n + 1, n + 2].map(makeActivity)]
+    listLoading.value = false
+  }, 600)
+}
+const machines = ['SMT-01', 'SMT-02', 'AOI-01', 'ICT-01', 'FCT-02', 'Reflow-1'].map((name, i) => ({ id: name, name, ok: i !== 4 }))
+const listSample = `<ChptList :items="activities" header="最近活動" :has-more="hasMore" :loading="loading" @load-more="fetchMore">
+  <template #actions="{ item }"><ChptTag :label="item.level" size="xs" /></template>
+</ChptList>
+
+<!-- 格狀卡片 -->
+<ChptList :items="machines" :grid="150">
+  <template #default="{ item }">{{ item.name }}</template>
+</ChptList>`
+const listProps = [
+  { name: 'items / itemKey', type: 'T[] / string', def: "[] / 'id'", desc: '資料；預設版面讀 avatar / title / description / extra' },
+  { name: 'header / footer', type: 'string（或插槽）', def: "''", desc: '標題列 / 頁尾' },
+  { name: 'loading', type: 'boolean', def: 'false', desc: '沒有資料時顯示骨架；已有資料時在底部顯示載入中（清單不會閃掉）' },
+  { name: 'hasMore / infinite', type: 'boolean', def: 'false', desc: '載入更多按鈕；infinite 為捲到底自動載入' },
+  { name: 'grid', type: 'number', def: '—', desc: '格狀排列，每張卡的最小寬度（px）' },
+  { name: 'bordered / split / size / emptyText', type: '—', def: 'true / true / md / locale', desc: '外框、分隔線、內距、空狀態文字' },
+  { name: '@load-more', type: 'event', def: '—', desc: '按下載入更多或捲到底' },
+]
+
+// ===== ChptQRCode =====
+const qrRef = useTemplateRef('qrRef')
+const qrValue = ref('https://example.com/wo/2609-101')
+const qrExpired = ref(true)
+const qrSample = `<ChptQRCode :value="url" :size="160" />
+<ChptQRCode :value="loginUrl" :status="expired ? 'expired' : 'active'" @refresh="renew" />
+
+qrRef.value.download('label.png')   // 下載 PNG`
+const qrProps = [
+  { name: 'value', type: 'string', def: '—', desc: '內容（支援中文；上限約 2.9KB）' },
+  { name: 'size / margin', type: 'number', def: '160 / 2', desc: '邊長 px；四周留白模組數' },
+  { name: 'level', type: "'L'|'M'|'Q'|'H'", def: "'M'", desc: '容錯等級；有 icon 時自動用 H' },
+  { name: 'color / bgColor', type: 'string', def: '黑 / 白', desc: '顏色；兩者要有足夠對比才掃得出來' },
+  { name: 'icon / iconRatio', type: 'string / number', def: "'' / 0.22", desc: '中央 Logo' },
+  { name: 'status / expiredText', type: "'active'|'expired'|'loading'", def: "'active'", desc: '過期時顯示重新產生（@refresh）' },
+  { name: 'title', type: 'string', def: '「QR Code：內容」', desc: '螢幕閱讀器唸的名稱' },
+  { name: 'ref: toDataURL(scale) / download(filename)', type: '—', def: '—', desc: '輸出 PNG' },
 ]
 </script>

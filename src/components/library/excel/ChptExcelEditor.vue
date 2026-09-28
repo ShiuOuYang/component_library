@@ -79,6 +79,9 @@
           <option value="#,##0.00">千分位小數</option>
           <option value="0%">百分比整數</option>
           <option value="0.00%">百分比小數</option>
+          <option value="yyyy-mm-dd">日期</option>
+          <option value="yyyy-mm-dd hh:mm">日期時間</option>
+          <option value="hh:mm">時間</option>
         </select>
       </div>
 
@@ -281,11 +284,16 @@ import * as XLSX from 'xlsx-js-style'
 // （公式引擎原本整包寫在這個檔案裡，而且是用 new Function 求值）
 import { cellRef, colName } from './formula/cellRef'
 import { evaluateFormula } from './formula/formulaEngine'
-import { applyStructuralChange } from './sheetOps'
+import {
+  adjustOtherSheetFormulas,
+  applyStructuralChange,
+  removeSheetFormulas,
+  renameSheetFormulas,
+} from './sheetOps'
 import { parseTSV, toTSV } from './clipboard'
 import { buildWorkbook } from './xlsxExport'
 import { extendSeries } from './autofill'
-import { formatValue, generalAlign, sortCompare, type CellAlign } from './values'
+import { formatValue, generalAlign, impliedFormat, sortCompare, type CellAlign } from './values'
 import { shiftFormula } from './formula/refRewrite'
 
 /**
@@ -438,6 +446,11 @@ function setRenameInput(el: unknown, idx: number) {
 interface UndoEntry {
   sheetIndex: number
   data: SheetData
+  /**
+   * 同一個動作一起改到的其他工作表（插入 / 刪除列欄時，別張表指向這張表的公式也會被改寫）。
+   * 復原時要一起還原，否則別張表的公式停在「已位移」的狀態。
+   */
+  linked?: { sheetIndex: number; data: SheetData }[]
 }
 const undoStack = ref<UndoEntry[]>([])
 const redoStack = ref<UndoEntry[]>([])
@@ -534,7 +547,8 @@ function cellDisplay(r: number, c: number): string | number {
   const o = mergeOrigin(r, c)
   const v = getCellValue(o.r, o.c)
   if (v === '') return ''
-  return formatValue(v, getCellStyle(o.r, o.c).numFmt)
+  // 沒有指定格式、公式又是日期函式（=TODAY()）時，自動用日期格式顯示
+  return formatValue(v, getCellStyle(o.r, o.c).numFmt || impliedFormat(getCellRaw(o.r, o.c)))
 }
 
 /** 有指定對齊就照指定；沒有就用 Excel「通用」格式的規則（數字靠右） */
@@ -1334,12 +1348,18 @@ function commitToSelection() {
 }
 
 // ===== 復原 / 重做 =====
-function snapshotOf(sheetIndex: number): UndoEntry {
-  return { sheetIndex, data: JSON.parse(JSON.stringify(sheets[sheetIndex])) }
+function cloneSheet(index: number): SheetData {
+  return JSON.parse(JSON.stringify(sheets[index]))
 }
 
-function pushUndo() {
-  undoStack.value.push(snapshotOf(activeSheetIndex.value))
+function snapshotOf(sheetIndex: number, linkedIndexes: number[] = []): UndoEntry {
+  const entry: UndoEntry = { sheetIndex, data: cloneSheet(sheetIndex) }
+  if (linkedIndexes.length) entry.linked = linkedIndexes.map((i) => ({ sheetIndex: i, data: cloneSheet(i) }))
+  return entry
+}
+
+function pushUndo(linkedIndexes: number[] = []) {
+  undoStack.value.push(snapshotOf(activeSheetIndex.value, linkedIndexes))
   if (undoStack.value.length > 100) undoStack.value.shift()
   redoStack.value = []
 }
@@ -1348,6 +1368,9 @@ function pushUndo() {
 function restore(entry: UndoEntry) {
   const sheet = sheets[entry.sheetIndex]
   if (!sheet) return
+  for (const other of entry.linked ?? []) {
+    if (sheets[other.sheetIndex]) sheets[other.sheetIndex].cells = other.data.cells
+  }
   const snap = entry.data
   sheet.name = snap.name
   sheet.cells = snap.cells
@@ -1363,7 +1386,7 @@ function undo() {
   if (!canUndo.value) return
   const entry = undoStack.value.pop()!
   // 重做紀錄要存「被復原的那張表」現在的樣子，而不是目前顯示的表
-  redoStack.value.push(snapshotOf(entry.sheetIndex))
+  redoStack.value.push(snapshotOf(entry.sheetIndex, (entry.linked ?? []).map((l) => l.sheetIndex)))
   restore(entry)
   emit('update:modelValue', toModelValue())
 }
@@ -1371,7 +1394,7 @@ function undo() {
 function redo() {
   if (!canRedo.value) return
   const entry = redoStack.value.pop()!
-  undoStack.value.push(snapshotOf(entry.sheetIndex))
+  undoStack.value.push(snapshotOf(entry.sheetIndex, (entry.linked ?? []).map((l) => l.sheetIndex)))
   restore(entry)
   emit('update:modelValue', toModelValue())
 }
@@ -1381,10 +1404,17 @@ function redo() {
  * 後面的表索引往前移一格 —— 否則復原會寫進錯的表。
  */
 function reindexHistory(removedIndex: number) {
+  const shift = (i: number) => (i > removedIndex ? i - 1 : i)
   const fix = (stack: UndoEntry[]) =>
     stack
       .filter((e) => e.sheetIndex !== removedIndex)
-      .map((e) => (e.sheetIndex > removedIndex ? { ...e, sheetIndex: e.sheetIndex - 1 } : e))
+      .map((e) => ({
+        ...e,
+        sheetIndex: shift(e.sheetIndex),
+        linked: e.linked
+          ?.filter((l) => l.sheetIndex !== removedIndex)
+          .map((l) => ({ ...l, sheetIndex: shift(l.sheetIndex) })),
+      }))
   undoStack.value = fix(undoStack.value)
   redoStack.value = fix(redoStack.value)
 }
@@ -1534,6 +1564,23 @@ const FUNCTION_LIST: FunctionDef[] = [
   { name: 'ISBLANK', description: '是否空白', args: 'value' },
   { name: 'ISNUMBER', description: '是否為數字', args: 'value' },
   { name: 'ISERROR', description: '是否為錯誤', args: 'value' },
+  // 日期與時間（值是 Excel 日期序號；=TODAY() 這類儲存格自動顯示成日期）
+  { name: 'TODAY', description: '今天的日期', args: '' },
+  { name: 'NOW', description: '現在的日期與時間', args: '' },
+  { name: 'DATE', description: '年月日組成日期', args: 'year, month, day' },
+  { name: 'TIME', description: '時分秒組成時間', args: 'hour, minute, second' },
+  { name: 'YEAR', description: '取出年', args: 'date' },
+  { name: 'MONTH', description: '取出月', args: 'date' },
+  { name: 'DAY', description: '取出日', args: 'date' },
+  { name: 'WEEKDAY', description: '星期幾', args: 'date, [return_type]' },
+  { name: 'WEEKNUM', description: '一年中的第幾週', args: 'date, [return_type]' },
+  { name: 'EDATE', description: '幾個月後的同一天', args: 'start_date, months' },
+  { name: 'EOMONTH', description: '幾個月後的月底', args: 'start_date, months' },
+  { name: 'DATEDIF', description: '兩個日期相差（年 / 月 / 日）', args: 'start_date, end_date, "Y"|"M"|"D"|"YM"|"MD"|"YD"' },
+  { name: 'DAYS', description: '相差天數', args: 'end_date, start_date' },
+  { name: 'NETWORKDAYS', description: '工作天數（排除週末與假日）', args: 'start_date, end_date, [holidays]' },
+  { name: 'WORKDAY', description: '幾個工作天後的日期', args: 'start_date, days, [holidays]' },
+  { name: 'DATEVALUE', description: '日期文字轉日期', args: 'date_text' },
 ]
 
 const showFxPanel = ref(false)
@@ -1889,12 +1936,20 @@ function applyChange(axis: 'row' | 'col', mode: 'insert' | 'delete') {
   const { rs, re, cs, ce } = getSelectionRange()
   const at = axis === 'row' ? rs : cs
   const span = axis === 'row' ? re - rs + 1 : ce - cs + 1
-  pushUndo()
-  const next = applyStructuralChange(activeSheet.value, {
-    axis,
-    at,
-    count: mode === 'insert' ? span : -span,
+  const change = { axis, at, count: mode === 'insert' ? span : -span }
+  const changedSheet = activeSheet.value.name
+
+  // 別張表裡指向這張表的公式也要跟著動（先算好，才知道復原要一併記住哪幾張）
+  const otherUpdates: { index: number; cells: SheetData['cells'] }[] = []
+  sheets.forEach((other, index) => {
+    if (index === activeSheetIndex.value) return
+    const cells = adjustOtherSheetFormulas(other.cells, change, { changedSheet, formulaSheet: other.name })
+    if (cells !== other.cells) otherUpdates.push({ index, cells })
   })
+
+  pushUndo(otherUpdates.map((u) => u.index))
+  const next = applyStructuralChange(activeSheet.value, change, { changedSheet, formulaSheet: changedSheet })
+  for (const u of otherUpdates) sheets[u.index].cells = u.cells
   const sheet = activeSheet.value
   sheet.cells = next.cells
   sheet.rowHeights = next.rowHeights
@@ -2094,12 +2149,18 @@ function addSheet() {
   emit('sheet-add', { name })
 }
 
+/**
+ * 不重複的工作表名稱。名稱結尾是數字時接著往下編號（Sheet1 → Sheet2）。
+ * ⚠️ 原本直接在後面接數字：預設名稱是 Sheet1，第二張就變成「Sheet12」、第三張「Sheet13」。
+ */
 function uniqueSheetName(base: string): string {
-  const names = new Set(sheets.map((s) => s.name))
-  if (!names.has(base)) return base
-  let i = 2
-  while (names.has(base + i)) i++
-  return base + i
+  const names = new Set(sheets.map((s) => s.name.toLowerCase()))
+  if (!names.has(base.toLowerCase())) return base
+  const m = base.match(/^(.*?)(\d+)$/)
+  const stem = m ? m[1] : base
+  let i = m ? Number(m[2]) + 1 : 2
+  while (names.has((stem + i).toLowerCase())) i++
+  return stem + i
 }
 
 function switchSheet(idx: number) {
@@ -2136,12 +2197,18 @@ function confirmRenameSheet(idx: number) {
   }
   const rawName = renameSheetValue.value.trim()
   if (rawName !== '') {
-    const names = new Set(sheets.map((s, i) => (i === idx ? '' : s.name)))
+    // 公式找工作表不分大小寫，重名檢查也不能分（否則 Data 與 data 兩張表互相搶參照）
+    const names = new Set(sheets.map((s, i) => (i === idx ? '' : s.name.toLowerCase())))
     let nextName = rawName
     let seq = 2
-    while (names.has(nextName)) {
+    while (names.has(nextName.toLowerCase())) {
       nextName = `${rawName}_${seq}`
       seq++
+    }
+    // 所有工作表（含自己）裡的 =舊名!A1 改成 =新名!A1 —— 原本改名後這些公式全部找不到工作表
+    const oldName = target.name
+    if (oldName !== nextName) {
+      for (const s of sheets) s.cells = renameSheetFormulas(s.cells, oldName, nextName)
     }
     target.name = nextName
   }
@@ -2205,6 +2272,8 @@ function onRowResizeUp() {
 function removeSheet(idx: number) {
   if (sheets.length <= 1) return
   const removed = sheets.splice(idx, 1)[0]
+  // 指向被刪工作表的參照變成 #REF!（原本留著一個找不到的名字）
+  for (const s of sheets) s.cells = removeSheetFormulas(s.cells, removed.name)
   reindexHistory(idx)
   if (activeSheetIndex.value >= sheets.length) activeSheetIndex.value = sheets.length - 1
   emit('sheet-remove', { name: removed.name })

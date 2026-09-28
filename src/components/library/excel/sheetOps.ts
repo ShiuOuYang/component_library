@@ -15,7 +15,14 @@
  *    這裡把五樣東西一起處理，並且支援一次插入 / 刪除多列（Excel 選取幾列就插幾列）。
  */
 import { cellRef, parseRef } from './formula/cellRef'
-import { adjustFormulaForChange, adjustIndex, type StructuralChange } from './formula/refRewrite'
+import {
+  adjustFormulaForChange,
+  adjustIndex,
+  removeSheetFromFormula,
+  renameSheetInFormula,
+  type ChangeScope,
+  type StructuralChange,
+} from './formula/refRewrite'
 
 export interface MergeRange {
   r: number
@@ -101,7 +108,8 @@ function remapFreeze(frozen: number, change: StructuralChange): number {
  */
 export function applyStructuralChange<Cell extends { raw?: string | number }>(
   sheet: StructuralSheet<Cell>,
-  change: StructuralChange
+  change: StructuralChange,
+  scope?: ChangeScope
 ): StructuralSheet<Cell> {
   const key = change.axis === 'row' ? 'r' : 'c'
   const cells: Record<string, Cell> = {}
@@ -115,7 +123,7 @@ export function applyStructuralChange<Cell extends { raw?: string | number }>(
     const raw = cell.raw
     const rewritten =
       typeof raw === 'string' && raw.startsWith('=')
-        ? '=' + adjustFormulaForChange(raw.slice(1), change)
+        ? '=' + adjustFormulaForChange(raw.slice(1), change, scope)
         : raw
 
     const next = { ...pos, [key]: moved }
@@ -131,4 +139,53 @@ export function applyStructuralChange<Cell extends { raw?: string | number }>(
     freezeRows: change.axis === 'row' ? remapFreeze(sheet.freezeRows, change) : sheet.freezeRows,
     freezeCols: change.axis === 'col' ? remapFreeze(sheet.freezeCols, change) : sheet.freezeCols,
   }
+}
+
+/**
+ * 對一張表的每條公式套用改寫；沒有任何一格變動時回傳原本的 cells（呼叫端用 === 判斷要不要寫回）。
+ */
+export function rewriteFormulas<Cell extends { raw?: string | number }>(
+  cells: Record<string, Cell>,
+  rewrite: (formula: string) => string
+): Record<string, Cell> {
+  let out: Record<string, Cell> | null = null
+  for (const ref in cells) {
+    const raw = cells[ref].raw
+    if (typeof raw !== 'string' || !raw.startsWith('=')) continue
+    const next = '=' + rewrite(raw.slice(1))
+    if (next === raw) continue
+    out ??= { ...cells }
+    out[ref] = { ...cells[ref], raw: next }
+  }
+  return out ?? cells
+}
+
+/**
+ * 別張表的公式裡，指向 changedSheet 的參照跟著插入 / 刪除移動。
+ * ⚠️ 原本只改寫發生變動的那張表：Sheet2 的 =SUM(Sheet1!B2:B10) 在 Sheet1 插入一列後
+ *    沒有撐大，最後一列默默不算進去。
+ */
+export function adjustOtherSheetFormulas<Cell extends { raw?: string | number }>(
+  cells: Record<string, Cell>,
+  change: StructuralChange,
+  scope: ChangeScope
+): Record<string, Cell> {
+  return rewriteFormulas(cells, (f) => adjustFormulaForChange(f, change, scope))
+}
+
+/** 工作表改名：所有 =舊名!A1 → =新名!A1 */
+export function renameSheetFormulas<Cell extends { raw?: string | number }>(
+  cells: Record<string, Cell>,
+  oldName: string,
+  newName: string
+): Record<string, Cell> {
+  return rewriteFormulas(cells, (f) => renameSheetInFormula(f, oldName, newName))
+}
+
+/** 刪除工作表：指向它的參照變成 #REF! */
+export function removeSheetFormulas<Cell extends { raw?: string | number }>(
+  cells: Record<string, Cell>,
+  removedName: string
+): Record<string, Cell> {
+  return rewriteFormulas(cells, (f) => removeSheetFromFormula(f, removedName))
 }

@@ -25,6 +25,7 @@ export {
   ChptTimePicker, ChptTreeSelect,
   ChptAffix, ChptCarousel, ChptNotificationHost, ChptSplitter, ChptVirtualList,
   ChptCopyButton, ChptCountdown, ChptEllipsis, ChptWatermark,
+  ChptConfigProvider, ChptInputTag, ChptList, ChptQRCode, ChptSpace, ChptTour,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -45,6 +46,9 @@ export {
 export { useToast } from './shared/useToast'
 export { useConfirm } from './shared/useConfirm'
 export { useNotification } from './shared/useNotification'
+export { useConfig, provideConfig, zhTW, enUS } from './shared/config'
+export type { ChptConfig, ChptLocale, ConfigSize } from './shared/config'
+export type { TourStep } from './ui/ChptTour.vue'
 export type { NotificationOptions, NotificationAction } from './shared/useNotification'
 export type { ConfirmOptions } from './shared/useConfirm'
 export { useDarkMode, initDarkMode, THEME_STORAGE_KEY } from './shared/useDarkMode'

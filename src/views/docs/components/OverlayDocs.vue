@@ -370,6 +370,28 @@
       <!-- 口袋列（顯示被最小化的 window） -->
       <ChptModalDock />
     </section>
+
+    <!-- ============ ChptTour ============ -->
+    <section id="chpt-tour" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTour 功能導覽</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>新功能上線、第一次使用的頁面，一步一步指出畫面上的元素。
+        每一步指定 <code>target</code>（選擇器、元素或函式）；找不到目標的步驟自動置中。
+      </p>
+      <div class="flex flex-wrap items-center gap-3 rounded-lg border border-stroke-light p-4">
+        <div id="tour-search"><ChptInput model-value="" placeholder="搜尋工單" /></div>
+        <ChptButton id="tour-export" size="sm" is-outline>匯出 Excel</ChptButton>
+        <ChptButton id="tour-settings" size="sm" is-outline>欄位設定</ChptButton>
+        <ChptButton size="sm" color="primary" class="ml-auto" @click="tourOpen = true">開始導覽</ChptButton>
+      </div>
+      <ChptTour v-model:open="tourOpen" v-model:current="tourStep" :steps="tourSteps" @finish="tourDone = true" />
+      <p class="text-sm text-content-secondary mt-2">目前第 {{ tourStep + 1 }} 步{{ tourDone ? '（已完成過）' : '' }}</p>
+      <ChptCodeBlock class="mt-4" :code="tourSample" />
+      <ApiTable title="Props / Events" :rows="tourProps" />
+      <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>導覽是對話框（role=dialog、aria-modal）：焦點鎖在面板內、Esc 關閉、← → 切換步驟，
+        關閉後焦點回到按下「開始導覽」的按鈕。遮罩會擋住其他地方的點擊。</p>
+    </section>
+
   </div>
 </template>
 
@@ -390,6 +412,7 @@ import {
   ChptConfirmHost,
   useConfirm,
   ChptCodeBlock,
+  ChptTour,
 } from '@/components/library'
 import { useModalManager } from '@/components/library/shared/useModalManager'
 import ApiTable from './_ApiTable.vue'
@@ -688,5 +711,33 @@ const popconfirmSlots = [
 
 const dockProps = [
   { name: 'zIndex', type: 'number', def: '9999', desc: '口袋列 z-index 層級' },
+]
+
+// ===== ChptTour =====
+const tourOpen = ref(false)
+const tourStep = ref(0)
+const tourDone = ref(false)
+const tourSteps = [
+  { target: '#tour-search', title: '搜尋工單', description: '輸入工單號或料號，Enter 開始搜尋。' },
+  { target: '#tour-export', title: '匯出', description: '把目前篩選的結果下載成 Excel。', placement: 'bottom' },
+  { target: '#tour-settings', title: '欄位設定', description: '勾選要顯示的欄位，設定會記在瀏覽器裡。' },
+  { title: '都好了', description: '之後可以在右上角的「?」再看一次。' },
+]
+const tourSample = `<ChptTour
+  v-model:open="open"
+  :steps="[
+    { target: '#search', title: '搜尋工單', description: '…' },
+    { target: () => exportBtn.value?.$el, title: '匯出', placement: 'bottom' },
+    { title: '都好了' },            // 沒有 target：置中
+  ]"
+  @finish="markSeen"
+/>`
+const tourProps = [
+  { name: 'open / current', type: 'boolean / number', def: 'false / 0', desc: 'v-model:open、v-model:current' },
+  { name: 'steps', type: '{ target?, title, description?, placement? }[]', def: '—', desc: 'target：選擇器、元素或回傳元素的函式；placement：top/bottom/left/right/center（放不下會自動換邊）' },
+  { name: 'mask / closeOnMaskClick', type: 'boolean', def: 'true / false', desc: '遮罩挖出目標；點遮罩是否關閉' },
+  { name: 'finishText / gap', type: 'string / number', def: "'完成' / 6", desc: '最後一步按鈕文字；目標四周留白' },
+  { name: '@finish / @close(reason) / @change', type: 'event', def: '—', desc: 'reason：finish 或 skip' },
+  { name: '#content', type: 'slot { step, index }', def: '—', desc: '面板裡額外的內容（圖片、連結）' },
 ]
 </script>

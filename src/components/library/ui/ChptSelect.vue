@@ -43,6 +43,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { resolveSize, useConfig } from '@/components/library/shared/config'
 import { useFormField } from '@/components/library/shared/formContext'
 import type { ComponentSize, Recordable, SelectOption } from '@/components/library/shared/types/ui.types'
 
@@ -88,7 +89,8 @@ const props = withDefaults(defineProps<ChptSelectProps>(), {
   options: () => [],
   label: '',
   placeholder: '',
-  size: 'sm',
+  // 沒傳時看 ChptConfigProvider，再沒有才是 'sm'（見 shared/config.ts）
+  size: undefined,
   disabled: false,
   fullWidth: false,
   valueKey: '',
@@ -97,6 +99,9 @@ const props = withDefaults(defineProps<ChptSelectProps>(), {
   numberValue: false,
   errorText: '',
 })
+
+const config = useConfig()
+const size = computed(() => resolveSize(props.size, config, 'sm'))
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string | number): void
@@ -132,7 +137,7 @@ const sizeClass = computed(() => {
     lg: 'text-lg h-control-lg px-6',
     xl: 'text-xl h-control-xl px-5',
   }
-  return map[props.size]
+  return map[size.value]
 })
 
 const isObject = (option: SelectOption | string | number): option is SelectOption =>

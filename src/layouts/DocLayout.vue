@@ -238,6 +238,7 @@ const navSections = [
           { label: 'ChptTimePicker', id: 'chpt-timepicker' },
           { label: 'ChptTreeSelect', id: 'chpt-treeselect' },
           { label: 'ChptCalendar', id: 'chpt-calendar' },
+          { label: 'ChptInputTag', id: 'chpt-inputtag' },
         ],
       },
       {
@@ -265,6 +266,8 @@ const navSections = [
           { label: 'ChptTimeline', id: 'chpt-timeline' },
           { label: 'ChptTree', id: 'chpt-tree' },
           { label: 'ChptImage', id: 'chpt-image' },
+          { label: 'ChptList', id: 'chpt-list' },
+          { label: 'ChptQRCode', id: 'chpt-qrcode' },
         ],
       },
       {
@@ -304,6 +307,7 @@ const navSections = [
           { label: 'ChptPopover', id: 'chpt-popover' },
           { label: 'useConfirm', id: 'use-confirm' },
           { label: 'ChptModalDock', id: 'chpt-modaldock' },
+          { label: 'ChptTour', id: 'chpt-tour' },
         ],
       },
       {
@@ -322,6 +326,7 @@ const navSections = [
           { label: 'ChptAffix', id: 'chpt-affix' },
           { label: 'ChptCarousel', id: 'chpt-carousel' },
           { label: 'CopyButton / Ellipsis / Countdown / Watermark', id: 'chpt-small-utils' },
+          { label: 'ChptSpace', id: 'chpt-space' },
         ],
       },
       {
@@ -347,6 +352,7 @@ const navSections = [
         anchors: [
           { label: 'ChptDarkModeToggle', id: 'chpt-darkmodetoggle' },
           { label: 'ChptHeaderLogoutButton', id: 'chpt-headerlogout' },
+          { label: 'ChptConfigProvider', id: 'chpt-config-provider' },
         ],
       },
     ],

@@ -61,6 +61,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { resolveSize, useConfig } from '@/components/library/shared/config'
 import ChptIcon from './ChptIcon.vue'
 import { useFormField } from '@/components/library/shared/formContext'
 import type { ComponentSize, InputNativeType } from '@/components/library/shared/types/ui.types'
@@ -107,7 +108,8 @@ const props = withDefaults(defineProps<ChptInputProps>(), {
   type: 'text',
   label: '',
   placeholder: '',
-  size: 'sm',
+  // 沒傳時看 ChptConfigProvider，再沒有才是 'sm'（見 shared/config.ts）
+  size: undefined,
   disabled: false,
   readonly: false,
   clearable: false,
@@ -116,6 +118,9 @@ const props = withDefaults(defineProps<ChptInputProps>(), {
   maxlength: undefined,
   errorText: '',
 })
+
+const config = useConfig()
+const size = computed(() => resolveSize(props.size, config, 'sm'))
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
@@ -156,7 +161,7 @@ const sizeClass = computed(() => {
     lg: 'text-lg h-control-lg px-6',
     xl: 'text-xl h-control-xl px-5',
   }
-  return map[props.size]
+  return map[size.value]
 })
 
 /** 輸入事件 */
