@@ -50,14 +50,14 @@
                       class="absolute cursor-pointer hover:bg-surface-muted/30 bg-surface-primary rounded-md border flex justify-center items-center right-0 top-0 w-3 h-3 z-50"
                       @click="fixedColumn(column)"
                     >
-                      <ChptIcon weight="500" color="neutral-500" size="10">keep</ChptIcon>
+                      <ChptIcon weight="500" color="content-tertiary" size="10">keep</ChptIcon>
                     </div>
                     <div
                       v-else
                       class="absolute cursor-pointer hover:bg-surface-muted/30 bg-surface-primary rounded-md border flex justify-center items-center right-0 top-0 w-3 h-3 z-50"
                       @click="unFixedColumn(column)"
                     >
-                      <ChptIcon weight="500" color="neutral-500" size="10">keep_off</ChptIcon>
+                      <ChptIcon weight="500" color="content-tertiary" size="10">keep_off</ChptIcon>
                     </div>
                   </div>
 
@@ -67,7 +67,7 @@
                       class="absolute cursor-pointer hover:bg-surface-muted/30 bg-surface-primary rounded-md border flex justify-center items-center right-0 bottom-0 w-3 h-3"
                       @click="clickHandler($event, column)"
                     >
-                      <ChptIcon weight="500" color="neutral-500" size="12">arrow_drop_down</ChptIcon>
+                      <ChptIcon weight="500" color="content-tertiary" size="12">arrow_drop_down</ChptIcon>
                     </div>
                   </template>
                   <template v-if="props.isFilter && hasActiveFilter(column.dataIndex)">
@@ -75,7 +75,7 @@
                       class="absolute cursor-pointer hover:bg-surface-muted/30 bg-surface-primary rounded-md border flex justify-center items-center right-0 bottom-0 w-3 h-3"
                       @click="clickHandler($event, column)"
                     >
-                      <ChptIcon weight="300" color="neutral-500" size="12">filter_alt</ChptIcon>
+                      <ChptIcon weight="300" color="content-tertiary" size="12">filter_alt</ChptIcon>
                     </div>
                   </template>
                 </div>
@@ -139,7 +139,7 @@
               class="p-1 cursor-pointer hover:bg-surface-tertiary rounded transition-all active:scale-90 active:bg-surface-tertiary"
               @click="selectAllHandler"
             >
-              <ChptIcon weight="500" size="20" color="neutral-400">done_all</ChptIcon>
+              <ChptIcon weight="500" size="20" color="content-disabled">done_all</ChptIcon>
             </button>
             <button
               type="button"
@@ -147,7 +147,7 @@
               class="p-1 cursor-pointer hover:bg-surface-tertiary rounded transition-all active:scale-90 active:bg-surface-tertiary"
               @click="clickHandler($event)"
             >
-              <ChptIcon weight="500" size="20" color="neutral-400">close</ChptIcon>
+              <ChptIcon weight="500" size="20" color="content-disabled">close</ChptIcon>
             </button>
           </div>
 

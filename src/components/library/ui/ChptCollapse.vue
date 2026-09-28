@@ -16,7 +16,7 @@
         <span class="font-medium text-content-primary text-sm">{{ item.title }}</span>
         <ChptIcon
           :size="18"
-          color="neutral-500"
+          color="content-tertiary"
           aria-hidden="true"
           class="transition-transform duration-200"
           :class="isOpen(index) ? 'rotate-180' : ''"
