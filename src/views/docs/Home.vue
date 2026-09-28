@@ -133,11 +133,12 @@ const usageCode = `<template>
   <ChptTable :columns="columns" :data="rows" />
 </template>`
 const groups = [
-  { to: '/docs/components/form-atoms', icon: '🧩', title: '表單元件', badge: 'UI', description: 'Input / Select / Radio / Checkbox / Switch / DatePicker / Textarea' },
+  { to: '/docs/components/form-atoms', icon: '🧩', title: '表單元件', badge: 'UI', description: 'Input / InputNumber / Select / Radio / Checkbox / Switch / Slider / Segmented / DatePicker / Textarea' },
   { to: '/docs/components/data-filter', icon: '📊', title: '資料與過濾', badge: 'UI', description: 'ChptTable / ChptFixedTable / ChptPagination / ChptFilter / ChptFilterBar' },
-  { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件', badge: 'UI', description: 'Alert / Badge / Tag / Toast / Progress / Spinner / Empty / Skeleton' },
+  { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示', badge: 'UI', description: 'Statistic（KPI）/ Descriptions / Timeline' },
+  { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件', badge: 'UI', description: 'Alert / Badge / Tag / Toast / Progress / Spinner / Empty / Skeleton / Result' },
   { to: '/docs/components/interactive', icon: '🖱️', title: '互動元件', badge: 'UI', description: 'Button / Avatar / Icon / Tabs / Steps' },
-  { to: '/docs/components/overlay', icon: '🗔', title: '浮層元件', badge: 'UI', description: 'Modal / Drawer / Popconfirm / ModalDock / Toast' },
+  { to: '/docs/components/overlay', icon: '🗔', title: '浮層元件', badge: 'UI', description: 'Modal / Drawer / Popconfirm / Dropdown / ModalDock' },
   { to: '/docs/components/layout-nav', icon: '🧱', title: '佈局與流程', badge: 'UI', description: 'Card / Collapse / Breadcrumb / Divider / TabNavigation' },
   { to: '/docs/components/dual-axis-chart', icon: '📈', title: '圖表 Charts', badge: 'Charts', description: '雙軸組合 / 柏拉圖 / 熱力圖（D3、可縮放）' },
   { to: '/docs/components/gerber-viewer', icon: '🔬', title: '檢視器 Viewer', badge: 'Viewer', description: 'Gerber / PCB / Schematic 領域檢視器' },

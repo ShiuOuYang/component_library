@@ -15,6 +15,9 @@ export {
   ChptPageSwitcher, ChptPagination, ChptPopconfirm, ChptProgress, ChptRadio,
   ChptSelect, ChptSkeleton, ChptSpinner, ChptSteps, ChptSwitch, ChptTable,
   ChptTabNavigation, ChptTabs, ChptTag, ChptTextarea, ChptToast, ChptTooltip,
+  // 2026-09 新增
+  ChptDescriptions, ChptDropdown, ChptInputNumber, ChptResult, ChptSegmented,
+  ChptSlider, ChptStatistic, ChptTimeline,
 } from './ui/index.js'
 
 // ===== charts =====

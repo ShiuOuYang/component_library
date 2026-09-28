@@ -375,3 +375,18 @@ describe('ChptTable：只傳 columns + data 就要畫出資料列', () => {
     expect(wrapper.findAll('tbody tr.custom')).toHaveLength(3)
   })
 })
+
+describe('ChptIcon：傳入的 class 要落到圖示上', () => {
+  // Bug：class 被宣告成 prop 卻沒有使用，傳入的 class 全被吃掉 ——
+  //      ChptInput 的前綴圖示 absolute 定位失效，放大鏡跑到輸入框外面。
+  it('class 會加在根節點', async () => {
+    const { default: ChptIcon } = await import('@/components/library/ui/ChptIcon.vue')
+    const wrapper = mount(ChptIcon, { attrs: { class: 'absolute left-2' }, slots: { default: 'search' } })
+    expect(wrapper.classes()).toEqual(expect.arrayContaining(['absolute', 'left-2', 'material-symbols-outlined']))
+  })
+
+  it('ChptInput 的前綴圖示是絕對定位在輸入框內', () => {
+    const wrapper = mount(ChptInput, { props: { prefixIcon: 'search' } })
+    expect(wrapper.find('.material-symbols-outlined').classes()).toContain('absolute')
+  })
+})

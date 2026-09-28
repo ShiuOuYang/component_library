@@ -119,6 +119,69 @@
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>range=true 回傳區間陣列；format 例：yyyy-MM-dd 或含時間 HH:mm。</p>
         </section>
 
+        <!-- ============ ChptInputNumber ============ -->
+        <section id="chpt-inputnumber" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptInputNumber 數字輸入框</h2>
+          <p class="text-content-secondary text-sm mb-4">
+            <strong>使用時機：</strong>數量、門檻值、百分比這類有上下限的數字欄位。打字途中不夾限（離開欄位才驗證），
+            ↑↓ 加減一步、PageUp／PageDown 十步、Home／End 到上下限；小數步進沒有浮點誤差。
+          </p>
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
+            <div class="flex flex-wrap items-end gap-4">
+              <ChptInputNumber v-model="form.qty" label="投入數量" :min="0" :max="5000" :step="10" unit="pcs" />
+              <ChptInputNumber v-model="form.threshold" label="良率門檻" :min="0" :max="100" :step="0.5" :precision="1" unit="%" />
+              <ChptInputNumber v-model="form.lot" label="批號（無按鈕）" :controls="false" placeholder="選填" />
+            </div>
+            <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ form.qty }} / {{ form.threshold }} / {{ form.lot ?? 'null' }}</span></p>
+          </div>
+          <ChptCodeBlock :code="inputNumberSample" />
+          <ApiTable title="Props" :rows="inputNumberProps" />
+          <ApiTable title="Events" :rows="inputNumberEvents" />
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>清空欄位時值是 null（不是 0）；打錯字會還原成原本的值。
+            − / + 按鈕不佔 Tab 停駐點，鍵盤使用者用方向鍵。</p>
+        </section>
+
+        <!-- ============ ChptSlider ============ -->
+        <section id="chpt-slider" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptSlider 滑桿</h2>
+          <p class="text-content-secondary text-sm mb-4">
+            <strong>使用時機：</strong>在範圍內挑一個「大概位置」比精確數字重要的值（透明度、靈敏度）。需要精確輸入時搭配 ChptInputNumber。
+            以原生 range 為基礎，鍵盤、觸控與螢幕閱讀器都由瀏覽器處理。
+          </p>
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
+            <div class="grid md:grid-cols-2 gap-6">
+              <ChptSlider v-model="form.opacity" label="透明度" show-value :formatter="(v) => v + '%'" full-width />
+              <ChptSlider v-model="form.level" label="靈敏度" :min="1" :max="5" :marks="{ 1: '低', 3: '中', 5: '高' }" full-width />
+            </div>
+          </div>
+          <ChptCodeBlock :code="sliderSample" />
+          <ApiTable title="Props" :rows="sliderProps" />
+          <ApiTable title="Events" :rows="sliderEvents" />
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>update:modelValue 在拖曳中持續觸發，要打 API 請聽 change（放開時一次）。
+            formatter 也會成為螢幕閱讀器唸出的 aria-valuetext。</p>
+        </section>
+
+        <!-- ============ ChptSegmented ============ -->
+        <section id="chpt-segmented" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptSegmented 分段控制器</h2>
+          <p class="text-content-secondary text-sm mb-4">
+            <strong>使用時機：</strong>2~5 個互斥的「檢視方式」（日／週／月、清單／卡片）。選項少、希望一直看得到時比下拉直覺；
+            要切換整塊內容請用 ChptTabs。
+          </p>
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
+            <div class="flex flex-wrap items-center gap-4">
+              <ChptSegmented v-model="form.period" :options="['日', '週', '月', '季']" aria-label="統計期間" />
+              <ChptSegmented v-model="form.view" :options="viewOptions" aria-label="檢視方式" size="xs" />
+            </div>
+            <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ form.period }} / {{ form.view }}</span></p>
+          </div>
+          <ChptCodeBlock :code="segmentedSample" />
+          <ApiTable title="Props" :rows="segmentedProps" />
+          <ApiTable title="Events" :rows="segmentedEvents" />
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>整組只佔一個 Tab 停駐點，←→ 直接切換並略過停用項（WAI-ARIA radiogroup）。
+            畫面上沒有標籤時務必給 aria-label。</p>
+        </section>
+
         <!-- 引入方式 -->
         <section class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light">
           <h2 class="text-2xl font-bold text-content-primary mb-2">引入方式</h2>
@@ -136,6 +199,9 @@ import {
   ChptSwitch,
   ChptSelect,
   ChptDatePicker,
+  ChptInputNumber,
+  ChptSlider,
+  ChptSegmented,
   ChptCodeBlock,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
@@ -146,6 +212,9 @@ const comps = [
   { id: 'chpt-radio', label: 'ChptRadio' },
   { id: 'chpt-switch', label: 'ChptSwitch' },
   { id: 'chpt-datepicker', label: 'ChptDatePicker' },
+  { id: 'chpt-inputnumber', label: 'ChptInputNumber' },
+  { id: 'chpt-slider', label: 'ChptSlider' },
+  { id: 'chpt-segmented', label: 'ChptSegmented' },
 ]
 
 const active = ref('chpt-input')
@@ -162,7 +231,20 @@ const form = reactive({
   notify: true,
   date: null,
   range: null,
+  qty: 1200,
+  threshold: 98.5,
+  lot: null,
+  opacity: 80,
+  level: 3,
+  period: '週',
+  view: 'list',
 })
+
+const viewOptions = [
+  { label: '清單', value: 'list', icon: 'list' },
+  { label: '卡片', value: 'grid', icon: 'grid_view' },
+  { label: '圖表', value: 'chart', icon: 'bar_chart', disabled: true },
+]
 
 const siteOptions = ['FAB-A', 'FAB-B', 'FAB-C']
 const priorityOptions = [
@@ -172,8 +254,65 @@ const priorityOptions = [
 ]
 
 const importSample = `import {
-  ChptInput, ChptSelect, ChptRadio, ChptSwitch, ChptDatePicker
+  ChptInput, ChptSelect, ChptRadio, ChptSwitch, ChptDatePicker,
+  ChptInputNumber, ChptSlider, ChptSegmented
 } from '@/components/library'`
+
+const inputNumberSample = `<ChptInputNumber v-model="qty" label="投入數量" :min="0" :max="5000" :step="10" unit="pcs" />
+<ChptInputNumber v-model="rate" :step="0.5" :precision="1" unit="%" @change="(v, old) => save(v)" />`
+
+const inputNumberProps = [
+  { name: 'modelValue', type: 'number | null', def: 'null', desc: '值（v-model）；清空時為 null' },
+  { name: 'min / max', type: 'number', def: '-Infinity / Infinity', desc: '上下限（離開欄位或按 Enter 時夾到範圍內）' },
+  { name: 'step', type: 'number', def: '1', desc: '每一步的增減量（PageUp／PageDown 是十步）' },
+  { name: 'precision', type: 'number', def: '—', desc: '固定小數位數（四捨五入，遠離零）' },
+  { name: 'unit', type: 'string', def: "''", desc: '顯示在數字右側的單位' },
+  { name: 'controls', type: 'boolean', def: 'true', desc: '是否顯示 − / + 按鈕' },
+  { name: 'size', type: "'xs'…'xl'", def: "'sm'", desc: '尺寸（control token）' },
+  { name: 'label / placeholder / errorText', type: 'string', def: "''", desc: '標籤／佔位符／錯誤訊息' },
+  { name: 'disabled / readonly / fullWidth', type: 'boolean', def: 'false', desc: '禁用／唯讀／全寬' },
+]
+const inputNumberEvents = [
+  { name: 'update:modelValue', params: '(value: number | null)', desc: '值確定改變時（不是每打一個字）' },
+  { name: 'change', params: '(value, oldValue)', desc: '同上，帶舊值' },
+  { name: 'focus / blur', params: '(event: FocusEvent)', desc: '焦點進出' },
+]
+
+const sliderSample = `<ChptSlider v-model="opacity" label="透明度" show-value :formatter="v => v + '%'" />
+<ChptSlider v-model="level" :min="1" :max="5" :marks="{ 1: '低', 3: '中', 5: '高' }" @change="save" />`
+
+const sliderProps = [
+  { name: 'modelValue', type: 'number', def: '0', desc: '值（v-model）' },
+  { name: 'min / max / step', type: 'number', def: '0 / 100 / 1', desc: '範圍與步長' },
+  { name: 'label', type: 'string', def: "''", desc: '標籤' },
+  { name: 'showValue', type: 'boolean', def: 'false', desc: '在右上角顯示目前值' },
+  { name: 'formatter', type: '(v: number) => string', def: '—', desc: '顯示格式；同時作為 aria-valuetext' },
+  { name: 'marks', type: 'SliderMark[] | Record<number, string>', def: '—', desc: '刻度' },
+  { name: 'disabled / fullWidth', type: 'boolean', def: 'false', desc: '禁用／全寬（預設寬 16rem）' },
+]
+const sliderEvents = [
+  { name: 'update:modelValue', params: '(value: number)', desc: '拖曳中持續觸發' },
+  { name: 'change', params: '(value: number)', desc: '放開或鍵盤操作完成時觸發一次' },
+]
+
+const segmentedSample = `<ChptSegmented v-model="period" :options="['日', '週', '月']" aria-label="統計期間" />
+<ChptSegmented
+  v-model="view"
+  :options="[{ label: '清單', value: 'list', icon: 'list' }, { label: '卡片', value: 'grid', icon: 'grid_view' }]"
+/>`
+
+const segmentedProps = [
+  { name: 'modelValue', type: 'string | number', def: '—', desc: '目前選取的值（v-model）' },
+  { name: 'options', type: '(SegmentOption | string | number)[]', def: '—', desc: '選項：{ label, value, icon?, disabled? } 或字串' },
+  { name: 'size', type: "'xs' | 'sm' | 'md' | 'lg'", def: "'sm'", desc: '尺寸；整組外高與同尺寸按鈕一致' },
+  { name: 'block', type: 'boolean', def: 'false', desc: '撐滿寬度、選項平均分配' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '整組禁用' },
+  { name: 'ariaLabel', type: 'string', def: "''", desc: '群組名稱（沒有可見標籤時必填）' },
+]
+const segmentedEvents = [
+  { name: 'update:modelValue', params: '(value)', desc: '選取變更' },
+  { name: 'change', params: '(value)', desc: '同上（值真的改變時才觸發）' },
+]
 
 const inputSample = `<ChptInput v-model="v" label="料號" prefix-icon="search" clearable />
 <ChptInput v-model="v" error-text="此欄必填" />`

@@ -220,6 +220,9 @@ const navSections = [
           { label: 'ChptRadio', id: 'chpt-radio' },
           { label: 'ChptSwitch', id: 'chpt-switch' },
           { label: 'ChptDatePicker', id: 'chpt-datepicker' },
+          { label: 'ChptInputNumber', id: 'chpt-inputnumber' },
+          { label: 'ChptSlider', id: 'chpt-slider' },
+          { label: 'ChptSegmented', id: 'chpt-segmented' },
         ],
       },
       {
@@ -233,6 +236,14 @@ const navSections = [
         ],
       },
       {
+        to: '/docs/components/data-display', icon: '🗂️', label: '資料展示元件',
+        anchors: [
+          { label: 'ChptStatistic', id: 'chpt-statistic' },
+          { label: 'ChptDescriptions', id: 'chpt-descriptions' },
+          { label: 'ChptTimeline', id: 'chpt-timeline' },
+        ],
+      },
+      {
         to: '/docs/components/feedback', icon: '🛎️', label: '反饋元件',
         anchors: [
           { label: 'ChptAlert', id: 'chpt-alert' },
@@ -243,6 +254,7 @@ const navSections = [
           { label: 'ChptSpinner', id: 'chpt-spinner' },
           { label: 'ChptEmpty', id: 'chpt-empty' },
           { label: 'ChptSkeleton', id: 'chpt-skeleton' },
+          { label: 'ChptResult', id: 'chpt-result' },
         ],
       },
       {
@@ -261,6 +273,7 @@ const navSections = [
           { label: 'ChptModal', id: 'chpt-modal' },
           { label: 'ChptDrawer', id: 'chpt-drawer' },
           { label: 'ChptPopconfirm', id: 'chpt-popconfirm' },
+          { label: 'ChptDropdown', id: 'chpt-dropdown' },
           { label: 'ChptModalDock', id: 'chpt-modaldock' },
         ],
       },
@@ -335,6 +348,7 @@ const collapsedShortcuts = [
   { to: '/docs', icon: '🏠', title: '首頁' },
   { to: '/docs/components/form-atoms', icon: '🧩', title: '基礎表單' },
   { to: '/docs/components/data-filter', icon: '📊', title: '資料呈現與過濾' },
+  { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示' },
   { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件' },
   { to: '/docs/components/overlay', icon: '🗔', title: '浮層元件' },
   { to: '/docs/components/dual-axis-chart', icon: '📈', title: '圖表' },

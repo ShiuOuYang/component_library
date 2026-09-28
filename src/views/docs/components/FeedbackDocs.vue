@@ -310,6 +310,46 @@
         [100, 85, 90]）；底色 class 用 <code>color</code> 覆寫。
       </p>
     </section>
+
+    <!-- ============ ChptResult ============ -->
+    <section id="chpt-result" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptResult 結果頁</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>一整塊區域就是一個結果 —— 送出成功、匯入失敗、沒有權限、找不到頁面，通常附上下一步的按鈕。
+        短暫提示用 ChptToast、頁面中的一條訊息用 ChptAlert、「還沒有資料」用 ChptEmpty。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptResult } from '@/components/library'</code>
+      </p>
+
+      <div class="mb-3">
+        <ChptSegmented v-model="resultStatus" :options="resultOptions" aria-label="結果狀態" size="xs" />
+      </div>
+      <div class="rounded-lg border border-stroke-light bg-surface-secondary">
+        <ChptResult :status="resultStatus" :sub-title="resultSubTitle" compact>
+          <template #extra>
+            <ChptButton label="回到列表" color="primary" size="sm" />
+            <ChptButton label="重新操作" color="primary" size="sm" is-outline />
+          </template>
+          <ul v-if="resultStatus === 'error'" class="list-disc pl-5 space-y-1">
+            <li>第 3 列：料號格式錯誤</li>
+            <li>第 8 列：數量不得為負數</li>
+          </ul>
+        </ChptResult>
+      </div>
+
+      <div class="mt-6">
+        <ChptCodeBlock :code="resultSample" />
+      </div>
+
+      <ApiTable title="Props" :rows="resultProps" />
+      <ApiTable title="Slots" :rows="resultSlots" />
+
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>失敗類（error／warning／403／404／500）使用 <code>role="alert"</code>，螢幕閱讀器會立即唸出；
+        success／info 使用 <code>role="status"</code>。
+      </p>
+    </section>
   </div>
 </template>
 
@@ -327,8 +367,48 @@ import {
   ChptSkeleton,
   ChptButton,
   ChptCodeBlock,
+  ChptResult,
+  ChptSegmented,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+import { computed } from 'vue'
+
+// ---- ChptResult ----
+const resultStatus = ref('success')
+const resultOptions = [
+  { label: '成功', value: 'success' },
+  { label: '失敗', value: 'error' },
+  { label: '警告', value: 'warning' },
+  { label: '403', value: '403' },
+  { label: '404', value: '404' },
+]
+const resultSubTitle = computed(
+  () =>
+    ({
+      success: '工單 WO-2026-0917 已送出審核，預計 2 小時內完成。',
+      error: '有 2 列資料未通過檢查，請修正後重新上傳。',
+      warning: '部分欄位使用了預設值，請確認後再送出。',
+      '403': '你沒有檢視這份報表的權限，請聯絡系統管理員。',
+      '404': '頁面可能已被移除，或網址有誤。',
+    })[resultStatus.value]
+)
+const resultSample = `<ChptResult status="error" title="匯入失敗" sub-title="有 2 列資料未通過檢查">
+  <template #extra>
+    <ChptButton label="重新上傳" color="primary" />
+  </template>
+  <ul><li>第 3 列：料號格式錯誤</li></ul>
+</ChptResult>`
+const resultProps = [
+  { name: 'status', type: "'success' | 'error' | 'warning' | 'info' | '403' | '404' | '500'", def: "'info'", desc: '決定圖示、顏色與預設標題' },
+  { name: 'title', type: 'string', def: "''", desc: '標題；不給時用狀態的預設標題' },
+  { name: 'subTitle', type: 'string', def: "''", desc: '說明發生了什麼、接下來可以怎麼做' },
+  { name: 'compact', type: 'boolean', def: 'false', desc: '精簡版（放在卡片或對話框裡）' },
+]
+const resultSlots = [
+  { name: 'extra', params: '—', desc: '下一步的按鈕' },
+  { name: 'default', params: '—', desc: '補充內容（例如失敗原因清單），以淡底方塊呈現' },
+  { name: 'icon / title / subTitle', params: '—', desc: '覆寫圖示、標題、副標題' },
+]
 
 const toast = useToast()
 

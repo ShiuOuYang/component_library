@@ -73,7 +73,7 @@
 
 | 組件 | Props | Emits | Slots |
 |---|---|---|---|
-| `ChptIcon` | fill, weight, grade, size, color, hoverColor, opacity, class | – | default（圖示名，Material Symbols） |
+| `ChptIcon` | fill, weight, grade, size, color（`text-{color}` 後綴，預設 `content-tertiary`；`current` = 跟隨文字色）, hoverColor, opacity；`class` 直接落到根節點 | – | default（圖示名，Material Symbols） |
 | `ChptButton` | label, icon, iconPosition, iconColor, color, size(`3xs~lg`), rounded, type, isOutline, disabled, loading, hasBadge, badgeText, badgeBgColor, badgeTextColor, textColor, class | click | default |
 | `ChptInput` | modelValue, type, label, placeholder, size, disabled, readonly, clearable, fullWidth, prefixIcon, maxlength, errorText | update:modelValue, blur, focus, clear | – |
 | `ChptTextarea` | modelValue, label, placeholder, size, rows, disabled, readonly, fullWidth, maxlength, showCount, autosize, errorText | update:modelValue, blur, focus | – |
@@ -82,6 +82,9 @@
 | `ChptCheckbox` | modelValue, items, size, bgColor, borderColor, errors, isLabelShow, labelSize, labelColor, direction | update:modelValue, click | – |
 | `ChptSwitch` | modelValue, label, size, color, disabled | update:modelValue, change | – |
 | `ChptDatePicker` | modelValue, label, placeholder, range, enableTimePicker, format, minDate, maxDate, size, disabled, clearable, autoApply, fullWidth, errorText | update:modelValue, clear | – |
+| `ChptInputNumber` | modelValue(`number\|null`), min, max, step, precision, label, placeholder, unit, size(`xs~xl`), controls, disabled, readonly, fullWidth, errorText | update:modelValue, change(value, old), focus, blur | ref: `focus()`, `blur()` |
+| `ChptSlider` | modelValue, min, max, step, label, showValue, formatter, marks(`SliderMark[]\|Record<number,string>`), disabled, fullWidth | update:modelValue（拖曳中）, change（放開） | – |
+| `ChptSegmented` | modelValue, options(`{label,value,icon?,disabled?}\|string`), size(`xs~lg`), block, disabled, ariaLabel | update:modelValue, change | – |
 
 `ChptDatePicker` 底層是 `@vuepic/vue-datepicker`。
 
@@ -89,7 +92,7 @@
 
 | 組件 | Props（重點） | Emits | Slots / Ref |
 |---|---|---|---|
-| `ChptTable` | data, columns, searchPlaceholder, noDataText, defaultPageSize, customFilter, defaultSort, paginationPosition(`top`/`bottom`/`both`), 以及整組外觀 props（containerBgColor, headerBgGradient, evenRowBgColor, hoverRowBgColor, fontSize…） | search, sort, update:page, update:pageSize | slots: `left-controls`, `right-controls`, `bottom-left-controls`, `bottom-right-controls`, `table-row`, `footer`, `modals`；ref: `refresh()`, `resetPage()`, `resetSort()`, `enableColumnSort()` |
+| `ChptTable` | data, columns, searchPlaceholder, noDataText, defaultPageSize, customFilter, defaultSort, paginationPosition(`top`/`bottom`/`both`), 以及整組外觀 props（containerBgColor, headerBgGradient, evenRowBgColor, hoverRowBgColor, fontSize…） | search, sort, update:page, update:pageSize | slots: `left-controls`, `right-controls`, `bottom-left-controls`, `bottom-right-controls`, `table-row`（整列自訂；未提供時依 columns 畫出）、`cell`（`{ item, column, value }`，只改單一格）, `footer`, `modals`；ref: `refresh()`, `resetPage()`, `resetSort()`, `enableColumnSort()` |
 | `ChptFixedTable` | columns, data, isFixed, fixedColumns, isFilter, filterColumns, isKeep, viewportOffset, showSearch, searchText, headerFontSize, cellFontSize, divideColor/Opacity/Direction/Size, isPagination, defaultPageSize | update:fixedColumns, update:filterColumns, update:searchText | slot: `td-{dataIndex}`（`{ row, value }`）、`header` |
 | `ChptPagination` | variant(`full`/`compact`), currentPage, itemsPerPage, totalItems, pageSizeOptions, showSummary, showPageSize, bgColor | change, update:currentPage, update:itemsPerPage | – |
 | `ChptCodeBlock` | code, language, trimIndent, tip, tipType, tipTitle | – | slot: `tip` |
@@ -107,6 +110,7 @@
 | `ChptPopconfirm` | message, confirmText, cancelText, color | confirm, cancel | slot: `message` |
 | `ChptModalDock` | zIndex | – | 最小化視窗停靠列，配 `useModalManager` |
 | `ChptTooltip` | content, placement(top/bottom/left/right), theme(dark/light/info/warning/error), showArrow, maxWidth, disabled | show, hide | slot: default（觸發元素）、`content` |
+| `ChptDropdown` | items(`{key?,label,icon?,disabled?,danger?,divided?,shortcut?}`), label, icon, placement(`bottom-start/bottom-end/top-start/top-end`), size, disabled | select(item), open, close | slot: `trigger`（`{ open, toggle, attrs }`，attrs 需 v-bind）；ref: open, close |
 
 `ChptModal` 同時提供 dialog（置中確認/表單）與 window（多視窗：拖曳/縮放/最大化/最小化）兩種模式；多視窗需搭配 `ChptModalDock`。
 
@@ -123,6 +127,7 @@
 | `ChptEmpty` | icon, title, description, iconSize, iconColor, fullWidth | slot: `action` |
 | `ChptProgress` | modelValue, status, strokeWidth, trackColor, showLabel | update:modelValue |
 | `ChptToast` | 無 props | 需全域掛載一次，配 `useToast()` |
+| `ChptResult` | status(`success/error/warning/info/403/404/500`), title, subTitle, compact | slots: `extra`、default（補充內容）、`icon`、`title`、`subTitle` |
 
 `useToast()` → `success / info / warning / error`；型別 `'success'|'info'|'warning'|'danger'`。
 
@@ -136,6 +141,14 @@
 | `ChptSteps` | steps(`{title,status:pending/process/done}`), showLabel | – | – |
 | `ChptBreadcrumb` | items(`{label,to?}`), separator | select | `item-<index>` |
 | `ChptCollapse` | items(`{title,content?}`), modelValue(`number[]`), multiple | update:modelValue | `content-<index>` |
+
+## 資料展示
+
+| 組件 | Props | Emits | Slots |
+|---|---|---|---|
+| `ChptStatistic` | title, value, precision, groupSeparator, prefix, suffix, delta, deltaSuffix, deltaPrecision, higherIsBetter（不良率等請設 false）, description, valueClass, size, loading | – | `title`, `prefix`, `suffix`, `footer` |
+| `ChptDescriptions` | items(`{key?,label,value?,span?}`), title, column, bordered, layout(`horizontal/vertical`), labelWidth, size, emptyText | – | `title`, `extra`, `value`（`{ item, index }`） |
+| `ChptTimeline` | items(`{title?,content?,time?,datetime?,color?,hollow?,icon?,pending?,current?}`), reverse | – | `dot`, `content`（`{ item, index }`） |
 
 ## 過濾器
 
@@ -192,11 +205,12 @@
 | 路由 | 檔案 | 側欄群組（anchors 子項） |
 |---|---|---|
 | `/docs` | `views/docs/Home.vue` | – |
-| `/docs/components/form-atoms` | `views/docs/components/FormAtoms.vue` | UI 組件（chpt-input/select/radio/switch/datepicker） |
+| `/docs/components/form-atoms` | `views/docs/components/FormAtoms.vue` | UI 組件（chpt-input/select/radio/switch/datepicker/inputnumber/slider/segmented） |
 | `/docs/components/data-filter` | `views/docs/components/DataFilterDocs.vue` | UI 組件（chpt-table/fixedtable/pagination/filter/filterbar） |
-| `/docs/components/feedback` | `views/docs/components/FeedbackDocs.vue` | UI 組件（alert/tag/badge/toast/progress/spinner/empty/skeleton） |
+| `/docs/components/data-display` | `views/docs/components/DataDisplayDocs.vue` | UI 組件（statistic/descriptions/timeline） |
+| `/docs/components/feedback` | `views/docs/components/FeedbackDocs.vue` | UI 組件（alert/tag/badge/toast/progress/spinner/empty/skeleton/result） |
 | `/docs/components/interactive` | `views/docs/components/InteractiveDocs.vue` | UI 組件（tabs/toast/button/progress/alert） |
-| `/docs/components/overlay` | `views/docs/components/OverlayDocs.vue` | UI 組件（modal/drawer/popconfirm/modaldock） |
+| `/docs/components/overlay` | `views/docs/components/OverlayDocs.vue` | UI 組件（modal/drawer/popconfirm/dropdown/modaldock） |
 | `/docs/components/tooltip` | `views/docs/TooltipDoc.vue` | UI 組件（theme/placement/content） |
 | `/docs/components/layout-nav` | `views/docs/components/LayoutNavDocs.vue` | UI 組件（card/collapse/breadcrumb/steps/divider） |
 | `/docs/components/theme-tools` | `views/docs/components/ThemeToolsDocs.vue` | UI 組件（darkmodetoggle/headerlogout） |

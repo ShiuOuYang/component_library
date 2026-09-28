@@ -207,6 +207,49 @@
       </p>
     </section>
 
+    <!-- ============ ChptDropdown ============ -->
+    <section id="chpt-dropdown" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDropdown 動作選單</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>把一組「動作」收進一顆按鈕 —— 表格列的「更多」、工具列的「匯出 ▾」。
+        要選一個值請用 ChptSelect；要篩選請用 ChptFilter。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptDropdown } from '@/components/library'</code>
+      </p>
+
+      <div class="bg-surface-secondary rounded-lg p-4 flex flex-wrap items-center gap-4 min-h-[5rem]">
+        <ChptDropdown label="匯出" icon="download" :items="exportItems" @select="onDropdownSelect" />
+        <ChptDropdown label="更多" :items="rowActions" placement="bottom-end" @select="onDropdownSelect" />
+        <ChptDropdown :items="rowActions" @select="onDropdownSelect">
+          <template #trigger="{ toggle, attrs }">
+            <button
+              type="button"
+              v-bind="attrs"
+              aria-label="列操作"
+              class="inline-flex items-center justify-center h-control-sm min-w-control-sm rounded-md text-content-secondary hover:bg-surface-tertiary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
+              @click="toggle"
+            >⋯</button>
+          </template>
+        </ChptDropdown>
+        <span class="text-sm text-content-secondary">最後執行：<span class="font-mono">{{ lastAction || '—' }}</span></span>
+      </div>
+
+      <div class="mt-6">
+        <ChptCodeBlock :code="dropdownSample" />
+      </div>
+
+      <ApiTable title="Props" :rows="dropdownProps" />
+      <ApiTable title="Events" :rows="dropdownEvents" />
+      <ApiTable title="Slots" :rows="dropdownSlots" />
+
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>鍵盤行為照 WAI-ARIA menu button：Enter／↓ 開啟並聚焦第一項、↑ 聚焦最後一項、
+        打字跳到該字開頭的項目、Escape 關閉並把焦點還給觸發鈕。自訂觸發元素時務必 <code>v-bind="attrs"</code>，
+        否則螢幕閱讀器不知道它會開啟選單。
+      </p>
+    </section>
+
     <!-- ============ ChptModalDock ============ -->
     <section id="chpt-modaldock" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptModalDock 視窗口袋列</h2>
@@ -251,10 +294,55 @@ import {
   ChptTextarea,
   ChptProgress,
   ChptTag,
+  ChptDropdown,
   ChptCodeBlock,
 } from '@/components/library'
 import { useModalManager } from '@/components/library/shared/useModalManager'
 import ApiTable from './_ApiTable.vue'
+
+// ---- ChptDropdown ----
+const lastAction = ref('')
+const exportItems = [
+  { key: 'xlsx', label: 'Excel（.xlsx）', icon: 'table_view' },
+  { key: 'csv', label: 'CSV', icon: 'description' },
+  { key: 'pdf', label: 'PDF', icon: 'picture_as_pdf', disabled: true },
+]
+const rowActions = [
+  { key: 'edit', label: '編輯', icon: 'edit', shortcut: 'E' },
+  { key: 'copy', label: '複製', icon: 'content_copy' },
+  { key: 'archive', label: '封存', icon: 'archive', disabled: true },
+  { key: 'delete', label: '刪除', icon: 'delete', danger: true, divided: true },
+]
+function onDropdownSelect(item) {
+  lastAction.value = item.label
+}
+const dropdownSample = `<ChptDropdown label="匯出" icon="download" :items="items" @select="onSelect" />
+
+<!-- 自訂觸發元素：記得綁上 attrs（aria-haspopup / aria-expanded …） -->
+<ChptDropdown :items="rowActions" @select="onSelect">
+  <template #trigger="{ toggle, attrs }">
+    <button type="button" v-bind="attrs" aria-label="列操作" @click="toggle">⋯</button>
+  </template>
+</ChptDropdown>
+
+const items = [
+  { key: 'xlsx', label: 'Excel', icon: 'table_view' },
+  { key: 'delete', label: '刪除', danger: true, divided: true },
+]`
+const dropdownProps = [
+  { name: 'items', type: 'DropdownItem[]', def: '—', desc: '{ key?, label, icon?, disabled?, danger?, divided?, shortcut? }' },
+  { name: 'label / icon', type: 'string', def: "''", desc: '預設觸發鈕的文字與圖示' },
+  { name: 'placement', type: "'bottom-start' | 'bottom-end' | 'top-start' | 'top-end'", def: "'bottom-start'", desc: '選單位置' },
+  { name: 'size', type: "'xs' | 'sm' | 'md' | 'lg'", def: "'sm'", desc: '觸發鈕尺寸（control token）' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '禁用' },
+]
+const dropdownEvents = [
+  { name: 'select', params: '(item: DropdownItem)', desc: '選了某一項（停用項不會觸發）' },
+  { name: 'open / close', params: '()', desc: '開啟／關閉' },
+]
+const dropdownSlots = [
+  { name: 'trigger', params: '{ open, toggle, attrs }', desc: '自訂觸發元素；attrs 內含 id 與 aria 屬性，請 v-bind 到按鈕上' },
+]
 
 const modalOpen = ref(false)
 const editName = ref('')

@@ -166,6 +166,14 @@ const routes = [
               },
             },
             {
+              path: "components/data-display",
+              name: "DataDisplayDoc",
+              component: () => import("../views/docs/components/DataDisplayDocs.vue"),
+              meta: {
+                title: "資料展示元件",
+              },
+            },
+            {
               path: "components/theme-tools",
               name: "ThemeToolsDoc",
               component: () => import("../views/docs/components/ThemeToolsDocs.vue"),

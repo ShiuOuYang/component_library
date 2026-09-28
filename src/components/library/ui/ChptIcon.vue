@@ -34,14 +34,16 @@ interface ChptIconProps {
   grade?: number | string
   /** 尺寸（px 數字或字級字串） */
   size?: number | string
-  /** 顏色 class（如 blue-500 / red-400） */
+  /** 顏色 class 後綴（如 content-secondary / accent / danger；會組成 text-{color}） */
   color?: string
   /** hover 顏色 class */
   hoverColor?: string
   /** 透明度（0~1 字串） */
   opacity?: string
-  /** 自訂 class */
-  class?: string
+  // 自訂 class 直接寫 class="…" 即可（會落到根節點）。
+  // ⚠️ 原本把 class 宣告成 prop 卻沒有使用 —— 宣告成 prop 的屬性不會 fallthrough，
+  //    於是傳進來的 class 全被吃掉：ChptInput 的前綴圖示 class="absolute left-2" 失效，
+  //    放大鏡跑到輸入框外面。
 }
 
 const props = withDefaults(defineProps<ChptIconProps>(), {
@@ -49,7 +51,8 @@ const props = withDefaults(defineProps<ChptIconProps>(), {
   weight: 200,
   grade: 0,
   size: 24,
-  color: 'neutral-500',
+  // 主題化角色：淺色時與原本的 neutral-500 同色（#737373），深色時換成較亮的階
+  color: 'content-tertiary',
   hoverColor: '',
   opacity: '1',
 })
