@@ -233,6 +233,8 @@ const navSections = [
           { label: 'ChptTransfer', id: 'chpt-transfer' },
           { label: 'ChptColorPicker', id: 'chpt-colorpicker' },
           { label: 'ChptRate', id: 'chpt-rate' },
+          { label: 'ChptTimePicker', id: 'chpt-timepicker' },
+          { label: 'ChptTreeSelect', id: 'chpt-treeselect' },
           { label: 'ChptCalendar', id: 'chpt-calendar' },
         ],
       },
@@ -260,6 +262,7 @@ const navSections = [
           { label: 'ChptDescriptions', id: 'chpt-descriptions' },
           { label: 'ChptTimeline', id: 'chpt-timeline' },
           { label: 'ChptTree', id: 'chpt-tree' },
+          { label: 'ChptImage', id: 'chpt-image' },
         ],
       },
       {
@@ -294,6 +297,7 @@ const navSections = [
           { label: 'ChptPopconfirm', id: 'chpt-popconfirm' },
           { label: 'ChptDropdown', id: 'chpt-dropdown' },
           { label: 'ChptPopover', id: 'chpt-popover' },
+          { label: 'useConfirm', id: 'use-confirm' },
           { label: 'ChptModalDock', id: 'chpt-modaldock' },
         ],
       },
@@ -303,6 +307,14 @@ const navSections = [
           { label: '主題', id: 'chpt-tooltip-theme' },
           { label: '位置', id: 'chpt-tooltip-placement' },
           { label: '自訂內容', id: 'chpt-tooltip-content' },
+        ],
+      },
+      {
+        to: '/docs/components/navigation', icon: '🧭', label: '導覽元件',
+        anchors: [
+          { label: 'ChptMenu', id: 'chpt-menu' },
+          { label: 'ChptAnchor', id: 'chpt-anchor' },
+          { label: 'ChptBackTop', id: 'chpt-backtop' },
         ],
       },
       {
@@ -373,6 +385,7 @@ const collapsedShortcuts = [
   { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示' },
   { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件' },
   { to: '/docs/components/overlay', icon: '🗔', title: '浮層元件' },
+  { to: '/docs/components/navigation', icon: '🧭', title: '導覽元件' },
   { to: '/docs/components/dual-axis-chart', icon: '📈', title: '圖表' },
   { to: '/docs/components/excel-editor', icon: '📑', title: 'Excel' },
 ];

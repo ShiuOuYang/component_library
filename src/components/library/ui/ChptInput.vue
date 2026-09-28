@@ -4,7 +4,8 @@
       {{ props.label }}
     </label>
 
-    <div class="relative flex items-center" :class="props.fullWidth ? 'w-full' : ''">
+    <!-- self-start：外框貼齊輸入框寬度（標籤比輸入框寬時，✕ 才不會跑到輸入框外面） -->
+    <div class="relative flex items-center" :class="props.fullWidth ? 'w-full' : 'self-start'">
       <ChptIcon
         v-if="props.prefixIcon"
         :size="16"

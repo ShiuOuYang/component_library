@@ -129,6 +129,49 @@
           分數靠實心／空心形狀區分，不只靠顏色。唯讀時改為 role="img" 一次唸出「評分 4 / 5」。</p>
       </section>
 
+      <!-- ============ ChptTimePicker ============ -->
+      <section id="chpt-timepicker" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <h2 class="text-2xl font-bold text-content-primary mb-1">ChptTimePicker 時間選擇</h2>
+        <p class="text-content-secondary text-sm mb-4">
+          <strong>使用時機：</strong>班別起訖、排程時間這類「一天中的某個時刻」。v-model 是 'HH:mm'（或 'HH:mm:ss'）。
+          要連日期一起選時用 ChptDatePicker 的 enableTimePicker。
+        </p>
+        <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4 pb-72">
+          <div class="flex flex-wrap items-start gap-6">
+            <ChptTimePicker v-model="state.shiftStart" label="早班開始" />
+            <ChptTimePicker v-model="state.meeting" label="會議（15 分鐘一格，08:00–18:00）" :minute-step="15" min="08:00" max="18:00" />
+            <ChptTimePicker v-model="state.stamp" label="含秒" show-seconds />
+          </div>
+          <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ state.shiftStart ?? 'null' }} / {{ state.meeting ?? 'null' }} / {{ state.stamp ?? 'null' }}</span></p>
+        </div>
+        <ChptCodeBlock :code="timeSample" />
+        <ApiTable title="Props" :rows="timeProps" />
+        <ApiTable title="Events" :rows="timeEvents" />
+        <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>可以直接打字：930、0930、9:30 都會變成 09:30，打錯或超出範圍會還原。
+          面板的時／分／秒各是一個 listbox：輸入框按 ↓ 進入，↑↓ 改值（立即生效）、← → 換欄、Enter／Escape 關閉並回到輸入框。</p>
+      </section>
+
+      <!-- ============ ChptTreeSelect ============ -->
+      <section id="chpt-treeselect" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <h2 class="text-2xl font-bold text-content-primary mb-1">ChptTreeSelect 樹狀下拉選擇</h2>
+        <p class="text-content-secondary text-sm mb-4">
+          <strong>使用時機：</strong>選項有階層、又想收在一個欄位裡（部門、廠區／產線、料號分類）。裡面就是 ChptTree，
+          鍵盤操作、搜尋高亮與父子三態勾選都一樣。只需要沿著一條路往下選時，ChptCascader 更直覺。
+        </p>
+        <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4 pb-80">
+          <div class="flex flex-wrap items-start gap-6">
+            <ChptTreeSelect v-model="state.dept" label="部門" :data="deptTree" filterable clearable show-path />
+            <ChptTreeSelect v-model="state.depts" label="通知部門（多選）" :data="deptTree" multiple filterable clearable />
+          </div>
+          <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ JSON.stringify(state.dept) }} / {{ JSON.stringify(state.depts) }}</span></p>
+        </div>
+        <ChptCodeBlock :code="treeSelectSample" />
+        <ApiTable title="Props" :rows="treeSelectProps" />
+        <ApiTable title="Events" :rows="treeSelectEvents" />
+        <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>多選的 v-model 與 ChptTree 的 checked 相同（完整勾選的節點，含父節點）；
+          欄位上顯示哪些標籤由 displayStrategy 決定，不影響值。觸發鈕的名稱是「標籤 + 目前的值」。</p>
+      </section>
+
       <!-- ============ ChptCalendar ============ -->
       <section id="chpt-calendar" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptCalendar 月曆</h2>
@@ -180,6 +223,8 @@ import {
   ChptColorPicker,
   ChptRate,
   ChptCalendar,
+  ChptTimePicker,
+  ChptTreeSelect,
   ChptCodeBlock,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
@@ -196,6 +241,11 @@ const state = reactive({
   score: 3,
   severity: 1,
   day: null,
+  shiftStart: '07:30',
+  meeting: null,
+  stamp: null,
+  dept: 'smt-a',
+  depts: ['qa', 'iqc', 'oqc'],
 })
 
 // ---- Autocomplete ----
@@ -351,6 +401,58 @@ const rateEvents = [
   { name: 'change', params: '(value: number)', desc: '同上' },
 ]
 
+// ---- TimePicker ----
+const timeSample = `<ChptTimePicker v-model="start" label="早班開始" />
+<ChptTimePicker v-model="meeting" :minute-step="15" min="08:00" max="18:00" />
+<ChptTimePicker v-model="stamp" show-seconds />`
+const timeProps = [
+  { name: 'modelValue', type: 'string | null', def: 'null', desc: "'HH:mm'（showSeconds 時 'HH:mm:ss'）" },
+  { name: 'showSeconds', type: 'boolean', def: 'false', desc: '顯示秒' },
+  { name: 'minuteStep / secondStep', type: 'number', def: '1', desc: '面板的間隔（打字不受限）' },
+  { name: 'min / max', type: 'string', def: "''", desc: '可選範圍；範圍外的選項停用、打字超出會還原' },
+  { name: 'label / placeholder / errorText', type: 'string', def: "''", desc: '文字' },
+  { name: 'clearable / disabled / fullWidth', type: 'boolean', def: 'true / false / false', desc: '狀態' },
+  { name: 'size', type: "'xs'…'xl'", def: "'sm'", desc: '尺寸' },
+]
+const timeEvents = [
+  { name: 'update:modelValue', params: '(value: string | null)', desc: '時間變更' },
+  { name: 'change', params: '(value: string | null)', desc: '同上' },
+]
+
+// ---- TreeSelect ----
+const deptTree = [
+  {
+    key: 'mfg',
+    label: '製造處',
+    children: [
+      { key: 'smt', label: 'SMT 課', children: [{ key: 'smt-a', label: 'A 班' }, { key: 'smt-b', label: 'B 班' }] },
+      { key: 'test', label: '測試課' },
+    ],
+  },
+  { key: 'qa', label: '品保處', children: [{ key: 'iqc', label: 'IQC' }, { key: 'oqc', label: 'OQC' }] },
+  { key: 'it', label: '資訊處', disabled: true },
+]
+const treeSelectSample = `<ChptTreeSelect v-model="dept" label="部門" :data="tree" filterable show-path />
+
+<!-- 多選：v-model 是勾選的 key；整組勾了只顯示父節點（displayStrategy="parent"） -->
+<ChptTreeSelect v-model="depts" :data="tree" multiple filterable />`
+const treeSelectProps = [
+  { name: 'data', type: 'TreeNode[]', def: '—', desc: '{ key, label, children?, disabled?, icon? }' },
+  { name: 'modelValue', type: 'Key | Key[] | null', def: 'null', desc: '單選是 key；multiple 時是 key 陣列' },
+  { name: 'multiple', type: 'boolean', def: 'false', desc: '多選（勾選框、父子三態）' },
+  { name: 'displayStrategy', type: "'parent' | 'child' | 'all'", def: "'parent'", desc: '多選時欄位上顯示哪些標籤' },
+  { name: 'maxTagCount', type: 'number', def: '3', desc: '欄位上最多顯示幾個標籤，其餘以 +N 表示' },
+  { name: 'showPath / separator', type: 'boolean / string', def: "false / ' / '", desc: '單選時顯示整條路徑' },
+  { name: 'filterable / filterPlaceholder', type: 'boolean / string', def: "false / '搜尋'", desc: '面板上方的搜尋框' },
+  { name: 'defaultExpandAll / panelHeight', type: 'boolean / string', def: "false / '18rem'", desc: '展開與面板高度' },
+  { name: 'label / placeholder / errorText', type: 'string', def: "'' / '請選擇'", desc: '文字' },
+  { name: 'clearable / disabled / fullWidth', type: 'boolean', def: 'false', desc: '狀態' },
+]
+const treeSelectEvents = [
+  { name: 'update:modelValue', params: '(value)', desc: '選取變更' },
+  { name: 'change', params: '(value)', desc: '同上' },
+]
+
 // ---- Calendar ----
 const pad = (n) => String(n).padStart(2, '0')
 const now = new Date()
@@ -390,6 +492,7 @@ const calendarSlots = [
 ]
 
 const importSample = `import {
-  ChptAutocomplete, ChptCascader, ChptTransfer, ChptColorPicker, ChptRate, ChptCalendar
+  ChptAutocomplete, ChptCascader, ChptTransfer, ChptColorPicker, ChptRate, ChptCalendar,
+  ChptTimePicker, ChptTreeSelect
 } from '@/components/library'`
 </script>

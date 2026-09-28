@@ -79,6 +79,8 @@ const ALLOWED_FILES = new Set([
   'src/components/library/ui/ChptDarkModeToggle.vue',
   // 深色 canvas 上的疊層 UI
   'src/components/library/viewer/GerberViewer.vue',
+  // 全螢幕看圖：黑底（照片的標準做法，兩個主題都一樣），上面的按鈕是白色系
+  'src/components/library/ui/ChptImageViewer.vue',
   'src/components/library/viewer/PcbLayout.vue',
 ])
 

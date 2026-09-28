@@ -93,6 +93,8 @@
 | `ChptTransfer` | modelValue(右側 keys), data(`{key,label,description?,disabled?}`), titles, buttonTexts, filterable, filterPlaceholder, filterMethod, targetOrder(`original/push`), listHeight, emptyText, disabled, ariaLabel | update:modelValue, change(keys, 'left'\|'right', movedKeys) | `item`（`{ item, side }`）, `footer`；ref: clearChecked, clearQuery |
 | `ChptColorPicker` | modelValue(`#rrggbb\|null`), presets, label, showText, clearable, disabled, size, fullWidth, errorText | update:modelValue, change | 面板：原生取色器 + 色碼輸入（#abc 會正規化）+ 預設色 |
 | `ChptRate` | modelValue(0 = 未評分), count, icon, texts, showText, allowClear, readonly（role=img）, disabled, size(`sm/md/lg`), color(`warning/danger/accent`), ariaLabel | update:modelValue, change | WAI-ARIA radiogroup；在 FormItem 裡以標籤命名 |
+| `ChptTimePicker` | modelValue(`'HH:mm'\|'HH:mm:ss'\|null`), showSeconds, minuteStep, secondStep, min, max, label, placeholder, clearable, disabled, size, fullWidth, errorText | update:modelValue, change | 可打字（930 → 09:30，打錯還原）；面板時/分/秒各一個 listbox；ref: open, close, focus |
+| `ChptTreeSelect` | data(`TreeNode[]`), modelValue(`Key\|Key[]\|null`), multiple, displayStrategy(`parent/child/all`), maxTagCount, showPath, separator, filterable, filterPlaceholder, defaultExpandAll, panelHeight, label, placeholder, clearable, disabled, fullWidth, errorText | update:modelValue, change | 內部是 ChptTree；觸發鈕名稱 = 標籤 + 值；ref: open, close |
 
 `ChptDatePicker` 底層是 `@vuepic/vue-datepicker`。
 
@@ -120,6 +122,7 @@
 | `ChptTooltip` | content, placement(top/bottom/left/right), theme(dark/light/info/warning/error), showArrow, maxWidth, disabled | show, hide | slot: default（觸發元素）、`content` |
 | `ChptDropdown` | items(`{key?,label,icon?,disabled?,danger?,divided?,shortcut?}`), label, icon, placement(`bottom-start/bottom-end/top-start/top-end`), size, disabled | select(item), open, close | slot: `trigger`（`{ open, toggle, attrs }`，attrs 需 v-bind）；ref: open, close |
 | `ChptPopover` | open（v-model:open）, trigger(`click/hover/focus/manual`), placement(`top*/bottom*/left/right`), title, content, width, ariaLabel, padded, openDelay, closeDelay, disabled | update:open | slot: default（觸發元素，`{ open, toggle, attrs }`；aria 會自動補上）、`title`、`content`（`{ close }`）；ref: open, close, toggle |
+| `useConfirm()` + `ChptConfirmHost` | `confirm({ title, message?, type?(info/success/warning/danger), confirmText?, cancelText?, requireText?, focus? })` → `Promise<boolean>`；`alert(...)` → `Promise<true>` | – | Host 在 App 放一次；role=alertdialog、排隊顯示、danger 預設焦點在取消、requireText 需照打才能確定 |
 
 `ChptModal` 同時提供 dialog（置中確認/表單）與 window（多視窗：拖曳/縮放/最大化/最小化）兩種模式；多視窗需搭配 `ChptModalDock`。
 
@@ -150,6 +153,9 @@
 | `ChptSteps` | steps(`{title,status:pending/process/done}`), showLabel | – | – |
 | `ChptBreadcrumb` | items(`{label,to?}`), separator | select | `item-<index>` |
 | `ChptCollapse` | items(`{title,content?}`), modelValue(`number[]`), multiple | update:modelValue | `content-<index>` |
+| `ChptMenu` | items(`{key,label?,icon?,to?,href?,target?,children?,disabled?,badge?,type?:'group'\|'divider'}`), modelValue（不綁時依路由比對 to）, openKeys（v-model:openKeys）, mode(`vertical/horizontal`), collapsed, accordion, indent, width, ariaLabel | update:modelValue, update:openKeys, select(item) | disclosure navigation（非 role=menu）；aria-current=page；ref: open(key), close(key), closeAll |
+| `ChptAnchor` | items(`{href:'#id',title,children?}`), container（預設自動偵測捲動容器）, offset, title, ariaLabel, updateHash | change(href), click(href) | scroll spy；aria-current=location；點擊後焦點移到區塊；ref: refresh |
+| `ChptBackTop` | target（預設自動偵測）, visibilityHeight, right, bottom, label | click | slot: default；回頂端後焦點移到最上面的標題 |
 
 ## 資料展示
 
@@ -158,6 +164,8 @@
 | `ChptStatistic` | title, value, precision, groupSeparator, prefix, suffix, delta, deltaSuffix, deltaPrecision, higherIsBetter（不良率等請設 false）, description, valueClass, size, loading | – | `title`, `prefix`, `suffix`, `footer` |
 | `ChptDescriptions` | items(`{key?,label,value?,span?}`), title, column, bordered, layout(`horizontal/vertical`), labelWidth, size, emptyText | – | `title`, `extra`, `value`（`{ item, index }`） |
 | `ChptTree` | data(`{key,label,children?,disabled?,icon?}`), modelValue, selectable, checkable, checked, expanded, defaultExpandAll, filterText, indent, size, ariaLabel, emptyText | update:modelValue, update:checked, update:expanded, select, check, expand | `label`, `extra`（`{ node, level }`）；ref: expandAll, collapseAll, getCheckedNodes, getHalfCheckedKeys |
+| `ChptImage` | src, alt（必填；裝飾圖傳 ''）, width, height, fit, lazy, rounded, preview, previewSrcList | load, error, preview(index) | `error`；載入中骨架、失敗顯示圖示與 alt |
+| `ChptImageViewer` | open（v-model:open）, images(`(string\|{src,alt})[]`), index（v-model:index）, loop, thumbnails, minScale, maxScale | update:open, update:index, close | 模態看圖：←→ 切換、+/−/滾輪縮放、0 重設、R 旋轉、拖曳平移；ref: zoomIn, zoomOut, reset, rotate, next, prev |
 | `ChptCalendar` | modelValue(`'YYYY-MM-DD'\|Date\|null`), month（v-model:month `'YYYY-MM'`）, firstDayOfWeek, disabledDate, compact, showToday, valueType(`string/date`) | update:modelValue, update:month, select(date, dateString) | `date-cell`（`{ date, dateString, day, isToday, isSelected, inMonth }`）, `header`；ref: goTo(date)；WAI-ARIA grid |
 | `ChptTimeline` | items(`{title?,content?,time?,datetime?,color?,hollow?,icon?,pending?,current?}`), reverse | – | `dot`, `content`（`{ item, index }`） |
 

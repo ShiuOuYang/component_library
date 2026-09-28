@@ -21,6 +21,8 @@ export {
   ChptForm, ChptFormItem, ChptUpload, ChptTree,
   ChptAutocomplete, ChptCalendar, ChptCascader, ChptColorPicker, ChptPopover, ChptRate,
   ChptTransfer,
+  ChptAnchor, ChptBackTop, ChptConfirmHost, ChptImage, ChptImageViewer, ChptMenu,
+  ChptTimePicker, ChptTreeSelect,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -39,6 +41,8 @@ export {
 
 // ===== shared =====
 export { useToast } from './shared/useToast'
+export { useConfirm } from './shared/useConfirm'
+export type { ConfirmOptions } from './shared/useConfirm'
 export { useDarkMode, initDarkMode, THEME_STORAGE_KEY } from './shared/useDarkMode'
 export { useModalManager, generateModalId } from './shared/useModalManager'
 export { useOptionalRouter } from './shared/useOptionalRouter'
@@ -51,3 +55,6 @@ export type { TreeNode } from './ui/ChptTree.vue'
 export type { AutocompleteSuggestion } from './ui/ChptAutocomplete.vue'
 export type { CascaderOption } from './ui/ChptCascader.vue'
 export type { TransferItem } from './ui/ChptTransfer.vue'
+export type { MenuItem } from './ui/chptMenuContext'
+export type { AnchorItem } from './ui/ChptAnchor.vue'
+export type { ViewerImage } from './ui/ChptImageViewer.vue'

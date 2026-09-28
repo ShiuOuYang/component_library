@@ -3,20 +3,26 @@
     class="inline-flex items-center gap-2"
     :class="props.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'"
   >
+    <!--
+      唯一的互動元素是這個原生 checkbox（role="switch"）：點標籤、點軌道、按 Space 都只經過它的 change 一次。
+      ⚠️ 原本軌道上另外綁了 @click="toggle"：checkbox 的 click 會冒泡到軌道，
+         於是點標籤或按 Space 都切換兩次 = 沒反應，鍵盤使用者完全無法操作開關。
+    -->
+    <input
+      type="checkbox"
+      role="switch"
+      :checked="props.modelValue"
+      :aria-checked="props.modelValue"
+      :disabled="props.disabled"
+      :aria-label="props.label ? undefined : props.ariaLabel || undefined"
+      class="peer sr-only"
+      @change="toggle"
+    />
     <span
-      class="relative inline-flex items-center rounded-full transition-colors duration-200 flex-shrink-0"
-
-      :class="[trackSizeClass, props.modelValue ? onColorClass : 'bg-neutral-300']"
-      @click="toggle"
+      class="relative inline-flex items-center rounded-full transition-colors duration-200 flex-shrink-0 peer-focus-visible:ring-2 peer-focus-visible:ring-stroke-focus peer-focus-visible:ring-offset-2"
+      :class="[trackSizeClass, props.modelValue ? onColorClass : 'bg-stroke-medium']"
+      aria-hidden="true"
     >
-      <input
-        type="checkbox"
-        :checked="props.modelValue"
-        :disabled="props.disabled"
-        class="absolute opacity-0 w-0 h-0"
-        :aria-label="props.label"
-        @change="toggle"
-      />
       <span
         class="inline-block rounded-full bg-surface-primary shadow transform transition-transform duration-200 pointer-events-none"
         :class="[knobSizeClass, props.modelValue ? knobOnTranslateClass : 'translate-x-0.5']"
@@ -58,6 +64,8 @@ interface ChptSwitchProps {
   color?: ColorVariant
   /** 是否禁用 */
   disabled?: boolean
+  /** 沒有 label 時的無障礙名稱 */
+  ariaLabel?: string
 }
 
 const props = withDefaults(defineProps<ChptSwitchProps>(), {
@@ -66,6 +74,7 @@ const props = withDefaults(defineProps<ChptSwitchProps>(), {
   size: 'md',
   color: 'primary',
   disabled: false,
+  ariaLabel: '',
 })
 
 const emit = defineEmits<{
