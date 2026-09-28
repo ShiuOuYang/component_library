@@ -1,18 +1,18 @@
 ﻿<template>
-  <div class="min-h-screen bg-neutral-50 p-8">
+  <div class="min-h-screen bg-surface-secondary p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-neutral-900 mb-2">EnterpriseHeatmap 熱力圖</h1>
-        <p class="text-lg text-neutral-600">
+        <h1 class="text-4xl font-bold text-content-primary mb-2">EnterpriseHeatmap 熱力圖</h1>
+        <p class="text-lg text-content-secondary">
           D3 企業級熱力圖：自訂色階、Brush 縮放、cell/row/column 高亮與 Tooltip。
-          請由 <code class="bg-neutral-100 px-1.5 py-0.5 rounded text-sm">@/components/library/charts</code> 匯入。
+          請由 <code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">@/components/library/charts</code> 匯入。
         </p>
       </div>
 
       <!-- 基本示範 -->
-      <section class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-neutral-800 mb-2">基本示範</h2>
-        <p class="text-sm text-neutral-600 mb-4">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">基本示範</h2>
+        <p class="text-sm text-content-secondary mb-4">
           data 為 <code>{ x, y, value }</code> 陣列；開啟 showCellValues 顯示數值，enableBrush 可框選縮放。
         </p>
         <EnterpriseHeatmap
@@ -35,9 +35,9 @@
       </section>
 
       <!-- 自訂色階 / 高亮 -->
-      <section class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-neutral-800 mb-2">自訂色階與高亮模式</h2>
-        <p class="text-sm text-neutral-600 mb-4">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">自訂色階與高亮模式</h2>
+        <p class="text-sm text-content-secondary mb-4">
           colorRange 可指定 [起, 中, 終] 自訂色；highlightMode 支援 cell / row / column / both。
         </p>
         <EnterpriseHeatmap
@@ -56,11 +56,11 @@
       </section>
 
       <!-- Props -->
-      <section class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-neutral-800 mb-4">常用 Props</h2>
+      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-content-primary mb-4">常用 Props</h2>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-neutral-100">
+            <thead class="bg-surface-tertiary">
               <tr>
                 <th class="px-4 py-2 text-left font-semibold">屬性</th>
                 <th class="px-4 py-2 text-left font-semibold">型別/預設</th>
@@ -70,8 +70,8 @@
             <tbody class="divide-y">
               <tr v-for="p in propsList" :key="p.name">
                 <td class="px-4 py-3 font-mono text-xs">{{ p.name }}</td>
-                <td class="px-4 py-3 font-mono text-xs text-neutral-600">{{ p.def }}</td>
-                <td class="px-4 py-3 text-neutral-700">{{ p.desc }}</td>
+                <td class="px-4 py-3 font-mono text-xs text-content-secondary">{{ p.def }}</td>
+                <td class="px-4 py-3 text-content-primary">{{ p.desc }}</td>
               </tr>
             </tbody>
           </table>

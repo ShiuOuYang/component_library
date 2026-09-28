@@ -1,22 +1,22 @@
 ﻿<template>
-  <div class="min-h-screen bg-neutral-50 p-8">
+  <div class="min-h-screen bg-surface-secondary p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-neutral-900 mb-2">DualAxisComboChart 雙軸組合圖</h1>
-        <p class="text-lg text-neutral-600">
+        <h1 class="text-4xl font-bold text-content-primary mb-2">DualAxisComboChart 雙軸組合圖</h1>
+        <p class="text-lg text-content-secondary">
           D3 圖表：支援長條／堆疊／折線混合、左右雙 Y 軸、Brush 縮放與 Tooltip。
-          請由 <code class="bg-neutral-100 px-1.5 py-0.5 rounded text-sm">@/components/library/charts</code> 匯入。
+          請由 <code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">@/components/library/charts</code> 匯入。
         </p>
       </div>
 
       <!-- 基本示範 -->
-      <section id="basic" class="bg-white rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
-        <h2 class="text-2xl font-semibold text-neutral-800 mb-2">基本示範</h2>
-        <p class="text-sm text-neutral-600 mb-4">
+      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">基本示範</h2>
+        <p class="text-sm text-content-secondary mb-4">
           layers 陣列定義多個圖層；每個圖層可為 stacked-bar / line，指定左（left）或右（right）軸。
         </p>
         <div class="grid lg:grid-cols-2 gap-6">
-          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
+          <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
             <DualAxisComboChart
               :width="560"
               :height="400"
@@ -26,16 +26,16 @@
               :enable-brush="true"
             />
           </div>
-          <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
+          <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
             <ChptCodeBlock :code="demoCode" />
           </div>
         </div>
       </section>
 
       <!-- 進階範例 -->
-      <section id="examples" class="bg-white rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
-        <h2 class="text-2xl font-semibold text-neutral-800 mb-2">進階範例</h2>
-        <p class="text-sm text-neutral-600 mb-4">SalesReport／ProductionMonitor／ControlChart／TimeSeries／ScatterPlot／ResponsiveDashboard／FacetedChart 等組合示範。</p>
+      <section id="examples" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">進階範例</h2>
+        <p class="text-sm text-content-secondary mb-4">SalesReport／ProductionMonitor／ControlChart／TimeSeries／ScatterPlot／ResponsiveDashboard／FacetedChart 等組合示範。</p>
         <SalesReportExample />
         <ProductionMonitorExample />
         <ControlChartExample />

@@ -1,17 +1,17 @@
 <template>
-  <div class="min-h-screen bg-neutral-50 p-8">
+  <div class="min-h-screen bg-surface-secondary p-8">
     <div class="max-w-6xl mx-auto">
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-neutral-900 mb-2">EnterprisePareto 柏拉圖</h1>
-        <p class="text-lg text-neutral-600">
+        <h1 class="text-4xl font-bold text-content-primary mb-2">EnterprisePareto 柏拉圖</h1>
+        <p class="text-lg text-content-secondary">
           長條圖＋累積百分比折線，自動降冪排序、支援 80/20 參考線與「其他」閾值收斂。
-          請由 <code class="bg-neutral-100 px-1.5 py-0.5 rounded text-sm">@/components/library/charts</code> 匯入。
+          請由 <code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">@/components/library/charts</code> 匯入。
         </p>
       </div>
 
-      <section class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-neutral-800 mb-2">基本示範</h2>
-        <p class="text-sm text-neutral-600 mb-4">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">基本示範</h2>
+        <p class="text-sm text-content-secondary mb-4">
           data 為 <code>{ category, value }</code>；autoSort 降冪、顯示累積曲線與 80% 參考線。
         </p>
         <EnterprisePareto
@@ -34,11 +34,11 @@
         </div>
       </section>
 
-      <section class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-neutral-800 mb-2">常用 Props</h2>
+      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">常用 Props</h2>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-neutral-100">
+            <thead class="bg-surface-tertiary">
               <tr>
                 <th class="px-4 py-2 text-left font-semibold">屬性</th>
                 <th class="px-4 py-2 text-left font-semibold">型別/預設</th>
@@ -48,8 +48,8 @@
             <tbody class="divide-y">
               <tr v-for="p in propsList" :key="p.name">
                 <td class="px-4 py-3 font-mono text-xs">{{ p.name }}</td>
-                <td class="px-4 py-3 font-mono text-xs text-neutral-600">{{ p.def }}</td>
-                <td class="px-4 py-3 text-neutral-700">{{ p.desc }}</td>
+                <td class="px-4 py-3 font-mono text-xs text-content-secondary">{{ p.def }}</td>
+                <td class="px-4 py-3 text-content-primary">{{ p.desc }}</td>
               </tr>
             </tbody>
           </table>

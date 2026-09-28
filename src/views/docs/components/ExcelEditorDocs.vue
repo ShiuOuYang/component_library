@@ -3,23 +3,23 @@
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
         <span class="text-3xl">📑</span>
-        <h1 class="text-4xl font-bold text-neutral-900">Excel 編輯器</h1>
+        <h1 class="text-4xl font-bold text-content-primary">Excel 編輯器</h1>
       </div>
-      <p class="text-neutral-600 text-lg max-w-4xl">
+      <p class="text-content-secondary text-lg max-w-4xl">
         ChptExcelEditor — 仿原生 Excel 的試算表元件：多工作表、就地編輯、公式引擎、
         格式化、合併儲存格、複製貼上、復原重做，並可匯出 <code>.xlsx</code>。
       </p>
     </div>
 
     <!-- ============ 主要示範 ============ -->
-    <section id="excel-demo" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">完整試算表示範</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="excel-demo" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">完整試算表示範</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>需要在網頁內直接編輯表格資料（如報表填寫、資料匯入前檢核）。
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptExcelEditor } from '@/components/library/excel'</code>
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptExcelEditor } from '@/components/library/excel'</code>
       </p>
 
-      <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200 mb-4">
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light mb-4">
         <ChptExcelEditor
           ref="editorRef"
           default-filename="銷售報表"
@@ -36,46 +36,46 @@
       <ApiTable title="Events" :rows="editorEvents" />
       <ApiTable title="Expose（ref）" :rows="editorExpose" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>範例提供工具列與工作表頁籤；資料可經 <code>v-model</code> 或
         <code>ref.getData()</code> 取得，匯出功能直接輸出 <code>.xlsx</code> 檔。
       </p>
     </section>
 
     <!-- ============ 功能特色 ============ -->
-    <section id="excel-features" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">功能特色</h2>
+    <section id="excel-features" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">功能特色</h2>
       <div class="grid md:grid-cols-2 gap-4 text-sm">
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">📑 多工作表</p>
-          <p class="text-xs text-neutral-600">可新增／重新命名／刪除工作表，底部頁籤切換。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">📑 多工作表</p>
+          <p class="text-xs text-content-secondary">可新增／重新命名／刪除工作表，底部頁籤切換。</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">🧮 公式引擎與提示</p>
-          <p class="text-xs text-neutral-600">
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">🧮 公式引擎與提示</p>
+          <p class="text-xs text-content-secondary">
             <code>SUM</code>／<code>AVERAGE</code>／<code>MIN</code>／<code>MAX</code>／<code>COUNT</code>／<code>IF</code>。
             輸入 <code>=</code> 自動完成函式、<code>(</code> 後顯示<strong>參數提示</strong>，或點「fx」開啟函式面板。
           </p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">🎨 格式化工具列</p>
-          <p class="text-xs text-neutral-600">粗體／斜體／底線、對齊、插入／刪除列欄、合併儲存格、排序。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">🎨 格式化工具列</p>
+          <p class="text-xs text-content-secondary">粗體／斜體／底線、對齊、插入／刪除列欄、合併儲存格、排序。</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">⌨️ 鍵盤捷徑</p>
-          <p class="text-xs text-neutral-600">方向鍵移動、Enter／Tab、<code>F2</code> 編輯、<code>Delete</code> 清除、<code>Ctrl+Z/Y/C/X/V/B/I/U</code>。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">⌨️ 鍵盤捷徑</p>
+          <p class="text-xs text-content-secondary">方向鍵移動、Enter／Tab、<code>F2</code> 編輯、<code>Delete</code> 清除、<code>Ctrl+Z/Y/C/X/V/B/I/U</code>。</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">🖱️ 範圍選取／拖曳多選</p>
-          <p class="text-xs text-neutral-600">拖曳多選矩形範圍；拖曳右下角綠色把手可向下／向右填滿；點擊列／欄標題選取整列欄。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">🖱️ 範圍選取／拖曳多選</p>
+          <p class="text-xs text-content-secondary">拖曳多選矩形範圍；拖曳右下角綠色把手可向下／向右填滿；點擊列／欄標題選取整列欄。</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">📋 複製選取範圍</p>
-          <p class="text-xs text-neutral-600">複製單格後多選貼上會自動<strong>填滿整個範圍</strong>；同時寫入<strong>系統剪貼簿</strong>（TSV＋HTML），可貼到 Excel／Word，也支援 <code>Ctrl+V</code> 貼入。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">📋 複製選取範圍</p>
+          <p class="text-xs text-content-secondary">複製單格後多選貼上會自動<strong>填滿整個範圍</strong>；同時寫入<strong>系統剪貼簿</strong>（TSV＋HTML），可貼到 Excel／Word，也支援 <code>Ctrl+V</code> 貼入。</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">📤 匯出 .xlsx</p>
-          <p class="text-xs text-neutral-600">保留樣式、合併儲存格、欄寬，多工作表一次匯出。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">📤 匯出 .xlsx</p>
+          <p class="text-xs text-content-secondary">保留樣式、合併儲存格、欄寬，多工作表一次匯出。</p>
         </div>
       </div>
     </section>

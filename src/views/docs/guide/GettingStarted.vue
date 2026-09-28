@@ -3,23 +3,23 @@
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
         <span class="text-3xl">🚀</span>
-        <h1 class="text-4xl font-bold text-neutral-900">快速開始</h1>
+        <h1 class="text-4xl font-bold text-content-primary">快速開始</h1>
       </div>
-      <p class="text-neutral-600 text-lg max-w-4xl">
+      <p class="text-content-secondary text-lg max-w-4xl">
         安裝、引入、以及使用端需要提供的前置條件。
       </p>
     </div>
 
     <!-- ============ 安裝 ============ -->
-    <section id="install" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-4">安裝與啟動</h2>
+    <section id="install" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-4">安裝與啟動</h2>
 
       <ChptCodeBlock language="bash" :code="installCode" />
 
-      <p class="text-sm text-neutral-600 mt-4">
-        請用 <code class="bg-neutral-100 px-1 py-0.5 rounded">npm ci</code> 而不是
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">npm install</code>：後者會忽略
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">package-lock.json</code> 的鎖定版本並可能改寫它，
+      <p class="text-sm text-content-secondary mt-4">
+        請用 <code class="bg-surface-tertiary px-1 py-0.5 rounded">npm ci</code> 而不是
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">npm install</code>：後者會忽略
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">package-lock.json</code> 的鎖定版本並可能改寫它，
         讓建置不可重現。
       </p>
 
@@ -30,56 +30,56 @@
     </section>
 
     <!-- ============ 引入元件 ============ -->
-    <section id="import" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">引入元件</h2>
-      <p class="text-sm text-neutral-600 mb-4">
-        正式入口是 <code class="bg-neutral-100 px-1 py-0.5 rounded">@/components/library</code>。
-        舊程式若使用 <code class="bg-neutral-100 px-1 py-0.5 rounded">@/components/common</code> 仍可運作（相容 facade），
+    <section id="import" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">引入元件</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        正式入口是 <code class="bg-surface-tertiary px-1 py-0.5 rounded">@/components/library</code>。
+        舊程式若使用 <code class="bg-surface-tertiary px-1 py-0.5 rounded">@/components/common</code> 仍可運作（相容 facade），
         但新程式請改用正式入口。
       </p>
 
       <ChptCodeBlock language="vue" :code="importCode" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         圖表、檢視器、Excel 元件較重，可依群別引入以利 code splitting：
       </p>
       <ChptCodeBlock language="ts" :code="groupImportCode" />
     </section>
 
     <!-- ============ 前置條件 ============ -->
-    <section id="prerequisites" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">使用端要提供什麼</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="prerequisites" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">使用端要提供什麼</h2>
+      <p class="text-sm text-content-secondary mb-4">
         組件庫刻意不在自己內部處理這些事，因為它們屬於應用程式層的設定。
       </p>
 
       <ApiTable title="前置條件" :rows="prerequisites" />
 
-      <p class="text-sm text-neutral-600 mt-5 mb-2">
+      <p class="text-sm text-content-secondary mt-5 mb-2">
         <strong>應用程式進入點的最小設定：</strong>
       </p>
       <ChptCodeBlock language="js" :code="mainCode" />
 
-      <p class="text-sm text-neutral-600 mt-4 mb-2">
+      <p class="text-sm text-content-secondary mt-4 mb-2">
         <strong>根元件需要掛載的全域容器：</strong>
       </p>
       <ChptCodeBlock language="vue" :code="appCode" />
     </section>
 
     <!-- ============ 第一個範例 ============ -->
-    <section id="first-example" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">第一個範例</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="first-example" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">第一個範例</h2>
+      <p class="text-sm text-content-secondary mb-4">
         以下是一個可以直接跑的表單 + 提示範例。
       </p>
 
-      <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200 mb-4">
+      <div class="bg-surface-secondary rounded-lg p-6 border border-stroke-light mb-4">
         <div class="flex flex-wrap items-end gap-3">
           <ChptInput v-model="demoName" label="名稱" placeholder="請輸入名稱" />
           <ChptSelect v-model="demoRole" label="角色" :options="roleOptions" />
           <ChptButton color="primary" label="儲存" @click="handleSave" />
         </div>
-        <p class="text-xs text-neutral-500 mt-3">
+        <p class="text-xs text-content-tertiary mt-3">
           目前值：{{ demoName || '（空）' }} / {{ demoRole || '（未選）' }}
         </p>
       </div>
@@ -88,17 +88,17 @@
     </section>
 
     <!-- ============ 下一步 ============ -->
-    <section id="next-steps" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-4">下一步</h2>
+    <section id="next-steps" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-4">下一步</h2>
       <div class="grid md:grid-cols-2 gap-4">
         <RouterLink
           v-for="link in nextSteps"
           :key="link.to"
           :to="link.to"
-          class="block p-5 rounded-lg border border-neutral-200 hover:border-primary-400 hover:bg-primary-50 transition-colors"
+          class="block p-5 rounded-lg border border-stroke-light hover:border-primary-400 hover:bg-accent-subtle transition-colors"
         >
-          <p class="font-semibold text-neutral-800 mb-1">{{ link.icon }} {{ link.title }}</p>
-          <p class="text-xs text-neutral-600">{{ link.description }}</p>
+          <p class="font-semibold text-content-primary mb-1">{{ link.icon }} {{ link.title }}</p>
+          <p class="text-xs text-content-secondary">{{ link.description }}</p>
         </RouterLink>
       </div>
     </section>

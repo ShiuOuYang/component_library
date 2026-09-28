@@ -1,11 +1,11 @@
 ﻿<template>
-  <div class="flex h-screen bg-neutral-50">
+  <div class="flex h-screen bg-surface-secondary">
     <!-- 左側導覽列 (Sidebar) -->
     <aside
-      class="bg-white border-r border-neutral-200 flex flex-col flex-shrink-0 transition-all duration-300"
+      class="bg-surface-primary border-r border-stroke-light flex flex-col flex-shrink-0 transition-all duration-300"
       :class="isSidebarCollapsed ? 'w-16' : 'w-72'"
     >
-      <div class="sticky top-0 bg-white z-10 border-b border-neutral-200">
+      <div class="sticky top-0 bg-surface-primary z-10 border-b border-stroke-light">
         <!-- 展開狀態的標題 -->
         <div v-if="!isSidebarCollapsed" class="p-6 flex items-center justify-between">
           <router-link to="/docs" class="flex items-center space-x-3 group">
@@ -13,15 +13,15 @@
               <span class="text-white text-xl">🧩</span>
             </div>
             <div>
-              <h1 class="text-lg font-bold text-neutral-900 leading-tight group-hover:text-primary-600 transition-colors">
+              <h1 class="text-lg font-bold text-content-primary leading-tight group-hover:text-accent transition-colors">
                 組件庫文檔
               </h1>
-              <p class="text-xs text-neutral-500">Vue 3 企業級組件</p>
+              <p class="text-xs text-content-tertiary">Vue 3 企業級組件</p>
             </div>
           </router-link>
           <button type="button"
             @click="toggleSidebar"
-            class="p-2 text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors"
+            class="p-2 text-content-disabled hover:text-content-primary hover:bg-surface-tertiary rounded-lg transition-colors"
             title="收合側邊欄"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,8 +49,8 @@
         <!-- 各分類導覽項目（資料驅動） -->
         <template v-for="section in navSections" :key="section.title">
           <div class="mt-6 mb-2 flex items-center gap-2">
-            <h3 class="px-3 text-xs font-semibold text-neutral-400 uppercase tracking-wider">{{ section.title }}</h3>
-            <div class="flex-1 h-px bg-neutral-100"></div>
+            <h3 class="px-3 text-xs font-semibold text-content-disabled uppercase tracking-wider">{{ section.title }}</h3>
+            <div class="flex-1 h-px bg-surface-tertiary"></div>
           </div>
 
           <!-- 一般連結 -->
@@ -78,7 +78,7 @@
               </router-link>
               <button
                 type="button"
-                class="flex items-center justify-center w-6 h-6 mr-1 rounded-md text-neutral-400 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200"
+                class="flex items-center justify-center w-6 h-6 mr-1 rounded-md text-content-disabled hover:text-accent-on-subtle hover:bg-accent-subtle transition-all duration-200"
                 :title="expanded[item.to] ? '收合' : '展開元件'"
                 @click="toggleGroup(item.to)"
               >
@@ -92,15 +92,15 @@
               </button>
             </div>
 
-            <div v-if="expanded[item.to]" class="ml-5 pl-2 border-l border-neutral-200 space-y-0.5 mt-0.5">
+            <div v-if="expanded[item.to]" class="ml-5 pl-2 border-l border-stroke-light space-y-0.5 mt-0.5">
               <button
                 v-for="a in item.anchors"
                 :key="a.id"
                 type="button"
                 class="block w-full text-left px-3 py-1.5 rounded-md text-xs font-medium transition-colors"
                 :class="activeAnchor === a.id
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800'"
+                  ? 'bg-accent-subtle text-accent-on-subtle'
+                  : 'text-content-tertiary hover:bg-surface-tertiary hover:text-content-primary'"
                 @click="jump(item, a.id)"
               >
                 {{ a.label }}
@@ -114,20 +114,20 @@
       <nav v-if="isSidebarCollapsed" class="flex-1 overflow-y-auto px-2 py-3 space-y-2 flex flex-col items-center">
         <button type="button"
           @click="toggleSidebar"
-          class="p-2 text-neutral-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+          class="p-2 text-content-disabled hover:text-accent-on-subtle hover:bg-accent-subtle rounded-lg transition-colors"
           title="展開側邊欄"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
           </svg>
         </button>
-        <div class="w-8 h-px bg-neutral-200"></div>
+        <div class="w-8 h-px bg-surface-muted"></div>
         <router-link
           v-for="shortcut in collapsedShortcuts"
           :key="shortcut.to"
           :to="shortcut.to"
-          class="p-2 hover:bg-primary-50 hover:text-primary-600 rounded-lg transition-colors"
-          :class="{ 'bg-primary-50 text-primary-600': isActiveRoute(shortcut.to) }"
+          class="p-2 hover:bg-accent-subtle hover:text-accent-on-subtle rounded-lg transition-colors"
+          :class="{ 'bg-accent-subtle text-accent-on-subtle': isActiveRoute(shortcut.to) }"
           :title="shortcut.title"
         >
           <span class="text-xl">{{ shortcut.icon }}</span>
@@ -135,20 +135,20 @@
       </nav>
 
       <!-- 底部版本資訊 -->
-      <div v-if="!isSidebarCollapsed" class="mt-auto border-t border-neutral-200 bg-white">
+      <div v-if="!isSidebarCollapsed" class="mt-auto border-t border-stroke-light bg-surface-primary">
         <div class="px-6 py-4">
           <div class="flex items-center gap-2 mb-3">
             <span class="w-2 h-2 rounded-full bg-success-500"></span>
-            <span class="text-xs font-medium text-neutral-600">文件系統</span>
+            <span class="text-xs font-medium text-content-secondary">文件系統</span>
           </div>
-          <div class="text-xs text-neutral-500 space-y-1.5">
+          <div class="text-xs text-content-tertiary space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-neutral-400">版本</span>
-              <span class="font-mono font-semibold text-neutral-700">v1.0.0</span>
+              <span class="text-content-disabled">版本</span>
+              <span class="font-mono font-semibold text-content-primary">v1.0.0</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-neutral-400">更新日期</span>
-              <span class="font-mono text-neutral-600">2026-09-06</span>
+              <span class="text-content-disabled">更新日期</span>
+              <span class="font-mono text-content-secondary">2026-09-06</span>
             </div>
           </div>
         </div>
@@ -220,6 +220,9 @@ const navSections = [
           { label: 'ChptRadio', id: 'chpt-radio' },
           { label: 'ChptSwitch', id: 'chpt-switch' },
           { label: 'ChptDatePicker', id: 'chpt-datepicker' },
+          { label: 'ChptInputNumber', id: 'chpt-inputnumber' },
+          { label: 'ChptSlider', id: 'chpt-slider' },
+          { label: 'ChptSegmented', id: 'chpt-segmented' },
         ],
       },
       {
@@ -233,6 +236,14 @@ const navSections = [
         ],
       },
       {
+        to: '/docs/components/data-display', icon: '🗂️', label: '資料展示元件',
+        anchors: [
+          { label: 'ChptStatistic', id: 'chpt-statistic' },
+          { label: 'ChptDescriptions', id: 'chpt-descriptions' },
+          { label: 'ChptTimeline', id: 'chpt-timeline' },
+        ],
+      },
+      {
         to: '/docs/components/feedback', icon: '🛎️', label: '反饋元件',
         anchors: [
           { label: 'ChptAlert', id: 'chpt-alert' },
@@ -243,6 +254,7 @@ const navSections = [
           { label: 'ChptSpinner', id: 'chpt-spinner' },
           { label: 'ChptEmpty', id: 'chpt-empty' },
           { label: 'ChptSkeleton', id: 'chpt-skeleton' },
+          { label: 'ChptResult', id: 'chpt-result' },
         ],
       },
       {
@@ -261,6 +273,7 @@ const navSections = [
           { label: 'ChptModal', id: 'chpt-modal' },
           { label: 'ChptDrawer', id: 'chpt-drawer' },
           { label: 'ChptPopconfirm', id: 'chpt-popconfirm' },
+          { label: 'ChptDropdown', id: 'chpt-dropdown' },
           { label: 'ChptModalDock', id: 'chpt-modaldock' },
         ],
       },
@@ -335,6 +348,7 @@ const collapsedShortcuts = [
   { to: '/docs', icon: '🏠', title: '首頁' },
   { to: '/docs/components/form-atoms', icon: '🧩', title: '基礎表單' },
   { to: '/docs/components/data-filter', icon: '📊', title: '資料呈現與過濾' },
+  { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示' },
   { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件' },
   { to: '/docs/components/overlay', icon: '🗔', title: '浮層元件' },
   { to: '/docs/components/dual-axis-chart', icon: '📈', title: '圖表' },
@@ -361,15 +375,15 @@ watch(
 <style scoped>
 /* 導覽項目基礎樣式 */
 .nav-item {
-  @apply relative flex items-center px-3 py-2.5 text-sm font-medium text-neutral-700 rounded-lg transition-all duration-150;
-  @apply hover:bg-primary-50 hover:text-primary-700;
+  @apply relative flex items-center px-3 py-2.5 text-sm font-medium text-content-primary rounded-lg transition-all duration-150;
+  @apply hover:bg-accent-subtle hover:text-accent-on-subtle;
 }
 .nav-item::before {
   content: '';
   @apply absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-transparent rounded-r transition-all duration-150;
 }
 .nav-item-active {
-  @apply bg-primary-50 text-primary-700 font-semibold;
+  @apply bg-accent-subtle text-accent-on-subtle font-semibold;
 }
 .nav-item-active::before {
   @apply bg-primary-600 h-6;
@@ -385,21 +399,22 @@ watch(
 }
 
 /* 滾動條 */
+/* 用主題變數：原本寫死淺灰，深色模式下側欄與內容區各有一條白色捲軸 */
 nav {
   scrollbar-width: thin;
-  scrollbar-color: #d4d4d4 #f5f5f5;
+  scrollbar-color: rgb(var(--t-stroke-default)) rgb(var(--t-surface-tertiary));
 }
 nav::-webkit-scrollbar { width: 6px; }
-nav::-webkit-scrollbar-track { background: #f5f5f5; }
-nav::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 3px; }
-nav::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
+nav::-webkit-scrollbar-track { background: rgb(var(--t-surface-tertiary)); }
+nav::-webkit-scrollbar-thumb { background: rgb(var(--t-stroke-default)); border-radius: 3px; }
+nav::-webkit-scrollbar-thumb:hover { background: rgb(var(--t-stroke-medium)); }
 
 main {
   scrollbar-width: thin;
-  scrollbar-color: #d4d4d4 #fafafa;
+  scrollbar-color: rgb(var(--t-stroke-default)) rgb(var(--t-surface-secondary));
 }
 main::-webkit-scrollbar { width: 8px; }
-main::-webkit-scrollbar-track { background: #fafafa; }
-main::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 4px; }
-main::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
+main::-webkit-scrollbar-track { background: rgb(var(--t-surface-secondary)); }
+main::-webkit-scrollbar-thumb { background: rgb(var(--t-stroke-default)); border-radius: 4px; }
+main::-webkit-scrollbar-thumb:hover { background: rgb(var(--t-stroke-medium)); }
 </style>

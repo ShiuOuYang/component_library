@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   adjustFormulaForChange,
   adjustIndex,
-  hasRefError,
   mapRefs,
   shiftFormula,
-  stripAbsolute,
 } from '@/components/library/excel/formula/refRewrite'
 
 /**
@@ -140,16 +138,5 @@ describe('adjustFormulaForChange：刪除列欄', () => {
 
   it('整個範圍被刪掉變成 #REF!', () => {
     expect(adjustFormulaForChange('SUM(A3:A4)', { axis: 'row', at: 2, count: -5 })).toBe('SUM(#REF!)')
-  })
-})
-
-describe('stripAbsolute / hasRefError', () => {
-  it('去掉參照中的 $，但不動字串常值', () => {
-    expect(stripAbsolute('$A$1+B$2&"$5"')).toBe('A1+B2&"$5"')
-  })
-
-  it('偵測字串常值以外的 #REF!', () => {
-    expect(hasRefError('#REF!+A1')).toBe(true)
-    expect(hasRefError('"#REF!"&A1')).toBe(false)
   })
 })

@@ -3,23 +3,23 @@
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
         <span class="text-3xl">📋</span>
-        <h1 class="text-4xl font-bold text-neutral-900">ChptTable 表格文件</h1>
+        <h1 class="text-4xl font-bold text-content-primary">ChptTable 表格文件</h1>
       </div>
-      <p class="text-neutral-600 text-lg max-w-4xl">
+      <p class="text-content-secondary text-lg max-w-4xl">
         ChptTable（搜尋＋排序＋分頁）、ChptFixedTable（固定欄位＋欄位篩選＋#td-* 自訂）、
-        ChptPagination（分頁）。進階整合細節另見 <router-link to="/docs/components/data-filter" class="text-primary-600 underline">資料呈現與過濾</router-link>。
+        ChptPagination（分頁）。進階整合細節另見 <router-link to="/docs/components/data-filter" class="text-accent underline">資料呈現與過濾</router-link>。
       </p>
     </div>
 
     <!-- ============ ChptTable ============ -->
-    <section id="chpt-table" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptTable 通用表格</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-table" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTable 通用表格</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>輕量到中量資料的列表呈現；內建全文搜尋、點表頭排序、分頁，
         透過 <code>columns</code> 的 <code>sortable</code>／<code>sortType</code> 即可啟用排序。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptTable } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptTable } from '@/components/library'</code>
       </p>
 
       <ChptTable
@@ -37,21 +37,21 @@
       <ApiTable title="Props" :rows="tableProps" />
       <ApiTable title="Events" :rows="tableEvents" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>搜尋與排序皆於元件內部即時處理（<code>data</code> 為全量資料）；
         需要「伺服器端」過濾時可改用 <code>@search</code>／<code>@sort</code> 事件自行向 API 查詢。
       </p>
     </section>
 
     <!-- ============ ChptFixedTable ============ -->
-    <section id="chpt-fixedtable" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptFixedTable 固定欄位表格</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-fixedtable" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFixedTable 固定欄位表格</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>欄位很多的資料明細；可固定表頭（<code>is-fixed</code>）與指定欄位（<code>is-keep</code>）、
         逐欄篩選（<code>is-filter</code>），並以 <code>#td-{dataIndex}</code> 前綴插槽自訂每個 cell。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptFixedTable } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptFixedTable } from '@/components/library'</code>
       </p>
 
       <ChptFixedTable
@@ -80,25 +80,25 @@
       <ApiTable title="Events" :rows="fixedTableEvents" />
       <ApiTable title="Slots" :rows="fixedTableSlots" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>#td-{dataIndex}</code> 插槽作用域提供 <code>row</code>／<code>value</code>；
         此頁以 <code>#td-status</code>、<code>#td-progress</code> 將狀態與進度換成 ChptTag／ChptProgress。
       </p>
     </section>
 
     <!-- ============ ChptPagination ============ -->
-    <section id="chpt-pagination" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptPagination 分頁</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-pagination" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptPagination 分頁</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>非表格場景（如卡片列表、報表清單）的獨立分頁；
         full／compact 兩種樣式，支援每頁筆數切換與總數摘要。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptPagination } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptPagination } from '@/components/library'</code>
       </p>
 
       <div class="flex items-center gap-4 flex-wrap">
-        <span class="text-sm text-neutral-600 whitespace-nowrap">共 {{ totalItems }} 筆</span>
+        <span class="text-sm text-content-secondary whitespace-nowrap">共 {{ totalItems }} 筆</span>
         <ChptPagination
           v-model:current-page="page"
           v-model:items-per-page="pageSize"
@@ -116,7 +116,7 @@
       <ApiTable title="Props" :rows="paginationProps" />
       <ApiTable title="Events" :rows="paginationEvents" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>表格內建的分頁列即使用此元件；獨立使用時記得把目前頁碼／每頁筆數以 v-model 同步回自己的查詢邏輯。
       </p>
     </section>

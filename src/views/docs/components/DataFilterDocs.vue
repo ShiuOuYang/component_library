@@ -3,23 +3,23 @@
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
         <span class="text-3xl">📊</span>
-        <h1 class="text-4xl font-bold text-neutral-900">資料呈現與過濾</h1>
+        <h1 class="text-4xl font-bold text-content-primary">資料呈現與過濾</h1>
       </div>
-      <p class="text-neutral-600 text-lg max-w-4xl">
+      <p class="text-content-secondary text-lg max-w-4xl">
         ChptTable（通用表格）、ChptFixedTable（固定欄位表格）、ChptPagination（分頁）、
         ChptFilter（過濾選擇）、ChptFilterBar（多欄位過濾橫列）。每個元件都附「Props / Events / Slots」與注意事項。
       </p>
     </div>
 
     <!-- ============ ChptTable ============ -->
-    <section id="chpt-table" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptTable 通用表格</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-table" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTable 通用表格</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>以 <code>columns</code>＋<code>data</code> 驅動的中型資料表格；
         內建全文搜尋、欄位排序（可多欄）與分頁控制。適合報表／列表的快速呈現。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptTable } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptTable } from '@/components/library'</code>
       </p>
 
       <ChptTable
@@ -37,22 +37,23 @@
 
       <ApiTable title="Props" :rows="tableProps" />
       <ApiTable title="Events" :rows="tableEvents" />
+      <ApiTable title="Slots" :rows="tableSlots" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>欄位可設 <code>sortable</code>＋<code>sortType</code>（string/number）啟用排序；
         分頁位置以 <code>paginationPosition</code>（top/bottom/both）控制；可自訂樣式的 class prop 皆接受 Tailwind class。
       </p>
     </section>
 
     <!-- ============ ChptFixedTable ============ -->
-    <section id="chpt-fixedtable" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptFixedTable 固定欄位表格</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-fixedtable" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFixedTable 固定欄位表格</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>欄位多、需左右捲動的大表格；可固定表頭與特定欄位、逐欄篩選、全文搜尋，
         適合資料密集的明細／監控表。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptFixedTable } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptFixedTable } from '@/components/library'</code>
       </p>
 
       <ChptFixedTable
@@ -65,7 +66,7 @@
         show-search
         v-model:fixed-columns="fixedCols"
       />
-      <div class="mt-3 text-sm text-neutral-600">
+      <div class="mt-3 text-sm text-content-secondary">
         目前固定欄位：<span class="font-mono font-semibold">{{ fixedCols.join(', ') }}</span>
         （在欄位選單中可增減固定欄）
       </div>
@@ -77,26 +78,26 @@
       <ApiTable title="Props" :rows="fixedTableProps" />
       <ApiTable title="Events" :rows="fixedTableEvents" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>欄位以 <code>{ title, dataIndex, width }</code> 定義，設
         <code>defaultFixed</code> 可預設固定；已固定欄位可用 <code>v-model:fixed-columns</code> 外部同步。
       </p>
     </section>
 
     <!-- ============ ChptPagination ============ -->
-    <section id="chpt-pagination" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptPagination 分頁</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-pagination" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptPagination 分頁</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>資料量大時切頁瀏覽；可獨立使用（<code>variant</code>：full／compact），
         也可作為表格分頁列。支援每頁筆數切換與總數摘要。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptPagination } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptPagination } from '@/components/library'</code>
       </p>
 
       <div class="grid md:grid-cols-2 gap-4">
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="text-sm font-semibold text-neutral-800 mb-2">variant="full"</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="text-sm font-semibold text-content-primary mb-2">variant="full"</p>
           <ChptPagination
             v-model:current-page="page"
             v-model:items-per-page="pageSize"
@@ -107,8 +108,8 @@
             @change="onPageChange"
           />
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="text-sm font-semibold text-neutral-800 mb-2">variant="compact"</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="text-sm font-semibold text-content-primary mb-2">variant="compact"</p>
           <ChptPagination
             v-model:current-page="pageC"
             v-model:items-per-page="pageSize"
@@ -127,35 +128,35 @@
       <ApiTable title="Props" :rows="paginationProps" />
       <ApiTable title="Events" :rows="paginationEvents" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>頁碼與每頁筆數採 <code>v-model:current-page</code>／<code>v-model:items-per-page</code>
         雙向綁定；<code>totalItems</code> 為總資料筆數，元件自行計算總頁數。
       </p>
     </section>
 
     <!-- ============ ChptFilter ============ -->
-    <section id="chpt-filter" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptFilter 過濾選擇</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-filter" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFilter 過濾選擇</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>單一欄位的過濾器；以 <code>type</code> 切換三種樣式——
         select（單選下拉）、dropdown（多選下拉）、tag（可搜尋多選標籤）。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptFilter } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptFilter } from '@/components/library'</code>
       </p>
 
       <div class="grid md:grid-cols-3 gap-4">
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="text-sm font-semibold text-neutral-800 mb-2">select（單選）</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="text-sm font-semibold text-content-primary mb-2">select（單選）</p>
           <ChptFilter v-model="filterSelect" type="select" label="部門" :options="deptOptions" />
-          <p class="text-xs text-neutral-500 mt-2">目前：{{ filterSelect || '全部' }}</p>
+          <p class="text-xs text-content-tertiary mt-2">目前：{{ filterSelect || '全部' }}</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="text-sm font-semibold text-neutral-800 mb-2">dropdown（多選）</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="text-sm font-semibold text-content-primary mb-2">dropdown（多選）</p>
           <ChptFilter v-model="filterDropdown" type="dropdown" placeholder="請選擇狀態" :options="statusOptions" />
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="text-sm font-semibold text-neutral-800 mb-2">tag（帶搜尋多選）</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="text-sm font-semibold text-content-primary mb-2">tag（帶搜尋多選）</p>
           <ChptFilter v-model="filterTag" type="tag" label="標籤" placeholder="搜尋..." :options="tagOptions" />
         </div>
       </div>
@@ -167,7 +168,7 @@
       <ApiTable title="Props" :rows="filterProps" />
       <ApiTable title="Events" :rows="filterEvents" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>type="select"</code> 的 modelValue 為單一值；<code>dropdown</code>／
         <code>tag</code> 為陣列。選項可傳 primitive 或 <code>{ label, value }</code>，並以 <code>valueKey</code>／
         <code>labelKey</code> 指定鍵名。
@@ -175,17 +176,17 @@
     </section>
 
     <!-- ============ ChptFilterBar ============ -->
-    <section id="chpt-filterbar" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptFilterBar 多欄位過濾橫列</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-filterbar" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFilterBar 多欄位過濾橫列</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>一次展示多個「單選過濾器」的橫列工具列；以 <code>filters</code> 描述欄位、
         單一物件 <code>modelValue</code> 雙向綁定，並可顯示總筆數。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptFilterBar } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptFilterBar } from '@/components/library'</code>
       </p>
 
-      <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
         <ChptFilterBar v-model="filterState" :filters="barFilters" :count="42" count-label="筆資料" />
       </div>
 
@@ -196,7 +197,7 @@
       <ApiTable title="Props" :rows="filterBarProps" />
       <ApiTable title="Events" :rows="filterBarEvents" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>每個欄位以 <code>{ key, label, options, allLabel?, allCount? }</code> 描述；
         選項可附 <code>count</code> 顯示數量；目前選取結果由 <code>modelValue</code>（Record key→value）維護。
       </p>
@@ -290,6 +291,15 @@ const barFilters = [
 ]
 
 // ---- 程式碼範例（字串，避免模板解析） ----
+const tableSlots = [
+  { name: 'cell', params: '{ item, column, value }', desc: '自訂單一格內容（其他格照 columns 預設顯示）' },
+  { name: 'table-row', params: '{ item, index }', desc: '整列自訂（需自行輸出 <tr>）；不提供時依 columns 畫出每一格' },
+  { name: 'footer', params: '—', desc: '表格底部（<tfoot> 內容）' },
+  { name: 'left-controls / right-controls', params: '—', desc: '上方控制列左右兩側（搜尋框旁）' },
+  { name: 'bottom-left-controls / bottom-right-controls', params: '—', desc: '下方控制列左右兩側' },
+  { name: 'modals', params: '—', desc: '元件最後面的額外內容（例如與表格相關的對話框）' },
+]
+
 const tableSample = `<ChptTable
   :columns="[{ key: 'name', title: '姓名', sortable: true }]"
   :data="rows"
@@ -341,7 +351,7 @@ const tableProps = [
   { name: 'paginationPosition', type: "'top'|'bottom'|'both'", def: "'top'", desc: '分頁列位置' },
   { name: 'containerBgColor / containerRounded / containerShadow', type: 'string', def: '…', desc: '容器樣式 class' },
   { name: 'headerBgGradient / headerTextColor', type: 'string', def: '…', desc: '表頭樣式 class' },
-  { name: 'evenRowBgColor / hoverRowBgColor', type: 'string', def: 'rgb(250 250 250)', desc: '列底色 class/色值' },
+  { name: 'evenRowBgColor / hoverRowBgColor', type: 'string', def: 'rgb(var(--t-surface-secondary)) / rgb(var(--t-accent-subtle))', desc: '偶數列／hover 列底色（CSS 色值；用主題變數才會跟著深色模式）' },
   { name: 'fontSize', type: 'string', def: "'text-xs'", desc: '字級 class' },
 ]
 const tableEvents = [

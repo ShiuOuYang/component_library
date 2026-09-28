@@ -220,25 +220,3 @@ export function adjustFormulaForChange(formula: string, change: StructuralChange
     })
   })
 }
-
-/**
- * 去掉參照裡的 $，讓只認得 A1 的求值器也能處理 $A$1。
- * 字串常值內的 $ 不動（例如 ="$5"）。
- */
-export function stripAbsolute(formula: string): string {
-  if (!formula.includes('$')) return formula
-  return mapRefs(formula, (ref) =>
-    formatRef({
-      ...ref,
-      start: { ...ref.start, cAbs: false, rAbs: false },
-      end: ref.end && { ...ref.end, cAbs: false, rAbs: false },
-    })
-  )
-}
-
-/** 公式裡（字串常值之外）是否含有 #REF! */
-export function hasRefError(formula: string): boolean {
-  if (!formula.includes('#REF!')) return false
-  // 把字串常值拿掉再判斷
-  return formula.replace(/"(?:[^"]|"")*"/g, '').includes('#REF!')
-}

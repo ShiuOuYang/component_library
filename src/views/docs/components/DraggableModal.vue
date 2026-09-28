@@ -1,22 +1,22 @@
 ﻿<template>
-  <div class="min-h-screen bg-neutral-50 p-8">
+  <div class="min-h-screen bg-surface-secondary p-8">
     <div class="max-w-5xl mx-auto">
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-neutral-900 mb-2">ChptModal 模態框（dialog / window）</h1>
-        <p class="text-lg text-neutral-600">
+        <h1 class="text-4xl font-bold text-content-primary mb-2">ChptModal 模態框（dialog / window）</h1>
+        <p class="text-lg text-content-secondary">
           取代舊 DraggableModal：mode="dialog" 置中確認框、mode="window" 多視窗（可拖曳/縮放/最小化到口袋）。
-          請由 <code class="bg-neutral-100 px-1.5 py-0.5 rounded text-sm">@/components/library</code> 匯入。
+          請由 <code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">@/components/library</code> 匯入。
         </p>
       </div>
 
       <!-- dialog 模式 -->
-      <section class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-neutral-800 mb-2">Dialog 模式（置中確認框）</h2>
-        <p class="text-sm text-neutral-600 mb-4">簡潔確認框：v-model 控制、遮罩點擊關閉、footer 插槽放按鈕。</p>
+      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">Dialog 模式（置中確認框）</h2>
+        <p class="text-sm text-content-secondary mb-4">簡潔確認框：v-model 控制、遮罩點擊關閉、footer 插槽放按鈕。</p>
         <ChptButton color="primary" size="sm" @click="dialogOpen = true">開啟 Dialog</ChptButton>
 
         <ChptModal v-model="dialogOpen" mode="dialog" title="確認操作" size="sm">
-          <p class="text-neutral-700 text-sm">確定要刪除這筆資料嗎？此動作無法復原。</p>
+          <p class="text-content-primary text-sm">確定要刪除這筆資料嗎？此動作無法復原。</p>
           <template #footer>
             <div class="flex justify-end gap-3">
               <ChptButton size="sm" is-outline color="secondary" @click="dialogOpen = false">取消</ChptButton>
@@ -34,9 +34,9 @@
       </section>
 
       <!-- window 模式 -->
-      <section class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-neutral-800 mb-2">Window 模式（可拖曳多視窗）</h2>
-        <p class="text-sm text-neutral-600 mb-4">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">Window 模式（可拖曳多視窗）</h2>
+        <p class="text-sm text-content-secondary mb-4">
           可拖曳、縮放、最大化與最小化；最小化後收進右下角 <ChptModalDock />。
           同頁可開多個 window 實例，自動管理 z-index。
         </p>
@@ -57,7 +57,7 @@
           maximizable
         >
           <div class="p-4">
-            <p class="text-sm text-neutral-600">這是可拖曳、縮放、最大化的視窗內容。拖曳標題列移動，右下角可調整大小。</p>
+            <p class="text-sm text-content-secondary">這是可拖曳、縮放、最大化的視窗內容。拖曳標題列移動，右下角可調整大小。</p>
           </div>
         </ChptModal>
 
@@ -73,7 +73,7 @@
           maximizable
         >
           <div class="p-4">
-            <p class="text-sm text-neutral-600">第二個獨立視窗實例，可與第一個並存與比較。</p>
+            <p class="text-sm text-content-secondary">第二個獨立視窗實例，可與第一個並存與比較。</p>
           </div>
         </ChptModal>
 

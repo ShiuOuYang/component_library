@@ -54,6 +54,25 @@ describe('匯出：公式', () => {
     expect(obj?.f).toBe('VLOOKUP(A1,B1:C3,2,FALSE)')
   })
 
+  it('Excel 有、引擎沒有的函式（#NAME?）不寫快取值，讓 Excel 打開時自己算', () => {
+    const obj = toCellObject('=XIRR(A1:A3,B1:B3)', { cells: {} }, true)
+    expect(obj).toEqual({ t: 's', v: '', f: 'XIRR(A1:A3,B1:B3)' })
+  })
+
+  it('布林結果寫成真正的布林值', () => {
+    const ws = roundTrip(sheet({ A1: { raw: '=1>0' }, A2: { raw: 'FALSE' } }))
+    expect(ws.A1).toMatchObject({ t: 'b', v: true, f: '1>0' })
+    expect(ws.A2).toMatchObject({ t: 'b', v: false })
+  })
+
+  it('文字結果與跨工作表參照的快取值', () => {
+    const wb = buildWorkbook([
+      sheet({ A1: { raw: '=IF(Data!A1>1,"高","低")' } }),
+      { ...sheet({ A1: { raw: 5 } }), name: 'Data' },
+    ])
+    expect(wb.Sheets.S.A1).toMatchObject({ t: 's', v: '高', f: 'IF(Data!A1>1,"高","低")' })
+  })
+
   it('enableFormula=false 時公式當成文字', () => {
     expect(toCellObject('=A1', { cells: {} }, false)).toEqual({ t: 's', v: '=A1' })
   })

@@ -6,22 +6,22 @@
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
         <span class="text-3xl">🖱️</span>
-        <h1 class="text-4xl font-bold text-neutral-900">互動元件</h1>
+        <h1 class="text-4xl font-bold text-content-primary">互動元件</h1>
       </div>
-      <p class="text-neutral-600 text-lg max-w-4xl">
+      <p class="text-content-secondary text-lg max-w-4xl">
         互動與回饋類元件：ChptTabs（頁籤）、ChptToast（全域提示）、ChptButton（按鈕）、
         ChptProgress（進度條）、ChptAlert（提示條）。每個元件都附「Props / Events / Slots」與注意事項。
       </p>
     </div>
 
     <!-- ============ ChptTabs ============ -->
-    <section id="chpt-tabs" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptTabs 頁籤</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-tabs" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTabs 頁籤</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>同一視窗內切換多個內容區塊（非導向路由）；可帶 icon 與計數 badge。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptTabs } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptTabs } from '@/components/library'</code>
       </p>
 
       <ChptTabs v-model="activeTab" :tabs="tabs" />
@@ -34,16 +34,16 @@
       <ApiTable title="Events" :rows="tabsEvents" />
       <ApiTable title="Slots" :rows="tabsSlots" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>以 <code>v-model</code> 綁定目前 index；選項可設 <code>disabled</code> 禁止點擊，
         內容建議用 <code>#panel- 前綴插槽</code>（如 #panel-0）自訂；若只是導向不同路由，請改用 ChptTabNavigation。
       </p>
     </section>
 
     <!-- ============ ChptToast ============ -->
-    <section id="chpt-toast" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptToast 全域提示</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-toast" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptToast 全域提示</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>全域操作回饋（成功/失敗/警告/資訊）。<strong>容器需在 App 根層掛載一次</strong>，
         任一頁面即可用 <code>useToast()</code> 呼叫。
       </p>
@@ -55,23 +55,23 @@
         <ChptButton color="danger" size="sm" @click="toast.error('操作失敗')">Error</ChptButton>
       </div>
 
-      <p class="text-sm text-neutral-500 mt-4">掛載與使用：</p>
+      <p class="text-sm text-content-tertiary mt-4">掛載與使用：</p>
       <div class="mt-2">
         <ChptCodeBlock :code="toastSample" />
       </div>
 
       <ApiTable title="useToast 方法" :rows="toastMethods" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>ChptToast 為 Teleport 到 body 的全域容器；同一 App 只掛載一份，
         過多同時出現會自動堆疊於頂端。圖示依賴 Material Symbols 字型，請確認字型已載入。
       </p>
     </section>
 
     <!-- ============ ChptButton ============ -->
-    <section id="chpt-button" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptButton 按鈕</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-button" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptButton 按鈕</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>任何可點擊的操作入口；支援語意色、實心/輪廓、尺寸、圓角、loading、badge 與前後置圖示。
       </p>
       <div class="flex flex-wrap items-center gap-3">
@@ -88,16 +88,16 @@
 
       <ApiTable title="Props" :rows="btnProps" />
       <ApiTable title="Events" :rows="btnEvents" />
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>同時帶 <code>loading</code> 會忽略點擊並顯示 spinner；角標 <code>badgeBgColor</code>
         接受語意鍵（primary/success/…）。
       </p>
     </section>
 
     <!-- ============ ChptProgress ============ -->
-    <section id="chpt-progress" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptProgress 進度條</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-progress" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptProgress 進度條</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>顯示 0–100 的進度/完成度；可換語意色、粗細、百分比標籤。
       </p>
       <div class="space-y-4 max-w-2xl">
@@ -112,15 +112,15 @@
       </div>
       <ApiTable title="Props" :rows="progressProps" />
       <ApiTable title="Events" :rows="progressEvents" />
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>modelValue 自動夾在 0–100；<code>trackColor</code> 傳的是 Tailwind class（預設 neutral-100）。
       </p>
     </section>
 
     <!-- ============ ChptAlert ============ -->
-    <section id="chpt-alert" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptAlert 提示條</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-alert" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAlert 提示條</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>頁面內的區塊級訊息（成功/資訊/警告/錯誤）；可帶標題、可關閉、全寬。
       </p>
       <div class="space-y-3">
@@ -135,7 +135,7 @@
       <ApiTable title="Props" :rows="alertProps" />
       <ApiTable title="Events" :rows="alertEvents" />
       <ApiTable title="Slots" :rows="alertSlots" />
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>show</code> 預設 true 控制顯示；內容可用 <code>#default</code> 自訂取代 <code>message</code>。
       </p>
     </section>

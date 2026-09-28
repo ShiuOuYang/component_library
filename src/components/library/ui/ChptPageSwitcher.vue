@@ -192,7 +192,7 @@ button::before {
   top: 0;
   width: 0;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgb(var(--t-accent-solid) / 0.1), transparent);
   transition: width 0.3s ease;
 }
 button:hover::before {

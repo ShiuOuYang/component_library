@@ -3,35 +3,35 @@
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
         <span class="text-3xl">🌗</span>
-        <h1 class="text-4xl font-bold text-neutral-900">主題與工具元件</h1>
+        <h1 class="text-4xl font-bold text-content-primary">主題與工具元件</h1>
       </div>
-      <p class="text-neutral-600 text-lg max-w-4xl">
+      <p class="text-content-secondary text-lg max-w-4xl">
         ChptDarkModeToggle（深色模式切換）、ChptHeaderLogoutButton（登出按鈕），以及 ChptPageSwitcher、
         ChptTabNavigation、ChptModalDock 等工具類包裝元件。
       </p>
     </div>
 
     <!-- ============ ChptDarkModeToggle ============ -->
-    <section id="chpt-darkmodetoggle" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptDarkModeToggle 深色模式切換</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-darkmodetoggle" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDarkModeToggle 深色模式切換</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>App 右上角提供淺／深色主題切換；<code>variant</code> 分 fancy（SVG 動畫）與
         simple（按鈕）兩種外觀，可選擇是否同步到 body 元素。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptDarkModeToggle } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptDarkModeToggle } from '@/components/library'</code>
       </p>
 
       <div class="grid md:grid-cols-2 gap-6">
-        <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200 flex flex-col items-center gap-3">
-          <p class="text-sm font-semibold text-neutral-800">variant="fancy"（SVG 動畫）</p>
+        <div class="bg-surface-secondary rounded-lg p-6 border border-stroke-light flex flex-col items-center gap-3">
+          <p class="text-sm font-semibold text-content-primary">variant="fancy"（SVG 動畫）</p>
           <ChptDarkModeToggle v-model:dark-mode="darkFancy" variant="fancy" :sync-body-by-default="false" />
-          <p class="text-xs text-neutral-500">狀態：{{ darkFancy ? '深色' : '淺色' }}</p>
+          <p class="text-xs text-content-tertiary">狀態：{{ darkFancy ? '深色' : '淺色' }}</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-6 border border-neutral-200 flex flex-col items-center gap-3">
-          <p class="text-sm font-semibold text-neutral-800">variant="simple"（按鈕）</p>
+        <div class="bg-surface-secondary rounded-lg p-6 border border-stroke-light flex flex-col items-center gap-3">
+          <p class="text-sm font-semibold text-content-primary">variant="simple"（按鈕）</p>
           <ChptDarkModeToggle v-model:dark-mode="darkSimple" variant="simple" :sync-body-by-default="false" />
-          <p class="text-xs text-neutral-500">狀態：{{ darkSimple ? '深色' : '淺色' }}</p>
+          <p class="text-xs text-content-tertiary">狀態：{{ darkSimple ? '深色' : '淺色' }}</p>
         </div>
       </div>
 
@@ -43,7 +43,7 @@
       <ApiTable title="Events" :rows="darkModeEvents" />
       <ApiTable title="Expose（ref）" :rows="darkModeExpose" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>syncBodyByDefault</code> 預設為 true，會自動在 body 上寫
         <code>data-dark-mode</code> 並切換 <code>dark-mode</code>／<code>light-mode</code> class；
         若只想局部控制，請設為 false。
@@ -51,20 +51,20 @@
     </section>
 
     <!-- ============ ChptHeaderLogoutButton ============ -->
-    <section id="chpt-headerlogout" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptHeaderLogoutButton 登出按鈕</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-headerlogout" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptHeaderLogoutButton 登出按鈕</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>Header 右上角的登出按鈕；整合 <code>useAuth().logout()</code>，點擊先跳出確認、
         登出中顯示「登出…」，失敗以 alert 提示。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptHeaderLogoutButton } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptHeaderLogoutButton } from '@/components/library'</code>
       </p>
 
-      <div class="bg-warning-50 border border-warning-200 rounded-lg p-3 mb-4 text-sm text-warning-800">
+      <div class="bg-warning-subtle border border-warning-subtle-border rounded-lg p-3 mb-4 text-sm text-warning-on-subtle">
         ⚠️ 以下為樣式預覽，<strong>請勿點擊</strong>（會觸發登出流程）。
       </div>
-      <div class="flex flex-wrap items-center gap-4 bg-neutral-50 rounded-lg p-6 border border-neutral-200">
+      <div class="flex flex-wrap items-center gap-4 bg-surface-secondary rounded-lg p-6 border border-stroke-light">
         <ChptHeaderLogoutButton size="sm" label="登出" />
         <ChptHeaderLogoutButton size="sm" variant="outline-gray" label="登出" />
         <ChptHeaderLogoutButton size="md" variant="solid-red" label="登出帳號" />
@@ -78,7 +78,7 @@
       <ApiTable title="Props" :rows="logoutProps" />
       <ApiTable title="Events" :rows="logoutEvents" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>本元件是純展示元件，只負責「確認 → loading → 回報結果」，
         實際登出流程請透過 <code>on-logout</code> 注入。<code>variant</code> 支援
         soft-red／solid-red／outline-gray／ghost／primary 五種外觀。
@@ -86,28 +86,28 @@
     </section>
 
     <!-- ============ 其他工具包裝 ============ -->
-    <section class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">其他工具類包裝元件</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">其他工具類包裝元件</h2>
+      <p class="text-sm text-content-secondary mb-4">
         以下元件由原 legacy 實作改名包裝為 Chpt 主題，統一自 <code>@/components/library</code> 匯入。
       </p>
 
       <div class="grid md:grid-cols-2 gap-4 text-sm">
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">🖱️ ChptPageSwitcher</p>
-          <p class="text-xs text-neutral-600">左側頁面切換滑出面板（包裝 PageSwitcher）。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">🖱️ ChptPageSwitcher</p>
+          <p class="text-xs text-content-secondary">左側頁面切換滑出面板（包裝 PageSwitcher）。</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">📑 ChptTabNavigation</p>
-          <p class="text-xs text-neutral-600">頁籤式路由導覽（tabs 含 path/label、fontSize）。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">📑 ChptTabNavigation</p>
+          <p class="text-xs text-content-secondary">頁籤式路由導覽（tabs 含 path/label、fontSize）。</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">🪟 ChptAvatar</p>
-          <p class="text-xs text-neutral-600">頭像（圖片／首字／狀態圓點），詳見「UI 組件」各頁。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">🪟 ChptAvatar</p>
+          <p class="text-xs text-content-secondary">頭像（圖片／首字／狀態圓點），詳見「UI 組件」各頁。</p>
         </div>
-        <div class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
-          <p class="font-semibold text-neutral-800 mb-1">🗔 ChptModalDock / ChptModal</p>
-          <p class="text-xs text-neutral-600">多視窗口袋列與模態框，詳見「浮層元件」。</p>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <p class="font-semibold text-content-primary mb-1">🗔 ChptModalDock / ChptModal</p>
+          <p class="text-xs text-content-secondary">多視窗口袋列與模態框，詳見「浮層元件」。</p>
         </div>
       </div>
     </section>

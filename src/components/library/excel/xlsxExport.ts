@@ -18,7 +18,7 @@
  */
 import * as XLSX from 'xlsx-js-style'
 import { cellRef, parseRef } from './formula/cellRef'
-import { evaluateFormula } from './formula/formulaEngine'
+import { evaluateFormula, type EvaluateOptions } from './formula/formulaEngine'
 import { asNumber } from './values'
 
 export interface ExportCellStyle {
@@ -82,7 +82,8 @@ export function toExcelFormula(body: string): string {
 export function toCellObject(
   raw: string | number | undefined,
   sheet: Pick<ExportSheet, 'cells'>,
-  enableFormula: boolean
+  enableFormula: boolean,
+  options: EvaluateOptions = {}
 ): XLSX.CellObject | null {
   if (raw === undefined || raw === '') return null
 
@@ -90,18 +91,19 @@ export function toCellObject(
 
   if (raw.startsWith('=') && enableFormula) {
     const body = raw.slice(1)
-    const value = evaluateFormula(body, sheet)
+    const value = evaluateFormula(body, sheet, options)
     const f = toExcelFormula(body)
-    if (value === null) {
-      // 引擎算不出來（例如還不支援的函式）：仍然寫出公式，讓 Excel 自己算
-      return { t: 's', v: '', f }
-    }
+    // 算不出來（語法錯誤），或是引擎還不認得的函式（#NAME?）：
+    // 仍然寫出公式、不寫快取值，讓 Excel 打開時自己算
+    if (value === null || value === '#NAME?') return { t: 's', v: '', f }
     if (typeof value === 'number') return { t: 'n', v: value, f }
+    if (value === 'TRUE' || value === 'FALSE') return { t: 'b', v: value === 'TRUE', f }
     if (value in ERROR_CODES) return { t: 'e', v: ERROR_CODES[value], w: value, f }
     return { t: 's', v: value, f }
   }
 
   if (raw in ERROR_CODES) return { t: 'e', v: ERROR_CODES[raw], w: raw }
+  if (/^(TRUE|FALSE)$/i.test(raw)) return { t: 'b', v: raw.toUpperCase() === 'TRUE' }
   const n = asNumber(raw)
   if (n !== null) return { t: 'n', v: n }
   return { t: 's', v: raw }
@@ -126,7 +128,11 @@ function toStyle(st: ExportCellStyle): Record<string, unknown> {
  * 工作表 → SheetJS WorkSheet。
  * 只寫有內容或有格式的儲存格；!ref 依實際使用範圍計算。
  */
-export function sheetToWorksheet(sheet: ExportSheet, enableFormula = true): XLSX.WorkSheet {
+export function sheetToWorksheet(
+  sheet: ExportSheet,
+  enableFormula = true,
+  options: EvaluateOptions = {}
+): XLSX.WorkSheet {
   const ws: XLSX.WorkSheet = {}
   let maxR = 0
   let maxC = 0
@@ -137,7 +143,7 @@ export function sheetToWorksheet(sheet: ExportSheet, enableFormula = true): XLSX
 
   for (const key in sheet.cells) {
     const cell = sheet.cells[key]
-    const obj = toCellObject(cell.raw, sheet, enableFormula)
+    const obj = toCellObject(cell.raw, sheet, enableFormula, options)
     const style = cell.style && Object.keys(cell.style).length ? toStyle(cell.style) : null
     if (!obj && !style) continue
 
@@ -181,8 +187,10 @@ export function sheetToWorksheet(sheet: ExportSheet, enableFormula = true): XLSX
 /** 多張工作表 → WorkBook */
 export function buildWorkbook(sheets: ExportSheet[], enableFormula = true): XLSX.WorkBook {
   const wb = XLSX.utils.book_new()
+  // 跨工作表參照（Sheet2!A1）的快取值也要算得出來
+  const resolveSheet = (name: string) => sheets.find((s) => s.name.toLowerCase() === name.toLowerCase())
   for (const sheet of sheets) {
-    XLSX.utils.book_append_sheet(wb, sheetToWorksheet(sheet, enableFormula), sheet.name)
+    XLSX.utils.book_append_sheet(wb, sheetToWorksheet(sheet, enableFormula, { resolveSheet }), sheet.name)
   }
   return wb
 }
