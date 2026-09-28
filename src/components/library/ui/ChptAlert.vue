@@ -7,7 +7,7 @@
   >
     <div
       v-if="props.show"
-      role="alert"
+      :role="liveRole"
       class="flex items-start gap-3 rounded-lg border p-4"
       :class="[alertClass, props.fullWidth ? 'w-full' : '']"
     >
@@ -104,6 +104,12 @@ const iconColorClass = computed(() => {
 })
 
 /** 圖示名稱 */
+/**
+ * warning / danger 才用 role="alert"（立即插話報讀）；info / success 用 status（禮貌報讀）。
+ * 原本一律是 alert —— 頁面上一則靜態的「說明」提示，一載入就打斷螢幕閱讀器正在唸的內容。
+ */
+const liveRole = computed(() => (props.type === 'warning' || props.type === 'danger' ? 'alert' : 'status'))
+
 const iconName = computed(() => {
   const map: Record<AlertType, string> = {
     success: 'check_circle',

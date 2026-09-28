@@ -2,12 +2,10 @@
   <span
     ref="triggerEl"
     class="inline-flex"
-    :aria-describedby="visible ? tooltipId : undefined"
     @mouseenter="handleEnter"
     @mouseleave="handleLeave"
     @focusin="handleFocusIn"
     @focusout="handleFocusOut"
-    @keydown.esc="handleLeave"
   >
     <slot></slot>
 
@@ -25,9 +23,11 @@
           :id="tooltipId"
           ref="tooltipEl"
           role="tooltip"
-          class="fixed z-50"
+          class="fixed z-tooltip"
           :style="{ left: left + 'px', top: top + 'px' }"
           :class="themeClass"
+          @mouseenter="cancelHide"
+          @mouseleave="handleLeave"
         >
           <!-- 箭頭指示器（純視覺） -->
           <div
@@ -163,20 +163,65 @@ function computePosition(): void {
   top.value = t
 }
 
-function show(): void {
-  if (props.disabled) return
+/**
+ * aria-describedby 要掛在「真正會拿到焦點的元素」上。
+ * 原本掛在外層包裝的 <span>：它不可聚焦，螢幕閱讀器唸的是插槽裡按鈕自己的描述 —— 提示永遠不會被唸到。
+ */
+function describedTarget(): HTMLElement | null {
+  const root = triggerEl.value
+  if (!root) return null
+  const focusable = root.querySelector<HTMLElement>('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])')
+  return focusable ?? (root.firstElementChild as HTMLElement | null)
+}
+
+function linkDescription(on: boolean): void {
+  const el = describedTarget()
+  if (!el) return
+  const ids = (el.getAttribute('aria-describedby') ?? '').split(/\s+/).filter((x) => x && x !== tooltipId)
+  if (on) ids.push(tooltipId)
+  if (ids.length) el.setAttribute('aria-describedby', ids.join(' '))
+  else el.removeAttribute('aria-describedby')
+}
+
+/** 游標從觸發元素移到提示本身時不要關（WCAG 1.4.13：提示內容要能被滑鼠停留） */
+function cancelHide(): void {
   if (hideTimer) {
     clearTimeout(hideTimer)
     hideTimer = null
   }
-  visible.value = true
-  emit('show')
-  nextTick(() => computePosition())
+}
+
+/** Esc 在任何地方都能關（WCAG 1.4.13：可關閉）——原本只有焦點在觸發元素裡才有效，滑鼠停留時關不掉 */
+function onGlobalKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape' && visible.value) {
+    cancelHide()
+    visible.value = false
+    linkDescription(false)
+    emit('hide')
+  }
+}
+
+function show(): void {
+  if (props.disabled) return
+  cancelHide()
+  if (!visible.value) {
+    visible.value = true
+    emit('show')
+    document.addEventListener('keydown', onGlobalKeydown)
+  }
+  nextTick(() => {
+    linkDescription(true)
+    computePosition()
+  })
 }
 
 function hide(): void {
+  cancelHide()
   hideTimer = setTimeout(() => {
+    hideTimer = null
     visible.value = false
+    linkDescription(false)
+    document.removeEventListener('keydown', onGlobalKeydown)
     emit('hide')
   }, 100)
 }
@@ -205,6 +250,7 @@ function handleResize(): void {
 onMounted(() => window.addEventListener('resize', handleResize))
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
+  document.removeEventListener('keydown', onGlobalKeydown)
   if (hideTimer) clearTimeout(hideTimer)
 })
 

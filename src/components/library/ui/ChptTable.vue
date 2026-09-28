@@ -9,14 +9,28 @@
             type="text"
             v-model="searchQuery"
             :placeholder="searchPlaceholder"
+            :aria-label="searchPlaceholder"
             class="w-48 h-7 px-2.5 border border-stroke-default rounded text-xs text-content-primary bg-surface-primary transition-colors shadow-inner focus:outline-none focus:border-stroke-focus focus:ring-2 focus:ring-primary-100"
             @keyup.enter="performSearch"
           />
         </div>
-        
+
+        <!-- 勾選狀態：有勾才出現，數字變動時禮貌報讀 -->
+        <div v-if="selectionEnabled" class="flex items-center gap-2 text-xs" aria-live="polite">
+          <template v-if="selectedKeySet.size > 0">
+            <span class="text-content-secondary">已選 <span class="font-semibold text-accent">{{ selectedKeySet.size }}</span> 筆</span>
+            <button
+              type="button"
+              class="rounded px-1.5 py-0.5 text-accent hover:bg-accent-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
+              @click="clearSelection"
+            >清除</button>
+            <slot name="selection-actions" :keys="[...selectedKeySet]" :rows="selectedRows" :clear="clearSelection"></slot>
+          </template>
+        </div>
+
         <slot name="left-controls"></slot>
       </div>
-      
+
       <div class="flex items-center gap-2.5">
         <!-- 分頁控制區 (top 或 both 時顯示) -->
         <ChptPagination
@@ -24,31 +38,60 @@
           variant="compact"
           :current-page="currentPage"
           :items-per-page="pageSize"
-          :total-items="sortedAndFilteredData.length"
+          :total-items="totalItems"
           bg-color="bg-surface-secondary"
           @update:current-page="handlePageChange"
           @update:items-per-page="handlePageSizeChange"
         />
-        
+
         <slot name="right-controls"></slot>
       </div>
     </div>
 
     <!-- 表格內容 -->
-    <div class="w-full overflow-x-auto mb-0 border-t border-b border-stroke-light">
-      <table class="w-full border-collapse text-xs whitespace-nowrap min-w-max">
+    <div class="relative w-full overflow-x-auto mb-0 border-t border-b border-stroke-light">
+      <table
+        class="w-full border-collapse text-xs whitespace-nowrap min-w-max"
+        :class="{ 'table-fixed': props.resizable }"
+        :aria-busy="props.loading || undefined"
+      >
         <thead>
           <tr>
             <th
+              v-if="expandEnabled"
+              scope="col"
+              class="lead-col bg-gradient-to-b border-b border-stroke-default sticky top-0 z-10"
+              :class="[props.headerBgGradient]"
+            ><span class="sr-only">展開</span></th>
+            <th
+              v-if="selectionEnabled"
+              scope="col"
+              class="lead-col bg-gradient-to-b border-b border-stroke-default sticky top-0 z-10"
+              :class="[props.headerBgGradient]"
+            >
+              <input
+                v-if="!singleSelect"
+                type="checkbox"
+                class="table-check"
+                :checked="pageSelectionState === 'all'"
+                :indeterminate="pageSelectionState === 'some'"
+                :disabled="selectablePageKeys.length === 0"
+                aria-label="全選本頁"
+                @change="togglePageSelection"
+              />
+              <span v-else class="sr-only">選取</span>
+            </th>
+            <th
               v-for="(column, index) in displayColumns"
               :key="index"
-              :style="column.style"
+              :style="[column.style, widthStyle(column)]"
               :class="[
                 'bg-gradient-to-b font-medium py-2 px-1.5 text-center border-b border-stroke-default sticky top-0 z-10 whitespace-nowrap tracking-wide shadow-sm',
                 props.headerBgGradient,
                 props.headerTextColor,
                 {
                   'cursor-pointer select-none relative hover:from-primary-50 hover:to-primary-100': isColumnClickable(column),
+                  'relative': props.resizable,
                   'from-primary-50 to-primary-100': getColumnSortInfo(column.key) !== null,
                   'text-accent': getColumnSortInfo(column.key) !== null
                 }
@@ -57,15 +100,15 @@
               :aria-sort="ariaSortFor(column)"
               :tabindex="isColumnClickable(column) ? 0 : undefined"
               @click="handleHeaderClick(column)"
-              @keydown.enter.prevent="handleHeaderClick(column)"
-              @keydown.space.prevent="handleHeaderClick(column)"
+              @keydown.enter.self.prevent="handleHeaderClick(column)"
+              @keydown.space.self.prevent="handleHeaderClick(column)"
             >
               <div class="relative flex items-center justify-center min-h-[28px]">
-                <span class="text-center px-4">{{ column.title }}</span>
-                
+                <span class="text-center px-4 truncate">{{ column.title }}</span>
+
                 <!-- 排序圖標 - 使用絕對定位，支援多欄排序顯示 -->
-                <span 
-                  v-if="isColumnClickable(column)" 
+                <span
+                  v-if="isColumnClickable(column)"
                   aria-hidden="true"
                   class="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 transition-all duration-200"
                   :class="getColumnSortInfo(column.key) !== null ? 'opacity-100' : 'opacity-30 hover:opacity-60'"
@@ -79,39 +122,109 @@
                   <span class="flex flex-col items-center gap-0">
                     <span
                       class="text-[10px] leading-none transition-all duration-200"
-                      :class="getColumnSortInfo(column.key)?.direction === 'asc' 
+                      :class="getColumnSortInfo(column.key)?.direction === 'asc'
                         ? 'text-accent font-bold opacity-100'
                         : 'text-content-tertiary'"
                     >▲</span>
                     <span
                       class="text-[10px] leading-none transition-all duration-200"
-                      :class="getColumnSortInfo(column.key)?.direction === 'desc' 
+                      :class="getColumnSortInfo(column.key)?.direction === 'desc'
                         ? 'text-accent font-bold opacity-100'
                         : 'text-content-tertiary'"
                     >▼</span>
                   </span>
                 </span>
               </div>
+
+              <!-- 欄寬拖曳把手：WAI-ARIA window splitter（可聚焦、左右鍵調整） -->
+              <span
+                v-if="props.resizable && column.resizable !== false"
+                role="separator"
+                aria-orientation="vertical"
+                tabindex="0"
+                :aria-label="`調整「${column.title}」欄寬`"
+                :aria-valuenow="Math.round(currentWidthOf(column))"
+                :aria-valuemin="minWidthOf(column)"
+                class="col-resizer"
+                @click.stop
+                @pointerdown.stop.prevent="startResize($event, column)"
+                @dblclick.stop="resetWidth(column)"
+                @keydown.left.stop.prevent="nudgeWidth(column, -10)"
+                @keydown.right.stop.prevent="nudgeWidth(column, 10)"
+              ></span>
             </th>
+            <!--
+              resizable 用 table-layout: fixed；表格又要撐滿容器時，多出來的寬度會被平均分給
+              每一欄 —— 拖到 120px 的欄實際變 180px。最後放一個不設寬度的填充欄吃掉剩餘空間
+            -->
+            <th
+              v-if="props.resizable"
+              role="presentation"
+              class="filler-col bg-gradient-to-b border-b border-stroke-default sticky top-0 z-10"
+              :class="[props.headerBgGradient]"
+            ></th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="paginatedData.length === 0">
-            <td :colspan="displayColumns.length" class="py-5 text-center text-content-tertiary italic bg-surface-secondary">{{ noDataText }}</td>
+            <td :colspan="totalColumnCount" class="py-5 text-center text-content-tertiary italic bg-surface-secondary">{{ props.loading ? '' : noDataText }}</td>
           </tr>
           <!--
             ⚠️ 原本資料列「只」能透過 table-row 插槽畫出來，沒有預設內容 ——
                照文件只傳 columns + data 時，分頁顯示「共 7 筆」，表身卻是空的（文檔頁的示範就是這樣）。
                現在預設依 columns 畫出每一格；要整列自訂仍可用 table-row，只改某一格用 cell。
+               （用 table-row 整列自訂時，勾選欄、展開欄、row-click 都要自己處理）
           -->
           <template v-else>
-            <template v-for="(item, index) in paginatedData" :key="index">
+            <template v-for="(item, index) in paginatedData" :key="keyOf(item, index + startIndex)">
               <slot name="table-row" :item="item" :index="index + startIndex">
-                <tr>
+                <tr
+                  class="data-row"
+                  :class="[
+                    rowClassOf(item, index + startIndex),
+                    {
+                      'is-selected': selectedKeySet.has(keyOf(item, index + startIndex)),
+                      'is-clickable': hasRowClickListener,
+                    },
+                  ]"
+                  :aria-selected="selectionEnabled ? selectedKeySet.has(keyOf(item, index + startIndex)) : undefined"
+                  :tabindex="hasRowClickListener ? 0 : undefined"
+                  @click="onRowClick(item, index + startIndex, $event)"
+                  @keydown.enter.self="onRowClick(item, index + startIndex, $event)"
+                >
+                  <td v-if="expandEnabled" class="lead-col">
+                    <button
+                      v-if="canExpandRow(item)"
+                      type="button"
+                      class="expand-toggle"
+                      :aria-expanded="expandedKeySet.has(keyOf(item, index + startIndex))"
+                      :aria-controls="expandIdOf(item, index + startIndex)"
+                      :aria-label="expandedKeySet.has(keyOf(item, index + startIndex)) ? '收合明細' : '展開明細'"
+                      @click.stop="toggleExpand(item, index + startIndex)"
+                    >
+                      <span
+                        class="material-symbols-outlined text-base transition-transform duration-150"
+                        :class="{ 'rotate-90': expandedKeySet.has(keyOf(item, index + startIndex)) }"
+                        aria-hidden="true"
+                      >chevron_right</span>
+                    </button>
+                  </td>
+                  <td v-if="selectionEnabled" class="lead-col">
+                    <input
+                      :type="singleSelect ? 'radio' : 'checkbox'"
+                      class="table-check"
+                      :name="singleSelect ? `${uid}-select` : undefined"
+                      :checked="selectedKeySet.has(keyOf(item, index + startIndex))"
+                      :disabled="!canSelectRow(item)"
+                      :aria-label="`選取 ${rowLabelOf(item, index + startIndex)}`"
+                      @click.stop
+                      @change="toggleRow(item, index + startIndex)"
+                    />
+                  </td>
                   <td
                     v-for="column in displayColumns"
                     :key="column.key ?? column.title"
-                    :style="column.style"
+                    :style="[column.style, widthStyle(column)]"
                   >
                     <slot
                       name="cell"
@@ -119,6 +232,16 @@
                       :column="column"
                       :value="column.key ? item[column.key] : undefined"
                     >{{ column.key ? item[column.key] : '' }}</slot>
+                  </td>
+                  <td v-if="props.resizable" role="presentation" class="filler-col"></td>
+                </tr>
+                <tr
+                  v-if="expandEnabled && expandedKeySet.has(keyOf(item, index + startIndex))"
+                  :id="expandIdOf(item, index + startIndex)"
+                  class="expand-row"
+                >
+                  <td :colspan="totalColumnCount">
+                    <slot name="expand" :item="item" :index="index + startIndex"></slot>
                   </td>
                 </tr>
               </slot>
@@ -130,25 +253,33 @@
           <slot name="footer"></slot>
         </tfoot>
       </table>
+
+      <!-- 載入中：保留舊資料在底下（半透明遮罩），避免整張表閃成空白 -->
+      <div
+        v-if="props.loading"
+        class="absolute inset-0 z-20 flex items-center justify-center bg-surface-primary/60"
+      >
+        <ChptSpinner loading :text="props.loadingText" />
+      </div>
     </div>
-    
+
     <!-- 分頁控制區 (下方) -->
     <div v-if="paginationPosition === 'bottom' || paginationPosition === 'both'" class="flex justify-between items-center px-3 py-2 border-t border-stroke-light" :class="props.bottomControlBgColor">
       <div class="flex items-center gap-2.5">
         <slot name="bottom-left-controls"></slot>
       </div>
-      
+
       <div class="flex items-center gap-2.5">
         <ChptPagination
           variant="compact"
           :current-page="currentPage"
           :items-per-page="pageSize"
-          :total-items="sortedAndFilteredData.length"
+          :total-items="totalItems"
           bg-color="bg-surface-primary"
           @update:current-page="handlePageChange"
           @update:items-per-page="handlePageSizeChange"
         />
-        
+
         <slot name="bottom-right-controls"></slot>
       </div>
     </div>
@@ -159,8 +290,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, useSlots, onMounted } from 'vue'
+import { ref, computed, watch, useSlots, onMounted, onBeforeUnmount, getCurrentInstance, useId } from 'vue'
 import ChptPagination from './ChptPagination.vue'
+import ChptSpinner from './ChptSpinner.vue'
 
 // === 型別定義 ===
 type DataRow = Record<string, unknown> //=type DataRow = { [key: string]: unknown };
@@ -171,7 +303,15 @@ interface Column {
   sortable?: boolean
   sortType?: 'string' | 'number' | 'date'
   style?: string | Record<string, string>
+  /** 初始欄寬（px）；resizable 時為拖曳起點 */
+  width?: number
+  /** 拖曳時的最小欄寬（px，預設 48） */
+  minWidth?: number
+  /** resizable 開啟時，個別欄位可設 false 不給拖 */
+  resizable?: boolean
 }
+
+type RowKey = string | number
 
 interface SortItem {
   key: string
@@ -181,6 +321,16 @@ interface SortItem {
 interface DefaultSort {
   column: string | null
   direction: 'asc' | 'desc'
+}
+
+/** remote 模式下，任何會影響查詢的變動都會送出這個 payload（交給 API） */
+interface ChangeEvent {
+  page: number
+  pageSize: number
+  sortColumns: SortItem[]
+  query: string
+  /** 這次是因為什麼而變動 */
+  reason: 'page' | 'pageSize' | 'sort' | 'search'
 }
 
 interface SortEvent {
@@ -231,6 +381,31 @@ const props = withDefaults(defineProps<{
   bottomControlBgColor?: string
   // 字體大小
   fontSize?: string
+
+  // ===== 企業用擴充 =====
+  /** 每列的唯一鍵：欄位名或函式。勾選 / 展開跨頁保留都靠它（預設 'id'，沒有時退回列序） */
+  rowKey?: string | ((row: DataRow) => RowKey)
+  /** 勾選列：true 為多選（含全選本頁），'single' 為單選 */
+  selectable?: boolean | 'single'
+  /** 已勾選的鍵（v-model:selected-keys） */
+  selectedKeys?: RowKey[]
+  /** 哪些列可以勾（例如已結案的不給勾） */
+  isRowSelectable?: (row: DataRow) => boolean
+  /** 已展開的鍵（v-model:expanded-keys）；有 #expand 插槽才會出現展開欄 */
+  expandedKeys?: RowKey[]
+  /** 哪些列可以展開 */
+  isRowExpandable?: (row: DataRow) => boolean
+  /** 伺服器端模式：不在前端過濾 / 排序 / 分頁，改送 change 事件，data 只放當頁 */
+  remote?: boolean
+  /** 伺服器端模式的總筆數（分頁用） */
+  total?: number
+  /** 載入中：表格蓋上半透明遮罩與 Spinner，並設 aria-busy */
+  loading?: boolean
+  loadingText?: string
+  /** 可拖曳調整欄寬（也可 Tab 到把手用 ← → 調整，雙擊還原） */
+  resizable?: boolean
+  /** 每列額外的 class（例如依狀態上色） */
+  rowClass?: string | ((row: DataRow, index: number) => string | Record<string, boolean> | undefined)
 }>(), {
   data: () => [],
   columns: () => [],
@@ -251,7 +426,19 @@ const props = withDefaults(defineProps<{
   hoverRowBgColor: 'rgb(var(--t-accent-subtle))',
   controlBgColor: 'bg-surface-primary',
   bottomControlBgColor: 'bg-surface-secondary',
-  fontSize: 'text-xs'
+  fontSize: 'text-xs',
+  rowKey: 'id',
+  selectable: false,
+  selectedKeys: undefined,
+  isRowSelectable: undefined,
+  expandedKeys: undefined,
+  isRowExpandable: undefined,
+  remote: false,
+  total: undefined,
+  loading: false,
+  loadingText: '載入中',
+  resizable: false,
+  rowClass: undefined,
 })
 
 const emit = defineEmits<{
@@ -259,11 +446,18 @@ const emit = defineEmits<{
   'update:pageSize': [pageSize: number]
   'search': [query: string]
   'sort': [info: SortEvent]
+  'change': [info: ChangeEvent]
+  'update:selectedKeys': [keys: RowKey[]]
+  'selection-change': [keys: RowKey[], rows: DataRow[]]
+  'update:expandedKeys': [keys: RowKey[]]
+  'row-click': [row: DataRow, index: number, event: MouseEvent | KeyboardEvent]
+  'column-resize': [info: { key: string; width: number }]
 }>()
 
 // 獲取插槽信息
 const slots = useSlots()
 const hasFooterSlot = computed(() => !!slots.footer)
+
 
 // 搜尋和分頁狀態
 const searchQuery = ref<string>('')
@@ -433,6 +627,7 @@ function handleHeaderClick(column: Column): void {
     columnConfig: column,
     enabledColumns: Array.from(enabledSortColumns.value)
   })
+  emitChange('sort')
 }
 
 // 比較單一欄位的值
@@ -504,6 +699,8 @@ function sortData(data: DataRow[]): DataRow[] {
 
 // 過濾後的數據
 const filteredData = computed(() => {
+  // 伺服器端模式：資料已經是 API 過濾、排序、分頁後的當頁結果
+  if (props.remote) return props.data
   if (props.customFilter) {
     return props.customFilter(props.data, searchQuery.value)
   }
@@ -525,12 +722,17 @@ const filteredData = computed(() => {
 
 // 排序和過濾後的數據
 const sortedAndFilteredData = computed(() => {
-  return sortData(filteredData.value)
+  return props.remote ? filteredData.value : sortData(filteredData.value)
 })
+
+/** 分頁用的總筆數：remote 時由父層告知 */
+const totalItems = computed(() =>
+  props.remote ? (props.total ?? props.data.length) : sortedAndFilteredData.value.length
+)
 
 // 計算總頁數
 const totalPages = computed(() => {
-  return Math.ceil(sortedAndFilteredData.value.length / pageSize.value) || 1
+  return Math.ceil(totalItems.value / pageSize.value) || 1
 })
 
 // 分頁後的數據
@@ -538,6 +740,7 @@ const startIndex = computed(() => (currentPage.value - 1) * pageSize.value)
 const endIndex = computed(() => startIndex.value + pageSize.value)
 
 const paginatedData = computed(() => {
+  if (props.remote) return props.data
   return sortedAndFilteredData.value.slice(startIndex.value, endIndex.value)
 })
 
@@ -548,6 +751,7 @@ function handlePageChange(page: number): void {
   currentPage.value = page
   
   emit('update:page', currentPage.value)
+  emitChange('page')
 }
 
 // 處理分頁大小變更
@@ -566,16 +770,30 @@ function handlePageSizeChange(size?: number) {
   }
   
   emit('update:pageSize', pageSize.value)
+  emitChange('pageSize')
 }
 
 // 執行搜尋
 function performSearch() {
   currentPage.value = 1
   emit('search', searchQuery.value)
+  emitChange('search')
+}
+
+function emitChange(reason: ChangeEvent['reason']): void {
+  emit('change', {
+    page: currentPage.value,
+    pageSize: pageSize.value,
+    sortColumns: [...sortColumns.value],
+    query: searchQuery.value,
+    reason,
+  })
 }
 
 // 監聽表格數據變化，重置到第一頁
+// （remote 模式不行：換頁後 API 回來的新資料會把頁碼又打回第 1 頁）
 watch(() => props.data, () => {
+  if (props.remote) return
   currentPage.value = 1
 }, { deep: true })
 
@@ -586,8 +804,229 @@ watch(searchQuery, (newVal) => {
   }
 })
 
+// ===================================================================
+// 列鍵、勾選、展開、row-click、欄寬
+// ===================================================================
+const uid = useId()
+const instance = getCurrentInstance()
+
+/** 每列的唯一鍵；沒有 rowKey 欄位時退回列序（跨頁 / 資料變動時不穩定，建議給 id） */
+function keyOf(row: DataRow, index: number): RowKey {
+  if (typeof props.rowKey === 'function') return props.rowKey(row)
+  const v = row[props.rowKey]
+  return typeof v === 'string' || typeof v === 'number' ? v : `__row_${index}`
+}
+
+function rowClassOf(row: DataRow, index: number) {
+  if (!props.rowClass) return undefined
+  return typeof props.rowClass === 'function' ? props.rowClass(row, index) : props.rowClass
+}
+
+/** 螢幕閱讀器用的列名稱：第一個有值的欄位 */
+function rowLabelOf(row: DataRow, index: number): string {
+  for (const col of displayColumns.value) {
+    if (col.key && row[col.key] != null && row[col.key] !== '') return String(row[col.key])
+  }
+  return `第 ${index + 1} 列`
+}
+
+// ----- 勾選 -----
+const selectionEnabled = computed(() => props.selectable !== false)
+const singleSelect = computed(() => props.selectable === 'single')
+const innerSelected = ref<RowKey[]>(props.selectedKeys ?? [])
+watch(() => props.selectedKeys, (keys) => { if (keys) innerSelected.value = [...keys] })
+const selectedKeySet = computed(() => new Set(innerSelected.value))
+
+/**
+ * 看過的列（鍵 → 列）：remote 模式下其他頁的資料不在 props.data 裡，
+ * selection-change 仍要能回傳跨頁勾選的完整列。
+ */
+const seenRows = new Map<RowKey, DataRow>()
+watch(() => props.data, (rows) => {
+  rows.forEach((row, i) => seenRows.set(keyOf(row, i), row))
+}, { immediate: true })
+
+const selectedRows = computed(() =>
+  innerSelected.value.map((k) => seenRows.get(k)).filter((r): r is DataRow => !!r)
+)
+
+function canSelectRow(row: DataRow): boolean {
+  return props.isRowSelectable ? props.isRowSelectable(row) : true
+}
+
+function commitSelection(keys: RowKey[]): void {
+  innerSelected.value = keys
+  emit('update:selectedKeys', [...keys])
+  emit('selection-change', [...keys], selectedRows.value)
+}
+
+function toggleRow(row: DataRow, index: number): void {
+  if (!canSelectRow(row)) return
+  const key = keyOf(row, index)
+  if (singleSelect.value) {
+    commitSelection(selectedKeySet.value.has(key) ? [] : [key])
+    return
+  }
+  commitSelection(
+    selectedKeySet.value.has(key)
+      ? innerSelected.value.filter((k) => k !== key)
+      : [...innerSelected.value, key]
+  )
+}
+
+/** 本頁可勾的列鍵 */
+const selectablePageKeys = computed(() =>
+  paginatedData.value
+    .map((row, i) => (canSelectRow(row) ? keyOf(row, i + startIndex.value) : null))
+    .filter((k): k is RowKey => k !== null)
+)
+
+/** 表頭全選框的狀態：本頁全勾 / 部分 / 都沒勾 */
+const pageSelectionState = computed<'all' | 'some' | 'none'>(() => {
+  const keys = selectablePageKeys.value
+  const picked = keys.filter((k) => selectedKeySet.value.has(k)).length
+  if (picked === 0) return 'none'
+  return picked === keys.length ? 'all' : 'some'
+})
+
+/** 全選本頁；已全選時取消本頁（其他頁的勾選保留） */
+function togglePageSelection(): void {
+  const pageKeys = new Set(selectablePageKeys.value)
+  if (pageSelectionState.value === 'all') {
+    commitSelection(innerSelected.value.filter((k) => !pageKeys.has(k)))
+  } else {
+    const next = [...innerSelected.value]
+    pageKeys.forEach((k) => { if (!selectedKeySet.value.has(k)) next.push(k) })
+    commitSelection(next)
+  }
+}
+
+function clearSelection(): void {
+  commitSelection([])
+}
+
+// ----- 展開 -----
+const expandEnabled = computed(() => !!slots.expand)
+const innerExpanded = ref<RowKey[]>(props.expandedKeys ?? [])
+watch(() => props.expandedKeys, (keys) => { if (keys) innerExpanded.value = [...keys] })
+const expandedKeySet = computed(() => new Set(innerExpanded.value))
+
+function canExpandRow(row: DataRow): boolean {
+  return props.isRowExpandable ? props.isRowExpandable(row) : true
+}
+
+function expandIdOf(row: DataRow, index: number): string {
+  return `${uid}-expand-${String(keyOf(row, index)).replace(/\s+/g, '_')}`
+}
+
+function toggleExpand(row: DataRow, index: number): void {
+  const key = keyOf(row, index)
+  innerExpanded.value = expandedKeySet.value.has(key)
+    ? innerExpanded.value.filter((k) => k !== key)
+    : [...innerExpanded.value, key]
+  emit('update:expandedKeys', [...innerExpanded.value])
+}
+
+const totalColumnCount = computed(() =>
+  displayColumns.value.length +
+  (selectionEnabled.value ? 1 : 0) +
+  (expandEnabled.value ? 1 : 0) +
+  (props.resizable ? 1 : 0)
+)
+
+// ----- row-click -----
+/** 有人監聽 row-click 時，列才可聚焦、滑鼠變手指（沒監聽就不要假裝能點） */
+const hasRowClickListener = computed(() => !!instance?.vnode.props?.onRowClick)
+
+const INTERACTIVE = 'a, button, input, select, textarea, label, [role="button"], [role="checkbox"], [role="switch"], [contenteditable="true"]'
+
+function onRowClick(row: DataRow, index: number, event: MouseEvent | KeyboardEvent): void {
+  if (!hasRowClickListener.value) return
+  // 點的是列裡的按鈕 / 連結 / 輸入框時，不當成點整列
+  const target = event.target as HTMLElement | null
+  const row_el = event.currentTarget as HTMLElement | null
+  const hit = target?.closest(INTERACTIVE)
+  if (hit && hit !== row_el && row_el?.contains(hit)) return
+  emit('row-click', row, index, event)
+}
+
+// ----- 欄寬 -----
+const DEFAULT_MIN_WIDTH = 48
+const colWidths = ref<Record<string, number>>({})
+
+function colId(column: Column): string {
+  return column.key ?? column.title
+}
+
+function minWidthOf(column: Column): number {
+  return column.minWidth ?? DEFAULT_MIN_WIDTH
+}
+
+function currentWidthOf(column: Column): number {
+  return colWidths.value[colId(column)] ?? column.width ?? (props.resizable ? DEFAULT_RESIZABLE_WIDTH : 0)
+}
+
+/** resizable（table-layout: fixed）時沒給 width 的欄位用這個寬度，否則會被填充欄擠到 0 */
+const DEFAULT_RESIZABLE_WIDTH = 140
+
+function widthStyle(column: Column): Record<string, string> | undefined {
+  const w = colWidths.value[colId(column)] ?? column.width ?? (props.resizable ? DEFAULT_RESIZABLE_WIDTH : undefined)
+  if (!w) return undefined
+  return { width: `${w}px`, minWidth: `${w}px`, maxWidth: `${w}px` }
+}
+
+function setWidth(column: Column, width: number): void {
+  const w = Math.max(minWidthOf(column), Math.round(width))
+  colWidths.value = { ...colWidths.value, [colId(column)]: w }
+}
+
+function measuredWidth(el: HTMLElement | null, column: Column): number {
+  const current = currentWidthOf(column)
+  if (current) return current
+  return el?.getBoundingClientRect().width || DEFAULT_RESIZABLE_WIDTH
+}
+
+let stopResize: (() => void) | null = null
+
+function startResize(event: PointerEvent, column: Column): void {
+  if (event.button !== 0) return
+  const th = (event.currentTarget as HTMLElement).closest('th')
+  const startX = event.clientX
+  const startWidth = measuredWidth(th, column)
+  const onMove = (e: PointerEvent) => setWidth(column, startWidth + (e.clientX - startX))
+  const onUp = () => {
+    stopResize?.()
+    emit('column-resize', { key: colId(column), width: currentWidthOf(column) })
+  }
+  stopResize = () => {
+    window.removeEventListener('pointermove', onMove)
+    window.removeEventListener('pointerup', onUp)
+    document.body.style.removeProperty('cursor')
+    stopResize = null
+  }
+  window.addEventListener('pointermove', onMove)
+  window.addEventListener('pointerup', onUp)
+  document.body.style.cursor = 'col-resize'
+}
+
+function nudgeWidth(column: Column, delta: number): void {
+  const el = document.activeElement?.closest('th') as HTMLElement | null
+  setWidth(column, measuredWidth(el, column) + delta)
+  emit('column-resize', { key: colId(column), width: currentWidthOf(column) })
+}
+
+function resetWidth(column: Column): void {
+  const next = { ...colWidths.value }
+  delete next[colId(column)]
+  colWidths.value = next
+}
+
+onBeforeUnmount(() => stopResize?.())
+
 // defineExpose - 暴露組件方法和狀態
 defineExpose({
+  clearSelection,
+  selectedRows,
   refresh: performSearch,
   resetPage: () => { currentPage.value = 1 },
   resetSort: () => { 
@@ -689,6 +1128,113 @@ watch(displayColumns, (newColumns) => {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+}
+
+/* ===== 勾選 / 展開 / 可點列 / 欄寬把手 ===== */
+.filler-col {
+  padding: 0 !important;
+}
+
+.lead-col {
+  width: 2.5rem;
+  min-width: 2.5rem;
+  max-width: 2.5rem;
+  padding: 0 !important;
+  text-align: center;
+}
+
+.table-check {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  accent-color: rgb(var(--t-accent-solid));
+  vertical-align: middle;
+}
+
+.table-check:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.expand-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.375rem;
+  color: rgb(var(--t-content-secondary));
+}
+
+.expand-toggle:hover {
+  background-color: rgb(var(--t-surface-tertiary));
+  color: rgb(var(--t-content-primary));
+}
+
+.table-check:focus-visible,
+.expand-toggle:focus-visible,
+.col-resizer:focus-visible,
+tr.is-clickable:focus-visible {
+  outline: 2px solid rgb(var(--t-stroke-focus));
+  outline-offset: -2px;
+}
+
+/* 勾選中的列：比斑馬紋與 hover 優先 */
+:deep(tbody tr.is-selected) {
+  background-color: rgb(var(--t-accent-subtle));
+}
+
+/* 另外加一條左側強調線：rowClass（例如 warning-row）用 !important 蓋掉底色時，勾選狀態仍看得出來 */
+:deep(tbody tr.is-selected > td:first-child) {
+  box-shadow: inset 3px 0 0 rgb(var(--t-accent-solid));
+}
+
+tr.is-clickable {
+  cursor: pointer;
+}
+
+/* 展開的明細列：不參與 hover 上色，左側一條強調線表示從屬於上一列 */
+:deep(tbody tr.expand-row),
+:deep(tbody tr.expand-row:hover) {
+  background-color: rgb(var(--t-surface-secondary));
+}
+
+:deep(tbody tr.expand-row > td) {
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  text-align: left;
+  white-space: normal;
+  max-width: none;
+  box-shadow: inset 3px 0 0 rgb(var(--t-accent-solid));
+}
+
+.col-resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  z-index: 1;
+  width: 7px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.col-resizer::after {
+  content: '';
+  position: absolute;
+  top: 25%;
+  left: 3px;
+  width: 1px;
+  height: 50%;
+  background-color: rgb(var(--t-stroke-default));
+}
+
+.col-resizer:hover::after,
+.col-resizer:focus-visible::after {
+  top: 0;
+  height: 100%;
+  width: 2px;
+  left: 2px;
+  background-color: rgb(var(--t-accent-solid));
 }
 
 /* 表格底部樣式 */

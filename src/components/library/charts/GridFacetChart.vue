@@ -412,6 +412,16 @@ defineExpose({ containerRef })
   }
 }
 
+/* 列表頭是窄欄（預設 80px）：允許換行，最多三行 */
+.row-header .header-text {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+}
+
 .grid-cell {
   background-color: rgb(var(--t-surface-primary));
   transition: box-shadow 0.2s;

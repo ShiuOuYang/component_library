@@ -13,7 +13,7 @@
       v-if="props.closable"
       type="button"
       class="flex items-center cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
-      :aria-label="`關閉 ${props.label}`"
+      :aria-label="props.label ? `關閉 ${props.label}` : '關閉標籤'"
       @click="handleClose"
     >
       <ChptIcon :size="closeSize">close</ChptIcon>

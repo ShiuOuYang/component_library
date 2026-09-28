@@ -69,10 +69,11 @@ describe('FacetedChart', () => {
       })
 
       const items = wrapper.findAll('.facet-item')
-      // 可用高度 = 500 - 40 - 60 - 10 = 390，兩個均分 → 195
+      // 最後一個分面自己的下緣（標籤旋轉 → 60）已容納 X 軸，外框 margin.bottom 60 不再重複保留：
+      // 可用高度 = 500 - 40 - max(0, 60 - 60) - 10 = 450，兩個均分 → 225
       expect(items[0].element.style.top).toBe('40px')
-      expect(items[0].element.style.height).toBe('195px')
-      expect(items[1].element.style.top).toBe('245px') // 40 + 195 + 10
+      expect(items[0].element.style.height).toBe('225px')
+      expect(items[1].element.style.top).toBe('275px') // 40 + 225 + 10
       wrapper.unmount()
     })
 
@@ -84,8 +85,9 @@ describe('FacetedChart', () => {
       })
 
       const items = wrapper.findAll('.facet-item')
-      expect(items[0].element.style.height).toBe('195px')
-      expect(items[1].element.style.height).toBe('245px')
+      // extra 從可用高度扣掉：(500 - 40 - 0 - 10 - 50) / 2 = 200，最後一個 + 50
+      expect(items[0].element.style.height).toBe('200px')
+      expect(items[1].element.style.height).toBe('250px')
       wrapper.unmount()
     })
 
@@ -164,8 +166,28 @@ describe('FacetedChart', () => {
       const wrapper = await mountFaceted({ xAxisLabelRotate: 0 })
 
       const charts = wrapper.findAllComponents({ name: 'DualAxisComboChart' })
-      expect(charts[1].props('margin')).toMatchObject({ bottom: 50 })
+      expect(charts[1].props('margin')).toMatchObject({ bottom: 32 })
       wrapper.unmount()
+    })
+
+    /** 回歸：外框 margin.bottom 與最後一個分面的下緣疊加、extra 又沒扣掉，最下面多出一截空白 */
+    it('分面剛好填滿容器高度，下面不留多餘空白', async () => {
+      for (const rotate of [0, -45]) {
+        const wrapper = await mountFaceted({
+          xAxisLabelRotate: rotate,
+          margin: { top: 40, right: 20, bottom: 60, left: 20 },
+          facetSpacing: 10,
+          lastFacetExtraHeight: 50,
+        })
+        const items = wrapper.findAll('.facet-item')
+        const last = items[items.length - 1].element as HTMLElement
+        const bottom = parseFloat(last.style.top) + parseFloat(last.style.height)
+        const inner = rotate === 0 ? 32 : 60
+        // 容器 500；外框只補「margin.bottom 超過分面下緣」的部分
+        expect(bottom).toBeGreaterThanOrEqual(500 - Math.max(0, 60 - inner) - 1)
+        expect(bottom).toBeLessThanOrEqual(500)
+        wrapper.unmount()
+      }
     })
 
     it('左右邊距沿用外層 margin', async () => {

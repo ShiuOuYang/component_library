@@ -102,7 +102,7 @@
 
 | 組件 | Props（重點） | Emits | Slots / Ref |
 |---|---|---|---|
-| `ChptTable` | data, columns, searchPlaceholder, noDataText, defaultPageSize, customFilter, defaultSort, paginationPosition(`top`/`bottom`/`both`), 以及整組外觀 props（containerBgColor, headerBgGradient, evenRowBgColor, hoverRowBgColor, fontSize…） | search, sort, update:page, update:pageSize | slots: `left-controls`, `right-controls`, `bottom-left-controls`, `bottom-right-controls`, `table-row`（整列自訂；未提供時依 columns 畫出）、`cell`（`{ item, column, value }`，只改單一格）, `footer`, `modals`；ref: `refresh()`, `resetPage()`, `resetSort()`, `enableColumnSort()` |
+| `ChptTable` | data, columns（`{ key, title, sortable, sortType, width, minWidth, resizable }`）, searchPlaceholder, noDataText, defaultPageSize, customFilter, defaultSort, paginationPosition(`top`/`bottom`/`both`), **rowKey**（預設 `'id'`）, **selectable**（`true`/`'single'`）, **selectedKeys**（v-model）, **isRowSelectable**, **expandedKeys**（v-model）, **isRowExpandable**, **remote** + **total**（伺服器端分頁排序搜尋）, **loading**/loadingText, **resizable**, **rowClass**, 以及整組外觀 props（containerBgColor, headerBgGradient, evenRowBgColor, hoverRowBgColor, fontSize…） | search, sort, update:page, update:pageSize, **change**（`{ page, pageSize, sortColumns, query, reason }`）, **update:selectedKeys**, **selection-change**（keys, rows；含其他頁的列）, **update:expandedKeys**, **row-click**（有監聽時列可聚焦、Enter 觸發）, **column-resize** | slots: `left-controls`, `right-controls`, `bottom-left-controls`, `bottom-right-controls`, `table-row`（整列自訂；此時勾選／展開／row-click 要自己處理）、`cell`（`{ item, column, value }`）, **`expand`**（`{ item, index }`，提供時多一個展開欄）, **`selection-actions`**（`{ keys, rows, clear }`）, `footer`, `modals`；ref: `refresh()`, `resetPage()`, `resetSort()`, `enableColumnSort()`, `clearSelection()`, `selectedRows` |
 | `ChptFixedTable` | columns, data, isFixed, fixedColumns, isFilter, filterColumns, isKeep, viewportOffset, showSearch, searchText, headerFontSize, cellFontSize, divideColor/Opacity/Direction/Size, isPagination, defaultPageSize | update:fixedColumns, update:filterColumns, update:searchText | slot: `td-{dataIndex}`（`{ row, value }`）、`header` |
 | `ChptPagination` | variant(`full`/`compact`), currentPage, itemsPerPage, totalItems, pageSizeOptions, showSummary, showPageSize, bgColor | change, update:currentPage, update:itemsPerPage | – |
 | `ChptCodeBlock` | code, language, trimIndent, tip, tipType, tipTitle | – | slot: `tip` |
@@ -119,7 +119,7 @@
 | `ChptDrawer` | modelValue, title, placement(`left/right/top/bottom`), size, closable, maskClosable, backdropOpacity | update:modelValue, close | slot: `footer` |
 | `ChptPopconfirm` | message, confirmText, cancelText, color | confirm, cancel | slot: `message` |
 | `ChptModalDock` | zIndex | – | 最小化視窗停靠列，配 `useModalManager` |
-| `ChptTooltip` | content, placement(top/bottom/left/right), theme(dark/light/info/warning/error), showArrow, maxWidth, disabled | show, hide | slot: default（觸發元素）、`content` |
+| `ChptTooltip` | content, placement(top/bottom/left/right), theme(dark/light/info/warning/error), showArrow, maxWidth, disabled | show, hide | slot: default（觸發元素）、`content`；aria-describedby 掛到觸發元素內可聚焦的元素、提示可滑鼠停留、Esc 任何時候可關、z-tooltip |
 | `ChptDropdown` | items(`{key?,label,icon?,disabled?,danger?,divided?,shortcut?}`), label, icon, placement(`bottom-start/bottom-end/top-start/top-end`), size, disabled | select(item), open, close | slot: `trigger`（`{ open, toggle, attrs }`，attrs 需 v-bind）；ref: open, close |
 | `ChptPopover` | open（v-model:open）, trigger(`click/hover/focus/manual`), placement(`top*/bottom*/left/right`), title, content, width, ariaLabel, padded, openDelay, closeDelay, disabled | update:open | slot: default（觸發元素，`{ open, toggle, attrs }`；aria 會自動補上）、`title`、`content`（`{ close }`）；ref: open, close, toggle |
 | `useConfirm()` + `ChptConfirmHost` | `confirm({ title, message?, type?(info/success/warning/danger), confirmText?, cancelText?, requireText?, focus? })` → `Promise<boolean>`；`alert(...)` → `Promise<true>` | – | Host 在 App 放一次；role=alertdialog、排隊顯示、danger 預設焦點在取消、requireText 需照打才能確定 |
@@ -133,9 +133,9 @@
 | `ChptAlert` | show, type(`success`/`info`/`warning`/`danger`), title, message, showIcon, closable, fullWidth | close |
 | `ChptTag` | label, color(含 dark/light), isOutline, size, icon, closable | close |
 | `ChptBadge` | count, isDot, max, showZero, status, position, offset, color | – |
-| `ChptAvatar` | src, icon, name, alt, size, backgroundColor（真實 Avatar） | – |
+| `ChptAvatar` | src, alt, name, size(xs–xl), shape(circle/square), variant, showStatus, statusColor | – | 圖片載入失敗退回縮寫；文字頭像 role=img + 姓名；中文姓名取名（後兩字），xs/sm 取姓 |
 | `ChptSpinner` | loading, size, text, color, fullWidth, center | – |
-| `ChptSkeleton` | loading, rows, rowWidth, rowHeight, color, fullWidth | – |
+| `ChptSkeleton` | loading, rows, rowWidth, rowHeight, color（底色 class，預設 bg-surface-tertiary）, fullWidth | – | role=status「載入中」 |
 | `ChptEmpty` | icon, title, description, iconSize, iconColor, fullWidth | slot: `action` |
 | `ChptProgress` | modelValue, status, strokeWidth, trackColor, showLabel | update:modelValue |
 | `ChptToast` | 無 props | 需全域掛載一次，配 `useToast()` |
@@ -150,7 +150,7 @@
 | 組件 | Props | Emits | Slots |
 |---|---|---|---|
 | `ChptCard` | title, icon, padding(none/sm/md/lg), fullWidth, hoverable | click | `header`, `extra`, `footer`, default |
-| `ChptDivider` | direction(`horizontal`/`vertical`), text, color | – | default（中間內容） |
+| `ChptDivider` | direction(`horizontal`/`vertical`), text, color（預設 `stroke-light`） | – | default（中間內容）；純線時 role=separator |
 | `ChptTabs` | tabs, modelValue, centered | update:modelValue, change | `panel-<index>`、default |
 | `ChptSteps` | steps(`{title,status:pending/process/done}`), showLabel | – | – |
 | `ChptBreadcrumb` | items(`{label,to?}`), separator | select | `item-<index>` |
@@ -200,7 +200,7 @@
 | `DualAxisComboChart` | layers(必填), width, height, autoResize, debounceDelay, margin, xScaleType(`band`/`linear`/`time`), xDomain, xAxisLabel, xAxisFormat, xAxisLabelRotate, yLeft*/yRight*, title, showGrid, animationDuration, enableBrush, brushMode, triggerLines, showResetButton | layer-click, layer-hover, tooltip-show, tooltip-hide, selection-change, zoom-reset, chart-ready, chart-resize, axis-drag | slot `tooltip`（`tooltipData`, `tooltipVisible`）；layer.type：`bar` / `stacked-bar` / `line` / `area` / `scatter`，yAxis 省略＝左軸；Y 刻度數依高度自動調整 |
 | `EnterpriseHeatmap` | data, xField, yField, valueField, colorScheme, colorRange, valueDomain, reverseColorScale, cellPadding/BorderRadius/BorderWidth/BorderColor, xAxisAngle, autoResize, enableBrush, colorLegendPosition | cell-click, cell-hover, tooltip-show/hide, selection-change, zoom-reset, chart-ready, chart-resize | slot `tooltip` |
 | `EnterprisePareto` | data, categoryField, valueField, autoSort, sortOrder, barColor, barHoverColor, barPadding, showValuesOnBars, yAxisLeft*/yAxisRight*, xAxisAngle（共 44 props） | bar-click, bar-hover, tooltip-show/hide, chart-ready, chart-resize | slot `tooltip`；ref `render()`, `forceRerender()` |
-| `FacetedChart` | facets, title, width, totalHeight, autoResize, margin, facetSpacing, xScaleType, xDomain, xAxisFormat, enableBrush, brushMode, syncBrush, enableAxisDragging, lastFacetExtraHeight, **crosshair**（同步十字線，預設 true）, **sharedLegend**, **facetLabelPosition**(`left/top`) | selection-change, zoom-reset, chart-resize, axis-drag | 垂直堆疊多面板，共用 X 軸；slot `tooltip`（`{ tooltipData, tooltipVisible, facet }`） |
+| `FacetedChart` | facets, title, width, totalHeight, autoResize, margin, facetSpacing, xScaleType, xDomain, xAxisFormat, enableBrush, brushMode, syncBrush, enableAxisDragging, lastFacetExtraHeight, **crosshair**（同步十字線，預設 true）, **sharedLegend**, **facetLabelPosition**(`left/top`；左側長標題最多兩行)；margin 預設 `{ top: 40, right: 80, bottom: 40, left: 80 }`，外框下緣只補 X 軸區不夠的部分 | selection-change, zoom-reset, chart-resize, axis-drag | 垂直堆疊多面板，共用 X 軸；slot `tooltip`（`{ tooltipData, tooltipVisible, facet }`） |
 | `GridFacetChart` | data, xFacetVar, yFacetVar, xFacetLabel, yFacetLabel（空字串時表頭只顯示值）, title, headerHeight, headerWidth, xScaleType, **scales**(`free/fixed/free_x/free_y`), **sharedLegend**, enableBrush, syncMode, enableAxisDrag | selection-change, zoom-reset, chart-resize, axis-drag | 2D 行×列分面；scales='fixed' 讓各格可互相比較 |
 
 圖表的軸線 / 格線 / 文字 / tooltip 一律走 `charts/chartTheme.ts`（主題 CSS 變數，D3 用 `.style()` 設定），深色模式自動跟著變；資料系列色由呼叫端決定。

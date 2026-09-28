@@ -35,6 +35,72 @@
         <ChptCodeBlock :code="tableSample" />
       </div>
 
+      <!-- 進階：勾選 / 展開 / 點列 / 欄寬 -->
+      <h3 class="mt-10 mb-2 text-lg font-semibold text-content-primary">勾選、展開明細、點列、拖曳欄寬</h3>
+      <p class="text-sm text-content-secondary mb-3">
+        勾選跨頁保留（全選只選本頁）、已結案的工單不能勾；點 ▸ 展開明細；點整列開啟；拖曳表頭右緣（或 Tab 到把手按 ← →）調整欄寬、雙擊還原。
+      </p>
+      <ChptTable
+        v-model:selected-keys="selectedOrders"
+        :columns="orderColumns"
+        :data="orders"
+        :default-page-size="5"
+        selectable
+        resizable
+        :is-row-selectable="(row) => row.status !== '已結案'"
+        :row-class="(row) => (row.yield < 95 ? 'warning-row' : '')"
+        pagination-position="bottom"
+        @row-click="(row) => (lastOpened = row.wo)"
+      >
+        <template #selection-actions="{ rows }">
+          <ChptButton size="xs" color="primary" @click="lastBatch = `派工 ${rows.map((r) => r.wo).join('、')}`">批次派工</ChptButton>
+        </template>
+        <template #cell="{ column, value }">
+          <ChptTag v-if="column.key === 'status'" :label="value" :color="statusColor[value]" size="xs" />
+          <span v-else-if="column.key === 'yield'" :class="value < 95 ? 'font-semibold text-danger' : ''">{{ value.toFixed(1) }}%</span>
+          <template v-else>{{ value }}</template>
+        </template>
+        <template #expand="{ item }">
+          <dl class="grid grid-cols-2 gap-x-8 gap-y-1 text-xs md:grid-cols-4">
+            <div><dt class="text-content-tertiary">料號</dt><dd class="font-mono text-content-primary">{{ item.part }}</dd></div>
+            <div><dt class="text-content-tertiary">產線</dt><dd class="text-content-primary">{{ item.line }}</dd></div>
+            <div><dt class="text-content-tertiary">開工</dt><dd class="text-content-primary">{{ item.start }}</dd></div>
+            <div><dt class="text-content-tertiary">備註</dt><dd class="text-content-primary">{{ item.note }}</dd></div>
+          </dl>
+        </template>
+      </ChptTable>
+      <p class="text-sm text-content-secondary">
+        已選：<span class="font-mono">{{ selectedOrders.join(', ') || '—' }}</span>
+        ｜最後點開：<span class="font-mono">{{ lastOpened || '—' }}</span>
+        ｜批次動作：<span class="font-mono">{{ lastBatch || '—' }}</span>
+      </p>
+      <div class="mt-4">
+        <ChptCodeBlock :code="tableAdvancedSample" />
+      </div>
+
+      <!-- 進階：伺服器端 -->
+      <h3 class="mt-10 mb-2 text-lg font-semibold text-content-primary">伺服器端分頁 / 排序 / 搜尋</h3>
+      <p class="text-sm text-content-secondary mb-3">
+        <code>remote</code> 模式下表格不在前端過濾、排序、分頁；任何變動都送出 <code>change</code>（頁碼、每頁筆數、排序、關鍵字），
+        交給 API 查詢，<code>data</code> 只放當頁、<code>total</code> 給總筆數。查詢中設 <code>loading</code>，舊資料會留在遮罩下，不會閃成空白。
+      </p>
+      <ChptTable
+        remote
+        :columns="remoteColumns"
+        :data="remoteRows"
+        :total="remoteTotal"
+        :loading="remoteLoading"
+        :default-page-size="10"
+        selectable
+        search-placeholder="搜尋序號（Enter）"
+        pagination-position="bottom"
+        @change="fetchRemote"
+      />
+      <p class="text-sm text-content-secondary">最後一次查詢：<span class="font-mono">{{ lastQuery }}</span></p>
+      <div class="mt-4">
+        <ChptCodeBlock :code="tableRemoteSample" />
+      </div>
+
       <ApiTable title="Props" :rows="tableProps" />
       <ApiTable title="Events" :rows="tableEvents" />
       <ApiTable title="Slots" :rows="tableSlots" />
@@ -209,6 +275,8 @@
 import { ref } from 'vue'
 import {
   ChptTable,
+  ChptButton,
+  ChptTag,
   ChptFixedTable,
   ChptPagination,
   ChptFilter,
@@ -237,6 +305,69 @@ const tableData = [
 function onSearch(q) {
   console.log('搜尋：', q)
 }
+
+// ===== ChptTable 進階：勾選 / 展開 / 點列 / 欄寬 =====
+const orderColumns = [
+  { key: 'wo', title: '工單', width: 130 },
+  { key: 'product', title: '產品', width: 160 },
+  { key: 'qty', title: '數量', sortType: 'number', width: 90 },
+  { key: 'yield', title: '良率', sortType: 'number', width: 90 },
+  { key: 'status', title: '狀態', width: 100, sortable: false },
+]
+const products = ['主機板 A1', '電源板 P3', '控制板 C7', '顯示板 D2']
+const statuses = ['生產中', '待料', '已結案', '生產中', '暫停']
+const orders = Array.from({ length: 13 }, (_, i) => ({
+  id: i + 1,
+  wo: `WO-2609-${String(i + 101)}`,
+  product: products[i % products.length],
+  qty: 200 + ((i * 137) % 900),
+  yield: 93 + ((i * 29) % 70) / 10,
+  status: statuses[i % statuses.length],
+  part: `PN-${7300 + i * 11}`,
+  line: `SMT-0${(i % 4) + 1}`,
+  start: `9/${10 + (i % 18)} 08:00`,
+  note: i % 3 === 0 ? '客戶急單，優先排程' : '—',
+}))
+const statusColor = { 生產中: 'primary', 待料: 'warning', 已結案: 'success', 暫停: 'danger' }
+const selectedOrders = ref([])
+const lastOpened = ref('')
+const lastBatch = ref('')
+
+// ===== ChptTable 進階：伺服器端（以 setTimeout 模擬 API） =====
+const remoteColumns = [
+  { key: 'sn', title: '序號' },
+  { key: 'station', title: '站別' },
+  { key: 'result', title: '結果' },
+  { key: 'ct', title: 'CT (s)', sortType: 'number' },
+]
+const allSerials = Array.from({ length: 237 }, (_, i) => ({
+  id: i + 1,
+  sn: `SN-${String(880000 + i * 7)}`,
+  station: ['ICT', 'FCT', 'AOI', 'Burn-in'][i % 4],
+  result: i % 17 === 0 ? 'NG' : 'PASS',
+  ct: 30 + ((i * 53) % 400) / 10,
+}))
+const remoteRows = ref([])
+const remoteTotal = ref(0)
+const remoteLoading = ref(false)
+const lastQuery = ref('—')
+let requestId = 0
+function fetchRemote({ page, pageSize, sortColumns, query }) {
+  const id = ++requestId
+  remoteLoading.value = true
+  lastQuery.value = `page=${page} size=${pageSize} sort=${sortColumns.map((s) => `${s.key}:${s.direction}`).join(',') || '—'} q=${query || '—'}`
+  setTimeout(() => {
+    if (id !== requestId) return // 只採用最後一次查詢的結果
+    let rows = allSerials.filter((r) => !query || r.sn.includes(query.toUpperCase()))
+    for (const s of [...sortColumns].reverse()) {
+      rows = [...rows].sort((a, b) => (a[s.key] < b[s.key] ? -1 : a[s.key] > b[s.key] ? 1 : 0) * (s.direction === 'asc' ? 1 : -1))
+    }
+    remoteTotal.value = rows.length
+    remoteRows.value = rows.slice((page - 1) * pageSize, page * pageSize)
+    remoteLoading.value = false
+  }, 600)
+}
+fetchRemote({ page: 1, pageSize: 10, sortColumns: [], query: '' })
 
 const fixedColumns = [
   { title: 'ID', dataIndex: 'id', width: 80, defaultFixed: true },
@@ -293,12 +424,48 @@ const barFilters = [
 // ---- 程式碼範例（字串，避免模板解析） ----
 const tableSlots = [
   { name: 'cell', params: '{ item, column, value }', desc: '自訂單一格內容（其他格照 columns 預設顯示）' },
-  { name: 'table-row', params: '{ item, index }', desc: '整列自訂（需自行輸出 <tr>）；不提供時依 columns 畫出每一格' },
+  { name: 'expand', params: '{ item, index }', desc: '展開明細；提供時自動多一個展開欄' },
+  { name: 'selection-actions', params: '{ keys, rows, clear }', desc: '有勾選時出現在「已選 N 筆」旁的批次動作' },
+  { name: 'table-row', params: '{ item, index }', desc: '整列自訂（需自行輸出 <tr>）；不提供時依 columns 畫出每一格。用它時勾選、展開、row-click 要自己處理' },
   { name: 'footer', params: '—', desc: '表格底部（<tfoot> 內容）' },
   { name: 'left-controls / right-controls', params: '—', desc: '上方控制列左右兩側（搜尋框旁）' },
   { name: 'bottom-left-controls / bottom-right-controls', params: '—', desc: '下方控制列左右兩側' },
   { name: 'modals', params: '—', desc: '元件最後面的額外內容（例如與表格相關的對話框）' },
 ]
+
+const tableAdvancedSample = `<ChptTable
+  v-model:selected-keys="selected"
+  :columns="columns"
+  :data="orders"
+  row-key="id"
+  selectable
+  resizable
+  :is-row-selectable="row => row.status !== '已結案'"
+  :row-class="row => (row.yield < 95 ? 'warning-row' : '')"
+  @row-click="row => router.push(\`/orders/\${row.id}\`)"
+>
+  <template #selection-actions="{ rows }">
+    <ChptButton size="xs" @click="dispatch(rows)">批次派工</ChptButton>
+  </template>
+  <template #expand="{ item }">…工單明細…</template>
+</ChptTable>`
+
+const tableRemoteSample = `<ChptTable
+  remote
+  :columns="columns"
+  :data="rows"          <!-- 只放當頁 -->
+  :total="total"
+  :loading="loading"
+  @change="fetch"       <!-- { page, pageSize, sortColumns, query, reason } -->
+/>
+
+async function fetch({ page, pageSize, sortColumns, query }) {
+  loading.value = true
+  const res = await api.list({ page, pageSize, sort: sortColumns, q: query })
+  rows.value = res.items
+  total.value = res.total
+  loading.value = false
+}`
 
 const tableSample = `<ChptTable
   :columns="[{ key: 'name', title: '姓名', sortable: true }]"
@@ -353,12 +520,26 @@ const tableProps = [
   { name: 'headerBgGradient / headerTextColor', type: 'string', def: '…', desc: '表頭樣式 class' },
   { name: 'evenRowBgColor / hoverRowBgColor', type: 'string', def: 'rgb(var(--t-surface-secondary)) / rgb(var(--t-accent-subtle))', desc: '偶數列／hover 列底色（CSS 色值；用主題變數才會跟著深色模式）' },
   { name: 'fontSize', type: 'string', def: "'text-xs'", desc: '字級 class' },
+  { name: 'rowKey', type: "string | (row) => key", def: "'id'", desc: '每列唯一鍵；勾選、展開跨頁保留靠它（沒有時退回列序，不穩定）' },
+  { name: 'selectable', type: "boolean | 'single'", def: 'false', desc: '勾選列：多選（含全選本頁）或單選' },
+  { name: 'selectedKeys', type: 'key[]', def: '—', desc: '已勾選的鍵（v-model:selected-keys）' },
+  { name: 'isRowSelectable', type: '(row) => boolean', def: '—', desc: '哪些列可以勾' },
+  { name: 'expandedKeys / isRowExpandable', type: 'key[] / (row) => boolean', def: '—', desc: '已展開的列（v-model:expanded-keys）；需提供 #expand 插槽' },
+  { name: 'remote / total', type: 'boolean / number', def: 'false / —', desc: '伺服器端模式：不在前端過濾排序分頁，送 change 事件' },
+  { name: 'loading / loadingText', type: 'boolean / string', def: "false / '載入中'", desc: '半透明遮罩＋Spinner，table 設 aria-busy' },
+  { name: 'resizable', type: 'boolean', def: 'false', desc: '可拖曳欄寬（欄位可設 width / minWidth / resizable:false）' },
+  { name: 'rowClass', type: 'string | (row, index) => class', def: '—', desc: '每列額外的 class（例如內建的 warning-row）' },
 ]
 const tableEvents = [
   { name: 'update:page', params: '(page: number)', desc: '頁碼變更' },
   { name: 'update:pageSize', params: '(pageSize: number)', desc: '每頁筆數變更' },
   { name: 'search', params: '(query: string)', desc: '搜尋文字變更' },
   { name: 'sort', params: '(info)', desc: '排序變更（多欄依點擊順序）' },
+  { name: 'change', params: '({ page, pageSize, sortColumns, query, reason })', desc: '任何會影響查詢的變動（remote 模式接 API 用）' },
+  { name: 'update:selectedKeys / selection-change', params: '(keys) / (keys, rows)', desc: '勾選變更；rows 含其他頁已勾的列' },
+  { name: 'update:expandedKeys', params: '(keys)', desc: '展開變更' },
+  { name: 'row-click', params: '(row, index, event)', desc: '點列或列聚焦時按 Enter；點列內按鈕 / 核取方塊不算。有監聽時列才可聚焦' },
+  { name: 'column-resize', params: '({ key, width })', desc: '欄寬調整完成（可存到使用者偏好）' },
 ]
 
 const fixedTableProps = [

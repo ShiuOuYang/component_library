@@ -3,12 +3,17 @@
     v-if="props.loading"
     class="flex flex-col gap-3"
     :class="props.fullWidth ? 'w-full' : ''"
+    role="status"
+    aria-label="載入中"
   >
+    <!-- 原本 color prop 從沒套上去：每一條都是透明的，骨架屏整塊看不見 -->
     <div
       v-for="i in props.rows"
       :key="i"
       class="animate-pulse rounded-md"
+      :class="props.color"
       :style="rowStyle(i)"
+      aria-hidden="true"
     />
   </div>
   <slot v-else />

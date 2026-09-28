@@ -2047,8 +2047,15 @@ defineExpose({ containerRef, svgRef })
 
 :deep(.trigger-line-layer .trigger-label) {
   user-select: none;
-  /* 文字外圈用圖表底色（深色模式下不能是一圈白光） */
-  text-shadow: 0 0 3px rgb(var(--t-surface-primary)), 0 0 3px rgb(var(--t-surface-primary)), 0 0 3px rgb(var(--t-surface-primary));
+  /*
+   * 文字外圈用圖表底色（深色模式下不能是一圈白光）。
+   * 原本用 3px 模糊的 text-shadow：壓在實心長條上時外圈太淡，紅字疊藍柱幾乎讀不出來。
+   * 改用 SVG 的描邊光暈（先畫描邊再畫填色），邊緣清楚且不吃字重
+   */
+  paint-order: stroke fill;
+  stroke: rgb(var(--t-surface-primary));
+  stroke-width: 3px;
+  stroke-linejoin: round;
 }
 
 /* ✅ 座標軸拖曳樣式 */

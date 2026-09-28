@@ -528,7 +528,7 @@ export function useGridFacetLayout<T extends ChartDatum = ChartDatum>(
     left: `${headerWidth.value + col * cellWidth.value}px`,
     width: `${cellWidth.value}px`,
     height: `${cellHeight.value}px`,
-    border: '1px solid var(--color-border-light)',
+    border: '1px solid rgb(var(--t-stroke-light))',
   })
 
   const getColHeaderStyle = (colIndex: number): CSSProperties => ({
@@ -541,8 +541,8 @@ export function useGridFacetLayout<T extends ChartDatum = ChartDatum>(
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: 'bold',
-    borderBottom: '2px solid var(--color-border-dark)',
-    backgroundColor: 'var(--color-bg-secondary)',
+    borderBottom: '2px solid rgb(var(--t-stroke-default))',
+    backgroundColor: 'rgb(var(--t-surface-secondary))',
   })
 
   const getRowHeaderStyle = (rowIndex: number): CSSProperties => ({
@@ -555,10 +555,11 @@ export function useGridFacetLayout<T extends ChartDatum = ChartDatum>(
     alignItems: 'center',
     justifyContent: 'center',
     fontWeight: 'bold',
-    writingMode: 'vertical-rl',
-    textOrientation: 'mixed',
-    borderRight: '2px solid var(--color-border-dark)',
-    backgroundColor: 'var(--color-bg-secondary)',
+    // 原本 writingMode: 'vertical-rl'：「產線：L1」被排成直書，英數字躺平、全形冒號轉向，很難讀。
+    // 改成橫書、在表頭寬度內換行（樣式見 GridFacetChart 的 .row-header .header-text）
+    textAlign: 'center',
+    borderRight: '2px solid rgb(var(--t-stroke-default))',
+    backgroundColor: 'rgb(var(--t-surface-secondary))',
   })
 
   /** 只有最外圈的格子需要留空間給座標軸標籤 */

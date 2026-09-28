@@ -182,6 +182,37 @@
             畫面上沒有標籤時務必給 aria-label。</p>
         </section>
 
+        <!-- ============ ChptCheckbox ============ -->
+        <section id="chpt-checkbox" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptCheckbox 核取方塊群組</h2>
+          <p class="text-content-secondary text-sm mb-4">
+            <strong>使用時機：</strong>可複選的少量選項（5 個以內）直接攤開；選項多時改用 ChptSelect 多選或 ChptTransfer。
+          </p>
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
+            <ChptCheckbox v-model="form.stations" :items="stationItems" />
+            <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ form.stations.join(', ') || '—' }}</span></p>
+          </div>
+          <ChptCodeBlock :code="checkboxSample" />
+          <ApiTable title="Props" :rows="checkboxProps" />
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>停用但已勾選的項目仍顯示勾勾（只變淡）；
+            原生 input 視覺上隱藏，Tab 到時焦點框畫在方框上。</p>
+        </section>
+
+        <!-- ============ ChptTextarea ============ -->
+        <section id="chpt-textarea" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptTextarea 多行文字</h2>
+          <p class="text-content-secondary text-sm mb-4">
+            <strong>使用時機：</strong>備註、異常描述等多行輸入。<code>autosize</code> 讓高度跟著內容長，<code>showCount</code> 顯示字數。
+          </p>
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4 grid gap-4 md:grid-cols-2">
+            <ChptTextarea v-model="form.note" label="異常描述" placeholder="發生了什麼？" show-count :maxlength="200" autosize full-width />
+            <ChptTextarea v-model="form.memo" label="交接備註" show-count :error-text="form.memo ? '' : '交接備註必填'" full-width />
+          </div>
+          <ChptCodeBlock :code="textareaSample" />
+          <ApiTable title="Props" :rows="textareaProps" />
+          <ApiTable title="Events" :rows="textareaEvents" />
+        </section>
+
         <!-- 引入方式 -->
         <section class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light">
           <h2 class="text-2xl font-bold text-content-primary mb-2">引入方式</h2>
@@ -202,6 +233,8 @@ import {
   ChptInputNumber,
   ChptSlider,
   ChptSegmented,
+  ChptCheckbox,
+  ChptTextarea,
   ChptCodeBlock,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
@@ -215,6 +248,8 @@ const comps = [
   { id: 'chpt-inputnumber', label: 'ChptInputNumber' },
   { id: 'chpt-slider', label: 'ChptSlider' },
   { id: 'chpt-segmented', label: 'ChptSegmented' },
+  { id: 'chpt-checkbox', label: 'ChptCheckbox' },
+  { id: 'chpt-textarea', label: 'ChptTextarea' },
 ]
 
 const active = ref('chpt-input')
@@ -237,6 +272,9 @@ const form = reactive({
   opacity: 80,
   level: 3,
   period: '週',
+  stations: ['smt', 'test'],
+  note: '',
+  memo: '',
   view: 'list',
 })
 
@@ -293,6 +331,47 @@ const sliderProps = [
 const sliderEvents = [
   { name: 'update:modelValue', params: '(value: number)', desc: '拖曳中持續觸發' },
   { name: 'change', params: '(value: number)', desc: '放開或鍵盤操作完成時觸發一次' },
+]
+
+const stationItems = [
+  { label: 'SMT', value: 'smt' },
+  { label: 'DIP', value: 'dip' },
+  { label: '組裝', value: 'assy' },
+  { label: '測試（已鎖定）', value: 'test', disabled: true },
+]
+const checkboxSample = `<ChptCheckbox
+  v-model="stations"
+  :items="[
+    { label: 'SMT', value: 'smt' },
+    { label: '測試', value: 'test', disabled: true },
+  ]"
+  direction="row"
+/>`
+const checkboxProps = [
+  { name: 'modelValue', type: 'Array<string | number | boolean>', def: '[]', desc: '已勾選的值（v-model）' },
+  { name: 'items', type: '{ label, value, disabled? }[]', def: '[]', desc: '選項' },
+  { name: 'direction', type: "'row' | 'column'", def: "'row'", desc: '排列方向' },
+  { name: 'isLabelShow', type: 'boolean', def: 'true', desc: '顯示選項文字（隱藏時仍保留 aria-label）' },
+  { name: 'errors', type: 'string[]', def: '[]', desc: '驗證錯誤（顯示第一則）' },
+]
+const textareaSample = `<ChptTextarea
+  v-model="note"
+  label="異常描述"
+  :maxlength="200"
+  show-count
+  autosize
+/>`
+const textareaProps = [
+  { name: 'modelValue / label / placeholder', type: 'string', def: "''", desc: '值（v-model）、標籤（以 for/id 綁定）、提示' },
+  { name: 'rows', type: 'number', def: '3', desc: '初始行數' },
+  { name: 'autosize', type: 'boolean', def: 'false', desc: '高度跟著內容長' },
+  { name: 'maxlength / showCount', type: 'number / boolean', def: '— / false', desc: '字數上限與計數（沒有上限時只顯示字數）' },
+  { name: 'errorText', type: 'string', def: "''", desc: '錯誤訊息：設 aria-invalid 並以 aria-describedby 連結；放在 ChptFormItem 內時自動接上' },
+  { name: 'disabled / readonly / size / fullWidth', type: '—', def: '—', desc: '狀態與尺寸' },
+]
+const textareaEvents = [
+  { name: 'update:modelValue', params: '(value: string)', desc: '輸入時' },
+  { name: 'focus / blur', params: '(event: FocusEvent)', desc: '聚焦 / 失焦' },
 ]
 
 const segmentedSample = `<ChptSegmented v-model="period" :options="['日', '週', '月']" aria-label="統計期間" />
