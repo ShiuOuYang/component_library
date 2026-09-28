@@ -9,6 +9,7 @@
  */
 import { cellRef, parseRef, resolveRange, isRangeRef } from './cellRef'
 import { evaluateArithmetic } from './arithmetic'
+import { hasRefError, stripAbsolute } from './refRewrite'
 
 /** 引擎需要的工作表最小形狀（以 "A1" 為鍵） */
 export interface FormulaSheet {
@@ -239,5 +240,9 @@ function isBalanced(s: string): boolean {
  * 而不是顯示 undefined 或 NaN。
  */
 export function evaluateFormula(expr: string, sheet: FormulaSheet): FormulaValue | null {
-  return evaluate(expr, { sheet, visiting: new Set(), depth: 0 })
+  // 刪除列欄後被改寫成 #REF! 的公式：與 Excel 一樣直接顯示錯誤值，
+  // 而不是退回顯示公式原文（使用者會看不出它已經壞了）
+  if (hasRefError(expr)) return '#REF!'
+  // $A$1 / A$1 / $A1 求值時與 A1 相同；$ 只影響複製與填充時的位移
+  return evaluate(stripAbsolute(expr), { sheet, visiting: new Set(), depth: 0 })
 }
