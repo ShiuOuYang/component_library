@@ -456,13 +456,19 @@ function getCellRaw(r: number, c: number): string | number {
   return cell?.raw ?? ''
 }
 
+/** 跨工作表參照（Sheet2!A1）：工作表名稱不分大小寫，與 Excel 相同 */
+function findSheet(name: string): SheetData | undefined {
+  const lower = name.toLowerCase()
+  return sheets.find((s) => s.name.toLowerCase() === lower)
+}
+
 /** 取得儲存格的運算後顯示值（含公式解析） */
 function getCellValue(r: number, c: number): string | number {
   const cell = getCell(r, c)
   if (!cell) return ''
   const raw = cell.raw
   if (typeof raw === 'string' && raw.startsWith('=') && props.enableFormula) {
-    const result = evaluateFormula(raw.slice(1), activeSheet.value)
+    const result = evaluateFormula(raw.slice(1), activeSheet.value, { resolveSheet: findSheet })
     if (result !== null) return result
     return raw
   }
@@ -1477,12 +1483,57 @@ interface FunctionDef {
 }
 
 const FUNCTION_LIST: FunctionDef[] = [
-  { name: 'SUM', description: '加總', args: 'number1, number2, ...' },
-  { name: 'AVERAGE', description: '平均', args: 'number1, number2, ...' },
-  { name: 'MIN', description: '最小值', args: 'number1, number2, ...' },
-  { name: 'MAX', description: '最大值', args: 'number1, number2, ...' },
-  { name: 'COUNT', description: '數字個數', args: 'value1, value2, ...' },
-  { name: 'IF', description: '條件判斷', args: 'condition, true, false' },
+  { name: 'SUM', description: '加總', args: 'number1, [number2], ...' },
+  { name: 'AVERAGE', description: '平均', args: 'number1, [number2], ...' },
+  { name: 'MIN', description: '最小值', args: 'number1, [number2], ...' },
+  { name: 'MAX', description: '最大值', args: 'number1, [number2], ...' },
+  { name: 'COUNT', description: '數字個數', args: 'value1, [value2], ...' },
+  { name: 'COUNTA', description: '非空白個數', args: 'value1, [value2], ...' },
+  { name: 'IF', description: '條件判斷', args: 'logical_test, [value_if_true], [value_if_false]' },
+  { name: 'IFS', description: '多重條件', args: 'test1, value1, [test2, value2], ...' },
+  { name: 'IFERROR', description: '錯誤時改用', args: 'value, value_if_error' },
+  { name: 'AND', description: '全部成立', args: 'logical1, [logical2], ...' },
+  { name: 'OR', description: '任一成立', args: 'logical1, [logical2], ...' },
+  { name: 'NOT', description: '反轉', args: 'logical' },
+  { name: 'SUMIF', description: '條件加總', args: 'range, criteria, [sum_range]' },
+  { name: 'SUMIFS', description: '多條件加總', args: 'sum_range, criteria_range1, criteria1, ...' },
+  { name: 'COUNTIF', description: '條件計數', args: 'range, criteria' },
+  { name: 'COUNTIFS', description: '多條件計數', args: 'criteria_range1, criteria1, ...' },
+  { name: 'AVERAGEIF', description: '條件平均', args: 'range, criteria, [average_range]' },
+  { name: 'AVERAGEIFS', description: '多條件平均', args: 'average_range, criteria_range1, criteria1, ...' },
+  { name: 'VLOOKUP', description: '垂直查閱', args: 'lookup_value, table_array, col_index_num, [range_lookup]' },
+  { name: 'HLOOKUP', description: '水平查閱', args: 'lookup_value, table_array, row_index_num, [range_lookup]' },
+  { name: 'XLOOKUP', description: '查閱', args: 'lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode]' },
+  { name: 'INDEX', description: '依位置取值', args: 'array, row_num, [column_num]' },
+  { name: 'MATCH', description: '找出位置', args: 'lookup_value, lookup_array, [match_type]' },
+  { name: 'ROUND', description: '四捨五入', args: 'number, num_digits' },
+  { name: 'ROUNDUP', description: '無條件進位', args: 'number, num_digits' },
+  { name: 'ROUNDDOWN', description: '無條件捨去', args: 'number, num_digits' },
+  { name: 'INT', description: '取整數', args: 'number' },
+  { name: 'ABS', description: '絕對值', args: 'number' },
+  { name: 'MOD', description: '餘數', args: 'number, divisor' },
+  { name: 'SUMPRODUCT', description: '乘積加總', args: 'array1, [array2], ...' },
+  { name: 'MEDIAN', description: '中位數', args: 'number1, [number2], ...' },
+  { name: 'LARGE', description: '第 k 大', args: 'array, k' },
+  { name: 'SMALL', description: '第 k 小', args: 'array, k' },
+  { name: 'RANK', description: '排名', args: 'number, ref, [order]' },
+  { name: 'LEN', description: '字元數', args: 'text' },
+  { name: 'LEFT', description: '左邊字元', args: 'text, [num_chars]' },
+  { name: 'RIGHT', description: '右邊字元', args: 'text, [num_chars]' },
+  { name: 'MID', description: '中間字元', args: 'text, start_num, num_chars' },
+  { name: 'TRIM', description: '去除多餘空白', args: 'text' },
+  { name: 'UPPER', description: '轉大寫', args: 'text' },
+  { name: 'LOWER', description: '轉小寫', args: 'text' },
+  { name: 'CONCAT', description: '串接文字', args: 'text1, [text2], ...' },
+  { name: 'TEXTJOIN', description: '以分隔符號串接', args: 'delimiter, ignore_empty, text1, ...' },
+  { name: 'SUBSTITUTE', description: '取代文字', args: 'text, old_text, new_text, [instance_num]' },
+  { name: 'FIND', description: '尋找（分大小寫）', args: 'find_text, within_text, [start_num]' },
+  { name: 'SEARCH', description: '尋找（不分大小寫）', args: 'find_text, within_text, [start_num]' },
+  { name: 'TEXT', description: '數字轉格式文字', args: 'value, format_text' },
+  { name: 'VALUE', description: '文字轉數字', args: 'text' },
+  { name: 'ISBLANK', description: '是否空白', args: 'value' },
+  { name: 'ISNUMBER', description: '是否為數字', args: 'value' },
+  { name: 'ISERROR', description: '是否為錯誤', args: 'value' },
 ]
 
 const showFxPanel = ref(false)
@@ -1508,6 +1559,35 @@ function onFormulaFocus() {
   updateFormulaSuggestions()
 }
 
+/** 游標前正在輸入的函式名稱（=A1+SU → "SU"）；前面必須是開頭、運算子、括號或逗號 */
+function typingName(body: string): string | null {
+  const m = body.match(/(^|[-+*/^&=<>(,\s])([A-Za-z][A-Za-z0-9.]*)$/)
+  return m ? m[2].toUpperCase() : null
+}
+
+/** 游標前最內層、還沒關閉的函式（字串常值裡的括號不算） */
+function openFunction(body: string): string | null {
+  const stack: (string | null)[] = []
+  let inString = false
+  for (let i = 0; i < body.length; i++) {
+    const ch = body[i]
+    if (ch === '"') inString = !inString
+    if (inString) continue
+    if (ch === '(') {
+      const name = body.slice(0, i).match(/([A-Za-z][A-Za-z0-9.]*)$/)
+      stack.push(name ? name[1].toUpperCase() : null)
+    } else if (ch === ')') stack.pop()
+  }
+  for (let i = stack.length - 1; i >= 0; i--) if (stack[i]) return stack[i]
+  return null
+}
+
+/**
+ * 公式列的自動完成（與 Excel 相同）：
+ *   - 正在打函式名稱 → 列出開頭相符的函式（公式中間也可以：=A1+SU）
+ *   - 在函式的括號裡 → 顯示最內層那個函式的引數提示
+ * ⚠️ 原本只有整條公式就是「一個函式」時才有提示，=ROUND(SUM( 之後就沒了
+ */
 function updateFormulaSuggestions() {
   const v = formulaBarValue.value
   if (!v.startsWith('=')) {
@@ -1516,31 +1596,17 @@ function updateFormulaSuggestions() {
     return
   }
   const body = v.slice(1)
-  const typed = body.toUpperCase()
-  // 已選定函式並輸入 "("：顯示該函式的參數提示
-  const fnOpen = typed.match(/^([A-Z]+)\($/)
-  if (fnOpen) {
-    const fnDef = FUNCTION_LIST.find((f) => f.name === fnOpen[1])
-    formulaSuggestions.value = []
-    formulaHint.value = fnDef || null
-    return
-  }
-  // 若已超過函式名稱（有數字 / 符號作參數），顯示已用函式的提示
-  const usedFn = typed.match(/^([A-Z]+)\(/)
-  if (usedFn) {
-    formulaHint.value = FUNCTION_LIST.find((f) => f.name === usedFn[1]) || null
-    formulaSuggestions.value = []
-    return
-  }
-  // 輸入函式名稱前綴：顯示匹配的函式建議
-  if (/^[A-Z]*$/.test(typed)) {
-    formulaSuggestions.value = FUNCTION_LIST.filter((fn) => fn.name.startsWith(typed))
+  const name = typingName(body)
+  const matches = name ? FUNCTION_LIST.filter((fn) => fn.name.startsWith(name)) : []
+  if (matches.length) {
+    formulaSuggestions.value = matches
     activeSuggestionIndex.value = 0
     formulaHint.value = null
-  } else {
-    formulaSuggestions.value = []
-    formulaHint.value = null
+    return
   }
+  formulaSuggestions.value = []
+  const open = openFunction(body)
+  formulaHint.value = (open && FUNCTION_LIST.find((f) => f.name === open)) || null
 }
 
 function suggestionMove(dir: number) {
@@ -1555,8 +1621,10 @@ function suggestionApply() {
 }
 
 function applySuggestion(fn: FunctionDef) {
-  // 保留已輸入的 = 前綴，替換為函式
-  formulaBarValue.value = '=' + fn.name + '('
+  // 把正在打的名稱換成完整的函式名稱，前面已經打好的部分保留
+  const body = formulaBarValue.value.slice(1)
+  const partial = typingName(body) ?? ''
+  formulaBarValue.value = '=' + body.slice(0, body.length - partial.length) + fn.name + '('
   formulaSuggestions.value = []
   formulaHint.value = fn
   // focus 回公式列

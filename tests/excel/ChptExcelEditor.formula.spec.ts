@@ -104,11 +104,42 @@ describe('ChptExcelEditor：公式接線', () => {
     wrapper.unmount()
   })
 
-  it('算不出來的公式顯示原始字串', async () => {
+  it('不認得的函式顯示 #NAME?（與 Excel 相同）', async () => {
     const wrapper = await mountEditor()
     await typeInCell(wrapper, 1, 1, '=NOSUCHFN(1)')
 
-    expect(cellText(wrapper, 1, 1)).toBe('=NOSUCHFN(1)')
+    expect(cellText(wrapper, 1, 1)).toBe('#NAME?')
+    wrapper.unmount()
+  })
+
+  it('語法錯誤的公式顯示原始字串', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '=SUM(1,')
+
+    expect(cellText(wrapper, 1, 1)).toBe('=SUM(1,')
+    wrapper.unmount()
+  })
+
+  it('字串、串接與 IF 回傳文字', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '80')
+    await typeInCell(wrapper, 1, 2, '=IF(A1>=60,"及格","不及格")&"（"&A1&" 分）"')
+
+    expect(cellText(wrapper, 1, 2)).toBe('及格（80 分）')
+    wrapper.unmount()
+  })
+
+  it('跨工作表參照', async () => {
+    // 中文工作表名稱不加引號也可以（與 Excel 相同）
+    const wrapper = await mountEditor({ defaultSheetName: '銷售' })
+    const vm = wrapper.vm as unknown as { addSheet: () => void }
+    await typeInCell(wrapper, 1, 1, '21')
+    vm.addSheet()
+    await nextTick()
+    await typeInCell(wrapper, 1, 1, '=銷售!A1*2')
+    await typeInCell(wrapper, 2, 1, '=不存在!A1')
+    expect(cellText(wrapper, 1, 1)).toBe('42')
+    expect(cellText(wrapper, 2, 1)).toBe('#REF!')
     wrapper.unmount()
   })
 
@@ -136,9 +167,9 @@ describe('ChptExcelEditor：公式接線', () => {
       expect(probe).not.toHaveBeenCalled()
       expect(g.__formulaFlag).toBe(0)
 
-      // 算不出來就顯示原式
-      expect(cellText(wrapper, 1, 1)).toBe('=__formulaProbe()')
-      expect(cellText(wrapper, 2, 1)).toBe('=__formulaFlag = 99')
+      // 只是 Excel 的名稱：不存在就是 #NAME?，絕不會去讀 JavaScript 的全域變數
+      expect(cellText(wrapper, 1, 1)).toBe('#NAME?')
+      expect(cellText(wrapper, 2, 1)).toBe('#NAME?')
       wrapper.unmount()
     } finally {
       delete g.__formulaProbe
@@ -163,6 +194,36 @@ describe('ChptExcelEditor：公式接線', () => {
 
     await typeInCell(wrapper, 1, 1, '4')
     expect(cellText(wrapper, 2, 1)).toBe('40')
+    wrapper.unmount()
+  })
+})
+
+describe('ChptExcelEditor：公式列自動完成', () => {
+  async function typeInBar(wrapper: ReturnType<typeof mount>, value: string) {
+    const bar = wrapper.find('input.formula-input')
+    await bar.setValue(value)
+    await bar.trigger('input')
+    await nextTick()
+    return bar
+  }
+
+  /** ⚠️ 原本只有整條公式就是「一個函式名稱」時才有建議，=A1+SU 沒有 */
+  it('公式中間打函式名稱也有建議，套用時保留前面的內容', async () => {
+    const wrapper = await mountEditor()
+    const bar = await typeInBar(wrapper, '=A1+VLO')
+    expect(wrapper.text()).toContain('VLOOKUP')
+    await bar.trigger('keydown', { key: 'Tab' })
+    await nextTick()
+    expect((bar.element as HTMLInputElement).value).toBe('=A1+VLOOKUP(')
+    wrapper.unmount()
+  })
+
+  it('巢狀函式顯示最內層那個的引數提示；字串裡的括號不算', async () => {
+    const wrapper = await mountEditor()
+    await typeInBar(wrapper, '=ROUND(SUMIF(A1:A3,"(x",')
+    expect(wrapper.text()).toContain('SUMIF(range, criteria, [sum_range])')
+    await typeInBar(wrapper, '=ROUND(SUMIF(A1:A3,">1"),')
+    expect(wrapper.text()).toContain('ROUND(number, num_digits)')
     wrapper.unmount()
   })
 })
