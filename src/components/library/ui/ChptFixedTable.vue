@@ -650,21 +650,21 @@ onMounted(() => {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: rgb(var(--t-surface-tertiary));
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: rgb(var(--t-stroke-default));
   border-radius: 3px;
   transition: background 0.2s;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #a1a1a1;
+  background: rgb(var(--t-stroke-medium));
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:active {
-  background: #888;
+  background: rgb(var(--t-stroke-dark));
 }
 </style>

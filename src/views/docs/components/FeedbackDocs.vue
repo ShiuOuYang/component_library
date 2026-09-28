@@ -6,9 +6,9 @@
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
         <span class="text-3xl">🛎️</span>
-        <h1 class="text-4xl font-bold text-neutral-900">反饋元件</h1>
+        <h1 class="text-4xl font-bold text-content-primary">反饋元件</h1>
       </div>
-      <p class="text-neutral-600 text-lg max-w-4xl">
+      <p class="text-content-secondary text-lg max-w-4xl">
         ChptAlert（提示條）、ChptTag（標籤）、ChptBadge（徽章）、ChptToast（全域提示）、
         ChptProgress（進度條）、ChptSpinner（載入指示器）、ChptEmpty（空狀態）、
         ChptSkeleton（骨架屏）。每個元件都附「Props / Events / Slots」與注意事項。
@@ -16,14 +16,14 @@
     </div>
 
     <!-- ============ ChptAlert ============ -->
-    <section id="chpt-alert" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptAlert 提示條</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-alert" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAlert 提示條</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>頁面內「區塊級」訊息回饋（成功 / 資訊 / 警告 / 錯誤），可帶標題、
         可關閉、可全寬；適合放在表單頂端、操作結果旁或需要長時間停留的訊息。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptAlert } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptAlert } from '@/components/library'</code>
       </p>
 
       <div class="space-y-3">
@@ -41,20 +41,20 @@
       <ApiTable title="Events" :rows="alertEvents" />
       <ApiTable title="Slots" :rows="alertSlots" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>以 <code>show</code> 控制顯示／隱藏（預設 true）；若需要自訂訊息排版，
         使用 <code>#default</code> 插槽取代 <code>message</code> 文字。
       </p>
     </section>
 
     <!-- ============ ChptTag ============ -->
-    <section id="chpt-tag" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptTag 標籤</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-tag" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTag 標籤</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>輕量的狀態／分類標記（膠囊樣式），例如審核狀態、欄位型別、可關閉的篩選條件。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptTag } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptTag } from '@/components/library'</code>
       </p>
 
       <div class="flex flex-wrap items-center gap-3">
@@ -77,46 +77,46 @@
       <ApiTable title="Events" :rows="tagEvents" />
       <ApiTable title="Slots" :rows="tagSlots" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>文字可直接用 <code>label</code> 或放進 <code>#default</code>；前置圖示可經
         <code>icon</code>（Material Symbols 名稱）或 <code>#icon</code> 插槽自訂。
       </p>
     </section>
 
     <!-- ============ ChptBadge ============ -->
-    <section id="chpt-badge" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptBadge 徽章</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-badge" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptBadge 徽章</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>環繞子內容（按鈕／圖示／頭像）顯示未讀計數或線上狀態圓點；如通知數、購物車數量。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptBadge } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptBadge } from '@/components/library'</code>
       </p>
 
       <div class="flex items-center gap-10 flex-wrap">
         <div class="flex flex-col items-center gap-2">
           <ChptBadge :count="5">
-            <button type="button" class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">🔔</button>
+            <button type="button" class="w-12 h-12 bg-surface-tertiary rounded-lg border border-stroke-light flex items-center justify-center text-lg">🔔</button>
           </ChptBadge>
-          <span class="text-xs text-neutral-500">計數</span>
+          <span class="text-xs text-content-tertiary">計數</span>
         </div>
         <div class="flex flex-col items-center gap-2">
           <ChptBadge is-dot status="success">
-            <button type="button" class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">👤</button>
+            <button type="button" class="w-12 h-12 bg-surface-tertiary rounded-lg border border-stroke-light flex items-center justify-center text-lg">👤</button>
           </ChptBadge>
-          <span class="text-xs text-neutral-500">線上圓點</span>
+          <span class="text-xs text-content-tertiary">線上圓點</span>
         </div>
         <div class="flex flex-col items-center gap-2">
           <ChptBadge :count="102" :max="99">
-            <button type="button" class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">✉️</button>
+            <button type="button" class="w-12 h-12 bg-surface-tertiary rounded-lg border border-stroke-light flex items-center justify-center text-lg">✉️</button>
           </ChptBadge>
-          <span class="text-xs text-neutral-500">上限 99+</span>
+          <span class="text-xs text-content-tertiary">上限 99+</span>
         </div>
         <div class="flex flex-col items-center gap-2">
           <ChptBadge :count="3" status="primary">
-            <button type="button" class="w-12 h-12 bg-neutral-100 rounded-lg border border-neutral-200 flex items-center justify-center text-lg">🛒</button>
+            <button type="button" class="w-12 h-12 bg-surface-tertiary rounded-lg border border-stroke-light flex items-center justify-center text-lg">🛒</button>
           </ChptBadge>
-          <span class="text-xs text-neutral-500">自訂狀態色</span>
+          <span class="text-xs text-content-tertiary">自訂狀態色</span>
         </div>
       </div>
 
@@ -127,21 +127,21 @@
       <ApiTable title="Props" :rows="badgeProps" />
       <ApiTable title="Slots" :rows="badgeSlots" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>count</code> 為 0 且未設 <code>showZero</code> 時不顯示；純圓點請設
         <code>is-dot</code>。透過 <code>position</code> 可把徽章移到四個角落。
       </p>
     </section>
 
     <!-- ============ ChptToast ============ -->
-    <section id="chpt-toast" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptToast 全域提示</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-toast" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptToast 全域提示</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>跨頁面的輕量操作回饋（成功／失敗／警告／資訊），自動淡入並於頂端堆疊。
         <strong>容器需在 App 根層掛載一次</strong>，之後任一段程式碼都能用 <code>useToast()</code> 呼叫。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptToast, useToast } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptToast, useToast } from '@/components/library'</code>
       </p>
 
       <div class="flex flex-wrap gap-3">
@@ -157,32 +157,32 @@
 
       <ApiTable title="useToast 方法" :rows="toastMethods" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>ChptToast 透過 Teleport 掛到 body 頂端；同一 App 只掛一份即可，過多訊息會自動堆疊。
         圖示依賴 Material Symbols 字型，請確認字型已載入。
       </p>
     </section>
 
     <!-- ============ ChptProgress ============ -->
-    <section id="chpt-progress" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptProgress 進度條</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-progress" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptProgress 進度條</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>顯示 0–100 的完成度或工作進度；支援 v-model、多種語意色、粗細與百分比標籤。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptProgress } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptProgress } from '@/components/library'</code>
       </p>
 
       <div class="space-y-5 max-w-2xl">
         <div>
           <div class="flex items-center justify-between mb-1 text-sm">
-            <span class="text-neutral-600">互動示範（v-model）</span>
+            <span class="text-content-secondary">互動示範（v-model）</span>
             <ChptButton size="3xs" is-outline color="secondary" @click="progress = Math.min(100, progress + 12)">+12%</ChptButton>
           </div>
           <ChptProgress v-model="progress" status="primary" />
         </div>
         <div>
-          <p class="text-sm text-neutral-600 mb-1">狀態色</p>
+          <p class="text-sm text-content-secondary mb-1">狀態色</p>
           <ChptProgress :model-value="72" status="success" />
           <ChptProgress :model-value="45" status="info" :stroke-width="10" />
           <ChptProgress :model-value="88" status="warning" :show-label="false" />
@@ -197,31 +197,31 @@
       <ApiTable title="Props" :rows="progressProps" />
       <ApiTable title="Events" :rows="progressEvents" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>modelValue</code> 會自動夾在 0–100；<code>trackColor</code> 傳的是
         Tailwind class（未傳時預設 neutral-100）。
       </p>
     </section>
 
     <!-- ============ ChptSpinner ============ -->
-    <section id="chpt-spinner" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptSpinner 載入指示器</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-spinner" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSpinner 載入指示器</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>等待非同步操作完成時的輕量指示器；<code>loading</code> 為 false 時完全不渲染。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptSpinner } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptSpinner } from '@/components/library'</code>
       </p>
 
       <div class="flex items-center gap-8 flex-wrap">
         <ChptSpinner :loading="true" :size="20" />
-        <span class="text-primary-600">
+        <span class="text-accent">
           <ChptSpinner :loading="true" :size="28" text="載入中..." />
         </span>
-        <span class="text-success-600">
+        <span class="text-success">
           <ChptSpinner :loading="true" :size="32" />
         </span>
-        <span class="text-danger-600">
+        <span class="text-danger">
           <ChptSpinner :loading="true" :size="32" />
         </span>
         <ChptSpinner :loading="true" :size="40" text="資料處理中" center />
@@ -233,23 +233,23 @@
 
       <ApiTable title="Props" :rows="spinnerProps" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>SVG 以 <code>currentColor</code> 上色；想指定顏色請在外層包一個帶
         <code>text-{color}</code> 的容器（如上示範）。<code>center</code> 時文字會落在圖示下方。
       </p>
     </section>
 
     <!-- ============ ChptEmpty ============ -->
-    <section id="chpt-empty" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptEmpty 空狀態</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-empty" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptEmpty 空狀態</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>表格／列表／搜尋結果沒有資料時的引導畫面；可自訂圖示、標題、說明與操作按鈕。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptEmpty } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptEmpty } from '@/components/library'</code>
       </p>
 
-      <div class="border border-dashed border-neutral-300 rounded-lg">
+      <div class="border border-dashed border-stroke-default rounded-lg">
         <ChptEmpty
           icon="search_off"
           title="找不到相關資料"
@@ -268,27 +268,27 @@
       <ApiTable title="Props" :rows="emptyProps" />
       <ApiTable title="Slots" :rows="emptySlots" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>操作按鈕放進 <code>#action</code> 插槽即可置中顯示；標題可經 <code>#default</code>
         插槽自訂為 HTML。
       </p>
     </section>
 
     <!-- ============ ChptSkeleton ============ -->
-    <section id="chpt-skeleton" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">ChptSkeleton 骨架屏</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="chpt-skeleton" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSkeleton 骨架屏</h2>
+      <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>初次載入時以骨架佔位避免版面跳動；<code>loading</code> 為 false 時顯示
         預設插槽的實際內容。
       </p>
-      <p class="text-sm text-neutral-600 mb-4">
-        <strong>引入：</strong><code class="bg-neutral-100 px-1 py-0.5 rounded">import { ChptSkeleton } from '@/components/library'</code>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptSkeleton } from '@/components/library'</code>
       </p>
 
       <div class="max-w-xl">
         <ChptSkeleton :loading="skeletonLoading" :rows="4" :row-width="[100, 85, 90, 60]">
-          <div class="border border-neutral-200 rounded-lg p-4">
-            <p class="text-sm text-neutral-700">載入完成後的實際內容會顯示在這裡。</p>
+          <div class="border border-stroke-light rounded-lg p-4">
+            <p class="text-sm text-content-primary">載入完成後的實際內容會顯示在這裡。</p>
           </div>
         </ChptSkeleton>
       </div>
@@ -305,7 +305,7 @@
       <ApiTable title="Props" :rows="skeletonProps" />
       <ApiTable title="Slots" :rows="skeletonSlots" />
 
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>rowWidth</code> 可為單一數值／百分比，或以陣列逐列指定（如
         [100, 85, 90]）；底色 class 用 <code>color</code> 覆寫。
       </p>
@@ -476,7 +476,7 @@ const skeletonProps = [
   { name: 'rows', type: 'number', def: '3', desc: '骨架列數' },
   { name: 'rowWidth', type: 'number|string|Array', def: '100', desc: '寬度（%），陣列可逐列指定' },
   { name: 'rowHeight', type: 'number|string', def: '16', desc: '行高(px)' },
-  { name: 'color', type: 'string', def: "'bg-neutral-200'", desc: '骨架底色 class' },
+  { name: 'color', type: 'string', def: "'bg-surface-tertiary'", desc: '骨架底色 class' },
   { name: 'fullWidth', type: 'boolean', def: 'false', desc: '是否全寬' },
 ]
 const skeletonSlots = [{ name: 'default', params: '—', desc: '載入完成後顯示的實際內容' }]

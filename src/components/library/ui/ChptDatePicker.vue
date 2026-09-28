@@ -122,20 +122,20 @@ function handleUpdate(value: ChptDatePickerValue): void {
 <style scoped>
 .chpt-date-picker :deep(.dp__input) {
   border-radius: 0.375rem;
-  border-color: rgb(212 212 212);
+  border-color: rgb(var(--t-stroke-default));
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   transition: all 0.2s;
 }
 
 .chpt-date-picker :deep(.dp__input:focus) {
   outline: none;
-  box-shadow: 0 0 0 1px #2563eb;
-  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgb(var(--t-stroke-focus));
+  border-color: rgb(var(--t-stroke-focus));
 }
 
 .chpt-date-picker :deep(.dp__input:disabled) {
-  background-color: #f5f5f5;
-  color: #a3a3a3;
+  background-color: rgb(var(--t-surface-tertiary));
+  color: rgb(var(--t-content-disabled));
   cursor: not-allowed;
 }
 
@@ -177,13 +177,36 @@ function handleUpdate(value: ChptDatePickerValue): void {
   padding: 0 var(--control-padding-x-xl);
 }
 
+/*
+ * 日期選單的顏色接到主題變數。
+ * ⚠️ 原本寫死淺色（#404040 的字、#fafafa 的 hover…）：深色模式下輸入框與選單都還是白的，
+ *    放在深色表單裡特別突兀。
+ * 兩個選擇器：輸入框那層的 .dp__theme_light 就是元件根節點本身（與 .chpt-date-picker 同一個元素），
+ * 選單那層則在它裡面。
+ */
+.chpt-date-picker.dp__theme_light,
 .chpt-date-picker :deep(.dp__theme_light) {
-  --dp-primary-color: #2563eb;
-  --dp-primary-text-color: #ffffff;
-  --dp-secondary-color: #f5f5f5;
-  --dp-text-color: #404040;
-  --dp-hover-color: #fafafa;
-  --dp-hover-text-color: #404040;
-  --dp-border-color: #d4d4d4;
+  --dp-background-color: rgb(var(--t-surface-primary));
+  --dp-text-color: rgb(var(--t-content-primary));
+  --dp-hover-color: rgb(var(--t-surface-tertiary));
+  --dp-hover-text-color: rgb(var(--t-content-primary));
+  --dp-hover-icon-color: rgb(var(--t-content-secondary));
+  --dp-primary-color: rgb(var(--t-accent-solid));
+  --dp-primary-text-color: rgb(var(--t-content-on-solid));
+  --dp-secondary-color: rgb(var(--t-content-disabled));
+  --dp-border-color: rgb(var(--t-stroke-default));
+  --dp-menu-border-color: rgb(var(--t-stroke-light));
+  --dp-border-color-hover: rgb(var(--t-stroke-medium));
+  --dp-disabled-color: rgb(var(--t-surface-tertiary));
+  --dp-disabled-color-text: rgb(var(--t-content-disabled));
+  --dp-icon-color: rgb(var(--t-content-tertiary));
+  --dp-highlight-color: rgb(var(--t-accent-subtle));
+  --dp-range-between-dates-background-color: rgb(var(--t-accent-subtle));
+  --dp-range-between-dates-text-color: rgb(var(--t-accent-on-subtle));
+  --dp-range-between-border-color: rgb(var(--t-accent-subtle));
+  --dp-success-color: rgb(var(--t-success-solid));
+  --dp-danger-color: rgb(var(--t-danger-solid));
+  --dp-scroll-bar-background: rgb(var(--t-surface-tertiary));
+  --dp-scroll-bar-color: rgb(var(--t-stroke-medium));
 }
 </style>

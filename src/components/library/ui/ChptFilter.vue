@@ -298,6 +298,6 @@ onUnmounted(() => document.removeEventListener('click', handleOutsideClick))
 
 <style scoped>
 .overflow-y-auto::-webkit-scrollbar { width: 3px; }
-.overflow-y-auto::-webkit-scrollbar-track { background: #f8fafc; }
-.overflow-y-auto::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 1px; }
+.overflow-y-auto::-webkit-scrollbar-track { background: rgb(var(--t-surface-secondary)); }
+.overflow-y-auto::-webkit-scrollbar-thumb { background: rgb(var(--t-stroke-default)); border-radius: 1px; }
 </style>

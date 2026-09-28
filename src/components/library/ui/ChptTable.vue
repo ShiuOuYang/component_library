@@ -99,14 +99,30 @@
           <tr v-if="paginatedData.length === 0">
             <td :colspan="displayColumns.length" class="py-5 text-center text-content-tertiary italic bg-surface-secondary">{{ noDataText }}</td>
           </tr>
+          <!--
+            ⚠️ 原本資料列「只」能透過 table-row 插槽畫出來，沒有預設內容 ——
+               照文件只傳 columns + data 時，分頁顯示「共 7 筆」，表身卻是空的（文檔頁的示範就是這樣）。
+               現在預設依 columns 畫出每一格；要整列自訂仍可用 table-row，只改某一格用 cell。
+          -->
           <template v-else>
-            <slot
-              name="table-row"
-              v-for="(item, index) in paginatedData"
-              :key="index"
-              :item="item"
-              :index="index + startIndex"
-            ></slot>
+            <template v-for="(item, index) in paginatedData" :key="index">
+              <slot name="table-row" :item="item" :index="index + startIndex">
+                <tr>
+                  <td
+                    v-for="column in displayColumns"
+                    :key="column.key ?? column.title"
+                    :style="column.style"
+                  >
+                    <slot
+                      name="cell"
+                      :item="item"
+                      :column="column"
+                      :value="column.key ? item[column.key] : undefined"
+                    >{{ column.key ? item[column.key] : '' }}</slot>
+                  </td>
+                </tr>
+              </slot>
+            </template>
           </template>
         </tbody>
         <!-- 表格底部 -->
@@ -229,8 +245,10 @@ const props = withDefaults(defineProps<{
   containerShadow: 'shadow-sm',
   headerBgGradient: 'from-surface-secondary to-surface-tertiary',
   headerTextColor: 'text-content-secondary',
-  evenRowBgColor: 'rgb(250 250 250)',
-  hoverRowBgColor: 'rgb(232 245 239)',
+  // ⚠️ 原本寫死 rgb(250 250 250) / rgb(232 245 239)：深色模式下偶數列與 hover 列還是淺色，
+  //    整張表變成黑白相間。check:theme 只掃 Tailwind class，抓不到這種色值，要用主題變數
+  evenRowBgColor: 'rgb(var(--t-surface-secondary))',
+  hoverRowBgColor: 'rgb(var(--t-accent-subtle))',
   controlBgColor: 'bg-surface-primary',
   bottomControlBgColor: 'bg-surface-secondary',
   fontSize: 'text-xs'
@@ -630,18 +648,24 @@ watch(displayColumns, (newColumns) => {
   background-color: v-bind('props.hoverRowBgColor');
 }
 
+/*
+ * ⚠️ 以下原本全是寫死的淺色（rgb(55 65 81) 的字、rgb(229 231 235) 的線…）：
+ *    深色模式下儲存格文字是深灰配深底、列與列之間是一條條白線。
+ *    check:theme 只檢查 Tailwind class，看不到 <style> 裡的色值，所以一直沒被發現。
+ */
+
 /* 警告行樣式 */
 :deep(.warning-row) {
-  background-color: rgb(254 242 242) !important;
+  background-color: rgb(var(--t-danger-subtle)) !important;
 }
 
 :deep(.warning-row:hover) {
-  background-color: rgb(254 226 226) !important;
+  background-color: rgb(var(--t-danger-subtle-hover)) !important;
 }
 
 /* 指標未達標的樣式 */
 :deep(.below-trigger) {
-  color: rgb(239 68 68);
+  color: rgb(var(--t-danger));
   font-weight: 600;
 }
 
@@ -649,8 +673,8 @@ watch(displayColumns, (newColumns) => {
 :deep(td) {
   padding: 0.375rem;
   text-align: center;
-  border-bottom: 1px solid rgb(229 231 235);
-  color: rgb(55 65 81);
+  border-bottom: 1px solid rgb(var(--t-stroke-light));
+  color: rgb(var(--t-content-primary));
   transition: background-color 0.2s;
   max-width: 20rem;
   overflow: hidden;
@@ -671,13 +695,13 @@ watch(displayColumns, (newColumns) => {
 :deep(tfoot td) {
   padding: 0.5rem 0;
   text-align: center;
-  background-color: rgb(249 250 251);
+  background-color: rgb(var(--t-surface-secondary));
   font-size: 0.75rem;
-  border-top: 1px solid rgb(229 231 235);
+  border-top: 1px solid rgb(var(--t-stroke-light));
 }
 
 :deep(tfoot .summary-row) {
-  background-color: rgb(249 250 251);
+  background-color: rgb(var(--t-surface-secondary));
   font-size: 0.875rem;
   padding: 0.625rem 0;
   text-align: center;

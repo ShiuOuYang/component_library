@@ -90,6 +90,7 @@ function handleChange(key: string, value: string): void {
 </script>
 
 <style scoped>
-select:hover { border-color: #33A276; }
-select:focus { box-shadow: 0 0 0 3px rgba(0, 138, 85, 0.1); }
+/* ⚠️ 原本是舊品牌的綠色（#33A276）—— 品牌色 2026-09-06 已改成藍色，這裡沒跟著改 */
+select:hover { border-color: rgb(var(--t-stroke-medium)); }
+select:focus { box-shadow: 0 0 0 3px rgb(var(--t-stroke-focus) / 0.25); }
 </style>

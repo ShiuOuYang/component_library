@@ -3,28 +3,28 @@
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
         <span class="text-3xl">✨</span>
-        <h1 class="text-4xl font-bold text-neutral-900">最佳實踐</h1>
+        <h1 class="text-4xl font-bold text-content-primary">最佳實踐</h1>
       </div>
-      <p class="text-neutral-600 text-lg max-w-4xl">
+      <p class="text-content-secondary text-lg max-w-4xl">
         這頁記錄的不是理論，而是這個倉庫實際踩過、並已由 CI 守住的準則。
       </p>
     </div>
 
     <!-- ============ 設計令牌 ============ -->
-    <section id="tokens" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">設計令牌是唯一真實來源</h2>
-      <p class="text-sm text-neutral-600 mb-4">
-        所有顏色 / 尺寸 / 圓角 / 動效都由 <code class="bg-neutral-100 px-1 py-0.5 rounded">src/design/tokens.js</code>
+    <section id="tokens" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">設計令牌是唯一真實來源</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        所有顏色 / 尺寸 / 圓角 / 動效都由 <code class="bg-surface-tertiary px-1 py-0.5 rounded">src/design/tokens.js</code>
         定義，CSS 變數與 Tailwind utility 都是從它衍生的。
       </p>
 
       <div class="grid md:grid-cols-2 gap-4">
-        <div class="rounded-lg border border-success-200 bg-success-50 p-4">
-          <p class="text-sm font-semibold text-success-800 mb-2">✅ 這樣寫</p>
+        <div class="rounded-lg border border-success-subtle-border bg-success-subtle p-4">
+          <p class="text-sm font-semibold text-success mb-2">✅ 這樣寫</p>
           <ChptCodeBlock language="css" :code="tokenGood" />
         </div>
-        <div class="rounded-lg border border-danger-200 bg-danger-50 p-4">
-          <p class="text-sm font-semibold text-danger-800 mb-2">❌ 不要這樣寫</p>
+        <div class="rounded-lg border border-danger-subtle-border bg-danger-subtle p-4">
+          <p class="text-sm font-semibold text-danger mb-2">❌ 不要這樣寫</p>
           <ChptCodeBlock language="css" :code="tokenBad" />
         </div>
       </div>
@@ -36,17 +36,17 @@
     </section>
 
     <!-- ============ 深色模式 ============ -->
-    <section id="dark-mode" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">深色模式：優先用會自動翻轉的變數</h2>
-      <p class="text-sm text-neutral-600 mb-4">
-        文字 / 背景 / 邊框 / 圖表軸線的 CSS 變數會在 <code class="bg-neutral-100 px-1 py-0.5 rounded">.dark</code>
-        下自動換值，不需要寫任何 <code class="bg-neutral-100 px-1 py-0.5 rounded">dark:</code>。
+    <section id="dark-mode" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">深色模式：優先用會自動翻轉的變數</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        文字 / 背景 / 邊框 / 圖表軸線的 CSS 變數會在 <code class="bg-surface-tertiary px-1 py-0.5 rounded">.dark</code>
+        下自動換值，不需要寫任何 <code class="bg-surface-tertiary px-1 py-0.5 rounded">dark:</code>。
       </p>
 
       <ChptCodeBlock language="css" :code="darkGood" />
 
-      <p class="text-sm text-neutral-600 mt-4 mb-2">
-        只有<strong>需要換色階</strong>時才用 <code class="bg-neutral-100 px-1 py-0.5 rounded">dark:</code>
+      <p class="text-sm text-content-secondary mt-4 mb-2">
+        只有<strong>需要換色階</strong>時才用 <code class="bg-surface-tertiary px-1 py-0.5 rounded">dark:</code>
         —— 品牌色與語意色階不會翻轉，深色底下要改用較淺的階：
       </p>
       <ChptCodeBlock language="html" :code="darkShade" />
@@ -55,36 +55,36 @@
     </section>
 
     <!-- ============ 無障礙 ============ -->
-    <section id="a11y" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">無障礙：三個最容易踩的坑</h2>
+    <section id="a11y" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">無障礙：三個最容易踩的坑</h2>
 
-      <h3 class="text-base font-semibold text-neutral-800 mt-5 mb-2">1. 不要只寫 focus:outline-none</h3>
-      <p class="text-sm text-neutral-600 mb-3">
-        它會蓋掉 <code class="bg-neutral-100 px-1 py-0.5 rounded">base.css</code> 的全域
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">:focus-visible</code> 外框，
+      <h3 class="text-base font-semibold text-content-primary mt-5 mb-2">1. 不要只寫 focus:outline-none</h3>
+      <p class="text-sm text-content-secondary mb-3">
+        它會蓋掉 <code class="bg-surface-tertiary px-1 py-0.5 rounded">base.css</code> 的全域
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">:focus-visible</code> 外框，
         鍵盤使用者就完全看不到焦點在哪。必須同時提供替代樣式。
       </p>
       <ChptCodeBlock language="html" :code="focusCode" />
 
-      <h3 class="text-base font-semibold text-neutral-800 mt-6 mb-2">2. 可點擊的東西要能用鍵盤操作</h3>
-      <p class="text-sm text-neutral-600 mb-3">
-        只掛 <code class="bg-neutral-100 px-1 py-0.5 rounded">@click</code> 的
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">div</code> /
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">span</code> /
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">th</code> 對鍵盤使用者等於不存在。
-        能用 <code class="bg-neutral-100 px-1 py-0.5 rounded">&lt;button&gt;</code> 就用它；
-        不能換標籤時（例如表格的 <code class="bg-neutral-100 px-1 py-0.5 rounded">th</code>）補上
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">tabindex</code> 與 keydown。
+      <h3 class="text-base font-semibold text-content-primary mt-6 mb-2">2. 可點擊的東西要能用鍵盤操作</h3>
+      <p class="text-sm text-content-secondary mb-3">
+        只掛 <code class="bg-surface-tertiary px-1 py-0.5 rounded">@click</code> 的
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">div</code> /
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">span</code> /
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">th</code> 對鍵盤使用者等於不存在。
+        能用 <code class="bg-surface-tertiary px-1 py-0.5 rounded">&lt;button&gt;</code> 就用它；
+        不能換標籤時（例如表格的 <code class="bg-surface-tertiary px-1 py-0.5 rounded">th</code>）補上
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">tabindex</code> 與 keydown。
       </p>
       <ChptCodeBlock language="html" :code="keyboardCode" />
-      <p class="text-xs text-neutral-500 mt-2">
+      <p class="text-xs text-content-tertiary mt-2">
         注意不要覆寫 <code>th</code> 的 role（例如改成 <code>button</code>），那會破壞表格語意。
       </p>
 
-      <h3 class="text-base font-semibold text-neutral-800 mt-6 mb-2">3. 浮層一律用 useOverlay</h3>
-      <p class="text-sm text-neutral-600 mb-3">
+      <h3 class="text-base font-semibold text-content-primary mt-6 mb-2">3. 浮層一律用 useOverlay</h3>
+      <p class="text-sm text-content-secondary mb-3">
         焦點陷阱、焦點歸還、背景捲動鎖、Escape 只關最上層 —— 這四件事不要各自重寫。
-        自己綁 <code class="bg-neutral-100 px-1 py-0.5 rounded">document</code> 的 keydown 會導致
+        自己綁 <code class="bg-surface-tertiary px-1 py-0.5 rounded">document</code> 的 keydown 會導致
         按一次 Escape 把所有開啟的浮層一起關掉。
       </p>
       <ChptCodeBlock language="ts" :code="overlayCode" />
@@ -95,49 +95,49 @@
     </section>
 
     <!-- ============ 組件庫邊界 ============ -->
-    <section id="boundary" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">組件庫邊界</h2>
-      <p class="text-sm text-neutral-600 mb-4">
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">src/components/library/</code>
+    <section id="boundary" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">組件庫邊界</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">src/components/library/</code>
         必須能整包複製到另一個專案而不需修改。
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">npm run check:boundary</code> 會擋下違規，CI 也會跑。
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">npm run check:boundary</code> 會擋下違規，CI 也會跑。
       </p>
 
       <ApiTable title="允許的相依" :rows="boundaryRows" />
 
-      <p class="text-sm text-neutral-600 mt-5 mb-2">
+      <p class="text-sm text-content-secondary mt-5 mb-2">
         需要應用邏輯的元件一律以 props / emit 注入，不要在組件庫裡 import 應用程式的模組：
       </p>
       <ChptCodeBlock language="vue" :code="injectCode" />
     </section>
 
     <!-- ============ 相容層 ============ -->
-    <section id="legacy" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">相容層只能轉發，不能實作</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="legacy" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">相容層只能轉發，不能實作</h2>
+      <p class="text-sm text-content-secondary mb-4">
         legacy 元件全部是薄包裝，只把 props / emits / slots 轉發給 canonical。
-        <code class="bg-neutral-100 px-1 py-0.5 rounded">npm run check:legacy</code>
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">npm run check:legacy</code>
         會檢查行數上限並確認每一個都有 import 對應的 canonical。
       </p>
       <ChptAlert type="info">
         收斂前這些檔案合計 1830 行的重複邏輯，修一個 bug 要記得修兩邊。
         收斂後剩 455 行的轉發層。
       </ChptAlert>
-      <p class="text-sm text-neutral-600 mt-4">
+      <p class="text-sm text-content-secondary mt-4">
         新程式請直接用 canonical（<code>Chpt*</code>）。對照表見
         <a
           href="https://github.com/ShiuOuYang/component_library#legacy-對照表"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-primary-600 hover:text-primary-700 underline"
+          class="text-accent hover:text-accent underline"
         >README 的 Legacy 對照表</a>。
       </p>
     </section>
 
     <!-- ============ 常見錯誤 ============ -->
-    <section id="pitfalls" class="mb-12 bg-white rounded-xl shadow-md p-8 border border-neutral-200 scroll-mt-24">
-      <h2 class="text-2xl font-bold text-neutral-900 mb-2">這個倉庫實際踩過的坑</h2>
-      <p class="text-sm text-neutral-600 mb-4">
+    <section id="pitfalls" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">這個倉庫實際踩過的坑</h2>
+      <p class="text-sm text-content-secondary mb-4">
         以下每一項都曾經真的存在於程式碼中。
       </p>
       <ApiTable title="" :rows="pitfallRows" />

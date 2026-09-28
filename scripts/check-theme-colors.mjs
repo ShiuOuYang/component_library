@@ -30,7 +30,38 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const ROOT = 'src/components/library'
+/**
+ * 掃描範圍。
+ *   元件庫本身：整份檔案
+ *   文檔站（頁面與外框）：只掃 <template> 與 <style>
+ *     → 文檔頁的 <script> 裡是給人看的程式碼範例字串，其中有些刻意示範「錯誤寫法」
+ *       或 dark: 的用法，不是實際套用的 class
+ *
+ * ⚠️ 原本只掃元件庫。文檔站本身有 700 多處 bg-white / text-neutral-600，
+ *    切到深色模式時元件變深了、外面的側欄與卡片還是白的 —— 深色元件放在白卡片上，
+ *    API 表的欄位名幾乎看不見。
+ */
+const ROOTS = [
+  { dir: 'src/components/library', scope: 'file' },
+  { dir: 'src/views/docs', scope: 'markup' },
+  { dir: 'src/layouts', scope: 'markup' },
+]
+
+/**
+ * <style> 裡寫死的色值（#fafafa、rgb(55 65 81)）也會讓深色模式破功，
+ * 而且上面的 class 檢查完全看不到。
+ *
+ * ⚠️ ChptTable 的儲存格文字（rgb(55 65 81)）與列分隔線（rgb(229 231 235)）就是這樣
+ *    漏掉的：class 全部主題化了，深色模式下表格仍是深灰字、一條條白線。
+ *
+ * 用 rgb(var(--t-<角色>)) 取主題色。允許：
+ *   - 黑色系的陰影與遮罩 rgba(0, 0, 0, …)：兩個主題都該是黑的
+ *   - 同一行註明 theme-ok 的刻意固定色（例如品牌色的光暈）
+ * 圖表（charts/）另有 D3 以 .attr() 設定的顏色，需要整批處理，暫不在此列。
+ */
+const STYLE_COLOR = /#[0-9a-fA-F]{3,8}\b|rgba?\(\s*\d+[\s,]+\d+[\s,]+\d+[^)]*\)/g
+const STYLE_COLOR_OK = /^rgba?\(\s*0[\s,]+0[\s,]+0\b/
+const STYLE_SKIP_DIRS = ['src/components/library/charts/']
 
 /** 整份跳過的檔案（理由見上方 3、4、6） */
 const ALLOWED_FILES = new Set([
@@ -87,17 +118,36 @@ async function collectVueFiles(dir) {
   return out
 }
 
-const files = await collectVueFiles(ROOT)
+/** 把 <script> 區塊換成等量的空行（行號不變） */
+function blankScripts(source) {
+  return source.replace(/<script[\s\S]*?<\/script>/g, (block) => block.replace(/[^\n]/g, ''))
+}
+
 const offenders = []
 let scanned = 0
 
-for (const file of files) {
+for (const { dir, scope } of ROOTS) for (const file of await collectVueFiles(dir)) {
   const rel = file.replace(/\\/g, '/')
   if (ALLOWED_FILES.has(rel)) continue
   scanned += 1
 
-  const source = await readFile(file, 'utf8')
+  const raw = await readFile(file, 'utf8')
+  const source = scope === 'markup' ? blankScripts(raw) : raw
   const lines = source.split('\n')
+
+  // <style> 區塊裡的色值
+  if (!STYLE_SKIP_DIRS.some((d) => rel.startsWith(d))) {
+    for (const block of raw.matchAll(/<style[\s\S]*?<\/style>/g)) {
+      const startLine = raw.slice(0, block.index).split('\n').length
+      block[0].split('\n').forEach((line, i) => {
+        if (line.includes('theme-ok') || /^\s*(\*|\/\*|\/\/)/.test(line)) return
+        for (const m of line.matchAll(STYLE_COLOR)) {
+          if (STYLE_COLOR_OK.test(m[0])) continue
+          offenders.push({ where: `${rel}:${startLine + i}`, cls: `<style> ${m[0]}` })
+        }
+      })
+    }
+  }
 
   lines.forEach((line, idx) => {
     for (const m of line.matchAll(PATTERN)) {
@@ -110,7 +160,7 @@ for (const file of files) {
 }
 
 if (offenders.length > 0) {
-  console.error('✗ 元件庫裡出現寫死的淺色 class —— 深色模式下這些地方不會跟著翻轉：\n')
+  console.error('✗ 元件庫或文檔站出現寫死的淺色 class —— 深色模式下這些地方不會跟著翻轉：\n')
   for (const o of offenders.slice(0, 40)) {
     console.error(`  ${o.where}  ${o.cls}`)
   }
@@ -129,4 +179,4 @@ if (offenders.length > 0) {
   process.exit(1)
 }
 
-console.log(`✓ 主題色 class 檢查通過（掃了 ${scanned} 個元件，無寫死的淺色）`)
+console.log(`✓ 主題色 class 檢查通過（掃了 ${scanned} 個元件與文檔頁，無寫死的淺色）`)

@@ -338,3 +338,40 @@ describe('size 型別為 number | string 時的數值比較', () => {
     expect(asString.html()).toBe(asNumber.html())
   })
 })
+
+describe('ChptTable：只傳 columns + data 就要畫出資料列', () => {
+  // Bug：資料列只能透過 table-row 插槽畫出來，沒有預設內容 ——
+  //      分頁顯示「共 3 筆」，表身卻是空的（文檔頁的示範就是這樣）。
+  const columns = [
+    { key: 'name', title: '姓名' },
+    { key: 'dept', title: '部門' },
+  ]
+  const data = [
+    { name: '張三', dept: '研發' },
+    { name: '李四', dept: '品保' },
+    { name: '王五', dept: '製造' },
+  ]
+
+  it('預設依 columns 畫出每一格', () => {
+    const wrapper = mount(ChptTable, { props: { columns, data, defaultPageSize: 5 } })
+    const rows = wrapper.findAll('tbody tr')
+    expect(rows).toHaveLength(3)
+    expect(rows[1].findAll('td').map((td) => td.text())).toEqual(['李四', '品保'])
+  })
+
+  it('cell 插槽可以只改某一格', () => {
+    const wrapper = mount(ChptTable, {
+      props: { columns, data },
+      slots: { cell: `<template #cell="{ column, value }"><b v-if="column.key === 'dept'">{{ value }}!</b><span v-else>{{ value }}</span></template>` },
+    })
+    expect(wrapper.find('tbody tr').findAll('td')[1].text()).toBe('研發!')
+  })
+
+  it('table-row 插槽仍然可以整列自訂', () => {
+    const wrapper = mount(ChptTable, {
+      props: { columns, data },
+      slots: { 'table-row': `<template #table-row="{ item }"><tr class="custom"><td>{{ item.name }}</td></tr></template>` },
+    })
+    expect(wrapper.findAll('tbody tr.custom')).toHaveLength(3)
+  })
+})

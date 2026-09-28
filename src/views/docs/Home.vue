@@ -1,18 +1,18 @@
 ﻿<template>
-  <div class="min-h-screen bg-neutral-50">
+  <div class="min-h-screen bg-surface-secondary">
     <!-- Hero Section -->
-    <section class="py-16 px-8 bg-gradient-to-br from-primary-50 via-white to-secondary-50">
+    <section class="py-16 px-8 bg-gradient-to-br from-accent-subtle via-surface-primary to-surface-secondary">
       <div class="max-w-5xl mx-auto text-center">
         <div class="inline-flex items-center justify-center w-20 h-20 mb-6 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl shadow-lg">
           <span class="text-4xl text-white">🧩</span>
         </div>
 
-        <h1 class="text-5xl font-extrabold text-neutral-900 mb-6">
+        <h1 class="text-5xl font-extrabold text-content-primary mb-6">
           Vue 3 企業級組件庫
         </h1>
 
-        <p class="text-xl text-neutral-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-          一套以<span class="font-semibold text-primary-600">設計 token</span>驅動的組件庫，
+        <p class="text-xl text-content-secondary mb-8 max-w-3xl mx-auto leading-relaxed">
+          一套以<span class="font-semibold text-accent">設計 token</span>驅動的組件庫，
           涵蓋表單、資料、反饋、浮層、佈局、圖表、檢視器與 Excel。
           統一色票、圓角、動效，企業專案開箱即用。
         </p>
@@ -27,7 +27,7 @@
 
           <router-link
             to="/docs/guide/getting-started"
-            class="px-8 py-3 bg-white hover:bg-neutral-50 text-neutral-700 font-semibold rounded-lg shadow-md border-2 border-neutral-200 transition-all duration-200"
+            class="px-8 py-3 bg-surface-primary hover:bg-surface-secondary text-content-primary font-semibold rounded-lg shadow-md border-2 border-stroke-light transition-all duration-200"
           >
             📖 查看指南
           </router-link>
@@ -35,10 +35,10 @@
 
         <!-- 技術棧標籤 -->
         <div class="flex flex-wrap justify-center gap-3">
-          <span class="px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">Vue 3 + TypeScript</span>
-          <span class="px-4 py-2 bg-success-100 text-success-700 rounded-full text-sm font-medium">Tailwind + 設計 Token</span>
-          <span class="px-4 py-2 bg-secondary-100 text-secondary-700 rounded-full text-sm font-medium">統一設計系統</span>
-          <span class="px-4 py-2 bg-warning-100 text-warning-800 rounded-full text-sm font-medium">企業級元件</span>
+          <span class="px-4 py-2 bg-accent-subtle text-accent-on-subtle rounded-full text-sm font-medium">Vue 3 + TypeScript</span>
+          <span class="px-4 py-2 bg-success-subtle text-success-on-subtle rounded-full text-sm font-medium">Tailwind + 設計 Token</span>
+          <span class="px-4 py-2 bg-surface-tertiary text-content-secondary rounded-full text-sm font-medium">統一設計系統</span>
+          <span class="px-4 py-2 bg-warning-subtle text-warning-on-subtle rounded-full text-sm font-medium">企業級元件</span>
         </div>
       </div>
     </section>
@@ -46,25 +46,25 @@
     <!-- 分類速覽 -->
     <section class="py-14 px-4">
       <div class="w-full">
-        <h2 class="text-3xl font-bold text-neutral-900 text-center mb-12">元件總覽</h2>
+        <h2 class="text-3xl font-bold text-content-primary text-center mb-12">元件總覽</h2>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           <router-link
             v-for="group in groups"
             :key="group.to"
             :to="group.to"
-            class="block p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-neutral-200 group"
+            class="block p-6 bg-surface-primary rounded-xl shadow-md hover:shadow-lg transition-shadow border border-stroke-light group"
           >
             <div class="flex items-start justify-between mb-3">
               <span class="text-4xl">{{ group.icon }}</span>
-              <span class="px-2 py-1 text-xs font-semibold bg-primary-100 text-primary-700 rounded-full">
+              <span class="px-2 py-1 text-xs font-semibold bg-accent-subtle text-accent-on-subtle rounded-full">
                 {{ group.badge }}
               </span>
             </div>
-            <h3 class="text-lg font-bold text-neutral-900 mb-2 group-hover:text-primary-600 transition-colors">
+            <h3 class="text-lg font-bold text-content-primary mb-2 group-hover:text-accent transition-colors">
               {{ group.title }}
             </h3>
-            <p class="text-sm text-neutral-600">{{ group.description }}</p>
+            <p class="text-sm text-content-secondary">{{ group.description }}</p>
           </router-link>
         </div>
       </div>
@@ -73,39 +73,28 @@
     <!-- 快速開始 -->
     <section class="py-14 px-8">
       <div class="max-w-4xl mx-auto">
-        <h2 class="text-3xl font-bold text-neutral-900 text-center mb-12">快速開始</h2>
+        <h2 class="text-3xl font-bold text-content-primary text-center mb-12">快速開始</h2>
 
-        <div class="bg-white rounded-xl shadow-lg p-8 border border-neutral-200">
+        <div class="bg-surface-primary rounded-xl shadow-lg p-8 border border-stroke-light">
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-neutral-900 mb-3 flex items-center">
+            <h3 class="text-lg font-semibold text-content-primary mb-3 flex items-center">
               <span class="mr-2">1️⃣</span> 引入正式入口
             </h3>
-            <div class="bg-neutral-900 rounded-lg p-4 overflow-x-auto">
-              <pre class="text-success-400 text-sm font-mono"><code>import { ChptButton, ChptInput, ChptTable } from '@/components/library'</code></pre>
-            </div>
+            <ChptCodeBlock language="ts" :code="importCode" />
           </div>
 
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-neutral-900 mb-3 flex items-center">
+            <h3 class="text-lg font-semibold text-content-primary mb-3 flex items-center">
               <span class="mr-2">2️⃣</span> 圖表 / 檢視器 / Excel 分群引入
             </h3>
-            <div class="bg-neutral-900 rounded-lg p-4 overflow-x-auto">
-              <pre class="text-success-400 text-sm font-mono"><code>import { DualAxisComboChart } from '@/components/library/charts'
-import { GerberViewer } from '@/components/library/viewer'
-import { ChptExcelEditor } from '@/components/library/excel'</code></pre>
-            </div>
+            <ChptCodeBlock language="ts" :code="groupImportCode" />
           </div>
 
           <div>
-            <h3 class="text-lg font-semibold text-neutral-900 mb-3 flex items-center">
+            <h3 class="text-lg font-semibold text-content-primary mb-3 flex items-center">
               <span class="mr-2">3️⃣</span> 使用元件
             </h3>
-            <div class="bg-neutral-900 rounded-lg p-4 overflow-x-auto">
-              <pre class="text-success-400 text-sm font-mono"><code><template>
-  <ChptButton color="primary" label="儲存" />
-  <ChptTable :columns="columns" :data="rows" />
-</template></code></pre>
-            </div>
+            <ChptCodeBlock language="vue" :code="usageCode" />
           </div>
         </div>
       </div>
@@ -116,9 +105,10 @@ import { ChptExcelEditor } from '@/components/library/excel'</code></pre>
       <div class="max-w-4xl mx-auto text-center">
         <h2 class="text-3xl font-bold text-white mb-6">準備好開始了嗎？</h2>
         <p class="text-xl text-primary-100 mb-8">探索每一群元件文檔，快速建置你的企業應用</p>
+        <!-- 實心品牌漸層上的按鈕：底色兩個主題都是品牌藍，所以按鈕固定用淺色（帶數字的色階） -->
         <router-link
           to="/docs/components/form-atoms"
-          class="inline-block px-8 py-4 bg-white hover:bg-neutral-100 text-primary-600 font-bold rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
+          class="inline-block px-8 py-4 bg-primary-50 hover:bg-primary-100 text-primary-700 font-bold rounded-lg shadow-lg transition-all duration-200 transform hover:scale-105"
         >
           查看組件文檔 →
         </router-link>
@@ -129,6 +119,19 @@ import { ChptExcelEditor } from '@/components/library/excel'</code></pre>
 
 <script setup>
 // 純展示頁面（資料驅動）
+import { ChptCodeBlock } from '@/components/library'
+
+// ⚠️ 程式碼範例一定要放在字串裡交給 ChptCodeBlock：原本直接寫在 <pre><code> 裡，
+//    其中的 <template> 與 <ChptButton> 被 Vue 當成真的標籤 —— 畫面上出現的是一顆真的按鈕
+//    與一張空表格，而不是程式碼
+const importCode = `import { ChptButton, ChptInput, ChptTable } from '@/components/library'`
+const groupImportCode = `import { DualAxisComboChart } from '@/components/library/charts'
+import { GerberViewer } from '@/components/library/viewer'
+import { ChptExcelEditor } from '@/components/library/excel'`
+const usageCode = `<template>
+  <ChptButton color="primary" label="儲存" />
+  <ChptTable :columns="columns" :data="rows" />
+</template>`
 const groups = [
   { to: '/docs/components/form-atoms', icon: '🧩', title: '表單元件', badge: 'UI', description: 'Input / Select / Radio / Checkbox / Switch / DatePicker / Textarea' },
   { to: '/docs/components/data-filter', icon: '📊', title: '資料與過濾', badge: 'UI', description: 'ChptTable / ChptFixedTable / ChptPagination / ChptFilter / ChptFilterBar' },
@@ -143,28 +146,3 @@ const groups = [
   { to: '/docs/guide/getting-started', icon: '🚀', title: '開發指南', badge: 'Guide', description: '快速開始、安裝與最佳實踐' },
 ];
 </script>
-
-<style scoped>
-/* 程式碼區塊滾動條樣式 */
-pre {
-  scrollbar-width: thin;
-  scrollbar-color: #525252 #262626;
-}
-
-pre::-webkit-scrollbar {
-  height: 6px;
-}
-
-pre::-webkit-scrollbar-track {
-  background: #262626;
-}
-
-pre::-webkit-scrollbar-thumb {
-  background: #525252;
-  border-radius: 3px;
-}
-
-pre::-webkit-scrollbar-thumb:hover {
-  background: #737373;
-}
-</style>

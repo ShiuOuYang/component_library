@@ -262,7 +262,12 @@ selection.transition().duration(duration.chartUpdate)
 
 ### 兩道 CI 關卡
 
-- `npm run check:theme` —— 元件庫不得出現寫死的淺色 class
+- `npm run check:theme` —— 元件庫與文檔站（`src/views/docs`、`src/layouts`）不得出現寫死的淺色 class；
+  元件與文檔的 `<style>` 裡也不得寫死色值（`#fafafa`、`rgb(55 65 81)`），
+  要用 `rgb(var(--t-<角色>))`，例如 `color: rgb(var(--t-content-primary))`。
+  黑色陰影 `rgba(0, 0, 0, …)` 允許；刻意固定的顏色在同一行註明 `theme-ok`。
+  文檔頁只檢查 `<template>` 與 `<style>`（`<script>` 裡是程式碼範例字串）。
+  圖表（`charts/`）的 D3 顏色尚未納入，見待辦。
 - `npm run check:contrast` —— 每個「前景 × 背景」在兩個主題都要達 WCAG AA
   （目前 58 組，最緊的是淺色警告前景 4.92:1）
 
@@ -376,6 +381,8 @@ mode.value           // 'light' | 'dark' | 'system'
 ## 待辦
 
 - [ ] 確認 `src/assets/animations.css` 的 keyframes 是否與 `tailwind.config.js` 的 `keyframes` 重複，重複的刪掉一邊
-- [ ] 把既有圖表元件 scoped CSS 裡硬寫的軸線色改成 `var(--viz-axis-*)`
+- [ ] 把既有圖表元件 scoped CSS 裡硬寫的軸線色改成 `var(--viz-axis-*)`，
+      以及 D3 `.attr('fill', '#374151')` 這類寫死的顏色（深色模式下標籤與格線看不見），
+      完成後把 `charts/` 納入 `check:theme` 的 `<style>` 檢查
 - [ ] `.btn` / `.input` / `.tag` 待頁面遷移到 ChptButton / ChptInput 後移除
 - [ ] `primary` 色階 400→500→600 明度落差偏大，若要做平滑漸層需重新校準

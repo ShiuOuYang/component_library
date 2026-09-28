@@ -7,14 +7,14 @@
           <span class="text-3xl">🧩</span>
         </div>
         <div>
-          <h1 class="text-3xl font-bold text-neutral-900">基礎表單元件</h1>
-          <p class="text-neutral-600 mt-1">一個元件一個區塊：使用時機＋即時示範＋用法＋Props/Events。</p>
+          <h1 class="text-3xl font-bold text-content-primary">基礎表單元件</h1>
+          <p class="text-content-secondary mt-1">一個元件一個區塊：使用時機＋即時示範＋用法＋Props/Events。</p>
         </div>
       </div>
       <div class="flex flex-wrap gap-2 mt-5">
-        <span class="px-3 py-1 bg-success-100 text-success-700 rounded-full text-sm font-medium">✓ 完成</span>
-        <span class="px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">Vue 3 + TS</span>
-        <span class="px-3 py-1 bg-secondary-100 text-secondary-700 rounded-full text-sm font-medium">設計 Token</span>
+        <span class="px-3 py-1 bg-success-subtle text-success-on-subtle rounded-full text-sm font-medium">✓ 完成</span>
+        <span class="px-3 py-1 bg-accent-subtle text-accent-on-subtle rounded-full text-sm font-medium">Vue 3 + TS</span>
+        <span class="px-3 py-1 bg-surface-tertiary text-content-secondary rounded-full text-sm font-medium">設計 Token</span>
       </div>
     </div>
 
@@ -24,7 +24,7 @@
         v-for="c in comps"
         :key="c.id"
         class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors"
-        :class="active === c.id ? 'bg-primary-600 text-white' : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'"
+        :class="active === c.id ? 'bg-primary-600 text-white' : 'bg-surface-tertiary text-content-secondary hover:bg-surface-muted'"
         @click="go(c.id)"
       >
         {{ c.label }}
@@ -34,94 +34,94 @@
     <!-- 內容：一元件一區塊（左側 DocLayout 側欄可展開子元件跳轉） -->
     <div class="space-y-10">
         <!-- ============ ChptInput ============ -->
-        <section id="chpt-input" class="bg-white rounded-xl shadow-md p-6 lg:p-8 border border-neutral-200 scroll-mt-24">
-          <h2 class="text-2xl font-bold text-neutral-900 mb-1">ChptInput 輸入框</h2>
-          <p class="text-neutral-600 text-sm mb-4">
+        <section id="chpt-input" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptInput 輸入框</h2>
+          <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>單行文字輸入（帳號／料號／搜尋）。支援前綴圖示、可清除、錯誤訊息與 v-model。
           </p>
-          <div class="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-4 border border-neutral-200 mb-4">
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
             <ChptInput v-model="form.keyword" label="關鍵字" placeholder="請輸入料號或站點" prefix-icon="search" clearable full-width />
-            <p class="text-sm text-neutral-600 mt-2">目前值：<span class="font-mono">{{ form.keyword || '(空)' }}</span></p>
+            <p class="text-sm text-content-secondary mt-2">目前值：<span class="font-mono">{{ form.keyword || '(空)' }}</span></p>
             <ChptInput v-model="form.inputErr" label="必填欄位" placeholder="請輸入" error-text="此欄為必填" full-width />
           </div>
           <ChptCodeBlock :code="inputSample" />
           <ApiTable title="Props" :rows="inputProps" />
           <ApiTable title="Events" :rows="inputEvents" />
-          <p class="text-sm text-neutral-600 mt-4"><strong>注意：</strong>有 errorText 時呈現 danger 樣式；clearable 需有值才出現 ✕。</p>
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>有 errorText 時呈現 danger 樣式；clearable 需有值才出現 ✕。</p>
         </section>
 
         <!-- ============ ChptSelect ============ -->
-        <section id="chpt-select" class="bg-white rounded-xl shadow-md p-6 lg:p-8 border border-neutral-200 scroll-mt-24">
-          <h2 class="text-2xl font-bold text-neutral-900 mb-1">ChptSelect 下拉選單</h2>
-          <p class="text-neutral-600 text-sm mb-4">
+        <section id="chpt-select" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptSelect 下拉選單</h2>
+          <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>單選下拉；options 可為字串/數字陣列或 { label, value, disabled } 物件陣列。
           </p>
-          <div class="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-4 border border-neutral-200 mb-4">
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
             <ChptSelect v-model="form.site" label="廠區" :options="siteOptions" placeholder="請選擇廠區" full-width />
-            <p class="text-sm text-neutral-600 mt-2">目前值：<span class="font-mono">{{ form.site || '(未選擇)' }}</span></p>
+            <p class="text-sm text-content-secondary mt-2">目前值：<span class="font-mono">{{ form.site || '(未選擇)' }}</span></p>
           </div>
           <ChptCodeBlock :code="selectSample" />
           <ApiTable title="Props" :rows="selectProps" />
           <ApiTable title="Events" :rows="selectEvents" />
-          <p class="text-sm text-neutral-600 mt-4"><strong>注意：</strong>物件選項可用 valueKey/labelKey 對映；numberValue 會把值轉數字。</p>
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>物件選項可用 valueKey/labelKey 對映；numberValue 會把值轉數字。</p>
         </section>
 
         <!-- ============ ChptRadio ============ -->
-        <section id="chpt-radio" class="bg-white rounded-xl shadow-md p-6 lg:p-8 border border-neutral-200 scroll-mt-24">
-          <h2 class="text-2xl font-bold text-neutral-900 mb-1">ChptRadio 單選群組</h2>
-          <p class="text-neutral-600 text-sm mb-4">
+        <section id="chpt-radio" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptRadio 單選群組</h2>
+          <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>少量互斥選項（優先級／狀態）；值支援 String | Number | Boolean。
           </p>
-          <div class="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-4 border border-neutral-200 mb-4">
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
             <ChptRadio v-model="form.priority" :items="priorityOptions" color="primary" />
-            <p class="text-sm text-neutral-600 mt-2">目前值：<span class="font-mono">{{ form.priority }}</span></p>
+            <p class="text-sm text-content-secondary mt-2">目前值：<span class="font-mono">{{ form.priority }}</span></p>
           </div>
           <ChptCodeBlock :code="radioSample" />
           <ApiTable title="Props" :rows="radioProps" />
           <ApiTable title="Events" :rows="radioEvents" />
-          <p class="text-sm text-neutral-600 mt-4"><strong>注意：</strong>欄位禁用由 item.disabled 控制；錯誤以 errors[] 顯示於下方。</p>
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>欄位禁用由 item.disabled 控制；錯誤以 errors[] 顯示於下方。</p>
         </section>
 
         <!-- ============ ChptSwitch ============ -->
-        <section id="chpt-switch" class="bg-white rounded-xl shadow-md p-6 lg:p-8 border border-neutral-200 scroll-mt-24">
-          <h2 class="text-2xl font-bold text-neutral-900 mb-1">ChptSwitch 開關</h2>
-          <p class="text-neutral-600 text-sm mb-4">
+        <section id="chpt-switch" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptSwitch 開關</h2>
+          <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>布林開關（啟用／停用、通知、權限）。
           </p>
-          <div class="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-4 border border-neutral-200 mb-4">
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
             <div class="flex items-center gap-4">
               <ChptSwitch v-model="form.notify" label="啟用通知" color="success" />
-              <span class="text-sm text-neutral-600">{{ form.notify ? 'On' : 'Off' }}</span>
+              <span class="text-sm text-content-secondary">{{ form.notify ? 'On' : 'Off' }}</span>
             </div>
           </div>
           <ChptCodeBlock :code="switchSample" />
           <ApiTable title="Props" :rows="switchProps" />
           <ApiTable title="Events" :rows="switchEvents" />
-          <p class="text-sm text-neutral-600 mt-4"><strong>注意：</strong>color 語意色；disabled 時不觸發 change。</p>
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>color 語意色；disabled 時不觸發 change。</p>
         </section>
 
         <!-- ============ ChptDatePicker ============ -->
-        <section id="chpt-datepicker" class="bg-white rounded-xl shadow-md p-6 lg:p-8 border border-neutral-200 scroll-mt-24">
-          <h2 class="text-2xl font-bold text-neutral-900 mb-1">ChptDatePicker 日期選擇</h2>
-          <p class="text-neutral-600 text-sm mb-4">
+        <section id="chpt-datepicker" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptDatePicker 日期選擇</h2>
+          <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>單日／日期區間／時間選擇；封裝 @vuepic/vue-datepicker。
           </p>
-          <div class="bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg p-4 border border-neutral-200 mb-4">
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
             <div class="grid md:grid-cols-2 gap-4">
               <ChptDatePicker v-model="form.date" label="單日" placeholder="選擇日期" full-width />
               <ChptDatePicker v-model="form.range" label="區間" :range="true" :enable-time-picker="true" format="yyyy-MM-dd HH:mm" full-width />
             </div>
-            <p class="text-sm text-neutral-600 mt-2 break-all">單日：<span class="font-mono">{{ form.date ? String(form.date) : '(未選擇)' }}</span></p>
+            <p class="text-sm text-content-secondary mt-2 break-all">單日：<span class="font-mono">{{ form.date ? String(form.date) : '(未選擇)' }}</span></p>
           </div>
           <ChptCodeBlock :code="dateSample" />
           <ApiTable title="Props" :rows="dateProps" />
           <ApiTable title="Events" :rows="dateEvents" />
-          <p class="text-sm text-neutral-600 mt-4"><strong>注意：</strong>range=true 回傳區間陣列；format 例：yyyy-MM-dd 或含時間 HH:mm。</p>
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>range=true 回傳區間陣列；format 例：yyyy-MM-dd 或含時間 HH:mm。</p>
         </section>
 
         <!-- 引入方式 -->
-        <section class="bg-white rounded-xl shadow-md p-6 lg:p-8 border border-neutral-200">
-          <h2 class="text-2xl font-bold text-neutral-900 mb-2">引入方式</h2>
+        <section class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light">
+          <h2 class="text-2xl font-bold text-content-primary mb-2">引入方式</h2>
           <ChptCodeBlock :code="importSample" />
         </section>
     </div>
