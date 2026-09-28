@@ -166,12 +166,52 @@
         <code>checked</code> 只含「完整勾選」的節點，部分勾選的父節點用 <code>getHalfCheckedKeys()</code> 取得。
       </p>
     </section>
+
+    <!-- ============ ChptImage ============ -->
+    <section id="chpt-image" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptImage 圖片 / ChptImageViewer 看圖</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>檢驗照片、瑕疵圖、產品圖。固定外框避免版面跳動，載入中顯示骨架、失敗時顯示圖示與替代文字；
+        preview 可點開全螢幕檢視（縮放、旋轉、左右切換同一組圖）。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptImage, ChptImageViewer } from '@/components/library'</code>
+      </p>
+
+      <div class="bg-surface-secondary rounded-lg p-4">
+        <p class="mb-2 text-sm text-content-secondary">AOI 瑕疵圖（點圖放大，可用 ← → 切換）</p>
+        <div class="flex flex-wrap gap-3">
+          <ChptImage
+            v-for="img in defectImages"
+            :key="img.src"
+            :src="img.src"
+            :alt="img.alt"
+            :width="120"
+            :height="90"
+            preview
+            :preview-src-list="defectImages"
+          />
+          <ChptImage src="/not-found.png" alt="SMT-02 第 3 片（檔案遺失）" :width="120" :height="90" />
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <ChptCodeBlock :code="imageSample" />
+      </div>
+      <ApiTable title="ChptImage Props" :rows="imageProps" />
+      <ApiTable title="ChptImageViewer Props / Events" :rows="viewerProps" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>alt 是必填 —— 描述圖片內容（「焊點橋接」），純裝飾的圖傳 <code>alt=""</code>。
+        檢視器是模態 dialog：焦點困在裡面、背景不捲動、關閉後回到原本的縮圖；← → 切換、+／− 或滾輪縮放、0 重設、R 旋轉、Esc 關閉，
+        放大後可拖曳移動。
+      </p>
+    </section>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { ChptStatistic, ChptDescriptions, ChptTimeline, ChptTag, ChptCodeBlock, ChptTree, ChptInput } from '@/components/library'
+import { ChptStatistic, ChptDescriptions, ChptTimeline, ChptTag, ChptCodeBlock, ChptTree, ChptInput, ChptImage } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
 // ---- ChptStatistic ----
@@ -344,5 +384,48 @@ const treeSlots = [
   { name: '#extra', params: '{ node, level }', desc: '節點右側（狀態標籤、操作按鈕）' },
   { name: 'expandAll / collapseAll', params: '()', desc: '全部展開／收合（ref 方法）' },
   { name: 'getCheckedNodes / getHalfCheckedKeys', params: '()', desc: '勾選的節點／部分勾選的父節點 key（ref 方法）' },
+]
+
+// ---- ChptImage ----
+/** 示範用的圖：就地產生 SVG，文檔站離線也看得到 */
+function demoImage(label, hue) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+<rect width="640" height="480" fill="hsl(${hue} 35% 22%)"/>
+<g stroke="hsl(${hue} 60% 60%)" stroke-width="6" fill="none" opacity=".7">
+<rect x="80" y="90" width="200" height="120" rx="8"/><rect x="360" y="90" width="200" height="120" rx="8"/>
+<path d="M180 210v90h280v-90"/><circle cx="320" cy="360" r="42"/></g>
+<circle cx="320" cy="300" r="26" fill="none" stroke="#f87171" stroke-width="5"/>
+<text x="32" y="450" font-family="sans-serif" font-size="30" fill="#fff">${label}</text></svg>`
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+}
+const defectImages = [
+  { src: demoImage('#1 焊點橋接', 210), alt: 'SMT-01 第 1 片：焊點橋接' },
+  { src: demoImage('#2 元件偏移', 160), alt: 'SMT-01 第 2 片：元件偏移' },
+  { src: demoImage('#3 缺件', 30), alt: 'SMT-01 第 3 片：缺件' },
+]
+const imageSample = `<ChptImage :src="url" alt="SMT-01 第 1 片：焊點橋接" :width="120" :height="90" preview />
+
+<!-- 一組圖：預覽時可左右切換 -->
+<ChptImage v-for="img in photos" :key="img.src" v-bind="img" preview :preview-src-list="photos" />
+
+<!-- 單獨使用檢視器 -->
+<ChptImageViewer v-model:open="open" v-model:index="i" :images="photos" />`
+const imageProps = [
+  { name: 'src / alt', type: 'string', def: '—', desc: '圖片網址與替代文字（alt 必填；裝飾圖傳空字串）' },
+  { name: 'width / height', type: 'number | string', def: '—', desc: '外框大小（數字 = px）' },
+  { name: 'fit', type: "'cover' | 'contain' | 'fill' | 'none' | 'scale-down'", def: "'cover'", desc: 'object-fit' },
+  { name: 'lazy', type: 'boolean', def: 'true', desc: 'loading="lazy"' },
+  { name: 'rounded', type: "'none' | 'sm' | 'md' | 'lg' | 'full'", def: "'md'", desc: '圓角' },
+  { name: 'preview / previewSrcList', type: 'boolean / (string | { src, alt })[]', def: 'false / []', desc: '點擊放大；可切換的整組圖' },
+  { name: 'Events', type: 'load / error / preview(index)', def: '—', desc: '載入完成、失敗、開啟預覽' },
+  { name: '#error', type: 'slot', def: '—', desc: '自訂載入失敗的內容' },
+]
+const viewerProps = [
+  { name: 'open', type: 'boolean', def: 'false', desc: 'v-model:open' },
+  { name: 'images', type: '(string | { src, alt })[]', def: '—', desc: '要看的圖' },
+  { name: 'index', type: 'number', def: '0', desc: 'v-model:index：目前第幾張' },
+  { name: 'loop / thumbnails', type: 'boolean', def: 'true / true', desc: '頭尾循環／下方縮圖列' },
+  { name: 'minScale / maxScale', type: 'number', def: '0.25 / 8', desc: '縮放範圍' },
+  { name: 'Events', type: 'update:open / update:index / close', def: '—', desc: '' },
 ]
 </script>

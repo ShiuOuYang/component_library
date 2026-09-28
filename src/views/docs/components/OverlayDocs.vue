@@ -308,6 +308,39 @@
       </p>
     </section>
 
+    <!-- ============ useConfirm ============ -->
+    <section id="use-confirm" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">useConfirm 確認對話框</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>「確定要刪除嗎？」這種一次性的問題。用 <code>await confirm(...)</code> 拿到使用者的答案，
+        不必在每個頁面各放一個 ChptModal 再管 v-model。需要表單或複雜內容時仍用 ChptModal。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { useConfirm, ChptConfirmHost } from '@/components/library'</code>
+        —— <code>&lt;ChptConfirmHost /&gt;</code> 在 App 放一次即可（與 ChptToast 相同）。
+      </p>
+
+      <div class="bg-surface-secondary rounded-lg p-4 flex flex-wrap items-center gap-3">
+        <ChptButton size="sm" color="danger" @click="askDelete">刪除工單</ChptButton>
+        <ChptButton size="sm" color="danger" is-outline @click="askDangerous">刪除產線（需輸入名稱）</ChptButton>
+        <ChptButton size="sm" is-outline @click="askSubmit">送出審核</ChptButton>
+        <ChptButton size="sm" is-outline @click="showAlert">alert</ChptButton>
+        <span class="text-sm text-content-secondary">結果：<span class="font-mono">{{ confirmResult || '—' }}</span></span>
+      </div>
+      <ChptConfirmHost />
+
+      <div class="mt-6">
+        <ChptCodeBlock :code="confirmSample" />
+      </div>
+
+      <ApiTable title="confirm(options) / alert(options)" :rows="confirmOptions" />
+
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>對話框是 role="alertdialog"：焦點困在裡面、Escape 等於取消、關閉後焦點回到原本的按鈕。
+        type="danger" 時預設焦點在「取消」—— 誤按 Enter 不會直接刪掉。同時呼叫多次會依序排隊。
+      </p>
+    </section>
+
     <!-- ============ ChptModalDock ============ -->
     <section id="chpt-modaldock" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptModalDock 視窗口袋列</h2>
@@ -354,10 +387,68 @@ import {
   ChptTag,
   ChptDropdown,
   ChptPopover,
+  ChptConfirmHost,
+  useConfirm,
   ChptCodeBlock,
 } from '@/components/library'
 import { useModalManager } from '@/components/library/shared/useModalManager'
 import ApiTable from './_ApiTable.vue'
+
+// ---- useConfirm ----
+const { confirm, alert } = useConfirm()
+const confirmResult = ref('')
+async function askDelete() {
+  const ok = await confirm({ title: '刪除工單 WO-2026-0917？', message: '工單與其報工紀錄都會一併刪除，無法復原。', type: 'danger', confirmText: '刪除' })
+  confirmResult.value = ok ? '已刪除' : '已取消'
+}
+async function askDangerous() {
+  const ok = await confirm({
+    title: '刪除產線 SMT-02',
+    message: '產線底下的 12 台機台設定與歷史資料都會刪除。',
+    type: 'danger',
+    requireText: 'SMT-02',
+    confirmText: '永久刪除',
+  })
+  confirmResult.value = ok ? '產線已刪除' : '已取消'
+}
+async function askSubmit() {
+  const ok = await confirm({ title: '送出審核？', message: '送出後需等主管核准才能再修改。', confirmText: '送出' })
+  confirmResult.value = ok ? '已送出' : '已取消'
+}
+async function showAlert() {
+  await alert({ title: '匯出完成', message: '檔案已寄到你的信箱。', type: 'success' })
+  confirmResult.value = 'alert 已關閉'
+}
+const confirmSample = `// App.vue：放一次
+<ChptConfirmHost />
+
+// 任何元件
+const { confirm, alert } = useConfirm()
+
+async function remove(order) {
+  const ok = await confirm({
+    title: \`刪除工單 \${order.no}？\`,
+    message: '工單與其報工紀錄都會一併刪除，無法復原。',
+    type: 'danger',
+    confirmText: '刪除',
+  })
+  if (!ok) return
+  await api.remove(order.id)
+}
+
+// 影響重大的操作：要求照打名稱
+await confirm({ title: '刪除產線', type: 'danger', requireText: 'SMT-02' })
+
+await alert({ title: '匯出完成', type: 'success' })`
+const confirmOptions = [
+  { name: 'title', type: 'string', def: '—', desc: '標題（必填，也是對話框的名稱）' },
+  { name: 'message', type: 'string', def: "''", desc: '說明文字（\\n 換行）' },
+  { name: 'type', type: "'info' | 'success' | 'warning' | 'danger'", def: "confirm: 'warning' / alert: 'info'", desc: '圖示與確定鈕的顏色' },
+  { name: 'confirmText / cancelText', type: 'string', def: "'確定' / '取消'（alert: '知道了'）", desc: '按鈕文字' },
+  { name: 'requireText', type: 'string', def: "''", desc: '要照打這段文字才能按確定（只有 confirm）' },
+  { name: 'focus', type: "'confirm' | 'cancel'", def: "danger: 'cancel'，其他 'confirm'", desc: '開啟時的焦點' },
+  { name: '回傳', type: 'Promise<boolean>', def: '—', desc: 'confirm：確定 true、取消 / Escape / 點遮罩 false；alert：一律 true' },
+]
 
 // ---- ChptPopover ----
 const noteOpen = ref(false)

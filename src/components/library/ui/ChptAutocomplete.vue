@@ -4,7 +4,7 @@
       {{ props.label }}
     </label>
 
-    <div class="relative flex items-center" :class="props.fullWidth ? 'w-full' : ''">
+    <div class="relative flex items-center" :class="props.fullWidth ? 'w-full' : 'self-start'">
       <ChptIcon
         v-if="props.prefixIcon"
         :size="16"

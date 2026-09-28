@@ -4,7 +4,7 @@
       {{ props.label }}
     </label>
 
-    <div class="relative flex items-center">
+    <div class="relative flex items-center" :class="props.fullWidth ? 'w-full' : 'self-start'">
       <button
         :id="id"
         ref="trigger"
