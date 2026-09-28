@@ -67,6 +67,7 @@
 </template>
 
 <script setup lang="ts">
+import { chartTheme } from './chartTheme';
 import { ref, computed, watch, watchEffect, onMounted, onUnmounted, type Ref } from 'vue';
 import * as d3 from 'd3';
 import { useD3Brush } from './composables/useD3Brush';
@@ -90,6 +91,7 @@ import type {
   YScale,
 } from './types/chart.types'
 import type { TriggerLine } from './composables/faceChart/useFacetLayout'
+import { layerLabel as layerLabelOf } from './composables/faceChart/facetHelpers'
 
 interface DualAxisComboChartProps {
 
@@ -262,6 +264,14 @@ const effectiveHeight = computed(() => props.autoResize ? observedHeight.value :
 const chartWidth = computed(() => effectiveWidth.value - props.margin.left - props.margin.right);
 const chartHeight = computed(() => effectiveHeight.value - props.margin.top - props.margin.bottom);
 
+/**
+ * 依繪圖區大小決定刻度數量。d3 預設約 10 個刻度，不管高度 ——
+ * 分面圖裡 100px 高的小圖也塞 10 個，標籤疊成一團。約每 32px 一個 Y 刻度、每 70px 一個 X 刻度。
+ */
+const yTickCount = computed(() => Math.max(2, Math.min(10, Math.floor(chartHeight.value / 32))));
+const xTickCount = computed(() => Math.max(2, Math.min(12, Math.floor(chartWidth.value / 70))));
+
+
 // === 使用 Chart Scales Composable ===
 const {
   xScale,
@@ -392,8 +402,9 @@ const setupTooltipDetection = (
       d3.select(this).style('pointer-events', 'all');
       
       // 檢查是否為圖表元素
-      if (elementBelow?.classList.contains('stacked-bar') || 
-          elementBelow?.classList.contains('line-dot')) {
+      // 原本只認 stacked-bar 與 line-dot —— 散點在 brush 開啟時永遠沒有 tooltip
+      const hoverable = ['stacked-bar', 'bar', 'line-dot', 'scatter-dot'];
+      if (elementBelow && hoverable.some((cls) => elementBelow.classList.contains(cls))) {
         // ✅ 直接從 DOM 元素讀取已綁定的完整資料
         // 元素上綁的是 renderStackedBars / renderLines 在 .datum() 存進去的物件
         const boundData = d3.select(elementBelow).datum() as BoundDatum | undefined;
@@ -825,6 +836,7 @@ const renderGrid = () => {
     // tickFormat 要傳函式；原本傳字串 '' 只是碰巧被 d3 忽略
     const gridLeft = d3
       .axisLeft<number>(yLeftScale.value)
+      .ticks(yTickCount.value)
       .tickSize(-chartWidth.value)
       .tickFormat(() => '');
 
@@ -834,12 +846,96 @@ const renderGrid = () => {
       .attr('class', 'grid-left')
       .call(gridLeft)
       .selectAll('line')
-      .attr('stroke', '#e5e7eb')
+      .style('stroke', chartTheme.grid)
       .attr('stroke-opacity', 0.5);
   }
 
   // 移除 domain 線
   g.selectAll('.domain').remove();
+};
+
+/**
+ * 連續型 X 軸上長條的寬度：取相鄰資料點最小間距的 70%，限制在 2~48px。
+ * （band scale 直接用 bandwidth，不走這裡）
+ */
+function continuousBarWidth(positions: number[]): number {
+  const xs = [...new Set(positions.filter(Number.isFinite))].sort((a, b) => a - b);
+  let gap = Infinity;
+  for (let i = 1; i < xs.length; i++) gap = Math.min(gap, xs[i] - xs[i - 1]);
+  if (!Number.isFinite(gap)) return 24;
+  return Math.max(2, Math.min(48, gap * 0.7));
+}
+
+/**
+ * 渲染一般長條圖圖層（type: 'bar'）
+ *
+ * @description ChartLayerType 一直宣告了 'bar'，但原本沒有任何渲染程式 ——
+ *              設定 type:'bar' 的圖層（例如分面圖的「產量」）整層不見，也不會報錯。
+ *              - band X 軸：同一類別有多個 bar 圖層時並排（dodge）
+ *              - 連續 X 軸（time / linear）：以資料點為中心，寬度依點距自動計算
+ *              - 可掛左軸或右軸；負值往基準線下方畫
+ */
+const renderSimpleBars = (
+  g: d3.Selection<SVGGElement, unknown, null, undefined>,
+  layers: ChartLayer[]
+) => {
+  const xs = xScale.value;
+  if (!xs) return;
+  const band = isBandScale(xs);
+
+  // 連續 X 軸：所有 bar 圖層共用一個寬度，避免不同圖層粗細不一
+  const allPositions = band ? [] : layers.flatMap((layer) =>
+    (layer.data ?? []).map((d) => (xs as d3.ScaleContinuousNumeric<number, number>)(Number(layer.xValue?.(d))))
+  );
+  const fullWidth = band ? (xs as d3.ScaleBand<string>).bandwidth() : continuousBarWidth(allPositions);
+  const slotWidth = fullWidth / layers.length;
+
+  layers.forEach((layer, layerIndex) => {
+    const { data, xValue, yValue, yAxis } = layer;
+    const ys = yAxis === 'right' ? yRightScale.value : yLeftScale.value;
+    if (!data || !data.length || !xValue || !yValue || !ys) return;
+
+    const [d0, d1] = ys.domain() as [number, number];
+    const baseValue = Math.min(Math.max(0, Math.min(d0, d1)), Math.max(d0, d1));
+    const baseY = ys(baseValue);
+    const color = layer.color || resolveSeriesColor(layer.colorScale, layerLabelOf(layer), layerIndex);
+
+    const layerGroup = g.append('g').attr('class', `bar-layer bar-layer-${layerIndex}`);
+
+    data.forEach((d) => {
+      const raw = xValue(d);
+      const start = band
+        ? (xs as d3.ScaleBand<string>)(String(raw))
+        : (xs as d3.ScaleContinuousNumeric<number, number>)(Number(raw)) - fullWidth / 2;
+      const v = Number(yValue(d));
+      if (start === undefined || !Number.isFinite(start) || !Number.isFinite(v)) return;
+
+      const y = ys(v);
+      const top = Math.min(y, baseY);
+      const height = Math.abs(baseY - y);
+      const bar = layerGroup.append('rect')
+        .attr('class', 'bar')
+        .attr('x', start + slotWidth * layerIndex)
+        .attr('width', Math.max(1, slotWidth - (layers.length > 1 ? 1 : 0)))
+        .attr('fill', color)
+        .style('cursor', 'pointer')
+        .datum({ rawData: d, layer })
+        .on('mouseenter', (event: MouseEvent) => handleLayerHover(event, d, layer))
+        .on('mouseleave', () => handleLayerLeave())
+        .on('click', () => emit('layer-click', { data: d, layer }));
+
+      if (effectiveAnimationDuration.value > 0) {
+        bar.attr('y', baseY).attr('height', 0)
+          .transition()
+          .duration(effectiveAnimationDuration.value)
+          .ease(d3.easeCubicOut)
+          .attr('y', top)
+          .attr('height', height);
+      } else {
+        bar.attr('y', top).attr('height', height);
+      }
+    });
+  });
 };
 
 /**
@@ -865,14 +961,13 @@ const renderStackedBars = () => {
   const g = d3.select(stackedBarLayerRef.value);
   // ✅ 使用預處理好的圖層（數據已過濾）
   const stackedLayers = processedLeftLayers.value.filter(l => l.type === 'stacked-bar');
-
-  if (!stackedLayers.length) {
-    g.selectAll('*').remove();
-    return;
-  }
+  const barLayers = [...processedLeftLayers.value, ...processedRightLayers.value].filter(l => l.type === 'bar');
 
   // ✅ 完全清除所有內容，從頭開始渲染
   g.selectAll('*').remove();
+
+  if (barLayers.length) renderSimpleBars(g, barLayers);
+  if (!stackedLayers.length) return;
 
   stackedLayers.forEach((layer, layerIndex) => {
     const { data, stackKeys, xValue, colorScale } = layer;
@@ -977,8 +1072,9 @@ const renderLines = () => {
 
   const g = d3.select(lineLayerRef.value);
   // ✅ 使用預處理好的圖層（數據已過濾）- 支援左右兩側 Y 軸
-  const leftLineLayers = processedLeftLayers.value.filter(l => l.type === 'line');
-  const rightLineLayers = processedRightLayers.value.filter(l => l.type === 'line');
+  // 'area' 也走這裡：先畫半透明填色，再畫同一條線（型別一直有宣告，原本沒有渲染）
+  const leftLineLayers = processedLeftLayers.value.filter(l => l.type === 'line' || l.type === 'area');
+  const rightLineLayers = processedRightLayers.value.filter(l => l.type === 'line' || l.type === 'area');
   const lineLayers = [...leftLineLayers, ...rightLineLayers];
 
   if (!lineLayers.length) {
@@ -997,7 +1093,34 @@ const renderLines = () => {
     if (!data || !xValue || !yValue || !xs || !ys) return;
 
     const { xPos, yPos, isDefined } = makeAccessors(xs, ys, xValue, yValue);
-    const color = lineColor || '#ef4444';
+    const color = lineColor || layer.color || '#ef4444';
+
+    // 面積：從基準線（0，或 domain 下緣）填到資料線
+    const [yd0, yd1] = ys.domain() as [number, number];
+    const areaBase = ys(Math.min(Math.max(0, Math.min(yd0, yd1)), Math.max(yd0, yd1)));
+    const areaGenerator = d3
+      .area<ChartDatum>()
+      .defined(isDefined)
+      .x((d) => xPos(d) ?? 0)
+      .y0(areaBase)
+      .y1(yPos)
+      .curve(curve || d3.curveMonotoneX);
+    g.selectAll(`path.area-${layerIndex}`)
+      .data(layer.type === 'area' ? [data] : [])
+      .join(
+        enter => enter.append('path')
+          .attr('class', `area-${layerIndex} area`)
+          .attr('stroke', 'none')
+          .attr('fill-opacity', 0.18)
+          .attr('d', areaGenerator),
+        update => update,
+        exit => exit.remove()
+      )
+      .attr('fill', color)
+      .transition()
+      .duration(effectiveAnimationDuration.value)
+      .ease(d3.easeCubicOut)
+      .attr('d', areaGenerator);
 
     // 線條生成器
     const lineGenerator = d3
@@ -1048,7 +1171,7 @@ const renderLines = () => {
             .attr('class', `dot-${layerIndex} line-dot`)
             .attr('r', 0)
             .attr('fill', color)
-            .attr('stroke', '#fff')
+            .style('stroke', chartTheme.surface)
             .attr('stroke-width', 2)
             .style('cursor', 'pointer')
             .on('mouseenter', (event: MouseEvent, d) => {
@@ -1143,7 +1266,7 @@ const renderScatter = () => {
           .attr('r', 0)
           .attr('fill', color)
           .attr('fill-opacity', opacity)
-          .attr('stroke', '#fff')
+          .style('stroke', chartTheme.surface)
           .attr('stroke-width', 1)
           .style('cursor', 'pointer')
           .on('mouseenter', (event: MouseEvent, d) => {
@@ -1198,6 +1321,7 @@ const renderAxes = () => {
     // XScale 是 band / 連續型的聯集，d3.axisBottom 需要一個具體的 AxisScale；
     // 兩者在座標軸的用法相同，這裡統一視為 AxisScale<d3.AxisDomain>
     const xAxis = d3.axisBottom(xScale.value as d3.AxisScale<d3.AxisDomain>);
+    if (!isBandScale(xScale.value)) xAxis.ticks(xTickCount.value);
     if (props.xAxisFormat) {
       const format = props.xAxisFormat as unknown as (value: d3.AxisDomain) => string;
       xAxis.tickFormat((value) => format(value));
@@ -1216,7 +1340,7 @@ const renderAxes = () => {
 
   // 左 Y 軸
   if (yAxisLeftRef.value && yLeftScale.value) {
-    const yAxis = d3.axisLeft<number>(yLeftScale.value);
+    const yAxis = d3.axisLeft<number>(yLeftScale.value).ticks(yTickCount.value);
     if (props.yLeftAxisFormat) {
       const format = props.yLeftAxisFormat;
       yAxis.tickFormat((value) => format(Number(value)));
@@ -1230,7 +1354,7 @@ const renderAxes = () => {
 
   // 右 Y 軸
   if (yAxisRightRef.value && yRightScale.value) {
-    const yAxis = d3.axisRight<number>(yRightScale.value);
+    const yAxis = d3.axisRight<number>(yRightScale.value).ticks(yTickCount.value);
     if (props.yRightAxisFormat) {
       const format = props.yRightAxisFormat;
       yAxis.tickFormat((value) => format(Number(value)));
@@ -1302,10 +1426,12 @@ const renderLegend = () => {
           const color = resolveSeriesColor(layer.colorScale, key, i);
           legendItems.push({ label: key, color, type: 'rect' });
         });
-      } else if (layer.type === 'line') {
+      } else if (layer.type === 'bar') {
+        legendItems.push({ label: layerLabelOf(layer), color: layer.color || '#3b82f6', type: 'rect' });
+      } else if (layer.type === 'line' || layer.type === 'area') {
         legendItems.push({
-          label: layer.legend?.label || 'Line',
-          color: layer.lineColor || '#ef4444',
+          label: layer.legend?.label || layer.name || 'Line',
+          color: layer.lineColor || layer.color || '#ef4444',
           type: 'line'
         });
       } else if (layer.type === 'scatter') {
@@ -1381,7 +1507,7 @@ const renderLegend = () => {
           .attr('r', d.dotSize || 4)
           .attr('fill', d.color)
           .attr('fill-opacity', 0.7)
-          .attr('stroke', '#fff')
+          .style('stroke', chartTheme.surface)
           .attr('stroke-width', 1);
         // 將 rect 改為 circle
         const symbol = item.select('.legend-symbol');
@@ -1394,7 +1520,7 @@ const renderLegend = () => {
             .attr('r', d.dotSize || 4)
             .attr('fill', d.color)
             .attr('fill-opacity', 0.7)
-            .attr('stroke', '#fff')
+            .style('stroke', chartTheme.surface)
             .attr('stroke-width', 1);
         }
         item.select('.legend-line').remove();
@@ -1849,19 +1975,26 @@ defineExpose({ containerRef, svgRef })
 :deep(.y-axis-left) text,
 :deep(.y-axis-right) text {
   font-size: 12px;
-  fill: #6b7280;
+  fill: rgb(var(--t-content-secondary));
 }
 
 :deep(.x-axis) path,
 :deep(.y-axis-left) path,
 :deep(.y-axis-right) path {
-  stroke: #d1d5db;
+  stroke: rgb(var(--t-stroke-medium));
 }
 
 :deep(.x-axis) line,
 :deep(.y-axis-left) line,
 :deep(.y-axis-right) line {
-  stroke: #d1d5db;
+  stroke: rgb(var(--t-stroke-medium));
+}
+
+/* D3 加上的 text-content-primary 只設 color，SVG 文字吃的是 fill（預設黑色）——
+   沒有這條，暗色模式下圖例與標題是黑字壓在深色底上 */
+:deep(.legend-text),
+:deep(.chart-title) {
+  fill: rgb(var(--t-content-primary));
 }
 
 .legend-item {
@@ -1874,22 +2007,22 @@ defineExpose({ containerRef, svgRef })
 
 /* ✅ Brush 樣式 - 支援雙模式 */
 :deep(.brush-layer .selection) {
-  fill: #3b82f6;
+  fill: rgb(var(--t-accent-solid));
   fill-opacity: 0.15;
-  stroke: #3b82f6;
+  stroke: rgb(var(--t-accent-solid));
   stroke-width: 2;
 }
 
 /* BrushX 模式的垂直手柄 */
 :deep(.brush-layer .handle--w),
 :deep(.brush-layer .handle--e) {
-  fill: #3b82f6;
+  fill: rgb(var(--t-accent-solid));
   fill-opacity: 0.8;
 }
 
 /* Brush(XY) 模式的所有手柄 */
 :deep(.brush-layer .handle) {
-  fill: #3b82f6;
+  fill: rgb(var(--t-accent-solid));
   fill-opacity: 0.6;
 }
 
@@ -1914,7 +2047,8 @@ defineExpose({ containerRef, svgRef })
 
 :deep(.trigger-line-layer .trigger-label) {
   user-select: none;
-  text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white;
+  /* 文字外圈用圖表底色（深色模式下不能是一圈白光） */
+  text-shadow: 0 0 3px rgb(var(--t-surface-primary)), 0 0 3px rgb(var(--t-surface-primary)), 0 0 3px rgb(var(--t-surface-primary));
 }
 
 /* ✅ 座標軸拖曳樣式 */
@@ -1925,6 +2059,6 @@ defineExpose({ containerRef, svgRef })
 :deep(.x-axis .axis-drag-overlay:hover),
 :deep(.y-axis-left .axis-drag-overlay:hover),
 :deep(.y-axis-right .axis-drag-overlay:hover) {
-  fill: rgba(59, 130, 246, 0.05);
+  fill: rgb(var(--t-accent-solid) / 0.05);
 }
 </style>

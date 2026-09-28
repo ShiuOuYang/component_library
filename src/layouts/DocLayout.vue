@@ -272,6 +272,7 @@ const navSections = [
           { label: 'ChptTag', id: 'chpt-tag' },
           { label: 'ChptBadge', id: 'chpt-badge' },
           { label: 'ChptToast', id: 'chpt-toast' },
+          { label: 'useNotification', id: 'use-notification' },
           { label: 'ChptProgress', id: 'chpt-progress' },
           { label: 'ChptSpinner', id: 'chpt-spinner' },
           { label: 'ChptEmpty', id: 'chpt-empty' },
@@ -310,6 +311,16 @@ const navSections = [
         ],
       },
       {
+        to: '/docs/components/utilities', icon: '🧰', label: '版面與實用元件',
+        anchors: [
+          { label: 'ChptSplitter', id: 'chpt-splitter' },
+          { label: 'ChptVirtualList', id: 'chpt-virtuallist' },
+          { label: 'ChptAffix', id: 'chpt-affix' },
+          { label: 'ChptCarousel', id: 'chpt-carousel' },
+          { label: 'CopyButton / Ellipsis / Countdown / Watermark', id: 'chpt-small-utils' },
+        ],
+      },
+      {
         to: '/docs/components/navigation', icon: '🧭', label: '導覽元件',
         anchors: [
           { label: 'ChptMenu', id: 'chpt-menu' },
@@ -342,6 +353,10 @@ const navSections = [
       {
         to: '/docs/components/dual-axis-chart', icon: '📊', label: '雙軸組合圖',
         anchors: [{ label: '基本示範', id: 'basic' }, { label: '進階範例', id: 'examples' }],
+      },
+      {
+        to: '/docs/components/facet-charts', icon: '🧮', label: '分面圖',
+        anchors: [{ label: 'FacetedChart', id: 'faceted-chart' }, { label: 'GridFacetChart', id: 'grid-facet-chart' }],
       },
       { to: '/docs/components/pareto', icon: '📈', label: '柏拉圖' },
       { to: '/docs/components/heatmap', icon: '🔥', label: '熱力圖' },
@@ -386,6 +401,7 @@ const collapsedShortcuts = [
   { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件' },
   { to: '/docs/components/overlay', icon: '🗔', title: '浮層元件' },
   { to: '/docs/components/navigation', icon: '🧭', title: '導覽元件' },
+  { to: '/docs/components/utilities', icon: '🧰', title: '版面與實用元件' },
   { to: '/docs/components/dual-axis-chart', icon: '📈', title: '圖表' },
   { to: '/docs/components/excel-editor', icon: '📑', title: 'Excel' },
 ];

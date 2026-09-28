@@ -162,6 +162,16 @@ describe('useFacetBrush', () => {
       expect(api.getYLeftDomain('none', 0, [0, 9])).toEqual([0, 9])
     })
 
+    /** 回歸：同步模式下沒縮放時原本不看 fallback，呼叫端指定的 domain 被忽略 */
+    it('同步模式下沒有框選時退回 fallback；有框選時框選優先', () => {
+      const api = useFacetBrush()
+      expect(api.getXDomain('both', 0, [1, 5])).toEqual([1, 5])
+      expect(api.getYLeftDomain('both', 0, [0, 10])).toEqual([0, 10])
+      expect(api.getYRightDomain('all', 0, [90, 100])).toEqual([90, 100])
+      api.colXDomains.value[0] = [2, 3]
+      expect(api.getXDomain('both', 0, [1, 5])).toEqual([2, 3])
+    })
+
     it('沒有選取範圍也沒有 fallback 時回傳 undefined 而不是 null', () => {
       const api = useFacetBrush()
       expect(api.getXDomain('all', 0)).toBeUndefined()

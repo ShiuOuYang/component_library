@@ -364,7 +364,7 @@ const formatDate = (value: unknown): string => timeFormatter(value as Date);
 .example-section {
   margin-bottom: 3rem;
   padding: 1.5rem;
-  background-color: #ffffff;
+  background-color: rgb(var(--t-surface-primary));
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
 }
@@ -373,13 +373,13 @@ h1 {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 2rem;
-  color: #1f2937;
+  color: rgb(var(--t-content-primary));
 }
 
 h2 {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
-  color: #374151;
+  color: rgb(var(--t-content-primary));
 }
 </style>

@@ -163,6 +163,34 @@
       </p>
     </section>
 
+    <!-- ============ useNotification ============ -->
+    <section id="use-notification" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">useNotification 角落通知</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>有標題、說明、可能還有動作按鈕的通知（「匯出完成 —— 下載」「SMT-02 停機 —— 查看」）。
+        只有一句話的結果回饋請用上面的 Toast。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptNotificationHost, useNotification } from '@/components/library'</code>
+        —— <code>&lt;ChptNotificationHost /&gt;</code> 在 App 放一次。
+      </p>
+      <div class="flex flex-wrap gap-3">
+        <ChptButton size="sm" color="success" @click="notifyExport">匯出完成（含動作）</ChptButton>
+        <ChptButton size="sm" color="warning" @click="notifyDowntime">停機警告</ChptButton>
+        <ChptButton size="sm" is-outline @click="notify.info({ title: '排程已更新', message: '明日早班 SMT-01 改為 07:30 開線。' })">一般通知</ChptButton>
+        <span class="text-sm text-content-secondary self-center">最後動作：<span class="font-mono">{{ lastNotifyAction || '—' }}</span></span>
+      </div>
+      <ChptNotificationHost />
+      <div class="mt-6">
+        <ChptCodeBlock :code="notifySample" />
+      </div>
+      <ApiTable title="notify.open(options) / success / info / warning / error" :rows="notifyOptions" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>滑鼠停在通知上、或焦點在通知裡的按鈕時，倒數會暫停（WCAG 2.2.1：要有足夠時間讀完、按到按鈕）；
+        有動作按鈕的通知預設不自動消失。warning / error 以 role="alert" 立即報讀。
+      </p>
+    </section>
+
     <!-- ============ ChptProgress ============ -->
     <section id="chpt-progress" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptProgress 進度條</h2>
@@ -361,6 +389,8 @@ import {
   ChptBadge,
   ChptToast,
   useToast,
+  useNotification,
+  ChptNotificationHost,
   ChptProgress,
   ChptSpinner,
   ChptEmpty,
@@ -411,6 +441,45 @@ const resultSlots = [
 ]
 
 const toast = useToast()
+
+// ---- useNotification ----
+const notify = useNotification()
+const lastNotifyAction = ref('')
+function notifyExport() {
+  notify.success({
+    title: '匯出完成',
+    message: '9 月良率報表（xlsx，2.3 MB）',
+    actions: [
+      { label: '下載', onClick: () => (lastNotifyAction.value = '下載報表') },
+      { label: '寄給我', onClick: () => (lastNotifyAction.value = '寄送報表') },
+    ],
+  })
+}
+function notifyDowntime() {
+  notify.warning({
+    title: 'SMT-02 停機',
+    message: '錫膏印刷機異常，已停線 5 分鐘。',
+    actions: [{ label: '查看', onClick: () => (lastNotifyAction.value = '查看停機') }],
+  })
+}
+const notifySample = `// App.vue：放一次
+<ChptNotificationHost placement="top-right" />
+
+const notify = useNotification()
+notify.warning({
+  title: 'SMT-02 停機',
+  message: '錫膏印刷機異常，已停線 5 分鐘。',
+  actions: [{ label: '查看', onClick: () => router.push('/lines/smt-02') }],
+})
+const { close } = notify.info({ title: '上傳中…', duration: 0 })`
+const notifyOptions = [
+  { name: 'title / message', type: 'string', def: '—', desc: '標題（必填）與說明' },
+  { name: 'type', type: "'info' | 'success' | 'warning' | 'danger'", def: "'info'", desc: '用 success / warning / error 捷徑時自動帶入' },
+  { name: 'duration', type: 'number', def: '4500（有 actions 時 0）', desc: '自動關閉的毫秒數；0 = 不自動關閉' },
+  { name: 'actions', type: '{ label, onClick, keepOpen? }[]', def: '[]', desc: '動作按鈕；第一個是主要按鈕' },
+  { name: 'closable / onClose', type: 'boolean / () => void', def: 'true', desc: '× 按鈕／關閉時呼叫' },
+  { name: 'Host props', type: "placement / max / ariaLabel", def: "'top-right' / 5 / '通知'", desc: '位置、同時最多幾則' },
+]
 
 function onAlertClose() {
   toast.info('Alert 已關閉')

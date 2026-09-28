@@ -174,6 +174,22 @@ const routes = [
               },
             },
             {
+              path: "components/facet-charts",
+              name: "FacetChartDoc",
+              component: () => import("../views/docs/components/FacetChartDocs.vue"),
+              meta: {
+                title: "分面圖",
+              },
+            },
+            {
+              path: "components/utilities",
+              name: "UtilityDoc",
+              component: () => import("../views/docs/components/UtilityDocs.vue"),
+              meta: {
+                title: "版面與實用元件",
+              },
+            },
+            {
               path: "components/navigation",
               name: "NavigationDoc",
               component: () => import("../views/docs/components/NavigationDocs.vue"),

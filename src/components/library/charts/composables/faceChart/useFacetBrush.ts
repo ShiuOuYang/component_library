@@ -225,9 +225,11 @@ export function useFacetBrush() {
     } else {
       result = fallback;
     }
-    
-    
-    return result ?? undefined
+
+    // 沒有框選 / 同步的範圍時退回該格自己的 domain。
+    // 🔧 原本同步模式下完全不看 fallback：沒縮放時傳下去的是 undefined，
+    //    呼叫端明確指定的 domain（以及 scales: 'fixed' 的共用範圍）都被忽略。
+    return result ?? fallback ?? undefined
   }
 
   /**
@@ -249,9 +251,11 @@ export function useFacetBrush() {
     } else {
       result = fallback;
     }
-    
-    
-    return result ?? undefined
+
+    // 沒有框選 / 同步的範圍時退回該格自己的 domain。
+    // 🔧 原本同步模式下完全不看 fallback：沒縮放時傳下去的是 undefined，
+    //    呼叫端明確指定的 domain（以及 scales: 'fixed' 的共用範圍）都被忽略。
+    return result ?? fallback ?? undefined
   }
 
   /**
@@ -273,9 +277,11 @@ export function useFacetBrush() {
     } else {
       result = fallback;
     }
-    
-    
-    return result ?? undefined
+
+    // 沒有框選 / 同步的範圍時退回該格自己的 domain。
+    // 🔧 原本同步模式下完全不看 fallback：沒縮放時傳下去的是 undefined，
+    //    呼叫端明確指定的 domain（以及 scales: 'fixed' 的共用範圍）都被忽略。
+    return result ?? fallback ?? undefined
   }
 
   /**

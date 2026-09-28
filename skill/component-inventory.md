@@ -141,6 +141,8 @@
 | `ChptToast` | 無 props | 需全域掛載一次，配 `useToast()` |
 | `ChptResult` | status(`success/error/warning/info/403/404/500`), title, subTitle, compact | slots: `extra`、default（補充內容）、`icon`、`title`、`subTitle` |
 
+| `ChptNotificationHost` + `useNotification()` | Host: placement(`top-right/top-left/bottom-right/bottom-left`), max, ariaLabel；`notify.open/success/info/warning/error({ title, message?, duration?, actions?: {label,onClick,keepOpen?}[], closable?, onClose? })` → `{ id, close }` | 有標題 / 說明 / 動作的角落通知；滑鼠停留或聚焦時暫停倒數；有 actions 時預設不自動關閉；warning / error 為 role=alert |
+
 `useToast()` → `success / info / warning / error`；型別 `'success'|'info'|'warning'|'danger'`。
 
 ## 佈局 / 導覽 / 流程
@@ -156,6 +158,19 @@
 | `ChptMenu` | items(`{key,label?,icon?,to?,href?,target?,children?,disabled?,badge?,type?:'group'\|'divider'}`), modelValue（不綁時依路由比對 to）, openKeys（v-model:openKeys）, mode(`vertical/horizontal`), collapsed, accordion, indent, width, ariaLabel | update:modelValue, update:openKeys, select(item) | disclosure navigation（非 role=menu）；aria-current=page；ref: open(key), close(key), closeAll |
 | `ChptAnchor` | items(`{href:'#id',title,children?}`), container（預設自動偵測捲動容器）, offset, title, ariaLabel, updateHash | change(href), click(href) | scroll spy；aria-current=location；點擊後焦點移到區塊；ref: refresh |
 | `ChptBackTop` | target（預設自動偵測）, visibilityHeight, right, bottom, label | click | slot: default；回頂端後焦點移到最上面的標題 |
+
+## 版面與實用
+
+| 組件 | Props | Emits | Slots / Ref |
+|---|---|---|---|
+| `ChptSplitter` | modelValue（第一個面板 %）, direction(`horizontal/vertical`), min, max, step, disabled, ariaLabel | update:modelValue, resize-end | `start`, `end`；WAI-ARIA window splitter（方向鍵、Home/End、Enter 收合） |
+| `ChptVirtualList` | items, itemHeight（固定）, height, overscan, keyField, threshold, loading, emptyText, ariaLabel | reach-bottom, scroll | default（`{ item, index }`）、`loading`、`empty`；ref: scrollToIndex(i, align) |
+| `ChptAffix` | offsetTop, affixedClass, zIndex | change(affixed) | default（`{ affixed }`）；CSS sticky |
+| `ChptCarousel` | items, ariaLabel（必填）, modelValue, autoplay, interval, loop, arrows, indicators, height | update:modelValue, change(index, prev) | default（`{ item, index, active }`）；ref: next, prev, goTo |
+| `ChptCopyButton` | text, label, subject, tooltip, copiedText, resetAfter, disabled | copy(text), error | ref: copy() |
+| `ChptEllipsis` | text, lines, expandable, tooltip, expandText, collapseText, block | toggle(expanded) | default |
+| `ChptCountdown` | value（目標時間）, title, format(`HH:mm:ss`/`D 天 HH:mm:ss`/`mm:ss`…), warningThreshold, finishedText, size, interval | finish, change(remaining) | default（`{ parts, remaining, text }`）；role=timer |
+| `ChptWatermark` | content(`string\|string[]`), rotate, fontSize, color, gap, zIndex | – | default（被覆蓋的內容） |
 
 ## 資料展示
 
@@ -182,11 +197,13 @@
 
 | 組件 | 關鍵 Props | Emits | Slot / Ref |
 |---|---|---|---|
-| `DualAxisComboChart` | layers(必填), width, height, autoResize, debounceDelay, margin, xScaleType(`band`/`linear`/`time`), xDomain, xAxisLabel, xAxisFormat, xAxisLabelRotate, yLeft*/yRight*, title, showGrid, animationDuration, enableBrush, brushMode, triggerLines, showResetButton | layer-click, layer-hover, tooltip-show, tooltip-hide, selection-change, zoom-reset, chart-ready, chart-resize, axis-drag | slot `tooltip`（`tooltipData`, `tooltipVisible`） |
+| `DualAxisComboChart` | layers(必填), width, height, autoResize, debounceDelay, margin, xScaleType(`band`/`linear`/`time`), xDomain, xAxisLabel, xAxisFormat, xAxisLabelRotate, yLeft*/yRight*, title, showGrid, animationDuration, enableBrush, brushMode, triggerLines, showResetButton | layer-click, layer-hover, tooltip-show, tooltip-hide, selection-change, zoom-reset, chart-ready, chart-resize, axis-drag | slot `tooltip`（`tooltipData`, `tooltipVisible`）；layer.type：`bar` / `stacked-bar` / `line` / `area` / `scatter`，yAxis 省略＝左軸；Y 刻度數依高度自動調整 |
 | `EnterpriseHeatmap` | data, xField, yField, valueField, colorScheme, colorRange, valueDomain, reverseColorScale, cellPadding/BorderRadius/BorderWidth/BorderColor, xAxisAngle, autoResize, enableBrush, colorLegendPosition | cell-click, cell-hover, tooltip-show/hide, selection-change, zoom-reset, chart-ready, chart-resize | slot `tooltip` |
 | `EnterprisePareto` | data, categoryField, valueField, autoSort, sortOrder, barColor, barHoverColor, barPadding, showValuesOnBars, yAxisLeft*/yAxisRight*, xAxisAngle（共 44 props） | bar-click, bar-hover, tooltip-show/hide, chart-ready, chart-resize | slot `tooltip`；ref `render()`, `forceRerender()` |
-| `FacetedChart` | facets, title, width, totalHeight, autoResize, margin, facetSpacing, xScaleType, xDomain, xAxisFormat, enableBrush, brushMode, syncBrush, enableAxisDragging, lastFacetExtraHeight | selection-change, zoom-reset, chart-resize, axis-drag | 垂直堆疊多面板，共用 X 軸 |
-| `GridFacetChart` | data, xFacetVar, yFacetVar, xFacetLabel, yFacetLabel, headerHeight, headerWidth, xScaleType, enableBrush, syncMode, enableAxisDrag | selection-change, zoom-reset, chart-resize, axis-drag | 2D 行×列分面 |
+| `FacetedChart` | facets, title, width, totalHeight, autoResize, margin, facetSpacing, xScaleType, xDomain, xAxisFormat, enableBrush, brushMode, syncBrush, enableAxisDragging, lastFacetExtraHeight, **crosshair**（同步十字線，預設 true）, **sharedLegend**, **facetLabelPosition**(`left/top`) | selection-change, zoom-reset, chart-resize, axis-drag | 垂直堆疊多面板，共用 X 軸；slot `tooltip`（`{ tooltipData, tooltipVisible, facet }`） |
+| `GridFacetChart` | data, xFacetVar, yFacetVar, xFacetLabel, yFacetLabel（空字串時表頭只顯示值）, title, headerHeight, headerWidth, xScaleType, **scales**(`free/fixed/free_x/free_y`), **sharedLegend**, enableBrush, syncMode, enableAxisDrag | selection-change, zoom-reset, chart-resize, axis-drag | 2D 行×列分面；scales='fixed' 讓各格可互相比較 |
+
+圖表的軸線 / 格線 / 文字 / tooltip 一律走 `charts/chartTheme.ts`（主題 CSS 變數，D3 用 `.style()` 設定），深色模式自動跟著變；資料系列色由呼叫端決定。
 
 檢視器與白板不屬 charts：
 
@@ -234,6 +251,8 @@
 | `/docs/components/tooltip` | `views/docs/TooltipDoc.vue` | UI 組件（theme/placement/content） |
 | `/docs/components/layout-nav` | `views/docs/components/LayoutNavDocs.vue` | UI 組件（card/collapse/breadcrumb/steps/divider） |
 | `/docs/components/theme-tools` | `views/docs/components/ThemeToolsDocs.vue` | UI 組件（darkmodetoggle/headerlogout） |
+| `/docs/components/utilities` | `views/docs/components/UtilityDocs.vue` | UI 組件（splitter/virtuallist/affix/carousel/small-utils） |
+| `/docs/components/facet-charts` | `views/docs/components/FacetChartDocs.vue` | 圖表（faceted-chart/grid-facet-chart） |
 | `/docs/components/dual-axis-chart` | `views/docs/DualAxisChartDoc.vue` | 圖表（basic/examples） |
 | `/docs/components/pareto` | `views/docs/ParetoDoc.vue` | 圖表（無子項） |
 | `/docs/components/heatmap` | `views/docs/HeatmapDoc.vue` | 圖表（無子項） |

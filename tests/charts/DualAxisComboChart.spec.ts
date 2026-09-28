@@ -451,3 +451,84 @@ describe('DualAxisComboChart', () => {
     })
   })
 })
+
+describe('DualAxisComboChart：bar / area 圖層與刻度', () => {
+  const simpleBar: ChartLayer<Row> = {
+    type: 'bar',
+    yAxis: 'left',
+    name: '數量',
+    color: '#123456',
+    data: ROWS,
+    xValue: (d) => d.category,
+    yValue: (d) => d.value,
+  }
+
+  /** 回歸：'bar' 一直在 ChartLayerType 裡，但原本沒有渲染程式，整層不見 */
+  it("type:'bar' 會畫出長條，每筆資料一根", async () => {
+    const wrapper = await mountChart({ layers: [simpleBar] })
+    const rects = wrapper.findAll('rect.bar')
+    expect(rects).toHaveLength(3)
+    expect(rects[0].attributes('fill')).toBe('#123456')
+    // Q2 的值最大 → 最高
+    const heights = rects.map((r) => Number(r.attributes('height')))
+    expect(heights[1]).toBeGreaterThan(heights[0])
+    expect(heights[1]).toBeGreaterThan(heights[2])
+    wrapper.unmount()
+  })
+
+  it('band X 軸上多個 bar 圖層並排，不互相蓋住', async () => {
+    const second: ChartLayer<Row> = { ...simpleBar, name: '第二組', color: '#654321', yValue: (d) => d.a }
+    const wrapper = await mountChart({ layers: [simpleBar, second] })
+    const first = wrapper.findAll('.bar-layer-0 rect.bar')[0]
+    const other = wrapper.findAll('.bar-layer-1 rect.bar')[0]
+    const x0 = Number(first.attributes('x'))
+    const w0 = Number(first.attributes('width'))
+    expect(Number(other.attributes('x'))).toBeGreaterThanOrEqual(x0 + w0)
+    wrapper.unmount()
+  })
+
+  it('連續 X 軸：長條以資料點為中心，負值往基準線下方畫', async () => {
+    const rows = [{ t: 0, v: 10 }, { t: 1, v: -5 }, { t: 2, v: 20 }]
+    const layer: ChartLayer = { type: 'bar', data: rows, xValue: (d) => d.t as number, yValue: (d) => d.v as number, color: '#123456' }
+    const wrapper = await mountChart({ layers: [layer], xScaleType: 'linear', yLeftDomain: [-10, 25] })
+    const rects = wrapper.findAll('rect.bar')
+    expect(rects).toHaveLength(3)
+    const neg = rects[1]
+    const pos = rects[0]
+    // 負值那根的頂端 = 基準線（0）的位置 = 正值那根的底端
+    const posBottom = Number(pos.attributes('y')) + Number(pos.attributes('height'))
+    expect(Number(neg.attributes('y'))).toBeCloseTo(posBottom, 5)
+    // 第一根整根在繪圖區內（domain 兩端已外推半個點距）
+    expect(Number(pos.attributes('x'))).toBeGreaterThanOrEqual(0)
+    wrapper.unmount()
+  })
+
+  it('bar 圖層出現在圖例', async () => {
+    const wrapper = await mountChart({ layers: [simpleBar] })
+    expect(wrapper.findAll('.legend-text').map((t) => t.text())).toContain('數量')
+    wrapper.unmount()
+  })
+
+  it("type:'area' 畫出填色區塊與線", async () => {
+    const area: ChartLayer<Row> = { type: 'area', data: ROWS, xValue: (d) => d.category, yValue: (d) => d.value, lineColor: '#16a34a' }
+    const wrapper = await mountChart({ layers: [area] })
+    const path = wrapper.find('path.area')
+    expect(path.exists()).toBe(true)
+    expect(path.attributes('fill')).toBe('#16a34a')
+    expect(wrapper.find('path.line').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('矮的圖表 Y 刻度比較少（不會疊成一團）', async () => {
+    const tall = await mountChart({ layers: [simpleBar], height: 500 })
+    await flushTransitions()
+    const tallTicks = tall.findAll('.y-axis-left .tick').length
+    tall.unmount()
+    const short = await mountChart({ layers: [simpleBar], height: 140 })
+    await flushTransitions()
+    const shortTicks = short.findAll('.y-axis-left .tick').length
+    short.unmount()
+    expect(shortTicks).toBeLessThan(tallTicks)
+    expect(shortTicks).toBeLessThanOrEqual(4)
+  })
+})

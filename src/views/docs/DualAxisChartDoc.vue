@@ -13,7 +13,7 @@
       <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">基本示範</h2>
         <p class="text-sm text-content-secondary mb-4">
-          layers 陣列定義多個圖層；每個圖層可為 stacked-bar / line，指定左（left）或右（right）軸。
+          layers 陣列定義多個圖層；每個圖層可為 bar / stacked-bar / line / area / scatter，指定左（left）或右（right）軸（省略時為左軸）。
         </p>
         <div class="grid lg:grid-cols-2 gap-6">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
