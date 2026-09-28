@@ -2,6 +2,8 @@
   <div
     class="flex items-center gap-3"
     :class="[props.direction === 'horizontal' ? 'w-full' : 'h-full flex-col']"
+    :role="hasText ? undefined : 'separator'"
+    :aria-orientation="!hasText && props.direction === 'vertical' ? 'vertical' : undefined"
   >
     <div
       v-if="props.direction === 'horizontal'"
@@ -32,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useSlots } from 'vue'
 import type { DividerDirection } from '@/components/library/shared/types/ui.types'
 
 /**
@@ -56,8 +58,14 @@ interface ChptDividerProps {
 const props = withDefaults(defineProps<ChptDividerProps>(), {
   direction: 'horizontal',
   text: '',
-  color: 'neutral-200',
+  // 原本預設 'neutral-200'：class 是動態拼出來的，check:theme 看不到，
+  // 深色模式下是一條刺眼的淺灰線。改用會跟著主題的語意色
+  color: 'stroke-light',
 })
+
+const slots = useSlots()
+/** 帶文字的分隔線不設 role=separator（separator 的子節點會被視為裝飾，文字就唸不到了） */
+const hasText = computed(() => !!props.text || !!slots.default)
 
 const lineColorClass = computed(() => `border-${props.color}`)
 </script>

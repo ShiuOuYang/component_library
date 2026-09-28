@@ -10,7 +10,7 @@
       </div>
       <p class="text-content-secondary text-lg max-w-4xl">
         互動與回饋類元件：ChptTabs（頁籤）、ChptToast（全域提示）、ChptButton（按鈕）、
-        ChptProgress（進度條）、ChptAlert（提示條）。每個元件都附「Props / Events / Slots」與注意事項。
+        ChptProgress（進度條）、ChptAlert（提示條）、ChptAvatar（頭像）、ChptTooltip（文字提示）。每個元件都附「Props / Events / Slots」與注意事項。
       </p>
     </div>
 
@@ -137,6 +137,56 @@
       <ApiTable title="Slots" :rows="alertSlots" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>show</code> 預設 true 控制顯示；內容可用 <code>#default</code> 自訂取代 <code>message</code>。
+        info / success 以 role="status" 禮貌報讀，warning / danger 以 role="alert" 立即報讀。
+      </p>
+    </section>
+
+    <!-- ============ ChptAvatar ============ -->
+    <section id="chpt-avatar" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAvatar 頭像</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>使用者、負責人、簽核人。沒有照片時顯示姓名縮寫；照片載入失敗也會自動退回縮寫。
+      </p>
+      <div class="flex flex-wrap items-end gap-4">
+        <ChptAvatar name="王小明" size="xs" />
+        <ChptAvatar name="Amy Lin" size="sm" variant="primary" />
+        <ChptAvatar name="陳建宏" variant="success" show-status />
+        <ChptAvatar name="Kevin Wu" size="lg" shape="square" variant="warning" />
+        <ChptAvatar src="/no-such-photo.jpg" name="李佩珊" size="xl" variant="info" />
+      </div>
+      <div class="mt-4">
+        <ChptCodeBlock :code="avatarSample" />
+      </div>
+      <ApiTable title="Props" :rows="avatarProps" />
+    </section>
+
+    <!-- ============ ChptTooltip ============ -->
+    <section id="chpt-tooltip" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTooltip 文字提示</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>圖示按鈕的補充說明、截斷文字的完整內容。滑鼠停留或鍵盤聚焦都會出現；
+        要放互動內容（按鈕、連結）請改用 ChptPopover。
+      </p>
+      <div class="flex flex-wrap items-center gap-4">
+        <ChptTooltip content="重新整理資料（每 30 秒自動更新）">
+          <ChptButton size="sm" is-outline aria-label="重新整理">
+            <span class="material-symbols-outlined text-base" aria-hidden="true">refresh</span>
+          </ChptButton>
+        </ChptTooltip>
+        <ChptTooltip content="下方顯示" placement="bottom" theme="light">
+          <ChptButton size="sm" is-outline>bottom / light</ChptButton>
+        </ChptTooltip>
+        <ChptTooltip content="已停機 42 分鐘" placement="right" theme="error">
+          <ChptButton size="sm" is-outline>right / error</ChptButton>
+        </ChptTooltip>
+      </div>
+      <div class="mt-4">
+        <ChptCodeBlock :code="tooltipSample" />
+      </div>
+      <ApiTable title="Props" :rows="tooltipProps" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>提示會以 aria-describedby 掛到觸發元素上（螢幕閱讀器聚焦按鈕時會唸出）；
+        游標可以移到提示上不讓它消失、任何時候按 Esc 都能關閉（WCAG 1.4.13）。層級為 z-tooltip，放在 Modal 裡也不會被蓋住。
       </p>
     </section>
   </div>
@@ -151,6 +201,8 @@ import {
   ChptButton,
   ChptProgress,
   ChptAlert,
+  ChptAvatar,
+  ChptTooltip,
   ChptCodeBlock,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
@@ -251,4 +303,25 @@ const alertProps = [
 ]
 const alertEvents = [{ name: 'close', params: '(event: MouseEvent)', desc: '點關閉時' }]
 const alertSlots = [{ name: 'default', params: '—', desc: '自訂訊息內容（取代 message）' }]
+
+// ===== ChptAvatar / ChptTooltip =====
+const avatarSample = `<ChptAvatar name="王小明" />
+<ChptAvatar :src="user.photo" :name="user.name" size="lg" show-status />`
+const avatarProps = [
+  { name: 'src / alt', type: 'string', def: "''", desc: '照片與替代文字（載入失敗時退回縮寫）' },
+  { name: 'name', type: 'string', def: "''", desc: '姓名：產生縮寫，也是文字頭像的可及名稱' },
+  { name: 'size', type: "'xs'|'sm'|'md'|'lg'|'xl'", def: "'md'", desc: '尺寸' },
+  { name: 'shape', type: "'circle'|'square'", def: "'circle'", desc: '形狀' },
+  { name: 'variant', type: "'primary'|'success'|'warning'|'danger'|'info'|'neutral'…", def: "'neutral'", desc: '文字頭像底色' },
+  { name: 'showStatus / statusColor', type: 'boolean / string', def: "false / 'bg-success-solid'", desc: '右下角狀態點' },
+]
+const tooltipSample = `<ChptTooltip content="重新整理資料" placement="top">
+  <ChptButton aria-label="重新整理">…</ChptButton>
+</ChptTooltip>`
+const tooltipProps = [
+  { name: 'content', type: 'string', def: "''", desc: '提示文字（或用 #content 插槽）' },
+  { name: 'placement', type: "'top'|'bottom'|'left'|'right'", def: "'top'", desc: '位置（超出視窗時會夾回畫面內）' },
+  { name: 'theme', type: "'dark'|'light'|'info'|'warning'|'error'", def: "'dark'", desc: '配色' },
+  { name: 'showArrow / maxWidth / disabled', type: 'boolean / string / boolean', def: "true / 'max-w-xs' / false", desc: '箭頭、最大寬度 class、停用' },
+]
 </script>

@@ -2,14 +2,17 @@
   <span
     class="relative inline-flex align-middle"
     :class="sizeClass"
+    :role="showImage ? undefined : 'img'"
+    :aria-label="showImage ? undefined : accessibleName"
   >
     <!-- 圖片頭像 -->
     <img
-      v-if="props.src"
+      v-if="showImage"
       :src="props.src"
       :alt="props.alt || props.name"
       class="block h-full w-full object-cover"
       :class="shapeClass"
+      @error="imageFailed = true"
     />
     <!-- 文字頭像（無圖時顯示姓名縮寫） -->
     <span
@@ -31,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 /**
  * ChptAvatar（CHPT 主題）- 大頭貼 / 頭像元件
@@ -78,6 +81,17 @@ const props = withDefaults(defineProps<ChptAvatarProps>(), {
 })
 
 /** 尺寸 class */
+/** 圖片載入失敗時退回文字頭像（原本會顯示瀏覽器的破圖圖示） */
+const imageFailed = ref(false)
+watch(() => props.src, () => { imageFailed.value = false })
+const showImage = computed(() => !!props.src && !imageFailed.value)
+
+/**
+ * 文字頭像的可及名稱。原本縮寫 span 是 aria-hidden、外層又沒有名稱 ——
+ * 螢幕閱讀器完全不知道這裡有個人。
+ */
+const accessibleName = computed(() => props.alt || props.name || '使用者')
+
 const sizeClass = computed(() => {
   const map: Record<AvatarSize, string> = {
     xs: 'h-6 w-6 text-xs',
@@ -128,9 +142,19 @@ const statusColorClass = computed(
 )
 
 /** 名稱縮寫（最多取前兩個詞的首字母） */
+/** 中日韓文字（中文姓名的縮寫規則與英文不同） */
+const CJK = /[\u3400-\u9fff\uf900-\ufaff]/
+
 const initials = computed(() => {
   const trimmed = props.name.trim()
   if (!trimmed) return '?'
+  // 中文姓名：原本取前兩個字（「王小明」→「王小」），既不自然、放在 xs / sm 頭像裡也會溢出圓圈。
+  // 改成習慣的「名」（後兩個字）；小尺寸只放得下一個字，用姓
+  if (CJK.test(trimmed) && !/\s/.test(trimmed)) {
+    const chars = [...trimmed]
+    if (props.size === 'xs' || props.size === 'sm') return chars[0]
+    return chars.length >= 3 ? chars.slice(-2).join('') : chars.join('')
+  }
   const parts = trimmed.split(/\s+/).filter(Boolean)
   if (parts.length >= 2) {
     return (parts[0][0] + parts[1][0]).toUpperCase()

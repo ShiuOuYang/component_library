@@ -7,7 +7,7 @@
       :class="getLabelClasses(item)"
     >
       <div
-        class="relative flex items-center justify-center rounded border-2"
+        class="relative flex items-center justify-center rounded border-2 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-stroke-focus has-[:focus-visible]:ring-offset-1"
         :class="[
           `w-${props.size} h-${props.size}`,
           isChecked(item) ? `bg-${props.bgColor} border-${props.bgColor}` : 'bg-surface-primary border-stroke-default',
@@ -114,8 +114,13 @@ const innerModelValue = computed({
   set: (value: Array<string | number | boolean>) => emit('update:modelValue', value),
 })
 
+/**
+ * 原本多了 `&& !item.disabled`：停用但已勾選的項目畫成沒勾，
+ * 而底下的原生 input 其實是勾著的 —— 畫面與實際值不一致。停用只該變淡、不該改變勾選狀態。
+ * （輸入框本身 opacity-0，焦點框改畫在外框上：has-[:focus-visible]）
+ */
 const isChecked = (item: ChptCheckboxItem): boolean =>
-  props.modelValue.includes(item.value) && !item.disabled
+  props.modelValue.includes(item.value)
 
 /** label 樣式 */
 function getLabelClasses(item: ChptCheckboxItem): Record<string, boolean | string> {

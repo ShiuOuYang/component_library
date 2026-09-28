@@ -229,7 +229,8 @@ const props = withDefaults(defineProps<FacetedChartProps>(), {
   width: 1200,
   totalHeight: 800,
   autoResize: false,
-  margin: () => ({ top: 40, right: 80, bottom: 60, left: 80 }),
+  // bottom 原本 60：X 軸已經畫在最後一個分面自己的下緣裡，外框只需補不夠的部分（見 outerBottom）
+  margin: () => ({ top: 40, right: 80, bottom: 40, left: 80 }),
   facetSpacing: 10,
   xScaleType: 'time',
   xDomain: null,
@@ -292,9 +293,20 @@ const effectiveHeight = computed(() =>
 
 const chartWidth = computed(() => effectiveWidth.value);
 
+/**
+ * 最後一個分面自己的下緣邊距已經容納 X 軸刻度（見 getFacetMargin），
+ * 外框的 margin.bottom 只需要補「不夠的部分」。
+ * 原本兩者疊加，再加上 lastFacetExtraHeight 又沒從可用高度扣掉，
+ * 圖表最下面平白多出約 50px 的空白。
+ */
+const outerBottom = computed(() =>
+  props.facets.length ? Math.max(0, props.margin.bottom - getFacetMargin(props.facets.length - 1).bottom) : props.margin.bottom
+);
+
 const availableHeight = computed(() =>
-  effectiveHeight.value - props.margin.top - props.margin.bottom -
-  (props.facets.length - 1) * props.facetSpacing
+  effectiveHeight.value - props.margin.top - outerBottom.value -
+  (props.facets.length - 1) * props.facetSpacing -
+  (props.facets.length ? props.lastFacetExtraHeight : 0)
 );
 
 /** 每個分面的高度（三種分配規則見 useStackedFacetLayout） */
@@ -343,7 +355,8 @@ const getFacetLabelStyle = (index: number): CSSProperties => {
   const h = facetHeights.value[index] - (index === props.facets.length - 1 ? getFacetMargin(index).bottom : 0);
   return {
     position: 'absolute',
-    left: '14px',
+    // 標題最多兩行（旋轉後是兩欄），中心往右移一點，第二行才不會被左緣切掉
+    left: '20px',
     top: `${h / 2}px`,
     width: `${Math.max(40, h - 16)}px`,
     transform: 'translate(-50%, -50%) rotate(-90deg)',
@@ -359,8 +372,9 @@ const getFacetLabelStyle = (index: number): CSSProperties => {
  */
 function getFacetMargin(index: number): ChartMargin {
   const isLast = index === props.facets.length - 1;
+  // 不旋轉的刻度標籤約 20px 高（刻度 6px + 一行 12px 字）；旋轉時需要更多
   const bottomMargin = isLast
-    ? (Math.abs(props.xAxisLabelRotate) > 0 ? 60 : 50)
+    ? (Math.abs(props.xAxisLabelRotate) > 0 ? 60 : 32)
     : 10;
 
   return {
@@ -610,6 +624,19 @@ onUnmounted(() => {
     stroke: rgb(var(--t-stroke-light));
     stroke-opacity: 0.6;
   }
+}
+
+/*
+ * 左側旋轉的標題：寬度等於分面高度，矮的分面放不下長標題（「停機時間（分）」原本被截成「停機時間（…」）。
+ * 允許換成兩行再截斷；上方模式維持單行。
+ */
+.facet-label:not(.is-top) {
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .facet-label {

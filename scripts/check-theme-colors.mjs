@@ -187,6 +187,43 @@ for (const { dir, scope } of ROOTS) for (const file of await collectVueFiles(dir
   })
 }
 
+/**
+ * 元件庫的 .vue / .ts 另外檢查兩種「看起來有寫、實際上沒作用」的樣式：
+ *
+ * 1. var(--color-*)：舊版設計系統的變數，現在沒有任何地方定義。
+ *    ⚠️ GridFacetChart 的表頭用 var(--color-bg-secondary) 當 inline 背景色 ——
+ *       未定義的變數讓整條宣告失效，表頭是透明的、邊框也沒畫出來。
+ * 2. 用樣板字串拼出來的 Tailwind 任意值 class（`w-[${size}]`）：
+ *    Tailwind 只掃原始碼裡完整的 class 字串，拼出來的永遠不會被產生。
+ *    ⚠️ ChptSteps 的節點尺寸就是這樣，圓圈一直沒有尺寸。
+ */
+const UNDEFINED_VAR = /var\(--color-[\w-]+\)/g
+const DYNAMIC_ARBITRARY = /\b[a-z][\w-]*-\[\$\{/g
+
+async function collectSourceFiles(dir) {
+  const out = []
+  for (const entry of await readdir(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name)
+    if (entry.isDirectory()) out.push(...(await collectSourceFiles(full)))
+    else if (/\.(vue|ts)$/.test(entry.name) && !entry.name.endsWith('.d.ts')) out.push(full)
+  }
+  return out
+}
+
+for (const file of await collectSourceFiles('src/components/library')) {
+  const rel = file.replace(/\\/g, '/')
+  const lines = (await readFile(file, 'utf8')).split('\n')
+  lines.forEach((line, idx) => {
+    if (/^\s*(\*|\/\*|\/\/)/.test(line)) return
+    for (const m of line.matchAll(UNDEFINED_VAR)) {
+      offenders.push({ where: `${rel}:${idx + 1}`, cls: `${m[0]}（未定義的舊變數，改用 rgb(var(--t-<角色>))）` })
+    }
+    for (const m of line.matchAll(DYNAMIC_ARBITRARY)) {
+      offenders.push({ where: `${rel}:${idx + 1}`, cls: `${m[0]}…（拼接的任意值 class 不會被 Tailwind 產生，改用 inline style）` })
+    }
+  })
+}
+
 if (offenders.length > 0) {
   console.error('✗ 元件庫或文檔站出現寫死的淺色 class —— 深色模式下這些地方不會跟著翻轉：\n')
   for (const o of offenders.slice(0, 40)) {

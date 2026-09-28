@@ -159,10 +159,10 @@ function handleClose(id: string): void {
   background: transparent;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: var(--color-neutral-300);
+  background: rgb(var(--t-stroke-default));
   border-radius: 2px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: var(--color-neutral-400);
+  background: rgb(var(--t-stroke-medium));
 }
 </style>

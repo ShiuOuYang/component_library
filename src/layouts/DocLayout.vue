@@ -223,6 +223,8 @@ const navSections = [
           { label: 'ChptInputNumber', id: 'chpt-inputnumber' },
           { label: 'ChptSlider', id: 'chpt-slider' },
           { label: 'ChptSegmented', id: 'chpt-segmented' },
+          { label: 'ChptCheckbox', id: 'chpt-checkbox' },
+          { label: 'ChptTextarea', id: 'chpt-textarea' },
         ],
       },
       {
@@ -288,6 +290,8 @@ const navSections = [
           { label: 'ChptButton', id: 'chpt-button' },
           { label: 'ChptProgress', id: 'chpt-progress' },
           { label: 'ChptAlert', id: 'chpt-alert' },
+          { label: 'ChptAvatar', id: 'chpt-avatar' },
+          { label: 'ChptTooltip', id: 'chpt-tooltip' },
         ],
       },
       {

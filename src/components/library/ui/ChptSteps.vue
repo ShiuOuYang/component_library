@@ -9,8 +9,9 @@
         <!-- 節點 -->
         <div class="flex flex-col items-center">
           <span
-            class="flex items-center justify-center rounded-full border-2 font-semibold"
+            class="flex items-center justify-center rounded-full border-2 font-semibold text-sm"
             :class="nodeClass(step)"
+            :style="{ width: `${nodeSize}px`, height: `${nodeSize}px` }"
           >
             <ChptIcon v-if="step.status === 'done'" :size="nodeSize - 4" aria-hidden="true">check</ChptIcon>
             <template v-else>{{ index + 1 }}</template>
@@ -74,11 +75,11 @@ const nodeSize = computed(() => 28)
 
 /** 步驟 node 樣式 */
 function nodeClass(step: StepItem): string {
-  const size = `${nodeSize.value}px`
-  const base = `w-[${size}] h-[${size}] text-sm`
-  if (step.status === 'done') return `${base} bg-accent-solid border-stroke-focus text-white`
-  if (step.status === 'process') return `${base} border-stroke-focus text-accent bg-accent-subtle`
-  return `${base} border-stroke-default text-content-disabled bg-surface-primary`
+  // 尺寸原本是動態拼出來的 `w-[28px]`：Tailwind 只掃原始碼裡完整的 class 字串，
+  // 這種拼接永遠不會被產生 —— 圓圈沒有尺寸，縮成數字大小的橢圓。改用 inline style
+  if (step.status === 'done') return 'bg-accent-solid border-stroke-focus text-white'
+  if (step.status === 'process') return 'border-stroke-focus text-accent bg-accent-subtle'
+  return 'border-stroke-default text-content-disabled bg-surface-primary'
 }
 
 /** 外部容器樣式 */
@@ -87,6 +88,8 @@ function statusText(step: StepItem): string {
   const map: Record<string, string> = {
     done: '已完成',
     process: '進行中',
+    // StepStatus 是 'pending'，原本只寫了 'wait'：尚未開始的步驟什麼都不唸
+    pending: '尚未開始',
     wait: '尚未開始',
     error: '發生錯誤',
   }

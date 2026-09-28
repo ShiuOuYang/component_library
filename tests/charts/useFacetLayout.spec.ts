@@ -310,11 +310,22 @@ describe('useGridFacetLayout', () => {
       expect(style.left).toBe(`${80 + 1 * 300}px`)
     })
 
-    it('顏色走設計令牌的 CSS 變數，不是寫死色碼', () => {
+    it('顏色走主題變數（rgb(var(--t-*))），不是寫死色碼或未定義的舊變數', () => {
       const { getGridCellStyle, getColHeaderStyle } = gridSetup([{ site: 'S1', line: 'A' }])
 
-      expect(String(getGridCellStyle(0, 0).border)).toContain('var(--color-border')
-      expect(String(getColHeaderStyle(0).backgroundColor)).toContain('var(--color-bg')
+      // 回歸：原本用 var(--color-border-*) / var(--color-bg-secondary) —— 沒有任何地方定義，
+      // 未定義的變數讓整條宣告失效，表頭是透明的、邊框也沒畫出來
+      expect(String(getGridCellStyle(0, 0).border)).toContain('rgb(var(--t-stroke-light))')
+      expect(String(getColHeaderStyle(0).backgroundColor)).toBe('rgb(var(--t-surface-secondary))')
+      expect(JSON.stringify(getColHeaderStyle(0))).not.toContain('--color-')
+    })
+
+    /** 回歸：列表頭原本是直書（writing-mode: vertical-rl），「產線：L1」的英數字躺平、冒號轉向 */
+    it('列表頭橫書（不再用直書）', () => {
+      const { getRowHeaderStyle } = gridSetup([{ site: 'S1', line: 'A' }])
+      const style = getRowHeaderStyle(0)
+      expect(style.writingMode).toBeUndefined()
+      expect(style.textAlign).toBe('center')
     })
 
     it('只有最外圈的格子留空間給座標軸標籤', () => {
