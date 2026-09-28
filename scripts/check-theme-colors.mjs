@@ -95,6 +95,13 @@ const PATTERN = new RegExp(
   'g'
 )
 
+/**
+ * ChptIcon 的 color prop 會組成 text-{color}（color="neutral-500" → text-neutral-500），
+ * 上面的 class 檢查看不到這種寫法。
+ * ⚠️ ChptInput 的放大鏡、ChptFixedTable 的釘選 / 篩選圖示都是這樣漏掉的：深色模式下仍是固定灰。
+ */
+const COLOR_PROP = /\b(?:color|hover-color|hoverColor)="((?:white|neutral|gray|slate|zinc|stone)(?:-\d{2,3})?)"/g
+
 /** text-white / text-black 是實心底上的文字，兩個主題都正確 */
 const EXEMPT_CLASS = /^(?:text-(?:white|black))$/
 
@@ -150,6 +157,9 @@ for (const { dir, scope } of ROOTS) for (const file of await collectVueFiles(dir
   }
 
   lines.forEach((line, idx) => {
+    for (const m of line.matchAll(COLOR_PROP)) {
+      offenders.push({ where: `${rel}:${idx + 1}`, cls: `color="${m[1]}"（ChptIcon → text-${m[1]}）` })
+    }
     for (const m of line.matchAll(PATTERN)) {
       const cls = m[2]
       if (EXEMPT_CLASS.test(cls)) continue

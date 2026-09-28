@@ -7,6 +7,7 @@ import ChptInput from '@/components/library/ui/ChptInput.vue'
 import ChptSelect from '@/components/library/ui/ChptSelect.vue'
 import ChptInputNumber from '@/components/library/ui/ChptInputNumber.vue'
 import ChptRadio from '@/components/library/ui/ChptRadio.vue'
+import ChptDatePicker from '@/components/library/ui/ChptDatePicker.vue'
 import {
   checkRule,
   getByPath,
@@ -96,7 +97,7 @@ afterEach(() => {
 
 function mountForm(template: string, setup: () => Record<string, unknown>) {
   const Comp = defineComponent({
-    components: { ChptForm, ChptFormItem, ChptInput, ChptSelect, ChptInputNumber, ChptRadio },
+    components: { ChptForm, ChptFormItem, ChptInput, ChptSelect, ChptInputNumber, ChptRadio, ChptDatePicker },
     setup,
     template,
   })
@@ -297,5 +298,22 @@ describe('ChptForm / ChptFormItem', () => {
     expect(w.text()).toContain('備註')
     expect(w.text()).toContain('選填')
     w.unmount()
+  })
+
+  /** 原本 FormItem 裡的日期欄位驗證失敗時，錯誤訊息出現了、輸入框卻沒有變紅 */
+  it('ChptDatePicker：FormItem 驗證失敗時輸入框變紅，並補上 aria-invalid', async () => {
+    const w = mountForm(
+      `<ChptForm ref="form" :model="model"><ChptFormItem prop="due" label="交期" required><ChptDatePicker v-model="model.due" /></ChptFormItem></ChptForm>`,
+      () => ({ model: reactive({ due: null }) })
+    )
+    await nextTick()
+    const input = () => w.find('input.dp__input')
+    expect(input().classes()).not.toContain('dp__input_invalid')
+    expect(w.find('label').attributes('for')).toBe(input().attributes('id'))
+    await (w.vm.$refs.form as { validate: () => Promise<unknown> }).validate()
+    await flushPromises()
+    await nextTick()
+    expect(input().classes()).toContain('dp__input_invalid')
+    expect(input().attributes('aria-invalid')).toBe('true')
   })
 })

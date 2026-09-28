@@ -19,6 +19,8 @@ export {
   ChptDescriptions, ChptDropdown, ChptInputNumber, ChptResult, ChptSegmented,
   ChptSlider, ChptStatistic, ChptTimeline,
   ChptForm, ChptFormItem, ChptUpload, ChptTree,
+  ChptAutocomplete, ChptCalendar, ChptCascader, ChptColorPicker, ChptPopover, ChptRate,
+  ChptTransfer,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -46,3 +48,6 @@ export { validateValue, checkRule } from './shared/formValidation'
 export type { FormRule, FormRules } from './shared/formValidation'
 export type { UploadFile, UploadRequest } from './ui/ChptUpload.vue'
 export type { TreeNode } from './ui/ChptTree.vue'
+export type { AutocompleteSuggestion } from './ui/ChptAutocomplete.vue'
+export type { CascaderOption } from './ui/ChptCascader.vue'
+export type { TransferItem } from './ui/ChptTransfer.vue'

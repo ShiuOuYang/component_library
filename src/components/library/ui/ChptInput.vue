@@ -8,8 +8,6 @@
       <ChptIcon
         v-if="props.prefixIcon"
         :size="16"
-
-        color="neutral-400"
         class="absolute left-2 pointer-events-none"
       >
         {{ props.prefixIcon }}
@@ -46,6 +44,7 @@
       <button
         v-if="props.clearable && props.modelValue && !props.disabled"
         type="button"
+        aria-label="清除"
         class="absolute right-2 text-content-disabled hover:text-content-secondary"
         @click="handleClear"
       >

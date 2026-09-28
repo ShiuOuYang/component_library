@@ -226,6 +226,17 @@ const navSections = [
         ],
       },
       {
+        to: '/docs/components/pickers', icon: '🎯', label: '進階選擇元件',
+        anchors: [
+          { label: 'ChptAutocomplete', id: 'chpt-autocomplete' },
+          { label: 'ChptCascader', id: 'chpt-cascader' },
+          { label: 'ChptTransfer', id: 'chpt-transfer' },
+          { label: 'ChptColorPicker', id: 'chpt-colorpicker' },
+          { label: 'ChptRate', id: 'chpt-rate' },
+          { label: 'ChptCalendar', id: 'chpt-calendar' },
+        ],
+      },
+      {
         to: '/docs/components/form', icon: '📝', label: '表單驗證與上傳',
         anchors: [
           { label: 'ChptForm', id: 'chpt-form' },
@@ -282,6 +293,7 @@ const navSections = [
           { label: 'ChptDrawer', id: 'chpt-drawer' },
           { label: 'ChptPopconfirm', id: 'chpt-popconfirm' },
           { label: 'ChptDropdown', id: 'chpt-dropdown' },
+          { label: 'ChptPopover', id: 'chpt-popover' },
           { label: 'ChptModalDock', id: 'chpt-modaldock' },
         ],
       },
@@ -355,6 +367,7 @@ const navSections = [
 const collapsedShortcuts = [
   { to: '/docs', icon: '🏠', title: '首頁' },
   { to: '/docs/components/form-atoms', icon: '🧩', title: '基礎表單' },
+  { to: '/docs/components/pickers', icon: '🎯', title: '進階選擇元件' },
   { to: '/docs/components/form', icon: '📝', title: '表單驗證與上傳' },
   { to: '/docs/components/data-filter', icon: '📊', title: '資料呈現與過濾' },
   { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示' },

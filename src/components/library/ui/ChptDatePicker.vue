@@ -15,21 +15,23 @@
       :clearable="props.clearable"
       :auto-apply="props.autoApply"
       :placeholder="props.placeholder"
+      :state="invalid ? false : undefined"
       class="chpt-date-picker"
       :class="sizeClass"
       @update:model-value="handleUpdate"
     />
 
-    <p v-if="props.errorText" class="text-xs text-danger">{{ props.errorText }}</p>
+    <p v-if="props.errorText" role="alert" class="text-xs text-danger">{{ props.errorText }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import type { ModelValue } from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import type { ComponentSize } from '@/components/library/shared/types/ui.types'
+import { FORM_ITEM_KEY } from '@/components/library/shared/formContext'
 
 /**
  * ChptDatePicker（CHPT 主題） - 日期選擇元件
@@ -109,6 +111,17 @@ const emit = defineEmits<{
   (e: 'clear'): void
 }>()
 
+/**
+ * 紅框：自己的 errorText，或所在 ChptFormItem 的驗證錯誤。
+ *
+ * 這裡只讀 FormItem 的錯誤、不「認領」它的 id：vue-datepicker 的輸入框 id 固定是
+ * dp-input-{uid}，接不上 FormItem 的 <label for>。id 與 aria-invalid / aria-describedby
+ * 交給 FormItem 的原生控制項後援補在那個 <input> 上。
+ * ⚠️ 原本放在 FormItem 裡驗證失敗時，錯誤訊息出現了、輸入框卻沒有變紅。
+ */
+const formItem = inject(FORM_ITEM_KEY, null)
+const invalid = computed(() => !!props.errorText || !!formItem?.error.value)
+
 /** 尺寸 class */
 const sizeClass = computed(() => `chpt-date-picker--${props.size}`)
 
@@ -131,6 +144,16 @@ function handleUpdate(value: ChptDatePickerValue): void {
   outline: none;
   box-shadow: 0 0 0 1px rgb(var(--t-stroke-focus));
   border-color: rgb(var(--t-stroke-focus));
+}
+
+/* 驗證錯誤（state=false）：上面的邊框色權重比 vue-datepicker 自己的 .dp__input_invalid 高，要再蓋回來 */
+.chpt-date-picker :deep(.dp__input.dp__input_invalid) {
+  border-color: rgb(var(--t-danger));
+  box-shadow: none;
+}
+
+.chpt-date-picker :deep(.dp__input.dp__input_invalid:focus) {
+  box-shadow: 0 0 0 1px rgb(var(--t-danger));
 }
 
 .chpt-date-picker :deep(.dp__input:disabled) {

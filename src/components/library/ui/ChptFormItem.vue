@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, useId, useTemplateRef, watch } from 'vue'
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, useId, useSlots, useTemplateRef, watch } from 'vue'
 import { FORM_ITEM_KEY } from '@/components/library/shared/formContext'
 import {
   getByPath,
@@ -88,6 +88,7 @@ const props = withDefaults(defineProps<ChptFormItemProps>(), {
 const form = inject(FORM_KEY, null)
 
 const root = useTemplateRef<HTMLElement>('root')
+const slots = useSlots()
 const control = useTemplateRef<HTMLElement>('control')
 
 const uid = useId()
@@ -117,6 +118,7 @@ const describedBy = computed(() => (error.value && props.showMessage ? errorId :
 
 provide(FORM_ITEM_KEY, {
   controlId,
+  labelId: computed(() => (props.label || slots.label ? labelId : undefined)),
   describedBy,
   error,
   required: isRequired,

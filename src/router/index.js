@@ -174,6 +174,14 @@ const routes = [
               },
             },
             {
+              path: "components/pickers",
+              name: "PickerDoc",
+              component: () => import("../views/docs/components/PickerDocs.vue"),
+              meta: {
+                title: "進階選擇元件",
+              },
+            },
+            {
               path: "components/data-display",
               name: "DataDisplayDoc",
               component: () => import("../views/docs/components/DataDisplayDocs.vue"),

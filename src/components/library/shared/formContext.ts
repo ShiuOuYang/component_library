@@ -16,6 +16,12 @@ import { computed, inject, useId, type ComputedRef, type InjectionKey, type Ref 
 export interface FormItemContext {
   /** 給被認領的輸入元件用的 id（<label for> 指向它） */
   controlId: string
+  /**
+   * FormItem 標籤的 id（沒有標籤時為 undefined）。
+   * <label for> 只能命名原生控制項；星等（radiogroup）這類以 div 組成的控制項
+   * 要用 aria-labelledby 指向它才有名稱。
+   */
+  labelId?: Ref<string | undefined>
   /** 給輸入元件的 aria-describedby（錯誤訊息與說明文字的 id） */
   describedBy: Ref<string | undefined>
   /** 目前的錯誤訊息（空字串表示沒有錯誤） */
@@ -34,6 +40,8 @@ export interface FormField {
   invalid: ComputedRef<boolean>
   describedBy: ComputedRef<string | undefined>
   required: ComputedRef<boolean>
+  /** 所在 FormItem 標籤的 id（只有認領到時才有） */
+  labelledBy: ComputedRef<string | undefined>
 }
 
 /**
@@ -55,5 +63,6 @@ export function useFormField(ownError: () => string | undefined): FormField {
     invalid: computed(() => !!ownError() || !!itemError()),
     describedBy: computed(() => (ownError() ? errorId : claimed ? item!.describedBy.value : undefined)),
     required: computed(() => claimed && item!.required.value),
+    labelledBy: computed(() => (claimed ? item!.labelId?.value : undefined)),
   }
 }

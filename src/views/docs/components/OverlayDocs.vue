@@ -250,6 +250,64 @@
       </p>
     </section>
 
+    <!-- ============ ChptPopover ============ -->
+    <section id="chpt-popover" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptPopover 氣泡卡片</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>點（或滑過）一個元素時，在旁邊彈出一張可放任意內容的卡片 —— 欄位說明、使用者資訊、小表單。
+        只有一行文字用 ChptTooltip；固定「確定／取消」用 ChptPopconfirm；一組動作用 ChptDropdown。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptPopover } from '@/components/library'</code>
+      </p>
+
+      <div class="bg-surface-secondary rounded-lg p-4 flex flex-wrap items-center gap-4 min-h-[5rem] pb-40">
+        <ChptPopover title="良率計算方式" content="良率 = 良品數 ÷ 投入數。重工後判定為良品者計入良品，報廢品不計入投入。">
+          <ChptButton size="sm" is-outline>點我看說明</ChptButton>
+        </ChptPopover>
+
+        <ChptPopover trigger="hover" placement="bottom-start" aria-label="使用者資訊" width="16rem">
+          <button type="button" class="text-sm text-accent underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus rounded">王小明</button>
+          <template #content>
+            <div class="flex items-center gap-3">
+              <span class="inline-flex size-10 items-center justify-center rounded-full bg-accent-subtle text-accent-on-subtle font-semibold">王</span>
+              <div class="text-sm">
+                <p class="font-medium text-content-primary">王小明</p>
+                <p class="text-content-tertiary">製程工程師 · SMT</p>
+              </div>
+            </div>
+          </template>
+        </ChptPopover>
+
+        <ChptPopover v-model:open="noteOpen" title="新增備註" placement="bottom-start" width="18rem">
+          <ChptButton size="sm" icon="edit_note">備註</ChptButton>
+          <template #content="{ close }">
+            <ChptTextarea v-model="noteText" placeholder="輸入備註…" :rows="3" full-width />
+            <div class="mt-2 flex justify-end gap-2">
+              <ChptButton size="sm" is-outline @click="close">取消</ChptButton>
+              <ChptButton size="sm" color="primary" @click="saveNote(close)">儲存</ChptButton>
+            </div>
+          </template>
+        </ChptPopover>
+        <span class="text-sm text-content-secondary">已存備註：<span class="font-mono">{{ savedNote || '—' }}</span></span>
+      </div>
+
+      <div class="mt-6">
+        <ChptCodeBlock :code="popoverSample" />
+      </div>
+
+      <ApiTable title="Props" :rows="popoverProps" />
+      <ApiTable title="Events" :rows="popoverEvents" />
+      <ApiTable title="Slots" :rows="popoverSlots" />
+
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>卡片是非模態 dialog，緊接在觸發元素後面（不 Teleport），Tab 從觸發鈕往下就會進到卡片裡。
+        Escape、點外面、焦點離開都會關閉；卡片內按鈕呼叫 <code>close()</code> 時焦點會回到觸發鈕。
+        hover 觸發同時支援鍵盤聚焦開啟 —— 只能滑鼠打開的內容，鍵盤使用者永遠看不到。
+        觸發元素的 aria-haspopup／aria-expanded 會自動補上。
+      </p>
+    </section>
+
     <!-- ============ ChptModalDock ============ -->
     <section id="chpt-modaldock" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptModalDock 視窗口袋列</h2>
@@ -295,10 +353,56 @@ import {
   ChptProgress,
   ChptTag,
   ChptDropdown,
+  ChptPopover,
   ChptCodeBlock,
 } from '@/components/library'
 import { useModalManager } from '@/components/library/shared/useModalManager'
 import ApiTable from './_ApiTable.vue'
+
+// ---- ChptPopover ----
+const noteOpen = ref(false)
+const noteText = ref('')
+const savedNote = ref('')
+function saveNote(close) {
+  savedNote.value = noteText.value.trim()
+  noteText.value = ''
+  close()
+}
+const popoverSample = `<ChptPopover title="良率計算方式" content="良率 = 良品數 ÷ 投入數">
+  <ChptButton size="sm" is-outline>點我看說明</ChptButton>
+</ChptPopover>
+
+<!-- 滑過觸發（鍵盤聚焦也會開） -->
+<ChptPopover trigger="hover" aria-label="使用者資訊">
+  <button type="button">王小明</button>
+  <template #content>…</template>
+</ChptPopover>
+
+<!-- 卡片裡放表單：close() 會關閉並把焦點還給觸發鈕 -->
+<ChptPopover v-model:open="open" title="新增備註" width="18rem">
+  <ChptButton size="sm">備註</ChptButton>
+  <template #content="{ close }">
+    <ChptTextarea v-model="note" />
+    <ChptButton size="sm" @click="save(); close()">儲存</ChptButton>
+  </template>
+</ChptPopover>`
+const popoverProps = [
+  { name: 'open', type: 'boolean', def: '—', desc: '是否開啟（v-model:open；不綁時元件自己管理）' },
+  { name: 'trigger', type: "'click' | 'hover' | 'focus' | 'manual'", def: "'click'", desc: '觸發方式；hover 也含鍵盤聚焦；manual 只由 v-model 控制' },
+  { name: 'placement', type: "'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'right'", def: "'bottom'", desc: '位置' },
+  { name: 'title / content', type: 'string', def: "''", desc: '標題（也是卡片的無障礙名稱）與內容文字' },
+  { name: 'ariaLabel', type: 'string', def: "''", desc: '沒有標題時卡片的名稱' },
+  { name: 'width', type: 'string', def: "''", desc: '卡片寬度（CSS 值）；不設時依內容、最寬 20rem' },
+  { name: 'padded', type: 'boolean', def: 'true', desc: '卡片內距' },
+  { name: 'openDelay / closeDelay', type: 'number', def: '100 / 150', desc: 'hover 觸發的延遲（ms）' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '禁用' },
+]
+const popoverEvents = [{ name: 'update:open', params: '(open: boolean)', desc: '開啟狀態變更' }]
+const popoverSlots = [
+  { name: 'default', params: '{ open, toggle, attrs }', desc: '觸發元素；沒有綁 attrs 時會自動補在第一個可聚焦元素上' },
+  { name: 'title', params: '—', desc: '自訂標題' },
+  { name: 'content', params: '{ close }', desc: '卡片內容；close() 關閉並歸還焦點' },
+]
 
 // ---- ChptDropdown ----
 const lastAction = ref('')

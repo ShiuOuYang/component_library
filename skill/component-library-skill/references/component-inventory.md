@@ -85,9 +85,14 @@
 | `ChptInputNumber` | modelValue(`number\|null`), min, max, step, precision, label, placeholder, unit, size(`xs~xl`), controls, disabled, readonly, fullWidth, errorText | update:modelValue, change(value, old), focus, blur | ref: `focus()`, `blur()` |
 | `ChptSlider` | modelValue, min, max, step, label, showValue, formatter, marks(`SliderMark[]\|Record<number,string>`), disabled, fullWidth | update:modelValue（拖曳中）, change（放開） | – |
 | `ChptForm` | model, rules(`Record<path, FormRule\|FormRule[]>`), labelPosition(`top/left`), labelWidth, gap, disabled | submit(model), invalid(errors) | ref: validate(fields?), validateField, resetFields, clearValidate, submit；失敗時聚焦第一個錯誤欄位 |
-| `ChptFormItem` | prop（可 a.b.c）, label, required, rules, hint, labelWidth, showMessage | – | default（`{ error, invalid }`）、`label`；裡面的 ChptInput/Select/Textarea/InputNumber 自動接上 id、aria-invalid、aria-describedby |
+| `ChptFormItem` | prop（可 a.b.c）, label, required, rules, hint, labelWidth, showMessage | – | default（`{ error, invalid }`）、`label`；裡面的 ChptInput/Select/Textarea/InputNumber/Autocomplete/Cascader/ColorPicker/Rate 自動接上 id（Rate 以 aria-labelledby）、aria-invalid、aria-describedby；ChptDatePicker 驗證失敗時也會變紅框 |
 | `ChptUpload` | modelValue(`UploadFile[]`), accept, multiple, maxSize, maxCount, request(`(file,{onProgress,signal})=>Promise`), autoUpload, drag, label, buttonText, hint, disabled, fullWidth | update:modelValue, add, remove, reject(file, reason), success, error | ref: submit(), open(), addFiles() |
 | `ChptSegmented` | modelValue, options(`{label,value,icon?,disabled?}\|string`), size(`xs~lg`), block, disabled, ariaLabel | update:modelValue, change | – |
+| `ChptAutocomplete` | modelValue(`string`), options(`string\|{value,label?,description?,disabled?}`), fetchSuggestions(`(q)=>Suggestion[]\|Promise`), filter, debounce, openOnFocus, autoHighlight, maxItems, label, placeholder, prefixIcon, size, clearable, disabled, fullWidth, errorText, emptyText, loadingText | update:modelValue, select(item), focus, blur | `option`（`{ item, query }`）；WAI-ARIA combobox；值可自由輸入（只能選清單時用 ChptSelect） |
+| `ChptCascader` | modelValue(`(string\|number)[]\|null` 路徑), options(`{value,label,children?,disabled?,leaf?}`), separator, showAllLevels, changeOnSelect, expandTrigger(`click/hover`), load(`(node,path)=>Promise<Option[]>`), label, placeholder, clearable, disabled, size, fullWidth, errorText | update:modelValue, change(path, nodes) | `option`（`{ node, level }`）；ref: open, close, getCheckedNodes |
+| `ChptTransfer` | modelValue(右側 keys), data(`{key,label,description?,disabled?}`), titles, buttonTexts, filterable, filterPlaceholder, filterMethod, targetOrder(`original/push`), listHeight, emptyText, disabled, ariaLabel | update:modelValue, change(keys, 'left'\|'right', movedKeys) | `item`（`{ item, side }`）, `footer`；ref: clearChecked, clearQuery |
+| `ChptColorPicker` | modelValue(`#rrggbb\|null`), presets, label, showText, clearable, disabled, size, fullWidth, errorText | update:modelValue, change | 面板：原生取色器 + 色碼輸入（#abc 會正規化）+ 預設色 |
+| `ChptRate` | modelValue(0 = 未評分), count, icon, texts, showText, allowClear, readonly（role=img）, disabled, size(`sm/md/lg`), color(`warning/danger/accent`), ariaLabel | update:modelValue, change | WAI-ARIA radiogroup；在 FormItem 裡以標籤命名 |
 
 `ChptDatePicker` 底層是 `@vuepic/vue-datepicker`。
 
@@ -114,6 +119,7 @@
 | `ChptModalDock` | zIndex | – | 最小化視窗停靠列，配 `useModalManager` |
 | `ChptTooltip` | content, placement(top/bottom/left/right), theme(dark/light/info/warning/error), showArrow, maxWidth, disabled | show, hide | slot: default（觸發元素）、`content` |
 | `ChptDropdown` | items(`{key?,label,icon?,disabled?,danger?,divided?,shortcut?}`), label, icon, placement(`bottom-start/bottom-end/top-start/top-end`), size, disabled | select(item), open, close | slot: `trigger`（`{ open, toggle, attrs }`，attrs 需 v-bind）；ref: open, close |
+| `ChptPopover` | open（v-model:open）, trigger(`click/hover/focus/manual`), placement(`top*/bottom*/left/right`), title, content, width, ariaLabel, padded, openDelay, closeDelay, disabled | update:open | slot: default（觸發元素，`{ open, toggle, attrs }`；aria 會自動補上）、`title`、`content`（`{ close }`）；ref: open, close, toggle |
 
 `ChptModal` 同時提供 dialog（置中確認/表單）與 window（多視窗：拖曳/縮放/最大化/最小化）兩種模式；多視窗需搭配 `ChptModalDock`。
 
@@ -152,6 +158,7 @@
 | `ChptStatistic` | title, value, precision, groupSeparator, prefix, suffix, delta, deltaSuffix, deltaPrecision, higherIsBetter（不良率等請設 false）, description, valueClass, size, loading | – | `title`, `prefix`, `suffix`, `footer` |
 | `ChptDescriptions` | items(`{key?,label,value?,span?}`), title, column, bordered, layout(`horizontal/vertical`), labelWidth, size, emptyText | – | `title`, `extra`, `value`（`{ item, index }`） |
 | `ChptTree` | data(`{key,label,children?,disabled?,icon?}`), modelValue, selectable, checkable, checked, expanded, defaultExpandAll, filterText, indent, size, ariaLabel, emptyText | update:modelValue, update:checked, update:expanded, select, check, expand | `label`, `extra`（`{ node, level }`）；ref: expandAll, collapseAll, getCheckedNodes, getHalfCheckedKeys |
+| `ChptCalendar` | modelValue(`'YYYY-MM-DD'\|Date\|null`), month（v-model:month `'YYYY-MM'`）, firstDayOfWeek, disabledDate, compact, showToday, valueType(`string/date`) | update:modelValue, update:month, select(date, dateString) | `date-cell`（`{ date, dateString, day, isToday, isSelected, inMonth }`）, `header`；ref: goTo(date)；WAI-ARIA grid |
 | `ChptTimeline` | items(`{title?,content?,time?,datetime?,color?,hollow?,icon?,pending?,current?}`), reverse | – | `dot`, `content`（`{ item, index }`） |
 
 ## 過濾器

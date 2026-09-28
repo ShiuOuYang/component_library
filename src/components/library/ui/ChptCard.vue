@@ -14,7 +14,7 @@
         class="flex items-center justify-between border-b border-stroke-light px-5 py-3.5"
       >
         <div class="flex items-center gap-2">
-          <ChptIcon v-if="props.icon" :size="18" color="neutral-500">{{ props.icon }}</ChptIcon>
+          <ChptIcon v-if="props.icon" :size="18" color="content-tertiary">{{ props.icon }}</ChptIcon>
           <h3 v-if="props.title" class="font-semibold text-content-primary text-sm">
             {{ props.title }}
           </h3>
