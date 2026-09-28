@@ -18,6 +18,7 @@ export {
   // 2026-09 新增
   ChptDescriptions, ChptDropdown, ChptInputNumber, ChptResult, ChptSegmented,
   ChptSlider, ChptStatistic, ChptTimeline,
+  ChptForm, ChptFormItem, ChptUpload, ChptTree,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -41,3 +42,7 @@ export { useModalManager, generateModalId } from './shared/useModalManager'
 export { useOptionalRouter } from './shared/useOptionalRouter'
 export { useOverlay } from './shared/useOverlay'
 export { warnDeprecated } from './shared/warnDeprecated'
+export { validateValue, checkRule } from './shared/formValidation'
+export type { FormRule, FormRules } from './shared/formValidation'
+export type { UploadFile, UploadRequest } from './ui/ChptUpload.vue'
+export type { TreeNode } from './ui/ChptTree.vue'

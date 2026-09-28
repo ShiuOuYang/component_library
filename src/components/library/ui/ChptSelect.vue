@@ -8,14 +8,15 @@
       :id="id"
       :value="props.modelValue"
       :disabled="props.disabled"
-      :aria-invalid="props.errorText ? 'true' : undefined"
-      :aria-describedby="props.errorText ? errorId : undefined"
+      :aria-invalid="invalid ? 'true' : undefined"
+      :aria-describedby="describedBy"
+        :aria-required="required || undefined"
       @change="handleChange"
       class="border rounded-md shadow-sm focus:outline-none focus:ring-1 transition-colors"
       :class="[
         sizeClass,
         props.fullWidth ? 'w-full' : '',
-        props.errorText
+        invalid
           ? 'border-danger focus:border-danger focus:ring-danger'
           : 'border-stroke-default focus:border-stroke-focus focus:ring-stroke-focus',
         props.disabled ? 'bg-surface-tertiary cursor-not-allowed text-content-disabled' : 'bg-surface-primary',
@@ -41,7 +42,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { computed } from 'vue'
+import { useFormField } from '@/components/library/shared/formContext'
 import type { ComponentSize, Recordable, SelectOption } from '@/components/library/shared/types/ui.types'
 
 /**
@@ -107,9 +109,11 @@ const emit = defineEmits<{
  * 但 SSR 時伺服器與用戶端會算出不同的值，造成 hydration 不一致。
  * useId()（Vue 3.5+）就是為此設計的。
  */
-const id = useId()
-/** 錯誤訊息的 id，供 aria-describedby 指向 */
-const errorId = `${id}-error`
+/**
+ * id 與錯誤狀態：放在 ChptFormItem 裡時用 FormItem 給的 id（它的 <label for> 才指得到），
+ * 驗證失敗時自動變紅框並以 aria-describedby 指向 FormItem 的錯誤訊息。
+ */
+const { id, errorId, invalid, describedBy, required } = useFormField(() => props.errorText)
 
 /** 尺寸對應 class */
 /**

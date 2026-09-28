@@ -135,7 +135,8 @@ const usageCode = `<template>
 const groups = [
   { to: '/docs/components/form-atoms', icon: '🧩', title: '表單元件', badge: 'UI', description: 'Input / InputNumber / Select / Radio / Checkbox / Switch / Slider / Segmented / DatePicker / Textarea' },
   { to: '/docs/components/data-filter', icon: '📊', title: '資料與過濾', badge: 'UI', description: 'ChptTable / ChptFixedTable / ChptPagination / ChptFilter / ChptFilterBar' },
-  { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示', badge: 'UI', description: 'Statistic（KPI）/ Descriptions / Timeline' },
+  { to: '/docs/components/form', icon: '📝', title: '表單驗證與上傳', badge: 'UI', description: 'Form / FormItem（驗證）/ Upload（拖放、進度、取消）' },
+  { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示', badge: 'UI', description: 'Statistic（KPI）/ Descriptions / Timeline / Tree' },
   { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件', badge: 'UI', description: 'Alert / Badge / Tag / Toast / Progress / Spinner / Empty / Skeleton / Result' },
   { to: '/docs/components/interactive', icon: '🖱️', title: '互動元件', badge: 'UI', description: 'Button / Avatar / Icon / Tabs / Steps' },
   { to: '/docs/components/overlay', icon: '🗔', title: '浮層元件', badge: 'UI', description: 'Modal / Drawer / Popconfirm / Dropdown / ModalDock' },

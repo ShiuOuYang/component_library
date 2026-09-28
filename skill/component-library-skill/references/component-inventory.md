@@ -84,6 +84,9 @@
 | `ChptDatePicker` | modelValue, label, placeholder, range, enableTimePicker, format, minDate, maxDate, size, disabled, clearable, autoApply, fullWidth, errorText | update:modelValue, clear | – |
 | `ChptInputNumber` | modelValue(`number\|null`), min, max, step, precision, label, placeholder, unit, size(`xs~xl`), controls, disabled, readonly, fullWidth, errorText | update:modelValue, change(value, old), focus, blur | ref: `focus()`, `blur()` |
 | `ChptSlider` | modelValue, min, max, step, label, showValue, formatter, marks(`SliderMark[]\|Record<number,string>`), disabled, fullWidth | update:modelValue（拖曳中）, change（放開） | – |
+| `ChptForm` | model, rules(`Record<path, FormRule\|FormRule[]>`), labelPosition(`top/left`), labelWidth, gap, disabled | submit(model), invalid(errors) | ref: validate(fields?), validateField, resetFields, clearValidate, submit；失敗時聚焦第一個錯誤欄位 |
+| `ChptFormItem` | prop（可 a.b.c）, label, required, rules, hint, labelWidth, showMessage | – | default（`{ error, invalid }`）、`label`；裡面的 ChptInput/Select/Textarea/InputNumber 自動接上 id、aria-invalid、aria-describedby |
+| `ChptUpload` | modelValue(`UploadFile[]`), accept, multiple, maxSize, maxCount, request(`(file,{onProgress,signal})=>Promise`), autoUpload, drag, label, buttonText, hint, disabled, fullWidth | update:modelValue, add, remove, reject(file, reason), success, error | ref: submit(), open(), addFiles() |
 | `ChptSegmented` | modelValue, options(`{label,value,icon?,disabled?}\|string`), size(`xs~lg`), block, disabled, ariaLabel | update:modelValue, change | – |
 
 `ChptDatePicker` 底層是 `@vuepic/vue-datepicker`。
@@ -148,6 +151,7 @@
 |---|---|---|---|
 | `ChptStatistic` | title, value, precision, groupSeparator, prefix, suffix, delta, deltaSuffix, deltaPrecision, higherIsBetter（不良率等請設 false）, description, valueClass, size, loading | – | `title`, `prefix`, `suffix`, `footer` |
 | `ChptDescriptions` | items(`{key?,label,value?,span?}`), title, column, bordered, layout(`horizontal/vertical`), labelWidth, size, emptyText | – | `title`, `extra`, `value`（`{ item, index }`） |
+| `ChptTree` | data(`{key,label,children?,disabled?,icon?}`), modelValue, selectable, checkable, checked, expanded, defaultExpandAll, filterText, indent, size, ariaLabel, emptyText | update:modelValue, update:checked, update:expanded, select, check, expand | `label`, `extra`（`{ node, level }`）；ref: expandAll, collapseAll, getCheckedNodes, getHalfCheckedKeys |
 | `ChptTimeline` | items(`{title?,content?,time?,datetime?,color?,hollow?,icon?,pending?,current?}`), reverse | – | `dot`, `content`（`{ item, index }`） |
 
 ## 過濾器
@@ -207,7 +211,8 @@
 | `/docs` | `views/docs/Home.vue` | – |
 | `/docs/components/form-atoms` | `views/docs/components/FormAtoms.vue` | UI 組件（chpt-input/select/radio/switch/datepicker/inputnumber/slider/segmented） |
 | `/docs/components/data-filter` | `views/docs/components/DataFilterDocs.vue` | UI 組件（chpt-table/fixedtable/pagination/filter/filterbar） |
-| `/docs/components/data-display` | `views/docs/components/DataDisplayDocs.vue` | UI 組件（statistic/descriptions/timeline） |
+| `/docs/components/form` | `views/docs/components/FormDocs.vue` | UI 組件（form/upload） |
+| `/docs/components/data-display` | `views/docs/components/DataDisplayDocs.vue` | UI 組件（statistic/descriptions/timeline/tree） |
 | `/docs/components/feedback` | `views/docs/components/FeedbackDocs.vue` | UI 組件（alert/tag/badge/toast/progress/spinner/empty/skeleton/result） |
 | `/docs/components/interactive` | `views/docs/components/InteractiveDocs.vue` | UI 組件（tabs/toast/button/progress/alert） |
 | `/docs/components/overlay` | `views/docs/components/OverlayDocs.vue` | UI 組件（modal/drawer/popconfirm/dropdown/modaldock） |

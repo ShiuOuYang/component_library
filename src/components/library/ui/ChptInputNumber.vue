@@ -9,7 +9,7 @@
       :class="[
         sizeClass.height,
         props.fullWidth ? 'w-full' : 'w-40',
-        props.errorText
+        invalid
           ? 'border-danger focus-within:border-danger focus-within:ring-danger'
           : 'border-stroke-default focus-within:border-stroke-focus focus-within:ring-stroke-focus',
         props.disabled ? 'bg-surface-tertiary' : 'bg-surface-primary',
@@ -43,8 +43,9 @@
         :aria-valuenow="props.modelValue ?? undefined"
         :aria-valuemin="Number.isFinite(props.min) ? props.min : undefined"
         :aria-valuemax="Number.isFinite(props.max) ? props.max : undefined"
-        :aria-invalid="props.errorText ? 'true' : undefined"
-        :aria-describedby="props.errorText ? errorId : undefined"
+        :aria-invalid="invalid ? 'true' : undefined"
+        :aria-describedby="describedBy"
+        :aria-required="required || undefined"
         class="min-w-0 flex-1 bg-transparent text-center tabular-nums text-content-primary outline-none placeholder:text-content-disabled disabled:cursor-not-allowed disabled:text-content-disabled"
         :class="sizeClass.text"
         @focus="onFocus"
@@ -81,7 +82,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, useId } from 'vue'
+import { computed, ref } from 'vue'
+import { useFormField } from '@/components/library/shared/formContext'
 import type { ComponentSize } from '@/components/library/shared/types/ui.types'
 
 /**
@@ -153,8 +155,11 @@ const emit = defineEmits<{
   (e: 'focus', event: FocusEvent): void
 }>()
 
-const id = useId()
-const errorId = `${id}-error`
+/**
+ * id 與錯誤狀態：放在 ChptFormItem 裡時用 FormItem 給的 id（它的 <label for> 才指得到），
+ * 驗證失敗時自動變紅框並以 aria-describedby 指向 FormItem 的錯誤訊息。
+ */
+const { id, errorId, invalid, describedBy, required } = useFormField(() => props.errorText)
 const inputRef = ref<HTMLInputElement | null>(null)
 
 /** 編輯中的文字；null 表示沒在編輯（顯示格式化後的值） */

@@ -166,6 +166,14 @@ const routes = [
               },
             },
             {
+              path: "components/form",
+              name: "FormDoc",
+              component: () => import("../views/docs/components/FormDocs.vue"),
+              meta: {
+                title: "表單驗證與上傳",
+              },
+            },
+            {
               path: "components/data-display",
               name: "DataDisplayDoc",
               component: () => import("../views/docs/components/DataDisplayDocs.vue"),

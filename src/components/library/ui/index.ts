@@ -32,6 +32,8 @@ export { default as ChptEmpty } from './ChptEmpty.vue'
 export { default as ChptFilter } from './ChptFilter.vue'
 export { default as ChptFilterBar } from './ChptFilterBar.vue'
 export { default as ChptFixedTable } from './ChptFixedTable.vue'
+export { default as ChptForm } from './ChptForm.vue'
+export { default as ChptFormItem } from './ChptFormItem.vue'
 export { default as ChptHeaderLogoutButton } from './ChptHeaderLogoutButton.vue'
 export { default as ChptIcon } from './ChptIcon.vue'
 export { default as ChptInput } from './ChptInput.vue'
@@ -60,6 +62,8 @@ export { default as ChptTextarea } from './ChptTextarea.vue'
 export { default as ChptTimeline } from './ChptTimeline.vue'
 export { default as ChptToast } from './ChptToast.vue'
 export { default as ChptTooltip } from './ChptTooltip.vue'
+export { default as ChptTree } from './ChptTree.vue'
+export { default as ChptUpload } from './ChptUpload.vue'
 
 // ===== legacy 相容層（@deprecated — 全部為轉發用的薄包裝） =====
 //
