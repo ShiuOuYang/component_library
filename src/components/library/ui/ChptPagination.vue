@@ -13,13 +13,13 @@
           {{ t.range(startItem, endItem, totalItems) }}
         </p>
         <div v-if="showPageSize" class="flex items-center gap-2">
-          <select :value="itemsPerPage" @change="updateItemsPerPage" class="block w-full rounded-md border-0 py-1 pl-2 pr-8 text-content-primary ring-1 ring-inset ring-stroke-default focus:ring-2 focus:ring-stroke-focus sm:text-sm sm:leading-6 cursor-pointer">
+          <select :value="itemsPerPage" :aria-label="t.perPageLabel" @change="updateItemsPerPage" class="block w-full rounded-md border-0 py-1 pl-2 pr-8 text-content-primary ring-1 ring-inset ring-stroke-default focus:ring-2 focus:ring-stroke-focus sm:text-sm sm:leading-6 cursor-pointer">
             <option v-for="option in pageSizeOptions" :key="option" :value="option">{{ t.pageSizeOption(option) }}</option>
           </select>
         </div>
       </div>
       <div>
-        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" :aria-label="t.nav">
+        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" :aria-label="props.ariaLabel || t.nav">
           <button type="button" @click="prevPage" :disabled="currentPage === 1" class="relative inline-flex items-center rounded-l-md h-control-sm px-2 text-content-disabled ring-1 ring-inset ring-stroke-default hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-not-allowed">
             <span class="sr-only">{{ t.prev }}</span>
             <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd"/></svg>
@@ -45,7 +45,7 @@
   </div>
 
   <!-- Compact 模式（原 PaginationControls） -->
-  <nav v-else :aria-label="t.nav" class="flex items-center gap-2.5">
+  <nav v-else :aria-label="props.ariaLabel || t.nav" class="flex items-center gap-2.5">
     <div v-if="showSummary && totalItems > 0" class="text-xs text-content-tertiary mr-1 px-2 rounded h-control-sm flex items-center border border-stroke-default" :class="bgColor">{{ t.total(totalItems) }}</div>
 
     <div v-if="showPageSize" class="flex items-center gap-1 text-xs text-content-primary border border-stroke-default rounded px-2 h-control-sm" :class="bgColor">
@@ -87,6 +87,8 @@ import { useConfig } from '@/components/library/shared/config'
 type ChptPaginationVariant = 'full' | 'compact'
 
 interface ChptPaginationProps {
+  /** 導航的名稱；同一頁有兩個分頁時要各自取不同名稱（預設取 locale） */
+  ariaLabel?: string
   /** 分頁風格 */
   variant?: ChptPaginationVariant
   /** 目前頁數（v-model:current-page） */
@@ -107,6 +109,7 @@ interface ChptPaginationProps {
 
 const props = withDefaults(defineProps<ChptPaginationProps>(), {
   variant: 'full',
+  ariaLabel: '',
   currentPage: 1,
   itemsPerPage: 20,
   totalItems: 0,
@@ -192,7 +195,7 @@ const displayedPages = computed<(number | string)[]>(() => {
 })
 
 const btnClass =
-  'h-control-sm min-w-control-sm flex items-center justify-center bg-transparent border-none border-stroke-default cursor-pointer px-1.5 text-content-primary transition-colors text-xs hover:bg-accent-subtle hover:text-accent disabled:text-content-disabled disabled:cursor-not-allowed disabled:bg-surface-tertiary'
+  'h-control-sm min-w-control-sm flex items-center justify-center bg-transparent border-none border-stroke-default cursor-pointer px-1.5 text-content-primary transition-colors text-xs hover:bg-accent-subtle hover:text-accent-on-subtle disabled:text-content-disabled disabled:cursor-not-allowed disabled:bg-surface-tertiary'
 
 /**
  * 切換頁碼。

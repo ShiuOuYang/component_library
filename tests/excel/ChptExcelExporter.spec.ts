@@ -6,6 +6,17 @@ import * as XLSX from 'xlsx-js-style'
 import ChptExcelExporter from '@/components/library/excel/ChptExcelExporter.vue'
 
 /**
+ * 匯出時才動態載入 xlsx-js-style（見 ChptExcelExporter 的 performExport），
+ * 所以按下按鈕後要等 import() 完成，一個 nextTick 不夠。
+ */
+async function settle(): Promise<void> {
+  await vi.dynamicImportSettled()
+  await nextTick()
+  await new Promise((r) => setTimeout(r, 0))
+  await nextTick()
+}
+
+/**
  * 匯出流程會產生一個 Blob 並用 <a download> 觸發下載。
  * jsdom 沒有 URL.createObjectURL（元件的內層 try 會因此改走
  * XLSX.writeFile，那會真的往磁碟寫檔），所以測試要把這兩件事都接住 ——
@@ -113,14 +124,14 @@ function modalCheckbox(value: string): HTMLInputElement {
 /** 觸發原生事件（這些節點不在 wrapper 裡，用不了 VTU 的 trigger） */
 async function fire(el: Element, type: string): Promise<void> {
   el.dispatchEvent(new Event(type, { bubbles: true }))
-  await nextTick()
+  await settle()
 }
 
 /** 勾選 / 取消勾選（v-model 依賴 change 事件） */
 async function setChecked(el: HTMLInputElement, checked: boolean): Promise<void> {
   el.checked = checked
   el.dispatchEvent(new Event('change', { bubbles: true }))
-  await nextTick()
+  await settle()
 }
 
 const ROWS = [
@@ -133,7 +144,7 @@ async function mountExporter(props: Record<string, unknown> = {}) {
     props: { data: ROWS, ...props },
     attachTo: document.body,
   })
-  await nextTick()
+  await settle()
   return wrapper
 }
 
@@ -190,7 +201,7 @@ describe('ChptExcelExporter', () => {
     it('沒給 columns 時從第一筆資料的鍵推導，並把底線轉成標題格式', async () => {
       const wrapper = await mountExporter({ showOptions: true })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const labels = columnTitles()
       expect(labels).toContain('Part Number')
@@ -208,7 +219,7 @@ describe('ChptExcelExporter', () => {
         ],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(columnTitles()).toEqual(['狀態', '料號'])
       wrapper.unmount()
@@ -220,7 +231,7 @@ describe('ChptExcelExporter', () => {
         columns: [{ key: 'status', title: '狀態' }, { key: '', title: '空的' }],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(columnTitles()).toEqual(['狀態'])
       wrapper.unmount()
@@ -232,7 +243,7 @@ describe('ChptExcelExporter', () => {
         columns: [{ key: 'status' }],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(columnTitles()).toEqual(['status'])
       wrapper.unmount()
@@ -243,7 +254,7 @@ describe('ChptExcelExporter', () => {
     it('showOptions=false 時直接匯出，不開對話框', async () => {
       const wrapper = await mountExporter({ showOptions: false })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(modalText()).not.toContain('Excel 匯出設定')
       expect(wrapper.emitted('export-complete')).toBeTruthy()
@@ -253,7 +264,7 @@ describe('ChptExcelExporter', () => {
     it('showOptions=true 時先開對話框，不立刻匯出', async () => {
       const wrapper = await mountExporter({ showOptions: true })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(modalText()).toContain('Excel 匯出設定')
       expect(wrapper.emitted('export-complete')).toBeFalsy()
@@ -263,7 +274,7 @@ describe('ChptExcelExporter', () => {
     it('預設全選所有欄位，計數顯示正確', async () => {
       const wrapper = await mountExporter({ showOptions: true })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(modalText()).toContain('已選 3 / 3')
       wrapper.unmount()
@@ -272,7 +283,7 @@ describe('ChptExcelExporter', () => {
     it('全選按鈕可以全取消再全選', async () => {
       const wrapper = await mountExporter({ showOptions: true })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       await fire(modalButton('取消全選'), 'click')
       expect(modalText()).toContain('已選 0 / 3')
@@ -285,7 +296,7 @@ describe('ChptExcelExporter', () => {
     it('沒選任何欄位時「確認匯出」停用', async () => {
       const wrapper = await mountExporter({ showOptions: true })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       await fire(modalButton('取消全選'), 'click')
       expect(modalButton('確認匯出').disabled).toBe(true)
@@ -295,7 +306,7 @@ describe('ChptExcelExporter', () => {
     it('確認匯出後關閉對話框並執行匯出', async () => {
       const wrapper = await mountExporter({ showOptions: true })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       await fire(modalButton('確認匯出'), 'click')
 
@@ -306,7 +317,7 @@ describe('ChptExcelExporter', () => {
     it('取消按鈕只關對話框，不匯出', async () => {
       const wrapper = await mountExporter({ showOptions: true })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const cancel = modalButtons().find((b) => (b.textContent ?? '').trim() === '取消')!
       await fire(cancel, 'click')
@@ -325,7 +336,7 @@ describe('ChptExcelExporter', () => {
         ],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const { rows } = await readExported()
       expect(rows).toEqual([
@@ -338,7 +349,7 @@ describe('ChptExcelExporter', () => {
     it('只匯出被選取的欄位', async () => {
       const wrapper = await mountExporter({ showOptions: true })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       // 取消全選後只勾 status
       await fire(modalButton('取消全選'), 'click')
@@ -358,7 +369,7 @@ describe('ChptExcelExporter', () => {
         ],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const { sheet } = await readExported()
       // 標題列：A1 / B1
@@ -373,7 +384,7 @@ describe('ChptExcelExporter', () => {
         defaultSheetName: 'MySheet',
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const { sheetNames } = await readExported()
       expect(sheetNames).toEqual(['MySheet'])
@@ -390,9 +401,9 @@ describe('ChptExcelExporter', () => {
       const wrapper = await mountExporter()
 
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(clickCount).toBe(2)
       expect(wrapper.emitted('export-complete')).toHaveLength(2)
@@ -408,7 +419,7 @@ describe('ChptExcelExporter', () => {
         data: [{ part_number: 'x', unknown_col: 'y' }],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const { sheet } = await readExported()
       const cols = sheet['!cols'] as { wch: number }[]
@@ -423,7 +434,7 @@ describe('ChptExcelExporter', () => {
         data: [{ zz: 1 }],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const { sheet } = await readExported()
       expect((sheet['!cols'] as { wch: number }[])[0].wch).toBe(10)
@@ -444,7 +455,7 @@ describe('ChptExcelExporter', () => {
         data: [{ unit_qty: 0, flag: false }],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const { sheet } = await readExported()
       expect(sheet.A2.v).toBe(0)
@@ -458,7 +469,7 @@ describe('ChptExcelExporter', () => {
         data: [{ a: null, b: undefined }],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const { sheet } = await readExported()
       expect(sheet.A2.v).toBe('')
@@ -477,7 +488,7 @@ describe('ChptExcelExporter', () => {
         cellStyles: [{ row: 1, col: 'status', style }],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       const { sheet } = await readExported()
       // 第二筆資料 = A3
@@ -492,7 +503,7 @@ describe('ChptExcelExporter', () => {
         cellStyles: [{ row: 0, col: 'no_such_col', style: { font: { bold: true } } }],
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(wrapper.emitted('export-error')).toBeFalsy()
       expect(wrapper.emitted('export-complete')).toBeTruthy()
@@ -504,7 +515,7 @@ describe('ChptExcelExporter', () => {
     it('匯出時依序發出 export-start 與 export-complete', async () => {
       const wrapper = await mountExporter()
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(wrapper.emitted('export-start')).toHaveLength(1)
       const payload = wrapper.emitted('export-complete')![0][0] as {
@@ -518,7 +529,7 @@ describe('ChptExcelExporter', () => {
     it('沒有資料時點擊不會發出任何事件', async () => {
       const wrapper = await mountExporter({ data: [] })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(wrapper.emitted('export-start')).toBeFalsy()
       expect(wrapper.emitted('export-complete')).toBeFalsy()
@@ -532,7 +543,7 @@ describe('ChptExcelExporter', () => {
         defaultSheetName: 'S'.repeat(40),
       })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(wrapper.emitted('export-error')).toBeTruthy()
       expect(wrapper.emitted('export-complete')).toBeFalsy()
@@ -549,7 +560,7 @@ describe('ChptExcelExporter', () => {
       delete urlApi.createObjectURL
 
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       expect(wrapper.emitted('export-error')).toBeFalsy()
       expect(wrapper.emitted('export-complete')).toBeTruthy()
@@ -563,7 +574,7 @@ describe('ChptExcelExporter', () => {
       const vm = wrapper.vm as unknown as { exportExcel: () => Promise<void> }
 
       await vm.exportExcel()
-      await nextTick()
+      await settle()
 
       expect(wrapper.emitted('export-complete')).toBeTruthy()
       wrapper.unmount()
@@ -574,7 +585,7 @@ describe('ChptExcelExporter', () => {
       const vm = wrapper.vm as unknown as { showExportOptions: () => void }
 
       vm.showExportOptions()
-      await nextTick()
+      await settle()
 
       expect(modalText()).toContain('Excel 匯出設定')
       wrapper.unmount()
@@ -585,11 +596,11 @@ describe('ChptExcelExporter', () => {
     it('資料換成不同欄位時，選取的欄位跟著更新', async () => {
       const wrapper = await mountExporter({ showOptions: true, data: [{ a: 1 }] })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
       expect(modalText()).toContain('已選 1 / 1')
 
       await wrapper.setProps({ data: [{ a: 1, b: 2 }] })
-      await nextTick()
+      await settle()
 
       // 新欄位預設被納入
       expect(modalText()).toContain('已選 2 / 2')
@@ -599,13 +610,13 @@ describe('ChptExcelExporter', () => {
     it('使用者取消勾選的欄位，在資料更新後仍保持未選', async () => {
       const wrapper = await mountExporter({ showOptions: true, data: [{ a: 1, b: 2 }] })
       await wrapper.find('button').trigger('click')
-      await nextTick()
+      await settle()
 
       await setChecked(modalCheckbox('a'), false)
       expect(modalText()).toContain('已選 1 / 2')
 
       await wrapper.setProps({ data: [{ a: 1, b: 2, c: 3 }] })
-      await nextTick()
+      await settle()
 
       // b 與新來的 c 被選，a 維持未選
       expect(modalText()).toContain('已選 2 / 3')

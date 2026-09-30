@@ -188,16 +188,13 @@ for (const { dir, scope } of ROOTS) for (const file of await collectVueFiles(dir
 }
 
 /**
- * 元件庫的 .vue / .ts 另外檢查兩種「看起來有寫、實際上沒作用」的樣式：
+ * 元件庫的 .vue / .ts 另外檢查「看起來有寫、實際上沒作用」的樣式：
+ * 用樣板字串拼出來的 Tailwind 任意值 class（`w-[${size}]`）。
+ * Tailwind 只掃原始碼裡完整的 class 字串，拼出來的永遠不會被產生。
+ * ⚠️ ChptSteps 的節點尺寸就是這樣，圓圈一直沒有尺寸。
  *
- * 1. var(--color-*)：舊版設計系統的變數，現在沒有任何地方定義。
- *    ⚠️ GridFacetChart 的表頭用 var(--color-bg-secondary) 當 inline 背景色 ——
- *       未定義的變數讓整條宣告失效，表頭是透明的、邊框也沒畫出來。
- * 2. 用樣板字串拼出來的 Tailwind 任意值 class（`w-[${size}]`）：
- *    Tailwind 只掃原始碼裡完整的 class 字串，拼出來的永遠不會被產生。
- *    ⚠️ ChptSteps 的節點尺寸就是這樣，圓圈一直沒有尺寸。
+ * （var(--color-*) 是 tokensPlugin 產生的相容變數，有定義、也會跟著深色模式切換，可以用。）
  */
-const UNDEFINED_VAR = /var\(--color-[\w-]+\)/g
 const DYNAMIC_ARBITRARY = /\b[a-z][\w-]*-\[\$\{/g
 
 async function collectSourceFiles(dir) {
@@ -215,9 +212,6 @@ for (const file of await collectSourceFiles('src/components/library')) {
   const lines = (await readFile(file, 'utf8')).split('\n')
   lines.forEach((line, idx) => {
     if (/^\s*(\*|\/\*|\/\/)/.test(line)) return
-    for (const m of line.matchAll(UNDEFINED_VAR)) {
-      offenders.push({ where: `${rel}:${idx + 1}`, cls: `${m[0]}（未定義的舊變數，改用 rgb(var(--t-<角色>))）` })
-    }
     for (const m of line.matchAll(DYNAMIC_ARBITRARY)) {
       offenders.push({ where: `${rel}:${idx + 1}`, cls: `${m[0]}…（拼接的任意值 class 不會被 Tailwind 產生，改用 inline style）` })
     }

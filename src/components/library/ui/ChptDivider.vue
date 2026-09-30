@@ -17,7 +17,7 @@
     />
 
     <slot>
-      <span v-if="props.text" class="text-sm text-content-disabled whitespace-nowrap">{{ props.text }}</span>
+      <span v-if="props.text" class="text-sm text-content-tertiary whitespace-nowrap">{{ props.text }}</span>
     </slot>
 
     <div

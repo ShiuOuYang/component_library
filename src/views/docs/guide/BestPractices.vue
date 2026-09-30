@@ -20,11 +20,11 @@
 
       <div class="grid md:grid-cols-2 gap-4">
         <div class="rounded-lg border border-success-subtle-border bg-success-subtle p-4">
-          <p class="text-sm font-semibold text-success mb-2">✅ 這樣寫</p>
+          <p class="text-sm font-semibold text-success-on-subtle mb-2">✅ 這樣寫</p>
           <ChptCodeBlock language="css" :code="tokenGood" />
         </div>
         <div class="rounded-lg border border-danger-subtle-border bg-danger-subtle p-4">
-          <p class="text-sm font-semibold text-danger mb-2">❌ 不要這樣寫</p>
+          <p class="text-sm font-semibold text-danger-on-subtle mb-2">❌ 不要這樣寫</p>
           <ChptCodeBlock language="css" :code="tokenBad" />
         </div>
       </div>

@@ -16,7 +16,7 @@
       v-if="props.autoplay"
       type="button"
       :aria-label="playing ? '暫停自動播放' : '開始自動播放'"
-      class="absolute left-3 top-3 z-10 inline-flex h-control-sm min-w-control-sm items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+      class="absolute left-3 top-3 z-10 inline-flex h-control-sm min-w-control-sm items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
       @click="userPaused = !userPaused"
     >
       <ChptIcon :size="18" color="current">{{ playing ? 'pause' : 'play_arrow' }}</ChptIcon>
@@ -49,7 +49,7 @@
         type="button"
         aria-label="上一張"
         :disabled="!props.loop && current === 0"
-        class="absolute left-3 top-1/2 z-10 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40"
+        class="absolute left-3 top-1/2 z-10 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40"
         @click="prev"
       >
         <ChptIcon :size="24" color="current">chevron_left</ChptIcon>
@@ -59,7 +59,7 @@
         type="button"
         aria-label="下一張"
         :disabled="!props.loop && current === props.items.length - 1"
-        class="absolute right-3 top-1/2 z-10 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40"
+        class="absolute right-3 top-1/2 z-10 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40"
         @click="next"
       >
         <ChptIcon :size="24" color="current">chevron_right</ChptIcon>

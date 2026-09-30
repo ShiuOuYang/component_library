@@ -26,10 +26,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed, inject } from 'vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
+import { computed, defineAsyncComponent, h, inject } from 'vue'
 import type { ModelValue } from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+
+/**
+ * @vuepic/vue-datepicker + date-fns 約 200 KB（壓縮前）。
+ * ⚠️ 原本靜態 import：與 ChptRadio、ChptInputNumber 打在同一個共用 chunk 裡，
+ *    只用到單選或數字輸入的頁面也要下載整個日期套件。改成第一次渲染日期選擇器時才載入，
+ *    載入期間放一個同尺寸的佔位框，版面不會跳動。
+ */
+const VueDatePicker = defineAsyncComponent({
+  loader: async () => {
+    const [mod] = await Promise.all([
+      import('@vuepic/vue-datepicker'),
+      import('@vuepic/vue-datepicker/dist/main.css'),
+    ])
+    return mod.default
+  },
+  loadingComponent: {
+    render: () =>
+      h('div', {
+        class: 'chpt-date-picker-loading h-control-sm w-full min-w-[12rem] animate-pulse rounded-md border border-stroke-default bg-surface-secondary',
+        'aria-hidden': 'true',
+      }),
+  },
+  delay: 0,
+})
 import type { ComponentSize } from '@/components/library/shared/types/ui.types'
 import { FORM_ITEM_KEY } from '@/components/library/shared/formContext'
 

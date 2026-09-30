@@ -1,6 +1,6 @@
 <template>
   <div class="mt-5">
-    <h3 class="text-base font-semibold text-content-primary mb-2">{{ title }}</h3>
+    <h3 v-if="title" class="text-base font-semibold text-content-primary mb-2">{{ title }}</h3>
     <div class="overflow-x-auto border border-stroke-light rounded-lg">
       <table class="w-full text-sm">
         <thead class="bg-surface-tertiary">

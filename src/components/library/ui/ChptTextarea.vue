@@ -5,7 +5,7 @@
         {{ props.label }}
       </label>
       <!-- 沒設 maxlength 時原本顯示「5/」加上 undefined —— 只顯示字數 -->
-      <span v-if="props.showCount" class="text-xs text-content-disabled">
+      <span v-if="props.showCount" class="text-xs text-content-tertiary">
         {{ String(props.modelValue || '').length }}<template v-if="props.maxlength">/{{ props.maxlength }}</template>
       </span>
     </div>

@@ -29,6 +29,9 @@ export interface ChptLocale {
   collapseRow: string
   pagination: {
     nav: string
+    /** 同一個頁面上下各一個分頁時的名稱（landmark 名稱要唯一） */
+    navTop: string
+    navBottom: string
     prev: string
     next: string
     first: string
@@ -58,6 +61,8 @@ export const zhTW: ChptLocale = {
   collapseRow: '收合明細',
   pagination: {
     nav: '分頁導航',
+    navTop: '上方分頁導航',
+    navBottom: '下方分頁導航',
     prev: '上一頁',
     next: '下一頁',
     first: '第一頁',
@@ -87,6 +92,8 @@ export const enUS: ChptLocale = {
   collapseRow: 'Collapse row',
   pagination: {
     nav: 'Pagination',
+    navTop: 'Pagination (top)',
+    navBottom: 'Pagination (bottom)',
     prev: 'Previous page',
     next: 'Next page',
     first: 'First page',

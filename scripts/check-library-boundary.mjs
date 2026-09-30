@@ -71,6 +71,22 @@ for (const file of await collectFiles(LIBRARY_ROOT)) {
     violations.push({ file: relative('.', file), line, spec })
   }
 
+  // 不得依賴應用程式全域載入的 Font Awesome（main.js 的 all.min.css）：
+  // 組件庫自己沒載入它，複製到別的專案時圖示會變成空白。一律用 Material Symbols。
+  // ⚠️ ChptExcelExporter 原本就這樣用了五個 fas fa-* 圖示。
+  const htmlOnly = code
+    .replace(/<script[\s\S]*?<\/script>/g, (b) => b.replace(/[^\n]/g, ''))
+    .replace(/<!--[\s\S]*?-->/g, (b) => b.replace(/[^\n]/g, ''))
+  for (const match of htmlOnly.matchAll(/\b(?:fas|far|fab|fa-solid|fa-regular)\b|\bfa-(?!ce)[a-z][a-z-]*/g)) {
+    const line = htmlOnly.slice(0, match.index).split('\n').length
+    violations.push({
+      file: relative('.', file),
+      line,
+      spec: match[0],
+      reason: '組件庫不得使用 Font Awesome 圖示（應用程式才有載入）；請改用 material-symbols-outlined 或 ChptIcon',
+    })
+  }
+
   // canonical 不得 import legacy。
   // 兩種檔案不受此限：legacy 本身（薄包裝當然要 import canonical，反向也可能
   // 互相引用），以及 barrel index.js（匯出 legacy 正是它的職責）。

@@ -36,6 +36,7 @@
         <ChptPagination
           v-if="paginationPosition === 'top' || paginationPosition === 'both'"
           variant="compact"
+          :aria-label="topNavLabel"
           :current-page="currentPage"
           :items-per-page="pageSize"
           :total-items="totalItems"
@@ -272,6 +273,7 @@
       <div class="flex items-center gap-2.5">
         <ChptPagination
           variant="compact"
+          :aria-label="bottomNavLabel"
           :current-page="currentPage"
           :items-per-page="pageSize"
           :total-items="totalItems"
@@ -362,6 +364,11 @@ const props = withDefaults(defineProps<{
   defaultSort?: DefaultSort
   // 分頁控制項位置: 'top' | 'bottom' | 'both'
   paginationPosition?: 'top' | 'bottom' | 'both'
+  /**
+   * 分頁導航（<nav>）的名稱。同一頁有多個表格時請各給一個（例如「工單分頁」），
+   * 螢幕閱讀器的地標清單才分得出是哪個表格的分頁（WCAG landmark 名稱要唯一）。
+   */
+  paginationLabel?: string
   // 表格容器背景色
   containerBgColor?: string
   // 表格容器圓角
@@ -417,6 +424,7 @@ const props = withDefaults(defineProps<{
   customFilter: null,
   defaultSort: () => ({ column: null, direction: 'asc' }),
   paginationPosition: 'top',
+  paginationLabel: '',
   containerBgColor: 'bg-surface-primary',
   containerRounded: 'rounded-lg',
   containerShadow: 'shadow-sm',
@@ -445,6 +453,18 @@ const props = withDefaults(defineProps<{
 
 const config = useConfig()
 const locale = computed(() => config.value.locale)
+
+/** 上下都有分頁時兩個 <nav> 要不同名；有給 paginationLabel 就用它當前綴 */
+const topNavLabel = computed(() => {
+  if (props.paginationPosition !== 'both') return props.paginationLabel || undefined
+  const top = locale.value.pagination.navTop
+  return props.paginationLabel ? `${props.paginationLabel}（${top}）` : top
+})
+const bottomNavLabel = computed(() => {
+  if (props.paginationPosition !== 'both') return props.paginationLabel || undefined
+  const bottom = locale.value.pagination.navBottom
+  return props.paginationLabel ? `${props.paginationLabel}（${bottom}）` : bottom
+})
 const searchPlaceholderText = computed(() => props.searchPlaceholder ?? locale.value.searchPlaceholder)
 
 const emit = defineEmits<{

@@ -1,5 +1,14 @@
 ﻿<template>
   <div class="flex h-screen bg-surface-secondary">
+    <!--
+      跳到主要內容（WCAG 2.4.1）：鍵盤使用者不必每頁都 Tab 過四十幾個側欄連結。
+      內容區是自己捲動的 <main>，焦點要進到裡面方向鍵才捲得動 —— 所以 main 設 tabindex="-1" 當跳轉目標。
+    -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-toast focus:rounded-md focus:bg-surface-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-accent focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-stroke-focus"
+      @click.prevent="focusMain"
+    >跳到主要內容</a>
     <!-- 左側導覽列 (Sidebar) -->
     <aside
       class="bg-surface-primary border-r border-stroke-light flex flex-col flex-shrink-0 transition-all duration-300"
@@ -21,7 +30,7 @@
           </router-link>
           <button type="button"
             @click="toggleSidebar"
-            class="p-2 text-content-disabled hover:text-content-primary hover:bg-surface-tertiary rounded-lg transition-colors"
+            class="p-2 text-content-tertiary hover:text-content-primary hover:bg-surface-tertiary rounded-lg transition-colors"
             title="收合側邊欄"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +58,8 @@
         <!-- 各分類導覽項目（資料驅動） -->
         <template v-for="section in navSections" :key="section.title">
           <div class="mt-6 mb-2 flex items-center gap-2">
-            <h3 class="px-3 text-xs font-semibold text-content-disabled uppercase tracking-wider">{{ section.title }}</h3>
+            <!-- 側欄分組名稱：原本是 h3（頁面還沒有 h2 就出現 h3，標題層級錯亂）且用 disabled 色（對比 2.52） -->
+            <p class="px-3 text-xs font-semibold text-content-tertiary uppercase tracking-wider">{{ section.title }}</p>
             <div class="flex-1 h-px bg-surface-tertiary"></div>
           </div>
 
@@ -78,7 +88,7 @@
               </router-link>
               <button
                 type="button"
-                class="flex items-center justify-center w-6 h-6 mr-1 rounded-md text-content-disabled hover:text-accent-on-subtle hover:bg-accent-subtle transition-all duration-200"
+                class="flex items-center justify-center w-6 h-6 mr-1 rounded-md text-content-tertiary hover:text-accent-on-subtle hover:bg-accent-subtle transition-all duration-200"
                 :title="expanded[item.to] ? '收合' : '展開元件'"
                 @click="toggleGroup(item.to)"
               >
@@ -114,7 +124,7 @@
       <nav v-if="isSidebarCollapsed" class="flex-1 overflow-y-auto px-2 py-3 space-y-2 flex flex-col items-center">
         <button type="button"
           @click="toggleSidebar"
-          class="p-2 text-content-disabled hover:text-accent-on-subtle hover:bg-accent-subtle rounded-lg transition-colors"
+          class="p-2 text-content-tertiary hover:text-accent-on-subtle hover:bg-accent-subtle rounded-lg transition-colors"
           title="展開側邊欄"
         >
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,11 +153,11 @@
           </div>
           <div class="text-xs text-content-tertiary space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-content-disabled">版本</span>
+              <span class="text-content-tertiary">版本</span>
               <span class="font-mono font-semibold text-content-primary">v1.0.0</span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-content-disabled">更新日期</span>
+              <span class="text-content-tertiary">更新日期</span>
               <span class="font-mono text-content-secondary">2026-09-06</span>
             </div>
           </div>
@@ -156,15 +166,21 @@
     </aside>
 
     <!-- 右側內容區域 (Main Content) -->
-    <main class="flex-1 overflow-y-auto">
+    <main id="main-content" ref="mainRef" tabindex="-1" class="flex-1 overflow-y-auto focus:outline-none">
       <router-view />
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+const mainRef = useTemplateRef('mainRef');
+/** 跳到主要內容：焦點移進 main（之後方向鍵 / PageDown 可以捲動內容區） */
+function focusMain() {
+  mainRef.value?.focus();
+}
 
 const route = useRoute();
 const router = useRouter();

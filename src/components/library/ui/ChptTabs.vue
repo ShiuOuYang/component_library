@@ -23,7 +23,7 @@
         @click="select(index, tab)"
       >
         <span class="flex items-center gap-2">
-          <ChptIcon v-if="tab.icon" :size="16" :color="isActive(index) ? 'primary-600' : 'neutral-500'">
+          <ChptIcon v-if="tab.icon" :size="16" :color="isActive(index) ? 'accent' : 'content-tertiary'">
             {{ tab.icon }}
           </ChptIcon>
           <span>{{ tab.label }}</span>

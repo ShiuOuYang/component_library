@@ -71,6 +71,7 @@
           :value="activeNumFmt"
           @change="setNumFmt(($event.target as HTMLSelectElement).value)"
           title="套用數字格式"
+          aria-label="數字格式"
         >
           <option value="">一般格式</option>
           <option value="0">整數</option>
@@ -90,6 +91,7 @@
         <input
           class="w-24 px-2 py-1 text-xs font-mono text-content-primary bg-surface-secondary border border-stroke-default rounded focus:outline-none focus:ring-1 focus:ring-success text-center"
           :value="activeCellRef"
+          aria-label="目前儲存格"
           readonly
         />
         <span class="text-content-disabled">|</span>
@@ -152,7 +154,7 @@
     >
       <div class="flex items-center justify-between mb-2">
         <span class="text-xs font-semibold text-content-secondary">選擇函式</span>
-        <button type="button" class="text-xs text-content-disabled hover:text-content-secondary" @click="showFxPanel = false">✕</button>
+        <button type="button" class="text-xs text-content-tertiary hover:text-content-primary" @click="showFxPanel = false">✕</button>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-1.5 max-h-40 overflow-auto">
         <button type="button"
@@ -172,7 +174,7 @@
       <table class="grid-table">
         <thead>
           <tr>
-            <th class="grid-corner" @mousedown.prevent="selectAll"></th>
+            <th class="grid-corner" @mousedown.prevent="selectAll"><span class="sr-only">全選</span></th>
             <th
               v-for="c in colCount"
               :key="'c' + c"
@@ -279,7 +281,6 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, nextTick, watch, onMounted, onBeforeUnmount } from 'vue'
-import * as XLSX from 'xlsx-js-style'
 // 座標工具與公式引擎都是純運算，抽到 formula/ 之下獨立測試
 // （公式引擎原本整包寫在這個檔案裡，而且是用 new Function 求值）
 import { cellRef, colName } from './formula/cellRef'
@@ -2305,6 +2306,8 @@ function toModelValue(): Record<string, unknown>[] {
 async function performExport(): Promise<void> {
   try {
     emit('export-start')
+    // xlsx-js-style 約 640 KB：按下匯出才載入（原本開啟編輯器就整包下載）
+    const XLSX = await import('xlsx-js-style')
     const wb = buildWorkbook(sheets, props.enableFormula)
     const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '')
     const filename = `${props.defaultFilename}_${timestamp}.xlsx`
@@ -2514,7 +2517,7 @@ defineExpose({
   @apply hover:bg-surface-tertiary hover:border-stroke-default disabled:opacity-40 disabled:cursor-not-allowed;
 }
 .tb-btn.active {
-  @apply bg-success-subtle-hover text-success border-success-subtle-border;
+  @apply bg-success-subtle-hover text-success-on-subtle border-success-subtle-border;
 }
 .tb-sep {
   @apply w-px h-5 bg-surface-muted mx-1;

@@ -1,21 +1,25 @@
 import { createRouter, createWebHistory } from "vue-router";
-import { useRouteGuard } from "../composables/useRouteGuard.js";
-import Login from "../views/Login.vue";
-import D3LearningView from "../views/D3Learning/D3LearningView.vue";
-import D3LearningIndex from "../views/D3Learning/D3LearningIndex.vue";
-import D3Week3_4View from "../views/D3Learning/D3Week3-4View.vue";
-import D3Week5_6View from "../components/D3Learning/Week5/D3Week5-6View.vue";
-import TestReusableBarChart from "../components/D3Learning/Week5/TestReusableBarChart.vue";
 
-import ChptTableGuide from "../views/ChptTableGuide.vue";
-
-// ========== 文檔系統 ==========
+/*
+ * ⚠️ 除了文件站的外框與首頁，其他頁面一律用 () => import() 延遲載入。
+ *    原本這裡直接 import 了登入頁、四個圖表文件頁與五個 D3 教學頁 ——
+ *    整個 D3（含用不到的 d3-geo、d3-delaunay）、所有圖表元件、axios 全被打進入口檔（842 KB），
+ *    打開文件首頁就要先下載完這些。
+ */
 import DocLayout from "../layouts/DocLayout.vue";
 import DocsHome from "../views/docs/Home.vue";
-import DualAxisChartDoc from "../views/docs/DualAxisChartDoc.vue";
-import HeatmapDoc from "../views/docs/HeatmapDoc.vue";
-import ParetoDoc from "../views/docs/ParetoDoc.vue";
-import TooltipDoc from "../views/docs/TooltipDoc.vue";
+
+const Login = () => import("../views/Login.vue");
+const D3LearningView = () => import("../views/D3Learning/D3LearningView.vue");
+const D3LearningIndex = () => import("../views/D3Learning/D3LearningIndex.vue");
+const D3Week3_4View = () => import("../views/D3Learning/D3Week3-4View.vue");
+const D3Week5_6View = () => import("../components/D3Learning/Week5/D3Week5-6View.vue");
+const TestReusableBarChart = () => import("../components/D3Learning/Week5/TestReusableBarChart.vue");
+const ChptTableGuide = () => import("../views/ChptTableGuide.vue");
+const DualAxisChartDoc = () => import("../views/docs/DualAxisChartDoc.vue");
+const HeatmapDoc = () => import("../views/docs/HeatmapDoc.vue");
+const ParetoDoc = () => import("../views/docs/ParetoDoc.vue");
+const TooltipDoc = () => import("../views/docs/TooltipDoc.vue");
 
 const routes = [
     {
@@ -326,6 +330,12 @@ const router = createRouter({
 // 路由守衛
 // ✅ 使用 useRouteGuard Composable 簡化路由守衛邏輯
 router.beforeEach(async (to, from, next) => {
+  // 文件站全部是 requiresAuth: false：不需要認證的頁面不必載入認證模組（它會連帶載入 axios 與使用者 store）
+  if (to.path !== "/login" && to.meta.requiresAuth === false) {
+    next();
+    return;
+  }
+  const { useRouteGuard } = await import("../composables/useRouteGuard.js");
   const { checkAuth, checkLoginPageRedirect } = useRouteGuard();
 
   // 開發模式：可選擇跳過登入檢查

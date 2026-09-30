@@ -43,7 +43,7 @@
               <button
                 v-if="props.closable"
                 type="button"
-                class="flex items-center cursor-pointer text-content-disabled hover:text-content-secondary transition-colors"
+                class="flex items-center cursor-pointer text-content-tertiary hover:text-content-primary transition-colors"
                 :aria-label="'關閉'"
                 @click="handleClose"
               >

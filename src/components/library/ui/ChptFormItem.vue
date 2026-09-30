@@ -242,22 +242,47 @@ const handle: FormItemHandle = {
   el: () => root.value,
 }
 
-onMounted(() => {
-  initialValue = clone(value.value)
-  if (!claimed.value) {
-    const el = nativeControl()
-    if (el && !el.id) {
+/** 把唯一的原生輸入框接上標籤；回傳是否已經有結論（接上了，或確定是群組） */
+function adoptNativeControl(): boolean {
+  const el = nativeControl()
+  if (el) {
+    if (!el.id) {
       el.id = controlId
       syncNativeAria()
-    } else if (!el) {
-      // 沒有單一輸入框（單選群組、多個輸入框）：以 group 呈現，標籤改成群組名稱
-      isGroup.value = !!control.value?.querySelector(NATIVE)
     }
+    isGroup.value = false
+    return true
+  }
+  // 沒有單一輸入框（單選群組、多個輸入框）：以 group 呈現，標籤改成群組名稱
+  isGroup.value = !!control.value?.querySelector(NATIVE)
+  return isGroup.value
+}
+
+/**
+ * 非同步載入的輸入元件（例如 ChptDatePicker 的日期套件）在 FormItem 掛載時還沒渲染出輸入框。
+ * ⚠️ 原本只在 onMounted 找一次：找不到就放棄，標籤的 for 指向一個不存在的 id，點標籤、螢幕閱讀器都接不上。
+ *    找不到時改用 MutationObserver 等它出現（出現後就停止觀察）。
+ */
+let lateControlObserver: MutationObserver | null = null
+
+onMounted(() => {
+  initialValue = clone(value.value)
+  if (!claimed.value && !adoptNativeControl() && control.value && typeof MutationObserver !== 'undefined') {
+    lateControlObserver = new MutationObserver(() => {
+      if (claimed.value || adoptNativeControl()) {
+        lateControlObserver?.disconnect()
+        lateControlObserver = null
+      }
+    })
+    lateControlObserver.observe(control.value, { childList: true, subtree: true })
   }
   form?.register(handle)
 })
 
-onBeforeUnmount(() => form?.unregister(handle))
+onBeforeUnmount(() => {
+  lateControlObserver?.disconnect()
+  form?.unregister(handle)
+})
 
 defineExpose({ validate: () => run(), clearValidate: handle.clear, resetField: handle.reset })
 </script>

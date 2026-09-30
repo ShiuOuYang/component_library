@@ -4,6 +4,7 @@
     <label v-if="label" :for="id" class="text-sm text-content-secondary whitespace-nowrap">{{ label }}</label>
     <select
       :id="id"
+      :aria-label="label ? undefined : (placeholder || '篩選')"
       :value="modelValue"
       @change="handleSelectChange"
       :disabled="disabled"
@@ -32,7 +33,7 @@
     >
       <div class="flex h-full items-center justify-between">
         <span class="text-content-primary truncate">{{ displayText }}</span>
-        <span class="text-content-disabled">▼</span>
+        <span class="text-content-tertiary" aria-hidden="true">▼</span>
       </div>
     </button>
     <div v-show="isOpen" class="absolute z-50 w-full mt-1 bg-surface-primary border border-stroke-default rounded-md shadow-lg max-h-32 overflow-auto">
@@ -87,7 +88,7 @@
       <div v-if="filteredOptions.length > 0" class="flex justify-between items-center mt-1 pt-1 border-t border-stroke-light">
         <span class="text-xs text-content-tertiary">{{ filteredOptions.length }}</span>
         <div class="flex gap-1">
-          <button type="button" @click="selectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-accent bg-accent-subtle rounded hover:bg-accent-subtle-hover">全選</button>
+          <button type="button" @click="selectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-accent-on-subtle bg-accent-subtle rounded hover:bg-accent-subtle-hover">全選</button>
           <button type="button" @click="unselectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-content-secondary bg-surface-secondary rounded hover:bg-surface-tertiary">清空</button>
         </div>
       </div>

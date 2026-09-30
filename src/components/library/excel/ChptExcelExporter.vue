@@ -42,9 +42,11 @@
       :height="600"
       mode="window"
     >
+      <!-- 圖示改用 Material Symbols：原本用 Font Awesome（fas fa-*），元件庫自己沒載入它，
+         複製到沒裝 Font Awesome 的專案就只剩空白 -->
       <template #title>
         <div class="flex items-center">
-          <i class="fas fa-file-excel text-success mr-2"></i>
+          <span class="material-symbols-outlined align-middle text-[1.1em] text-success mr-2" aria-hidden="true">table_view</span>
           Excel 匯出設定
         </div>
       </template>
@@ -52,7 +54,7 @@
       <!-- 檔案名稱設定 -->
       <div class="mb-4">
         <label class="block text-sm font-medium text-content-primary mb-2">
-          <i class="fas fa-file-signature text-content-tertiary mr-1"></i>
+          <span class="material-symbols-outlined align-middle text-[1.1em] text-content-tertiary mr-1" aria-hidden="true">badge</span>
           檔案名稱
         </label>
         <input
@@ -66,7 +68,7 @@
       <!-- 工作表名稱設定 -->
       <div class="mb-4">
         <label class="block text-sm font-medium text-content-primary mb-2">
-          <i class="fas fa-table text-content-tertiary mr-1"></i>
+          <span class="material-symbols-outlined align-middle text-[1.1em] text-content-tertiary mr-1" aria-hidden="true">tab</span>
           工作表名稱
         </label>
         <input
@@ -80,7 +82,7 @@
       <!-- 欄位選擇 -->
       <div class="mb-6">
         <label class="block text-sm font-medium text-content-primary mb-2">
-          <i class="fas fa-columns text-content-tertiary mr-1"></i>
+          <span class="material-symbols-outlined align-middle text-[1.1em] text-content-tertiary mr-1" aria-hidden="true">view_column</span>
           匯出欄位
         </label>
         <div class="space-y-2 max-h-40 overflow-y-auto border border-stroke-light rounded-lg p-3 bg-surface-secondary">
@@ -89,7 +91,7 @@
               @click="toggleAllColumns"
               class="text-xs text-success hover:text-success font-medium transition-colors duration-200"
             >
-              <i :class="['fas mr-1', allColumnsSelected ? 'fa-check-square' : 'fa-square']"></i>
+              <span class="material-symbols-outlined mr-1 align-middle text-[1.1em]" aria-hidden="true">{{ allColumnsSelected ? 'check_box' : 'check_box_outline_blank' }}</span>
               {{ allColumnsSelected ? '取消全選' : '全選' }}
             </button>
             <span class="text-xs text-content-tertiary">
@@ -135,7 +137,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import * as XLSX from 'xlsx-js-style'
+import type * as XLSXTypes from 'xlsx-js-style'
 import ChptModal from '@/components/library/ui/ChptModal.vue'
 
 /**
@@ -236,7 +238,7 @@ const variantClasses: Record<ExporterVariant, string> = {
   blue: 'bg-accent-solid hover:bg-accent-solid-hover text-white border border-transparent hover:shadow',
   primary: 'bg-indigo-600 hover:bg-indigo-700 text-white border border-transparent hover:shadow',
   outline: 'bg-surface-primary hover:bg-surface-secondary text-content-primary border border-stroke-default hover:border-stroke-medium',
-  soft: 'bg-success-subtle hover:bg-success-subtle-hover text-success border border-success-subtle-border hover:border-success-subtle-border',
+  soft: 'bg-success-subtle hover:bg-success-subtle-hover text-success-on-subtle border border-success-subtle-border hover:border-success-subtle-border',
 }
 
 const disabledClass = 'bg-surface-muted text-content-tertiary border border-stroke-default'
@@ -349,6 +351,8 @@ async function performExport(): Promise<void> {
     isExporting.value = true
     emit('export-start')
 
+    // xlsx-js-style 約 640 KB：真的要匯出時才載入
+    const XLSX = await import('xlsx-js-style')
     const { exportData, columnMap, orderedHeaders } = prepareExportData()
     const worksheet = XLSX.utils.json_to_sheet(exportData, { header: orderedHeaders })
     const workbook = XLSX.utils.book_new()
@@ -360,7 +364,7 @@ async function performExport(): Promise<void> {
     worksheet['!cols'] = columnWidths
 
     if (props.cellStyles && props.cellStyles.length > 0) {
-      applyCellStyles(worksheet, props.cellStyles, columnMap)
+      applyCellStyles(XLSX, worksheet, props.cellStyles, columnMap)
     }
 
     XLSX.utils.book_append_sheet(workbook, worksheet, exportOptions.value.sheetName)
@@ -446,7 +450,8 @@ function getColumnWidth(key: string, title: string): number {
 }
 
 function applyCellStyles(
-  worksheet: XLSX.WorkSheet,
+  XLSX: typeof import('xlsx-js-style'),
+  worksheet: XLSXTypes.WorkSheet,
   cellStyles: ExporterCellStyle[],
   columnMap: Record<string, string>
 ): void {

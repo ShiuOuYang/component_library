@@ -1,5 +1,6 @@
 <template>
-  <li v-if="props.item.type === 'divider'" role="separator" class="mx-3 my-1 h-px bg-stroke-light"></li>
+  <!-- 分隔線純裝飾：<ul> 的子元素只能是 listitem，原本的 role="separator" 讓清單結構不合法（axe：list） -->
+  <li v-if="props.item.type === 'divider'" aria-hidden="true" class="mx-3 my-1 h-px bg-stroke-light"></li>
 
   <!-- 分組：標題 + 子項目（同一層，不縮排）；收合時標題改成一條分隔線 -->
   <li v-else-if="props.item.type === 'group'" class="flex flex-col">
@@ -41,7 +42,7 @@
         v-if="!hideLabel"
         :size="18"
         color="current"
-        class="shrink-0 opacity-70 transition-transform"
+        class="shrink-0 transition-transform"
         :class="chevronClass"
       >{{ chevronIcon }}</ChptIcon>
     </button>

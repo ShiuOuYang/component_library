@@ -15,7 +15,7 @@
       <slot>{{ props.title ?? config.locale.empty }}</slot>
     </p>
 
-    <p v-if="props.description" class="text-sm text-content-disabled max-w-md">
+    <p v-if="props.description" class="text-sm text-content-tertiary max-w-md">
       {{ props.description }}
     </p>
 

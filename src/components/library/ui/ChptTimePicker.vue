@@ -34,7 +34,7 @@
           v-if="props.clearable && props.modelValue && !props.disabled"
           type="button"
           aria-label="清除"
-          class="inline-flex h-control-xs min-w-control-xs items-center justify-center rounded text-content-disabled hover:text-content-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
+          class="inline-flex h-control-xs min-w-control-xs items-center justify-center rounded text-content-tertiary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
           @click="clear"
         >
           <ChptIcon :size="16" color="current">close</ChptIcon>

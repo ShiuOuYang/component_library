@@ -28,6 +28,7 @@
         search-placeholder="輸入關鍵字搜尋..."
         :default-page-size="5"
         pagination-position="bottom"
+        pagination-label="基本表格分頁"
         @search="onSearch"
       />
 
@@ -45,6 +46,7 @@
         :columns="orderColumns"
         :data="orders"
         :default-page-size="5"
+        pagination-label="工單表格分頁"
         selectable
         resizable
         :is-row-selectable="(row) => row.status !== '已結案'"
@@ -57,7 +59,7 @@
         </template>
         <template #cell="{ column, value }">
           <ChptTag v-if="column.key === 'status'" :label="value" :color="statusColor[value]" size="xs" />
-          <span v-else-if="column.key === 'yield'" :class="value < 95 ? 'font-semibold text-danger' : ''">{{ value.toFixed(1) }}%</span>
+          <span v-else-if="column.key === 'yield'" :class="value < 95 ? 'font-semibold text-danger-on-subtle' : ''">{{ value.toFixed(1) }}%</span>
           <template v-else>{{ value }}</template>
         </template>
         <template #expand="{ item }">
@@ -86,6 +88,7 @@
       </p>
       <ChptTable
         remote
+        pagination-label="伺服器端表格分頁"
         :columns="remoteColumns"
         :data="remoteRows"
         :total="remoteTotal"
@@ -169,6 +172,7 @@
             v-model:items-per-page="pageSize"
             :total-items="250"
             variant="full"
+            aria-label="分頁範例（full）"
             show-summary
             show-page-size
             @change="onPageChange"
@@ -181,6 +185,7 @@
             v-model:items-per-page="pageSize"
             :total-items="250"
             variant="compact"
+            aria-label="分頁範例（compact）"
             show-summary
             @change="onPageChange"
           />
@@ -516,6 +521,7 @@ const tableProps = [
   { name: 'defaultSort', type: 'object', def: '{ column: null, direction: asc }', desc: '預設排序' },
   { name: 'customFilter', type: '(data, query)=>[]|null', def: 'null', desc: '自訂過濾函數' },
   { name: 'paginationPosition', type: "'top'|'bottom'|'both'", def: "'top'", desc: '分頁列位置' },
+  { name: 'paginationLabel', type: 'string', def: "''", desc: '分頁導航的名稱；同一頁有多個表格時各給一個，螢幕閱讀器才分得出來' },
   { name: 'containerBgColor / containerRounded / containerShadow', type: 'string', def: '…', desc: '容器樣式 class' },
   { name: 'headerBgGradient / headerTextColor', type: 'string', def: '…', desc: '表頭樣式 class' },
   { name: 'evenRowBgColor / hoverRowBgColor', type: 'string', def: 'rgb(var(--t-surface-secondary)) / rgb(var(--t-accent-subtle))', desc: '偶數列／hover 列底色（CSS 色值；用主題變數才會跟著深色模式）' },

@@ -44,7 +44,7 @@
         v-if="showClear"
         type="button"
         aria-label="清除"
-        class="absolute right-2 inline-flex text-content-disabled hover:text-content-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus rounded"
+        class="absolute right-2 inline-flex text-content-tertiary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus rounded"
         @click="clear"
       >
         <ChptIcon :size="16" color="current">close</ChptIcon>

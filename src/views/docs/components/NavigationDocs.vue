@@ -61,7 +61,7 @@
       </p>
 
       <div class="bg-surface-secondary rounded-lg p-4 flex gap-6">
-        <div id="anchor-demo" class="h-72 flex-1 overflow-y-auto rounded-lg border border-stroke-light bg-surface-primary px-5">
+        <div id="anchor-demo" tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus h-72 flex-1 overflow-y-auto rounded-lg border border-stroke-light bg-surface-primary px-5">
           <section v-for="s in sopSections" :id="s.id" :key="s.id" class="py-5">
             <h3 class="mb-2 font-semibold text-content-primary">{{ s.title }}</h3>
             <p v-for="n in s.paragraphs" :key="n" class="mb-2 text-sm leading-relaxed text-content-secondary">

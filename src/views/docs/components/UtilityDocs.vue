@@ -65,7 +65,7 @@
         <strong>使用時機：</strong>工具列、篩選列在捲下去時貼在頂端。用 CSS sticky 實作，不會讓下面的內容跳動；
         貼住時可以加陰影（affixedClass）。
       </p>
-      <div class="h-64 overflow-y-auto rounded-lg border border-stroke-light">
+      <div tabindex="0" class="focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus h-64 overflow-y-auto rounded-lg border border-stroke-light">
         <p class="p-4 text-sm text-content-tertiary">往下捲 ↓</p>
         <ChptAffix affixed-class="shadow-md" @change="affixed = $event">
           <div class="flex items-center gap-2 border-y border-stroke-light bg-surface-primary px-4 py-2 text-sm">
@@ -88,7 +88,7 @@
       <ChptCarousel :items="notices" aria-label="廠區公告" autoplay :interval="4000" height="12rem">
         <template #default="{ item }">
           <div class="flex h-full flex-col justify-center gap-2 px-16" :class="item.tone">
-            <p class="text-xs font-medium uppercase tracking-wide opacity-80">{{ item.tag }}</p>
+            <p class="text-xs font-medium uppercase tracking-wide">{{ item.tag }}</p>
             <p class="text-xl font-semibold">{{ item.title }}</p>
             <p class="text-sm opacity-90">{{ item.body }}</p>
           </div>
@@ -158,7 +158,7 @@
           <ChptButton v-if="false" size="sm">不會出現（也不會多一個間距）</ChptButton>
         </ChptSpace>
         <ChptSpace size="xs">
-          <template #split><span class="text-content-disabled">|</span></template>
+          <template #split><span class="text-content-tertiary" aria-hidden="true">|</span></template>
           <a href="#chpt-space" class="text-sm text-accent hover:underline">編輯</a>
           <a href="#chpt-space" class="text-sm text-accent hover:underline">複製</a>
           <a href="#chpt-space" class="text-sm text-danger hover:underline">刪除</a>

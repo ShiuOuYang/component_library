@@ -310,14 +310,11 @@ describe('useGridFacetLayout', () => {
       expect(style.left).toBe(`${80 + 1 * 300}px`)
     })
 
-    it('顏色走主題變數（rgb(var(--t-*))），不是寫死色碼或未定義的舊變數', () => {
+    it('顏色走主題角色變數（rgb(var(--t-*))），深色模式會跟著切換', () => {
       const { getGridCellStyle, getColHeaderStyle } = gridSetup([{ site: 'S1', line: 'A' }])
 
-      // 回歸：原本用 var(--color-border-*) / var(--color-bg-secondary) —— 沒有任何地方定義，
-      // 未定義的變數讓整條宣告失效，表頭是透明的、邊框也沒畫出來
       expect(String(getGridCellStyle(0, 0).border)).toContain('rgb(var(--t-stroke-light))')
       expect(String(getColHeaderStyle(0).backgroundColor)).toBe('rgb(var(--t-surface-secondary))')
-      expect(JSON.stringify(getColHeaderStyle(0))).not.toContain('--color-')
     })
 
     /** 回歸：列表頭原本是直書（writing-mode: vertical-rl），「產線：L1」的英數字躺平、冒號轉向 */

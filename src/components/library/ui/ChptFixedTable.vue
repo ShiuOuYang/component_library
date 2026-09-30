@@ -33,7 +33,7 @@
                   <div class="flex items-center">
                     <span
                       class="truncate font-normal"
-                      :class="[headerFontSizeClass, column.defaultFixed ? 'text-accent font-semibold' : 'text-content-primary']"
+                      :class="[headerFontSizeClass, column.defaultFixed ? 'text-accent-on-subtle font-semibold' : 'text-content-primary']"
                     >
                       {{ column.title }}
                     </span>

@@ -2,7 +2,7 @@
   <nav aria-label="breadcrumb" class="flex items-center flex-wrap gap-1">
     <template v-for="(item, index) in props.items" :key="index">
       <!-- 分隔符 -->
-      <ChptIcon v-if="index > 0" :size="16" color="content-disabled" class="mx-1">
+      <ChptIcon v-if="index > 0" :size="16" color="content-tertiary" class="mx-1">
         {{ props.separator }}
       </ChptIcon>
 

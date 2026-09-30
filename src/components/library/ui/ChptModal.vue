@@ -46,7 +46,7 @@
               <button
                 v-if="props.closable"
                 type="button"
-                class="flex items-center cursor-pointer text-content-disabled hover:text-content-secondary transition-colors"
+                class="flex items-center cursor-pointer text-content-tertiary hover:text-content-primary transition-colors"
                 :aria-label="'關閉'"
                 @click="handleClose"
               >
@@ -112,7 +112,7 @@
             <div class="flex items-center gap-2">
               <div
                 v-show="props.draggable"
-                class="text-content-disabled hover:text-content-secondary transition-colors"
+                class="text-content-tertiary hover:text-content-primary transition-colors"
                 title="拖曳移動"
               >
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -180,7 +180,7 @@
             class="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize opacity-60 hover:opacity-100 transition-opacity"
             @mousedown="startResize"
           >
-            <svg class="w-4 h-4 text-content-disabled rotate-45" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 text-content-tertiary rotate-45" fill="currentColor" viewBox="0 0 20 20">
               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
             </svg>
           </div>

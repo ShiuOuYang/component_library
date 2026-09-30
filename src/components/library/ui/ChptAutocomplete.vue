@@ -50,7 +50,7 @@
         type="button"
         tabindex="-1"
         aria-label="清除"
-        class="absolute right-2 inline-flex text-content-disabled hover:text-content-secondary"
+        class="absolute right-2 inline-flex text-content-tertiary hover:text-content-primary"
         @mousedown.prevent
         @click="clear"
       >

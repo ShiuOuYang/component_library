@@ -11,7 +11,7 @@
       class="flex items-start gap-3 rounded-lg border p-4"
       :class="[alertClass, props.fullWidth ? 'w-full' : '']"
     >
-      <ChptIcon v-if="props.showIcon" :size="20" :class="iconColorClass">
+      <ChptIcon v-if="props.showIcon" :size="20" :color="iconColor">
         {{ iconName }}
       </ChptIcon>
 
@@ -25,11 +25,12 @@
       <button
         v-if="props.closable"
         type="button"
-        class="flex items-center cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
+        class="flex items-center justify-center cursor-pointer rounded h-6 w-6 -m-0.5 hover:bg-surface-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus transition-colors"
         :aria-label="'關閉提示'"
         @click="handleClose"
       >
-        <ChptIcon :size="18">close</ChptIcon>
+        <!-- 跟著提示條的文字色；原本 ChptIcon 預設灰色再加 opacity-60，淡到對比只剩 2.2 -->
+        <ChptIcon :size="18" color="current">close</ChptIcon>
       </button>
     </div>
   </Transition>
@@ -92,24 +93,29 @@ const alertClass = computed(() => {
   return map[props.type]
 })
 
-/** 圖示色 */
-const iconColorClass = computed(() => {
+/**
+ * 圖示色（傳給 ChptIcon 的 color，組成 text-{color}）。
+ * ⚠️ 原本用 class 傳，ChptIcon 自己又加了預設的 text-content-tertiary —— 同一個元素兩個文字色，
+ *    誰贏取決於樣式表順序，而不是我們的意圖。
+ */
+const iconColor = computed(() => {
   const map: Record<AlertType, string> = {
-    success: 'text-success-500',
-    info: 'text-info-500',
-    warning: 'text-warning-500',
-    danger: 'text-danger',
+    // 原本是 *-500：黃色圖示壓在淡黃底上對比只有 1.85（WCAG 1.4.11 圖形要 3:1）
+    success: 'success-on-subtle',
+    info: 'info-on-subtle',
+    warning: 'warning-on-subtle',
+    danger: 'danger-on-subtle',
   }
   return map[props.type]
 })
 
-/** 圖示名稱 */
 /**
  * warning / danger 才用 role="alert"（立即插話報讀）；info / success 用 status（禮貌報讀）。
  * 原本一律是 alert —— 頁面上一則靜態的「說明」提示，一載入就打斷螢幕閱讀器正在唸的內容。
  */
 const liveRole = computed(() => (props.type === 'warning' || props.type === 'danger' ? 'alert' : 'status'))
 
+/** 圖示名稱 */
 const iconName = computed(() => {
   const map: Record<AlertType, string> = {
     success: 'check_circle',

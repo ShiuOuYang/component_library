@@ -84,11 +84,18 @@ describe('ChptMenu：結構與無障礙', () => {
     expect(docs.attributes('rel')).toBe('noopener noreferrer')
   })
 
-  it('分組以標題命名；分隔線是 separator', () => {
+  /**
+   * 分隔線是裝飾：<ul> 的子元素只能是 listitem，原本的 <li role="separator"> 讓清單結構不合法（axe：list）。
+   * 改成 aria-hidden 的 <li>，螢幕閱讀器的項目數也不會多算一個。
+   */
+  it('分組以標題命名；分隔線對輔助技術隱藏且不破壞清單結構', () => {
     const w = mountMenu()
     const groupList = w.findAll('ul').find((ul) => ul.attributes('aria-labelledby'))!
     expect(w.find(`#${groupList.attributes('aria-labelledby')}`).text()).toBe('系統')
-    expect(w.find('[role="separator"]').exists()).toBe(true)
+    expect(w.find('[role="separator"]').exists()).toBe(false)
+    const divider = w.find('li[aria-hidden="true"]')
+    expect(divider.exists()).toBe(true)
+    expect(divider.element.parentElement?.tagName).toBe('UL')
   })
 
   it('停用項目不可點', async () => {
