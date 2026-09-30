@@ -46,7 +46,7 @@
         v-if="props.clearable && props.modelValue && !props.disabled"
         type="button"
         aria-label="清除"
-        class="absolute right-2 text-content-disabled hover:text-content-secondary"
+        class="absolute right-2 text-content-tertiary hover:text-content-primary"
         @click="handleClear"
       >
         <ChptIcon :size="16">close</ChptIcon>

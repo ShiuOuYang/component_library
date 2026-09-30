@@ -1,13 +1,13 @@
 <template>
   <div class="mb-8">
-    <h3 class="text-2xl font-semibold text-gray-800 mb-4">範例 B：生產監控</h3>
-    <p class="text-gray-600 mb-4">
-      左軸顯示 <span class="font-semibold text-green-600">良品與不良品數量</span>（堆疊長條圖），
-      右軸顯示 <span class="font-semibold text-orange-600">設備稼動率</span>（折線圖）。
+    <h3 class="text-2xl font-semibold text-content-primary mb-4">範例 B：生產監控</h3>
+    <p class="text-content-secondary mb-4">
+      左軸顯示 <span class="font-semibold text-success">良品與不良品數量</span>（堆疊長條圖），
+      右軸顯示 <span class="font-semibold text-warning">設備稼動率</span>（折線圖）。
     </p>
     
     <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+      <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
         <div style="width: 100%; height: 400px;">
           <DualAxisComboChart
             :auto-resize="true"

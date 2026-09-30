@@ -1,21 +1,23 @@
 <template>
   <div class="mb-8">
-    <h3 class="text-2xl font-semibold text-gray-800 mb-4">範例 A：銷售報表</h3>
-    <p class="text-gray-600 mb-4">
-      左軸顯示 <span class="font-semibold text-blue-600">線上與線下銷售額</span>（堆疊長條圖），
-      右軸顯示 <span class="font-semibold text-red-600">利潤率趨勢</span>（折線圖）。
+    <h3 class="text-2xl font-semibold text-content-primary mb-4">範例 A：銷售報表</h3>
+    <p class="text-content-secondary mb-4">
+      左軸顯示 <span class="font-semibold text-accent">線上與線下銷售額</span>（堆疊長條圖），
+      右軸顯示 <span class="font-semibold text-danger">利潤率趨勢</span>（折線圖）。
     </p>
     
     <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
-        <DualAxisComboChart
-          :width="600"
-          :height="400"
-          :layers="salesLayers"
-          title="月度銷售與利潤率分析"
-          :show-grid="true"
-          :enable-brush="true"
-        />
+      <!-- 寬度跟著欄位走（原本寫死 600px，比雙欄版面的一欄寬，右軸壓到旁邊的程式碼區塊上） -->
+      <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
+        <div style="width: 100%; height: 400px;">
+          <DualAxisComboChart
+            :auto-resize="true"
+            :layers="salesLayers"
+            title="月度銷售與利潤率分析"
+            :show-grid="true"
+            :enable-brush="true"
+          />
+        </div>
       </div>
       
       <CodeBlock

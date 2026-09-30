@@ -8,7 +8,7 @@
       <slot name="icon">
         <span
           v-if="config.code"
-          class="font-extrabold tracking-tight tabular-nums text-content-disabled"
+          class="font-extrabold tracking-tight tabular-nums text-content-tertiary"
           :class="props.compact ? 'text-5xl' : 'text-7xl'"
           aria-hidden="true"
         >{{ config.code }}</span>

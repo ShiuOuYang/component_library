@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { defineComponent, nextTick, reactive, ref } from 'vue'
 import ChptForm from '@/components/library/ui/ChptForm.vue'
@@ -301,11 +301,29 @@ describe('ChptForm / ChptFormItem', () => {
   })
 
   /** 原本 FormItem 裡的日期欄位驗證失敗時，錯誤訊息出現了、輸入框卻沒有變紅 */
+  /** 回歸：非同步渲染的輸入框（例如延遲載入的日期套件）掛載時還不存在，標籤原本永遠接不上 */
+  it('掛載後才出現的原生輸入框也會被接上標籤', async () => {
+    const show = ref(false)
+    const w = mountForm(
+      `<ChptForm :model="model"><ChptFormItem prop="note" label="備註"><input v-if="show" v-model="model.note" /></ChptFormItem></ChptForm>`,
+      () => ({ model: reactive({ note: '' }), show })
+    )
+    await nextTick()
+    const labelFor = w.find('label').attributes('for')
+    show.value = true
+    await nextTick()
+    await flushPromises()
+    expect(w.find('input').attributes('id')).toBe(labelFor)
+  })
+
   it('ChptDatePicker：FormItem 驗證失敗時輸入框變紅，並補上 aria-invalid', async () => {
     const w = mountForm(
       `<ChptForm ref="form" :model="model"><ChptFormItem prop="due" label="交期" required><ChptDatePicker v-model="model.due" /></ChptFormItem></ChptForm>`,
       () => ({ model: reactive({ due: null }) })
     )
+    // 日期套件是第一次渲染時才非同步載入（見 ChptDatePicker）
+    await vi.dynamicImportSettled()
+    await flushPromises()
     await nextTick()
     const input = () => w.find('input.dp__input')
     expect(input().classes()).not.toContain('dp__input_invalid')

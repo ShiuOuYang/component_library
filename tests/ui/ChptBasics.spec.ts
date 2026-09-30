@@ -69,6 +69,20 @@ describe('ChptAlert', () => {
     const w = track(mount(ChptAlert, { props: { message: 'x', showIcon: false } }))
     expect(w.text()).not.toContain('info')
   })
+
+  /**
+   * 回歸：圖示色原本用 class 傳，和 ChptIcon 預設的 text-content-tertiary 同時存在，誰贏看樣式表順序；
+   * 用的又是 *-500，黃色圖示在淡黃底上對比只有 1.85。
+   */
+  it('圖示色走 color prop，用 on-subtle 色，不殘留預設灰', () => {
+    const w = track(mount(ChptAlert, { props: { type: 'warning', message: 'x', closable: true } }))
+    const [icon, closeIcon] = w.findAll('.material-symbols-outlined')
+    expect(icon.classes()).toContain('text-warning-on-subtle')
+    expect(icon.classes()).not.toContain('text-content-tertiary')
+    // 關閉圖示跟著提示條的文字色，不再是灰色 + opacity-60
+    expect(closeIcon.classes()).toContain('text-current')
+    expect(w.find('button').classes()).not.toContain('opacity-60')
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -353,7 +367,8 @@ describe('ChptTag', () => {
   it('label 與 color', () => {
     const w = track(mount(ChptTag, { props: { label: 'PASS', color: 'success' } }))
     expect(w.text()).toBe('PASS')
-    expect(w.classes()).toContain('text-success')
+    // 淡底上的文字用 on-subtle（原本 text-success：深色模式下 #4ADE80 壓在 #166534 只有 4.09）
+    expect(w.classes()).toContain('text-success-on-subtle')
   })
 
   it('isOutline 改外框樣式；未知 color 退回 primary', () => {

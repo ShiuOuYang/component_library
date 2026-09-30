@@ -208,4 +208,16 @@ describe('ChptPagination', () => {
       }
     })
   })
+
+  describe('無障礙名稱', () => {
+    it('full 模式的每頁筆數下拉有名稱（axe select-name）', () => {
+      const wrapper = mount(ChptPagination, { props: { variant: 'full', totalItems: 95, itemsPerPage: 20 } })
+      expect(wrapper.find('select').attributes('aria-label')).toBe('每頁筆數')
+    })
+
+    it('預設的導航名稱，ariaLabel 可以覆寫（同頁兩個分頁時名稱要唯一）', () => {
+      expect(mountPagination().find('nav').attributes('aria-label')).toBe('分頁導航')
+      expect(mountPagination({ ariaLabel: '上方分頁導航' }).find('nav').attributes('aria-label')).toBe('上方分頁導航')
+    })
+  })
 })

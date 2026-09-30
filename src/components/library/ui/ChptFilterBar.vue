@@ -2,10 +2,12 @@
   <div class="flex items-center gap-3 px-1 flex-wrap">
     <!-- 篩選器循環渲染 -->
     <div v-for="filter in props.filters" :key="filter.key" class="flex items-center gap-2">
-      <label class="text-sm font-medium text-content-primary whitespace-nowrap">
+      <!-- 標籤原本沒有 for，下拉選單沒有名稱（axe：select-name，critical） -->
+      <label :for="`${uid}-${filter.key}`" class="text-sm font-medium text-content-primary whitespace-nowrap">
         {{ filter.label }}:
       </label>
       <select
+        :id="`${uid}-${filter.key}`"
         :value="props.modelValue[filter.key]"
         @change="handleChange(filter.key, ($event.target as HTMLSelectElement).value)"
         class="px-3 py-1.5 text-sm border border-stroke-default rounded-lg focus:outline-none focus:ring-2 focus:ring-stroke-focus focus:border-stroke-focus bg-surface-primary transition-all shadow-sm hover:border-primary-400"
@@ -33,6 +35,9 @@
 </template>
 
 <script setup lang="ts">
+import { useId } from 'vue'
+
+const uid = useId()
 /**
  * ChptFilterBar（CHPT 主題） - 多欄位過濾橫列
  *

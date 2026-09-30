@@ -1,14 +1,14 @@
 <template>
   <div class="mb-8">
-    <h3 class="text-2xl font-semibold text-gray-800 mb-4">範例 E：散點圖 (Scatter Plot)</h3>
-    <p class="text-gray-600 mb-4">
-      使用 <span class="font-semibold text-indigo-600">type="scatter"</span> 繪製散點圖，
+    <h3 class="text-2xl font-semibold text-content-primary mb-4">範例 E：散點圖 (Scatter Plot)</h3>
+    <p class="text-content-secondary mb-4">
+      使用 <span class="font-semibold text-indigo-600 dark:text-indigo-400">type="scatter"</span> 繪製散點圖，
       適合展示 <span class="font-semibold">相關性分析</span>、<span class="font-semibold">分佈圖</span>、
       <span class="font-semibold">異常值檢測</span> 等場景。
     </p>
     
     <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+      <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
         <div style="width: 100%; height: 400px;">
           <DualAxisComboChart
             :auto-resize="true"

@@ -1,16 +1,16 @@
 <template>
   <div class="mb-8">
-    <h3 class="text-2xl font-semibold text-gray-800 mb-4">範例 C：管制圖 (Control Chart) - 異常檢測</h3>
-    <p class="text-gray-600 mb-4">
-      使用 <span class="font-semibold text-red-600">Trigger Lines</span> 功能繪製
-      <span class="font-semibold text-blue-600">UCL（上控制限）</span>、
-      <span class="font-semibold text-green-600">CL（中心線）</span>、
-      <span class="font-semibold text-blue-600">LCL（下控制限）</span>。
-      <span class="font-semibold text-orange-600">父組件自動檢測</span>超出管制界線的異常點並標記為紅色。
+    <h3 class="text-2xl font-semibold text-content-primary mb-4">範例 C：管制圖 (Control Chart) - 異常檢測</h3>
+    <p class="text-content-secondary mb-4">
+      使用 <span class="font-semibold text-danger">Trigger Lines</span> 功能繪製
+      <span class="font-semibold text-accent">UCL（上控制限）</span>、
+      <span class="font-semibold text-success">CL（中心線）</span>、
+      <span class="font-semibold text-accent">LCL（下控制限）</span>。
+      <span class="font-semibold text-warning">父組件自動檢測</span>超出管制界線的異常點並標記為紅色。
     </p>
     
     <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+      <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
         <div style="width: 100%; height: 400px;">
           <DualAxisComboChart
             :auto-resize="true"
@@ -22,8 +22,8 @@
             :y-left-domain="[95, 105]"
           />
           <!-- 顯示異常統計 -->
-          <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-            <p class="text-xs text-red-700">
+          <div class="mt-2 p-2 bg-danger-subtle border border-danger-subtle-border rounded">
+            <p class="text-xs text-danger-on-subtle">
               ⚠️ 檢測到 <strong>{{ outlierCount }}</strong> 個異常點（超出管制界線）
             </p>
           </div>

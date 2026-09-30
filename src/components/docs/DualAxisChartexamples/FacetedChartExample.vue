@@ -1,14 +1,20 @@
 ﻿<template>
   <div class="mt-8">
-    <h3 class="text-2xl font-semibold text-neutral-800 mb-4">範例 G：分面圖（Faceted Chart）</h3>
-    <p class="text-neutral-600 mb-4">
-      以 <span class="font-semibold text-primary-600">FacetedChart</span> 同時比較多個分面，
+    <h3 class="text-2xl font-semibold text-content-primary mb-4">範例 G：分面圖（Faceted Chart）</h3>
+    <p class="text-content-secondary mb-4">
+      以 <span class="font-semibold text-accent">FacetedChart</span> 同時比較多個分面，
       每個分面皆可獨立設定其 Y 軸比例尺、領域與圖層。
     </p>
 
     <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-neutral-50 rounded-xl p-4 border border-neutral-200">
-        <FacetedChart :facets="facets" :width="600" :total-height="500" title="區域銷售分面" />
+      <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
+        <!--
+          寬度跟著欄位走（原本寫死 600px，比雙欄版面的一欄寬）。
+          X 軸是月份名稱，要用 band；FacetedChart 預設 time，原本整張圖畫不出任何長條
+        -->
+        <div style="width: 100%; height: 500px;">
+          <FacetedChart :facets="facets" x-scale-type="band" auto-resize title="區域銷售分面" />
+        </div>
       </div>
 
       <CodeBlock
@@ -118,5 +124,5 @@ const facetCodeExample = `const facets = [
   // ... 更多分面
 ];
 
-<FacetedChart :facets="facets" title="區域銷售分面" />`;
+<FacetedChart :facets="facets" x-scale-type="band" title="區域銷售分面" />`;
 </script>

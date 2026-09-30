@@ -1,8 +1,9 @@
 <template>
   <div
     ref="viewport"
-    class="chpt-virtual-list relative overflow-y-auto"
+    class="chpt-virtual-list relative overflow-y-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-stroke-focus"
     :style="{ height: props.height }"
+    tabindex="0"
     role="list"
     :aria-label="props.ariaLabel || undefined"
     :aria-busy="props.loading || undefined"

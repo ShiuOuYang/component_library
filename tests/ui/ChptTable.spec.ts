@@ -303,3 +303,22 @@ describe('ChptTable：rowClass', () => {
     expect(bodyRows(w)[1].classes()).not.toContain('warning-row')
   })
 })
+
+describe('ChptTable：上下都有分頁', () => {
+  // 回歸（axe landmark-unique）：兩個 <nav> 同名，螢幕報讀器的地標清單分不出來
+  it('兩個分頁導航的名稱不同', () => {
+    const w = mountTable({ paginationPosition: 'both' })
+    expect(w.findAll('nav').map((n) => n.attributes('aria-label'))).toEqual(['上方分頁導航', '下方分頁導航'])
+  })
+
+  it('只有一個分頁時沿用預設名稱', () => {
+    const w = mountTable({ paginationPosition: 'bottom' })
+    expect(w.findAll('nav').map((n) => n.attributes('aria-label'))).toEqual(['分頁導航'])
+  })
+
+  it('paginationLabel：同頁多個表格時各自命名', () => {
+    expect(mountTable({ paginationLabel: '工單分頁' }).find('nav').attributes('aria-label')).toBe('工單分頁')
+    const w = mountTable({ paginationLabel: '工單分頁', paginationPosition: 'both' })
+    expect(w.findAll('nav').map((n) => n.attributes('aria-label'))).toEqual(['工單分頁（上方分頁導航）', '工單分頁（下方分頁導航）'])
+  })
+})

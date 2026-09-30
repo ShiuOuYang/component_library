@@ -152,7 +152,7 @@ const colorClass = computed(() => {
     },
     secondary: {
       solid: 'bg-secondary-500 border-secondary-500 text-white hover:bg-secondary-600 active:bg-secondary-700',
-      outline: 'bg-surface-primary/80 text-secondary-600 border border-secondary-500 hover:bg-secondary-500 hover:text-white',
+      outline: 'bg-surface-primary/80 text-secondary-600 dark:text-secondary-200 border border-secondary-500 dark:border-secondary-300 hover:bg-secondary-500 hover:text-white',
     },
     success: {
       solid: 'bg-success-solid border-success text-white hover:bg-success-solid active:bg-success-700',

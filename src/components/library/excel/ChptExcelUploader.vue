@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import * as XLSX from 'xlsx'
+// xlsx（約 600 KB）在使用者選了檔案之後才載入
 
 /**
  * ChptExcelUploader（CHPT 主題）- 匯入 Excel
@@ -139,7 +139,7 @@ const variantClasses: Record<UploaderVariant, string> = {
   'solid-green': 'bg-success-solid hover:bg-success-solid text-white border border-transparent',
   'solid-blue': 'bg-accent-solid hover:bg-accent-solid-hover text-white border border-transparent',
   'solid-red': 'bg-danger-solid hover:bg-red-700 text-white border border-transparent',
-  'soft-blue': 'bg-info-subtle hover:bg-info-subtle-hover text-accent border border-info-subtle-border hover:border-info-subtle-border',
+  'soft-blue': 'bg-info-subtle hover:bg-info-subtle-hover text-info-on-subtle border border-info-subtle-border hover:border-info-subtle-border',
   'outline-gray': 'bg-surface-primary hover:bg-surface-secondary text-content-primary border border-stroke-default hover:border-stroke-medium',
   ghost: 'bg-transparent hover:bg-surface-tertiary/10 text-content-disabled hover:text-white border border-transparent',
   primary: 'bg-accent-solid hover:bg-accent-solid-hover text-white border border-transparent',
@@ -181,7 +181,7 @@ async function handleFileUpload(event: Event): Promise<void> {
 
   const reader = new FileReader()
 
-  reader.onload = (e) => {
+  reader.onload = async (e) => {
     try {
       const data = new Uint8Array(e.target?.result as ArrayBuffer)
 
@@ -189,6 +189,7 @@ async function handleFileUpload(event: Event): Promise<void> {
         throw new Error('檔案格式不是 Excel（僅支援 .xlsx 與 .xls）')
       }
 
+      const XLSX = await import('xlsx')
       const workbook = XLSX.read(data, { type: 'array' })
       const firstSheetName = workbook.SheetNames[0]
       // 簽章對了但一張工作表都沒有：sheet_to_json(undefined) 會拋出

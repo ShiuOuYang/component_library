@@ -31,11 +31,11 @@
       <!-- 模式說明 -->
       <div class="grid md:grid-cols-2 gap-4 mb-6 text-sm">
         <div class="bg-accent-subtle rounded-lg p-4 border border-accent-subtle-border">
-          <p class="font-semibold text-accent mb-2">mode="dialog"</p>
+          <p class="font-semibold text-accent-on-subtle mb-2">mode="dialog"</p>
           <p class="text-content-secondary text-xs">簡潔置中的確認／編輯框。可調 size、遮罩點擊關閉，適合表單、確認、訊息對話框。</p>
         </div>
         <div class="bg-info-subtle rounded-lg p-4 border border-info-subtle-border">
-          <p class="font-semibold text-info mb-2">mode="window"</p>
+          <p class="font-semibold text-info-on-subtle mb-2">mode="window"</p>
           <p class="text-content-secondary text-xs">可拖曳／縮放／最大化／最小化到口袋的獨立視窗，多開時自動管理 z-index 置頂；需搭配 ChptModalDock 顯示最小化的視窗。</p>
         </div>
       </div>

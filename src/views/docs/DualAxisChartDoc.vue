@@ -17,14 +17,16 @@
         </p>
         <div class="grid lg:grid-cols-2 gap-6">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
-            <DualAxisComboChart
-              :width="560"
-              :height="400"
-              :layers="demoLayers"
-              title="月度銷售與利潤率"
-              :show-grid="true"
-              :enable-brush="true"
-            />
+            <!-- 寬度跟著欄位走：寫死 560px 會超出雙欄版面的一欄 -->
+            <div style="width: 100%; height: 400px;">
+              <DualAxisComboChart
+                :auto-resize="true"
+                :layers="demoLayers"
+                title="月度銷售與利潤率"
+                :show-grid="true"
+                :enable-brush="true"
+              />
+            </div>
           </div>
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
             <ChptCodeBlock :code="demoCode" />

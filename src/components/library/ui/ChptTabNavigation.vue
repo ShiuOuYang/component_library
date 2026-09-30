@@ -17,7 +17,7 @@
           props.fontSize,
           isActive(tab.path)
             ? 'bg-surface-primary dark:bg-neutral-900 text-content-primary dark:text-neutral-100 shadow-[0_2px_10px_-2px_rgba(0,0,0,0.1)] ring-1 ring-black/5 dark:ring-surface-primary/10 transform scale-[1.02]'
-            : 'text-content-tertiary dark:text-content-disabled hover:text-content-primary dark:hover:text-neutral-200 hover:bg-surface-primary/40 dark:hover:bg-neutral-900/40'
+            : 'text-content-tertiary hover:text-content-primary dark:hover:text-neutral-200 hover:bg-surface-primary/40 dark:hover:bg-neutral-900/40'
         ]"
         @click="handleSelect(tab)"
       >

@@ -4,7 +4,7 @@
     :class="[sizeClass, colorClass]"
   >
     <slot name="icon">
-      <ChptIcon v-if="props.icon" :size="iconSize" :class="iconColorClass">{{ props.icon }}</ChptIcon>
+      <ChptIcon v-if="props.icon" :size="iconSize" color="current">{{ props.icon }}</ChptIcon>
     </slot>
 
     <slot>{{ props.label }}</slot>
@@ -12,11 +12,11 @@
     <button
       v-if="props.closable"
       type="button"
-      class="flex items-center cursor-pointer opacity-60 hover:opacity-100 transition-opacity"
+      class="relative flex items-center cursor-pointer rounded-full before:absolute before:-inset-1 before:content-[''] hover:bg-surface-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus transition-colors"
       :aria-label="props.label ? `關閉 ${props.label}` : '關閉標籤'"
       @click="handleClose"
     >
-      <ChptIcon :size="closeSize">close</ChptIcon>
+      <ChptIcon :size="closeSize" color="current">close</ChptIcon>
     </button>
   </span>
 </template>
@@ -80,16 +80,16 @@ const colorClass = computed(() => {
   const solidMap: Record<string, string> = {
     primary: 'bg-accent-subtle text-accent-strong',
     secondary: 'bg-secondary-100 text-secondary-600',
-    success: 'bg-success-subtle-hover text-success',
+    success: 'bg-success-subtle-hover text-success-on-subtle',
     warning: 'bg-warning-subtle-hover text-warning-on-subtle',
-    danger: 'bg-danger-subtle-hover text-danger',
-    info: 'bg-info-subtle-hover text-info',
+    danger: 'bg-danger-subtle-hover text-danger-on-subtle',
+    info: 'bg-info-subtle-hover text-info-on-subtle',
     dark: 'bg-neutral-700 text-neutral-100',
     light: 'bg-surface-secondary text-content-secondary border border-stroke-light',
   }
   const outlineMap: Record<string, string> = {
     primary: 'bg-transparent text-accent border border-primary-400',
-    secondary: 'bg-transparent text-secondary-600 border border-secondary-300',
+    secondary: 'bg-transparent text-secondary-600 dark:text-secondary-200 border border-secondary-300',
     success: 'bg-transparent text-success border border-success-400',
     warning: 'bg-transparent text-warning border border-warning-400',
     danger: 'bg-transparent text-danger border border-danger',
@@ -112,7 +112,6 @@ const closeSize = computed(() =>
 )
 
 /** 有圖示時的文字色彩 */
-const iconColorClass = computed(() => 'text-current')
 
 /** 關閉事件 */
 function handleClose(event: MouseEvent): void {

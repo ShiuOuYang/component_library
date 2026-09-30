@@ -709,7 +709,8 @@ onUnmounted(() => {
 
   --text-1: #e2e8f0;
   --text-2: #94a3b8;
-  --text-3: #475569;
+  /* 原本 #475569：在 #0b0f17 深底上對比只有 2.5（次要文字、縮放比例幾乎看不見）→ 5.5 */
+  --text-3: #7c8aa5;
   --text-4: #1e293b;
 
   --font-ui:   'Exo 2', sans-serif;
@@ -1176,7 +1177,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--text-4);
+  color: var(--text-3); /* --text-4（#1e293b）當文字色對比只有 1.3，只留給分隔線 */
   font-size: 12px;
   padding-bottom: 40px;
 }

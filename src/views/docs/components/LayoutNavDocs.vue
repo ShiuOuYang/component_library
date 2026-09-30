@@ -32,7 +32,7 @@
         <ChptCard title="含底部＋hover" icon="touch_app" hoverable @click="onCardClick">
           <p class="text-sm text-content-secondary">設定 <code>hoverable</code> 後滑入有 hover 效果；點擊會觸發 click 事件。</p>
           <template #footer>
-            <p class="text-xs text-content-disabled">footer 插槽內容</p>
+            <p class="text-xs text-content-tertiary">footer 插槽內容</p>
           </template>
         </ChptCard>
       </div>

@@ -1,12 +1,7 @@
 <template>
   <span ref="root" class="relative inline-block">
-    <!-- 觸發內容 -->
-    <span
-      :aria-expanded="visible"
-      :aria-controls="visible ? panelId : undefined"
-      aria-haspopup="dialog"
-      @click="toggle"
-    >
+    <!-- 觸發內容：aria 屬性補到插槽裡的按鈕上（見 syncTriggerAria） -->
+    <span ref="triggerWrap" @click="toggle">
       <slot />
     </span>
 
@@ -24,7 +19,7 @@
         role="dialog"
         :aria-labelledby="messageId"
         tabindex="-1"
-        class="absolute z-30 mt-2 left-1/2 -translate-x-1/2 bg-surface-primary rounded-lg shadow-2xl border border-stroke-light p-4 w-60 focus:outline-none"
+        class="absolute z-popover mt-2 left-1/2 -translate-x-1/2 bg-surface-primary rounded-lg shadow-2xl border border-stroke-light p-4 w-60 focus:outline-none"
       >
         <p :id="messageId" class="text-sm text-content-primary mb-3">
           <slot name="message">{{ props.message }}</slot>
@@ -52,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useId, useTemplateRef } from 'vue'
+import { nextTick, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ChptButton from './ChptButton.vue'
 import { useOverlay } from '@/components/library/shared/useOverlay'
@@ -114,6 +109,27 @@ function handleCancel(): void {
   visible.value = false
   emit('cancel')
 }
+
+/**
+ * aria-haspopup / aria-expanded / aria-controls 要放在「會拿到焦點的那顆按鈕」上。
+ * ⚠️ 原本放在包住插槽的 <span>：span 不可聚焦，且 aria-expanded 不允許用在沒有角色的元素上
+ *    （axe：aria-allowed-attr，critical）—— 螢幕閱讀器聚焦按鈕時聽不到「已展開 / 已收合」。
+ */
+const triggerWrapRef = useTemplateRef<HTMLElement>('triggerWrap')
+function syncTriggerAria(): void {
+  const wrap = triggerWrapRef.value
+  const el =
+    wrap?.querySelector<HTMLElement>('button, a[href], [role="button"], [tabindex]:not([tabindex="-1"])') ??
+    (wrap?.firstElementChild as HTMLElement | null) ??
+    null
+  if (!el) return
+  el.setAttribute('aria-haspopup', 'dialog')
+  el.setAttribute('aria-expanded', String(visible.value))
+  if (visible.value) el.setAttribute('aria-controls', panelId)
+  else el.removeAttribute('aria-controls')
+}
+onMounted(syncTriggerAria)
+watch(visible, () => nextTick(syncTriggerAria))
 
 // 點擊元件外部視同取消
 onClickOutside(rootRef, () => {

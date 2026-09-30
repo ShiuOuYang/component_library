@@ -1,6 +1,16 @@
 <template>
-  <div class="bg-neutral-900 rounded-xl p-4 overflow-x-auto">
-    <pre class="text-success text-sm"><code>{{ formattedCode }}</code></pre>
+  <!--
+    程式碼區塊兩個主題都是深底，文字色要固定用淺色。
+    ⚠️ 原本是 text-success：淺色主題下 success 是深綠（#15803d），壓在 #171717 上對比只有 3.57。
+    可以左右捲動的區塊要能用鍵盤捲：tabindex="0" 並給名稱（WCAG 2.1.1）。
+  -->
+  <div
+    class="bg-neutral-900 rounded-xl p-4 overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
+    tabindex="0"
+    role="group"
+    :aria-label="props.language ? `${props.language} 程式碼` : '程式碼'"
+  >
+    <pre class="text-green-300 text-sm"><code>{{ formattedCode }}</code></pre>
 
     <!-- 可選的提示信息區塊 -->
     <div

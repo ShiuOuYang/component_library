@@ -2,7 +2,7 @@
   <div class="mb-8">
     <h3 class="text-2xl font-semibold text-gray-800 mb-4">範例 H：Gerber PCB 檔案檢視</h3>
     <p class="text-gray-600 mb-4">
-      使用 <span class="font-semibold text-green-600">@tracespace/parser</span> 解析 Gerber 檔案，
+      使用 <span class="font-semibold text-success">@tracespace/parser</span> 解析 Gerber 檔案，
       再以 <span class="font-semibold text-blue-600">D3.js</span> 繪製 PCB Bump Map，
       支援 <span class="font-semibold">滾輪縮放</span>、<span class="font-semibold">拖曳平移</span>、
       <span class="font-semibold">重設視圖</span>。

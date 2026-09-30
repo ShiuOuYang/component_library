@@ -16,7 +16,8 @@
  *      每個空格都是一個空字串儲存格。在 Excel 裡 Ctrl+End 跳到 Z25、
  *      COUNTA 會把它們算進去。
  */
-import * as XLSX from 'xlsx-js-style'
+// 只用型別：真正的 xlsx-js-style（約 640 KB）在按下匯出時才由呼叫端動態載入
+import type * as XLSX from 'xlsx-js-style'
 import { cellRef, parseRef } from './formula/cellRef'
 import { evaluateFormula, type EvaluateOptions } from './formula/formulaEngine'
 import { asNumber } from './values'
@@ -186,11 +187,13 @@ export function sheetToWorksheet(
 
 /** 多張工作表 → WorkBook */
 export function buildWorkbook(sheets: ExportSheet[], enableFormula = true): XLSX.WorkBook {
-  const wb = XLSX.utils.book_new()
+  // 等同 XLSX.utils.book_new() + book_append_sheet()；自己組物件，這個模組就不必在執行期載入 xlsx
+  const wb: XLSX.WorkBook = { SheetNames: [], Sheets: {} }
   // 跨工作表參照（Sheet2!A1）的快取值也要算得出來
   const resolveSheet = (name: string) => sheets.find((s) => s.name.toLowerCase() === name.toLowerCase())
   for (const sheet of sheets) {
-    XLSX.utils.book_append_sheet(wb, sheetToWorksheet(sheet, enableFormula, { resolveSheet }), sheet.name)
+    wb.SheetNames.push(sheet.name)
+    wb.Sheets[sheet.name] = sheetToWorksheet(sheet, enableFormula, { resolveSheet })
   }
   return wb
 }

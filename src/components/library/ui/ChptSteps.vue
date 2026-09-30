@@ -13,7 +13,8 @@
             :class="nodeClass(step)"
             :style="{ width: `${nodeSize}px`, height: `${nodeSize}px` }"
           >
-            <ChptIcon v-if="step.status === 'done'" :size="nodeSize - 4" aria-hidden="true">check</ChptIcon>
+            <!-- color="current"：跟著節點的白字。ChptIcon 預設 content-tertiary，原本是灰勾壓在藍底上（對比 1.09，幾乎看不見） -->
+            <ChptIcon v-if="step.status === 'done'" :size="nodeSize - 4" color="current" aria-hidden="true">check</ChptIcon>
             <template v-else>{{ index + 1 }}</template>
           </span>
           <span
@@ -78,8 +79,8 @@ function nodeClass(step: StepItem): string {
   // 尺寸原本是動態拼出來的 `w-[28px]`：Tailwind 只掃原始碼裡完整的 class 字串，
   // 這種拼接永遠不會被產生 —— 圓圈沒有尺寸，縮成數字大小的橢圓。改用 inline style
   if (step.status === 'done') return 'bg-accent-solid border-stroke-focus text-white'
-  if (step.status === 'process') return 'border-stroke-focus text-accent bg-accent-subtle'
-  return 'border-stroke-default text-content-disabled bg-surface-primary'
+  if (step.status === 'process') return 'border-stroke-focus text-accent-on-subtle bg-accent-subtle'
+  return 'border-stroke-default text-content-tertiary bg-surface-primary'
 }
 
 /** 外部容器樣式 */
@@ -104,7 +105,7 @@ function stepClass(step: StepItem): string {
 function labelClass(step: StepItem): string {
   if (step.status === 'done') return 'text-accent'
   if (step.status === 'process') return 'text-accent font-medium'
-  return 'text-content-disabled'
+  return 'text-content-tertiary'
 }
 </script>
 

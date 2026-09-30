@@ -1,13 +1,13 @@
 <template>
   <div class="mb-8">
-    <h3 class="text-2xl font-semibold text-gray-800 mb-4">範例 D：時間軸圖表 (Time Series)</h3>
-    <p class="text-gray-600 mb-4">
-      使用 <span class="font-semibold text-purple-600">xScaleType="time"</span> 配置，
+    <h3 class="text-2xl font-semibold text-content-primary mb-4">範例 D：時間軸圖表 (Time Series)</h3>
+    <p class="text-content-secondary mb-4">
+      使用 <span class="font-semibold text-purple-600 dark:text-purple-400">xScaleType="time"</span> 配置，
       支援 <span class="font-semibold">連續時間軸</span> 顯示，適合趨勢分析和時間序列數據。
     </p>
     
     <div class="grid lg:grid-cols-2 gap-6">
-      <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+      <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
         <div style="width: 100%; height: 400px;">
           <DualAxisComboChart
             :auto-resize="true"

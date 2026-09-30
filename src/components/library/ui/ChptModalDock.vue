@@ -60,7 +60,7 @@
                   <button type="button"
                     @click.stop="handleRestore(modal.id)"
                     class="w-6 h-6 flex items-center justify-center rounded-md
-                           hover:bg-accent-subtle transition-colors text-content-disabled hover:text-accent"
+                           hover:bg-accent-subtle transition-colors text-content-tertiary hover:text-accent"
                     title="還原視窗"
                   >
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -70,7 +70,7 @@
                   <button type="button"
                     @click.stop="handleClose(modal.id)"
                     class="w-6 h-6 flex items-center justify-center rounded-md
-                           hover:bg-danger-subtle transition-colors text-content-disabled hover:text-danger"
+                           hover:bg-danger-subtle transition-colors text-content-tertiary hover:text-danger"
                     title="關閉視窗"
                   >
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -104,7 +104,7 @@
             {{ minimizedCount }}
           </span>
           <svg
-            class="w-3 h-3 text-content-disabled transition-transform duration-200"
+            class="w-3 h-3 text-content-tertiary transition-transform duration-200"
             :class="isExpanded ? 'rotate-180' : ''"
             fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"
           >

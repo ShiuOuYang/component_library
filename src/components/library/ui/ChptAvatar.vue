@@ -127,10 +127,10 @@ const variantTextClass = computed(() => {
   const map: Record<AvatarVariant, string> = {
     primary: 'text-accent-strong',
     secondary: 'text-secondary-600',
-    success: 'text-success',
+    success: 'text-success-on-subtle',
     warning: 'text-warning-on-subtle',
-    danger: 'text-danger',
-    info: 'text-info',
+    danger: 'text-danger-on-subtle',
+    info: 'text-info-on-subtle',
     neutral: 'text-content-primary',
   }
   return map[props.variant] ?? map.neutral
