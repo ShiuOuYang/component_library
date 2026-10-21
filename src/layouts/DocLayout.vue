@@ -386,6 +386,10 @@ const navSections = [
       },
       { to: '/docs/components/pareto', icon: '📈', label: '柏拉圖' },
       { to: '/docs/components/heatmap', icon: '🔥', label: '熱力圖' },
+      {
+        to: '/docs/components/status-scatter-map', icon: '🎯', label: '狀態散佈圖',
+        anchors: [{ label: '基本示範', id: 'basic' }, { label: '5 萬個點', id: 'large' }, { label: 'API', id: 'api' }],
+      },
     ],
   },
   {

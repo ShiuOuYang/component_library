@@ -88,6 +88,14 @@ const routes = [
         },
       },
       {
+        path: "components/status-scatter-map",
+        name: "StatusScatterMapDoc",
+        component: () => import("../views/docs/StatusScatterMapDoc.vue"),
+        meta: {
+          title: "狀態散佈圖",
+        },
+      },
+      {
         path: "components/gerber-viewer",
         name: "GerberViewerDoc",
         component: () => import("../views/docs/GerberViewerDoc.vue"),
