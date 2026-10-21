@@ -193,6 +193,8 @@ export interface TooltipPayload<T = ChartDatum> {
   layer: ChartLayer<T>
   /** 堆疊圖的系列鍵；非堆疊圖為 undefined */
   seriesKey?: string
+  /** 資料鍵（圖層 keyFn，沒有時為 X 值）；可直接當作 highlightKey 做雙向連動。參考線沒有 */
+  key?: string
   /** 觸發懸停時的滑鼠位置 */
   position: TooltipPosition
 }
