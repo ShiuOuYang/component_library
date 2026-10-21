@@ -48,6 +48,36 @@
         <LargeDataExample />
       </section>
 
+      <!-- 連動高亮 -->
+      <section id="highlight" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">連動高亮（highlightKey）</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          傳入 <code>highlightKey</code>，鍵相同的點與長條會畫上標記、其餘淡化。每筆資料的鍵來自圖層的
+          <code>keyFn</code>，沒有時用 X 值。滑過圖表時 <code>layer-hover</code> 會帶出同一套 <code>key</code>，
+          回填 <code>highlightKey</code> 就是雙向連動 —— 試著點下方月份，或直接滑過圖表。
+        </p>
+        <div class="mb-3">
+          <ChptSegmented v-model="highlightMonth" :options="highlightOptions" aria-label="高亮月份" />
+        </div>
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
+            <div style="width: 100%; height: 360px;">
+              <DualAxisComboChart
+                :auto-resize="true"
+                :layers="demoLayers"
+                :highlight-key="highlightMonth || null"
+                title="月度銷售與利潤率"
+                @layer-hover="({ key }) => key && (highlightMonth = key)"
+              />
+            </div>
+          </div>
+          <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
+            <ChptCodeBlock :code="highlightCode" />
+          </div>
+        </div>
+        <ApiTable title="Props" :rows="highlightProps" />
+      </section>
+
       <!-- 大量資料與縮放 API -->
       <section id="large-data-api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">大量資料與滾輪縮放</h2>
@@ -64,7 +94,8 @@
 
 <script setup>
 import { DualAxisComboChart } from '@/components/library/charts'
-import { ChptCodeBlock } from '@/components/library'
+import { ref } from 'vue'
+import { ChptCodeBlock, ChptSegmented } from '@/components/library'
 import SalesReportExample from '../../components/docs/DualAxisChartexamples/SalesReportExample.vue'
 import ProductionMonitorExample from '../../components/docs/DualAxisChartexamples/ProductionMonitorExample.vue'
 import ControlChartExample from '../../components/docs/DualAxisChartexamples/ControlChartExample.vue'
@@ -81,6 +112,30 @@ const largeDataProps = [
   { name: 'maxZoomScale', type: 'number', def: '10000', desc: '最大放大倍率（相對全覽範圍）' },
   { name: 'largeDataThreshold', type: 'number', def: '2000', desc: '圖層目前可見筆數超過此值時：折線依像素降採樣、散點與長條改用 Canvas；放大到低於此值自動切回 SVG' },
 ]
+const highlightMonth = ref('Mar')
+const highlightOptions = [
+  { label: '無', value: '' },
+  ...['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((m) => ({ label: m, value: m })),
+]
+const highlightProps = [
+  { name: 'highlightKey', type: 'string | number | Date | null', def: 'null', desc: '要高亮的資料鍵；對到的點與長條畫標記、其餘 SVG 元素淡化（大量資料的 Canvas 只畫標記）。換鍵只重畫標記，不會整張圖重繪' },
+  { name: 'layer.keyFn', type: '(datum, index) => string', def: '—', desc: '資料鍵的來源（同時用於元素比對）；沒有時用 X 值，Date 以 ISO 字串比對。index 是目前顯示資料中的位置，縮放後會變，請由資料欄位組出鍵' },
+  { name: 'layer-hover / layer-click / tooltip-show', type: '{ …, key }', desc: '事件多帶 key，可直接回填 highlightKey 做雙向連動' },
+]
+const highlightCode = `const layers = [
+  { type: 'stacked-bar', data: orders, stackKeys: ['online', 'offline'],
+    xValue: d => d.month, keyFn: d => d.month },
+  { type: 'line', data: profits, yAxis: 'right',
+    xValue: d => d.month, yValue: d => d.profit, keyFn: d => d.month },
+]
+const highlight = ref(null)   // 例如表格滑過的那一列
+
+<DualAxisComboChart
+  :layers="layers"
+  :highlight-key="highlight"
+  @layer-hover="({ key }) => (highlight = key)"
+/>`
+
 const largeDataEvents = [
   { name: 'wheel-zoom', type: "{ axis: 'x' | 'yLeft' | 'yRight', domain }", desc: '滾輪縮放或平移後送出；domain 為 null 代表回到全覽' },
 ]

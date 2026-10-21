@@ -29,6 +29,8 @@
           <g ref="lineLayerRef" class="line-layer"></g>
           <!-- ✅ Trigger 線圖層（在數據圖層之上，Brush 之下） -->
           <g ref="triggerLineLayerRef" class="trigger-line-layer"></g>
+          <!-- ✅ 連動高亮：highlightKey 對到的資料點／長條畫上標記（SVG 與 Canvas 模式通用） -->
+          <g ref="highlightLayerRef" class="highlight-layer"></g>
           <!-- ✅ 大量資料模式的 hover 標記（Canvas 上的點沒有 DOM 元素可以放大） -->
           <g ref="hoverLayerRef" class="hover-layer"></g>
           <!-- ✅ Brush 圖層 (必須在最上層以接收事件) -->
@@ -170,6 +172,15 @@ interface DualAxisComboChartProps {
   /** 最大放大倍率（相對全覽範圍） */
   maxZoomScale?: number
 
+  // === 連動高亮 ===
+  /**
+   * 要高亮的資料鍵（例如表格滑過的那一列、外部選取的批號）。
+   * 每筆資料的鍵由圖層的 keyFn(datum, index) 產生；沒有 keyFn 時用 X 值（Date 以 ISO 字串比對）。
+   * 對到的點與長條畫上標記，其餘的 SVG 元素淡化；null 取消高亮。
+   * 搭配 layer-hover / layer-click 事件帶出的 key，就能雙向連動。
+   */
+  highlightKey?: string | number | Date | null
+
   // === 大量資料 ===
   /**
    * 圖層「目前可見」的資料筆數超過此值時切換為大量資料模式：
@@ -213,6 +224,7 @@ const props = withDefaults(defineProps<DualAxisComboChartProps>(), {
   wheelZoomModifier: 'none',
   maxZoomScale: 10000,
   largeDataThreshold: 2000,
+  highlightKey: null,
   triggerLines: () => [],
 })
 
@@ -253,7 +265,14 @@ interface BoundDatum {
   rawData: ChartDatum
   layer: ChartLayer
   seriesKey?: string
+  /** 連動高亮用的資料鍵（見 datumKey） */
+  key?: string
 }
+
+/** 連動高亮的標記：點（折線、散點）或矩形（長條、堆疊的一段） */
+type HighlightMark =
+  | { kind: 'point'; x: number; y: number; r: number; color: string }
+  | { kind: 'rect'; x: number; y: number; w: number; h: number }
 
 /**
  * 大量資料模式的命中測試資料。
@@ -313,6 +332,7 @@ const brushLayerRef = ref<SVGGElement | null>(null);
 const plotRef = ref<SVGGElement | null>(null);
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 const hoverLayerRef = ref<SVGGElement | null>(null);
+const highlightLayerRef = ref<SVGGElement | null>(null);
 
 /**
  * 每個實例的唯一 id。
@@ -462,6 +482,131 @@ function makeAccessors(
   return { xPos, yPos, isDefined };
 }
 
+// === 連動高亮 ===
+
+/** 鍵一律比對字串；Date 用 ISO 字串（同一時刻的兩個 Date 物件才會相等） */
+function normalizeKey(value: unknown): string | null {
+  if (value === null || value === undefined || value === '') return null;
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.toISOString();
+  return String(value);
+}
+
+/**
+ * 一筆資料的鍵：圖層有 keyFn 用 keyFn（與 enter-update-exit 的 key 同一個來源），
+ * 否則用 X 值 —— 不寫 keyFn 也能「高亮某個月份／某個時間點」。
+ * ⚠️ index 是目前顯示資料中的位置（縮放後會變），keyFn 應由資料欄位組出鍵。
+ */
+function datumKey(layer: ChartLayer, d: ChartDatum, index: number): string {
+  if (layer.keyFn) return String(layer.keyFn(d, index));
+  return normalizeKey(layer.xValue?.(d)) ?? String(index);
+}
+
+/** 正規化後的 highlightKey；null 代表沒有高亮 */
+const activeHighlightKey = computed(() => normalizeKey(props.highlightKey));
+
+/**
+ * 目前的高亮鍵（一般變數，不是響應式）。
+ * ✅ 主渲染迴圈讀它不會建立依賴：換高亮只重畫標記與淡化，
+ *    不會整張圖重繪（長條會從 0 重新長一次動畫，表格滑過時一直閃）
+ */
+let highlightTarget: string | null = null;
+
+/**
+ * 各圖層渲染時登記的「找出某個鍵的標記位置」函式。
+ * 閉包裡握著當輪的比例尺與資料，換高亮時不必重跑渲染就能算出位置；每次重繪重建。
+ */
+let highlightSources: Array<(target: string) => HighlightMark[]> = [];
+
+/**
+ * 畫出高亮標記，並淡化其餘的 SVG 資料元素（Canvas 上的資料不淡化，只畫標記）。
+ * 在所有圖層渲染完之後、以及 highlightKey 改變時呼叫。
+ */
+const renderHighlight = () => {
+  const target = highlightTarget;
+
+  // SVG 元素：依綁定的 key 切換 class
+  for (const layerEl of [stackedBarLayerRef.value, lineLayerRef.value]) {
+    if (!layerEl) continue;
+    d3.select(layerEl)
+      .selectAll<SVGElement, BoundDatum | undefined>('.bar, .stacked-bar, .line-dot, .scatter-dot')
+      .classed('is-highlighted', (d) => target !== null && d?.key === target)
+      .classed('is-dimmed', (d) => target !== null && d?.key !== target);
+  }
+
+  if (!highlightLayerRef.value) return;
+  const g = d3.select(highlightLayerRef.value);
+  const marks = target === null ? [] : highlightSources.flatMap((find) => find(target));
+  const points = marks.filter((m): m is Extract<HighlightMark, { kind: 'point' }> => m.kind === 'point');
+  const rects = marks.filter((m): m is Extract<HighlightMark, { kind: 'rect' }> => m.kind === 'rect');
+
+  // 點：外圈光暈 + 實心點（與 hover 標記區隔）
+  g.selectAll('circle.highlight-ring')
+    .data(points)
+    .join('circle')
+    .attr('class', 'highlight-ring')
+    .attr('cx', (m) => m.x)
+    .attr('cy', (m) => m.y)
+    .attr('r', (m) => m.r + 4)
+    .attr('fill', 'none')
+    .attr('stroke', (m) => m.color)
+    .attr('stroke-width', 2)
+    .attr('stroke-opacity', 0.45);
+  g.selectAll('circle.highlight-point')
+    .data(points)
+    .join('circle')
+    .attr('class', 'highlight-point')
+    .attr('cx', (m) => m.x)
+    .attr('cy', (m) => m.y)
+    .attr('r', (m) => m.r)
+    .attr('fill', (m) => m.color)
+    .style('stroke', chartTheme.surface)
+    .attr('stroke-width', 2);
+
+  g.selectAll('rect.highlight-rect')
+    .data(rects)
+    .join('rect')
+    .attr('class', 'highlight-rect')
+    .attr('x', (m) => m.x)
+    .attr('y', (m) => m.y)
+    .attr('width', (m) => Math.max(1, m.w))
+    .attr('height', (m) => Math.max(1, m.h))
+    .attr('fill', 'none')
+    .style('stroke', chartTheme.text)
+    .attr('stroke-width', 2);
+};
+
+/** 登記一批點（折線、散點）的高亮來源 */
+function registerPointHighlights(
+  layer: ChartLayer,
+  data: ChartDatum[],
+  xPos: (d: ChartDatum) => number | undefined,
+  yPos: (d: ChartDatum) => number,
+  color: string,
+  radius: number
+): void {
+  highlightSources.push((target) => {
+    const marks: HighlightMark[] = [];
+    data.forEach((d, i) => {
+      if (datumKey(layer, d, i) !== target) return;
+      const x = xPos(d);
+      const y = yPos(d);
+      if (x === undefined || !Number.isFinite(x) || !Number.isFinite(y)) return;
+      marks.push({ kind: 'point', x, y, r: radius, color });
+    });
+    return marks;
+  });
+}
+
+// highlightKey 改變時只重畫高亮（見 highlightTarget 的說明）
+watch(
+  activeHighlightKey,
+  (key) => {
+    highlightTarget = key;
+    renderHighlight();
+  },
+  { immediate: true }
+);
+
 // === 大量資料模式：Canvas 與命中測試 ===
 
 /** 這一輪渲染登記的命中測試資料；每次重繪重建 */
@@ -480,6 +625,7 @@ let canvasDpr = 1;
  */
 function beginCanvasFrame(): void {
   largeHits = [];
+  highlightSources = [];
   clearLargeHover();
   const canvas = canvasRef.value;
   if (!canvas) return;
@@ -746,7 +892,10 @@ function hoverLargeAt(event: MouseEvent): boolean {
   if (key !== largeHoverKey) {
     largeHoverKey = key;
     const seriesKey = hit.store.kind === 'rect' ? hit.store.seriesKeys?.[hit.index] : undefined;
-    handleLayerHover(event, hit.store.data[hit.index], hit.store.layer, seriesKey);
+    const datum = hit.store.data[hit.index];
+    // 點的命中索引就是資料位置；長條的矩形會跳過無效列（堆疊圖一列多段），回頭找資料位置
+    const dataIndex = hit.store.kind === 'point' ? hit.index : (hit.store.layer.data ?? []).indexOf(datum);
+    handleLayerHover(event, datum, hit.store.layer, seriesKey, datumKey(hit.store.layer, datum, dataIndex));
   }
   return true;
 }
@@ -807,7 +956,7 @@ const setupTooltipDetection = (
         // 元素上綁的是 renderStackedBars / renderLines 在 .datum() 存進去的物件
         const boundData = d3.select(elementBelow).datum() as BoundDatum | undefined;
         if (boundData?.layer) {
-          handleLayerHover(event, boundData.rawData, boundData.layer, boundData.seriesKey);
+          handleLayerHover(event, boundData.rawData, boundData.layer, boundData.seriesKey, boundData.key);
         }
       } else if (!hoverLargeAt(event)) {
         // 🔧 大量資料模式的點畫在 Canvas 上，elementFromPoint 找不到 —— 改用座標命中測試
@@ -1330,14 +1479,27 @@ const renderSimpleBars = (
     };
     const barW = Math.max(1, slotWidth - (layers.length > 1 ? 1 : 0));
 
+    highlightSources.push((target) => {
+      const marks: HighlightMark[] = [];
+      data.forEach((d, i) => {
+        if (datumKey(layer, d, i) !== target) return;
+        const x = barX(d);
+        const v = Number(yValue(d));
+        if (x === undefined || !Number.isFinite(v)) return;
+        const y = ys(v);
+        marks.push({ kind: 'rect', x, y: Math.min(y, baseY), w: barW, h: Math.abs(baseY - y) });
+      });
+      return marks;
+    });
+
     // ✅ 大量資料：畫在 Canvas 上
     if (isLargeLayer(data.length)) {
       const batch = createRectBatch(data.length, [color], false);
       let count = 0;
-      for (const d of data) {
+      data.forEach((d) => {
         const x = barX(d);
         const v = Number(yValue(d));
-        if (x === undefined || !Number.isFinite(v)) continue;
+        if (x === undefined || !Number.isFinite(v)) return;
         const y = ys(v);
         batch.data[count] = d;
         batch.x0[count] = x;
@@ -1345,14 +1507,14 @@ const renderSimpleBars = (
         batch.y0[count] = Math.min(y, baseY);
         batch.y1[count] = Math.max(y, baseY);
         count++;
-      }
+      });
       drawRectsOnCanvas(layer, batch, count);
       return;
     }
 
     const layerGroup = g.append('g').attr('class', `bar-layer bar-layer-${layerIndex}`);
 
-    data.forEach((d) => {
+    data.forEach((d, i) => {
       const x = barX(d);
       const v = Number(yValue(d));
       if (x === undefined || !Number.isFinite(v)) return;
@@ -1360,16 +1522,17 @@ const renderSimpleBars = (
       const y = ys(v);
       const top = Math.min(y, baseY);
       const height = Math.abs(baseY - y);
+      const key = datumKey(layer, d, i);
       const bar = layerGroup.append('rect')
         .attr('class', 'bar')
         .attr('x', x)
         .attr('width', barW)
         .attr('fill', color)
         .style('cursor', 'pointer')
-        .datum({ rawData: d, layer })
-        .on('mouseenter', (event: MouseEvent) => handleLayerHover(event, d, layer))
+        .datum({ rawData: d, layer, key })
+        .on('mouseenter', (event: MouseEvent) => handleLayerHover(event, d, layer, undefined, key))
         .on('mouseleave', () => handleLayerLeave())
-        .on('click', () => emit('layer-click', { data: d, layer }));
+        .on('click', () => emit('layer-click', { data: d, layer, key }));
 
       if (effectiveAnimationDuration.value > 0) {
         bar.attr('y', baseY).attr('height', 0)
@@ -1433,19 +1596,35 @@ const renderStackedBars = () => {
       .offset(d3.stackOffsetNone);
 
     const series = stack(data);
+    const bandwidth = xs.bandwidth();
+
+    highlightSources.push((target) => {
+      const marks: HighlightMark[] = [];
+      for (const seriesData of series) {
+        // stack 的每個系列與原始資料同順序，dataIndex 就是資料列的位置
+        seriesData.forEach((d, dataIndex) => {
+          if (datumKey(layer, d.data, dataIndex) !== target) return;
+          const x = xs(String(xValue(d.data)));
+          const y0 = yScale(d[0]);
+          const y1 = yScale(d[1]);
+          if (x === undefined || !Number.isFinite(y0) || !Number.isFinite(y1) || y0 - y1 < 0) return;
+          marks.push({ kind: 'rect', x, y: y1, w: Math.max(bandwidth, 0.5), h: y0 - y1 });
+        });
+      }
+      return marks;
+    });
 
     // ✅ 大量資料：所有段落畫在 Canvas 上，同色的一次填完
     if (isLargeLayer(data.length * stackKeys.length)) {
       const colors = series.map((sd, si) => resolveSeriesColor(colorScale, sd.key, si));
       const batch = createRectBatch(data.length * series.length, colors, true);
-      const bandwidth = xs.bandwidth();
       let count = 0;
       series.forEach((seriesData, seriesIndex) => {
-        for (const d of seriesData) {
+        seriesData.forEach((d) => {
           const x = xs(String(xValue(d.data)));
           const y0 = yScale(d[0]);
           const y1 = yScale(d[1]);
-          if (x === undefined || !Number.isFinite(y0) || !Number.isFinite(y1) || y0 - y1 < 0) continue;
+          if (x === undefined || !Number.isFinite(y0) || !Number.isFinite(y1) || y0 - y1 < 0) return;
           batch.data[count] = d.data;
           batch.seriesKeys![count] = seriesData.key;
           batch.colorIndex[count] = seriesIndex;
@@ -1454,7 +1633,7 @@ const renderStackedBars = () => {
           batch.y0[count] = y1;
           batch.y1[count] = y0;
           count++;
-        }
+        });
       });
       drawRectsOnCanvas(layer, batch, count);
       return;
@@ -1472,15 +1651,16 @@ const renderStackedBars = () => {
       const color = resolveSeriesColor(colorScale, seriesKey, seriesIndex);
 
       // ✅ 直接使用 append 建立元素，完全避免 data join
-      seriesData.forEach((d, _dataIndex) => {
+      seriesData.forEach((d, dataIndex) => {
         const x = xs(String(xValue(d.data)));
         const y0 = yScale(d[0]);
         const y1 = yScale(d[1]);
         const height = y0 - y1;
-        const bandwidth = xs.bandwidth();
 
         // 跳過無效數據
         if (x === undefined || !Number.isFinite(height) || height < 0) return;
+
+        const key = datumKey(layer, d.data, dataIndex);
 
         const bar = layerGroup.append('rect')
           .attr('class', `layer-${layerIndex}-series-${seriesIndex} stacked-bar`)
@@ -1488,10 +1668,10 @@ const renderStackedBars = () => {
           .attr('width', bandwidth)
           .attr('fill', color)
           .style('cursor', 'pointer')
-          .datum({ rawData: d.data, layer, seriesKey })
+          .datum({ rawData: d.data, layer, seriesKey, key })
           .on('mouseenter', function (this: SVGRectElement, event: MouseEvent) {
             const barData = d3.select(this).datum() as BoundDatum;
-            handleLayerHover(event, barData.rawData, barData.layer, barData.seriesKey);
+            handleLayerHover(event, barData.rawData, barData.layer, barData.seriesKey, barData.key);
           })
           .on('mouseleave', () => {
             handleLayerLeave();
@@ -1502,6 +1682,7 @@ const renderStackedBars = () => {
               data: barData.rawData,
               layer: barData.layer,
               series: barData.seriesKey,
+              key: barData.key,
             });
           });
 
@@ -1580,6 +1761,9 @@ const renderLines = () => {
     // 大量資料不做 path 動畫：d3 對 path 的 d 是逐字串插值，幾千個點也很吃力
     const pathDuration = large ? 0 : effectiveAnimationDuration.value;
 
+    // 連動高亮：不論有沒有畫圓點、是不是大量資料模式，對到的點都畫標記
+    registerPointHighlights(layer, data, xPos, yPos, color, 4);
+
     // 面積：從基準線（0，或 domain 下緣）填到資料線
     const [yd0, yd1] = ys.domain() as [number, number];
     const areaBase = ys(Math.min(Math.max(0, Math.min(yd0, yd1)), Math.max(yd0, yd1)));
@@ -1646,13 +1830,13 @@ const renderLines = () => {
       g.selectAll(`circle.dot-${layerIndex}`).remove();
     } else {
       // ✅ 過濾掉會產生 NaN 的數據點
-      const validData = data.filter(isDefined);
+      // key 要用資料在圖層中的原始位置算，所以先配 key 再濾掉無效點
+      const validData: BoundDatum[] = data
+        .map((d, i) => ({ rawData: d, layer, key: datumKey(layer, d, i) }))
+        .filter((b) => isDefined(b.rawData));
 
       g.selectAll<SVGCircleElement, BoundDatum>(`circle.dot-${layerIndex}`)
-        .data(
-          validData.map((d) => ({ rawData: d, layer })),
-          makeKeyFn(layer)
-        )
+        .data(validData, makeKeyFn(layer))
         .join(
           enter => enter.append('circle')
             .attr('class', `dot-${layerIndex} line-dot`)
@@ -1663,14 +1847,14 @@ const renderLines = () => {
             .style('cursor', 'pointer')
             .on('mouseenter', (event: MouseEvent, d) => {
               d3.select(event.target as SVGCircleElement).attr('r', 6);
-              handleLayerHover(event, d.rawData, d.layer);
+              handleLayerHover(event, d.rawData, d.layer, undefined, d.key);
             })
             .on('mouseleave', (event: MouseEvent) => {
               d3.select(event.target as SVGCircleElement).attr('r', 4);
               handleLayerLeave();
             })
             .on('click', (_event: MouseEvent, d) => {
-              emit('layer-click', { data: d.rawData, layer: d.layer });
+              emit('layer-click', { data: d.rawData, layer: d.layer, key: d.key });
             }),
           update => update,
           exit => exit.transition()
@@ -1746,13 +1930,16 @@ const renderScatter = () => {
       g.selectAll(`circle.scatter-dot-${layerIndex}`).remove();
       const { px, py } = projectPoints(data, xPos, yPos);
       drawPointsOnCanvas(layer, data, px, py, { color, radius: size, opacity });
+      registerPointHighlights(layer, data, xPos, yPos, color, Math.max(4, size + 1));
       return;
     }
+
+    registerPointHighlights(layer, data, xPos, yPos, color, Math.max(4, size + 1));
 
     // 渲染散點
     g.selectAll<SVGCircleElement, BoundDatum>(`circle.scatter-dot-${layerIndex}`)
       .data(
-        data.map((d) => ({ rawData: d, layer })),
+        data.map((d, i) => ({ rawData: d, layer, key: datumKey(layer, d, i) })),
         makeKeyFn(layer)
       )
       .join(
@@ -1769,7 +1956,7 @@ const renderScatter = () => {
               .attr('r', size * 1.5)
               .attr('fill-opacity', 1)
               .attr('stroke-width', 2);
-            handleLayerHover(event, d.rawData, d.layer);
+            handleLayerHover(event, d.rawData, d.layer, undefined, d.key);
           })
           .on('mouseleave', (event: MouseEvent) => {
             d3.select(event.target as SVGCircleElement)
@@ -1779,7 +1966,7 @@ const renderScatter = () => {
             handleLayerLeave();
           })
           .on('click', (_event: MouseEvent, d) => {
-            emit('layer-click', { data: d.rawData, layer: d.layer });
+            emit('layer-click', { data: d.rawData, layer: d.layer, key: d.key });
           }),
         update => update,
         exit => exit.transition()
@@ -2275,13 +2462,15 @@ const handleLayerHover = (
   event: MouseEvent,
   data: ChartDatum,
   layer: ChartLayer,
-  seriesKey?: string
+  seriesKey?: string,
+  key?: string
 ): void => {
   const position = buildTooltipPosition(event);
-  tooltipData.value = { data, layer, seriesKey, position };
+  tooltipData.value = { data, layer, seriesKey, key, position };
   tooltipVisible.value = true;
-  emit('layer-hover', { data, layer, seriesKey });
-  emit('tooltip-show', { position, data, layer, seriesKey });
+  // key：這筆資料的鍵（與 highlightKey 同一套），呼叫端可直接拿來做雙向連動
+  emit('layer-hover', { data, layer, seriesKey, key });
+  emit('tooltip-show', { position, data, layer, seriesKey, key });
 };
 
 /**
@@ -2524,6 +2713,7 @@ watchEffect(() => {
   renderLines();
   renderScatter(); // ✅ 渲染散點圖
   renderTriggerLines(); // ✅ 渲染 Trigger 線（管制圖參考線）
+  renderHighlight(); // ✅ 連動高亮（要在所有資料圖層之後）
   renderTitle();
   renderLegend();
   renderBrush(); // ✅ 渲染 Brush 功能
@@ -2769,6 +2959,16 @@ defineExpose({ containerRef, svgRef })
   stroke: rgb(var(--t-surface-primary));
   stroke-width: 3px;
   stroke-linejoin: round;
+}
+
+/* ✅ 連動高亮：其餘資料元素淡化；標記不攔截滑鼠 */
+:deep(.is-dimmed) {
+  opacity: 0.25;
+  transition: opacity 150ms ease-out;
+}
+
+:deep(.highlight-layer) {
+  pointer-events: none;
 }
 
 /* ✅ 大量資料模式的 Canvas：不攔截滑鼠，事件交給上層的 brush / SVG 處理 */
