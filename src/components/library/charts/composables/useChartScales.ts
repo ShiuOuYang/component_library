@@ -1,4 +1,4 @@
-import { computed, ref, type ComputedRef, type Ref } from 'vue'
+import { computed, ref, toRaw, type ComputedRef, type Ref } from 'vue'
 import * as d3 from 'd3'
 import type {
   ChartDatum,
@@ -60,6 +60,20 @@ export function padDomainForBars<X extends number | Date, D>(
   return [shift(domain[0], -pad), shift(domain[1], pad)]
 }
 
+/**
+ * 取出圖層資料的原始陣列（不經 Vue Proxy）。
+ *
+ * ✅ 呼叫端若把 10 萬筆資料放進 ref()，每讀一個欄位都會經過 Proxy 並登記依賴：
+ *    逐筆掃描的計算（範圍、最大值、過濾）慢上數倍，記憶體也跟著暴增。
+ *    這裡先讀一次 length（陣列長度改變時仍會觸發重算，例如 push），再取原始陣列來掃。
+ */
+export function layerData<T>(layer: { data?: T[] }): T[] {
+  const data = layer.data
+  if (!data) return []
+  void data.length
+  return toRaw(data)
+}
+
 function resolveScale(type: string | undefined): () => YScale {
   return SCALE_CONSTRUCTORS[(type ?? 'linear') as ContinuousScaleType] ?? SCALE_CONSTRUCTORS.linear
 }
@@ -78,6 +92,17 @@ export interface UseChartScalesReturn<T = ChartDatum> {
 
   // 原始 domain（供 brush 重置）
   originalXDomain: Ref<XDomain | null>
+  /** 沒有縮放時的 X domain（props.xDomain 或依資料推算） */
+  baseXDomain: ComputedRef<XDomain | null>
+  /**
+   * 滾輪縮放的邊界：資料全覽範圍（連續型）或完整類別清單（band）。
+   * 與 baseXDomain 分開：分面圖同步縮放時，props.xDomain 會被設成「縮放後」的範圍，
+   * 不能拿它當邊界，否則縮小不回去。
+   */
+  xZoomBounds: ComputedRef<XDomain | null>
+  /** 沒有縮放時的左右 Y domain（滾輪縮小到這個寬度就回到全覽） */
+  yLeftBaseDomain: ComputedRef<YDomain | null>
+  yRightBaseDomain: ComputedRef<YDomain | null>
   originalYLeftDomain: Ref<YDomain | null>
   originalYRightDomain: Ref<YDomain | null>
 
@@ -136,7 +161,7 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
     let maxValue = 0
 
     layers.forEach((layer) => {
-      let dataToCalculate = layer.data ?? []
+      let dataToCalculate = layerData(layer)
 
       // ✅ brushMode='x' 且有選取範圍時，只計算範圍內的資料，Y 軸才會跟著縮放
       if (props.brushMode === 'x' && currentXDomain.value && layer.xValue) {
@@ -158,28 +183,80 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
     return maxValue
   }
 
+  /** 第一個有 xValue 的圖層的取值函式（決定 X 軸取哪個欄位） */
+  const primaryXValue = (): XAccessor<T> =>
+    props.layers[0]?.xValue ?? ((d) => d.category as string)
+
+  /**
+   * 資料本身的 X 範圍：連續型為 [min, max]（有 bar 圖層時兩端各推半個點距），
+   * band 為依出現順序的不重複類別。不受縮放影響，資料不變就不重算。
+   */
+  const dataXDomain = computed<XDomain | null>(() => {
+    const xValue = primaryXValue()
+    if (props.xScaleType === 'band') {
+      const seen = new Set<string>()
+      for (const layer of props.layers) {
+        for (const d of layerData(layer)) seen.add(xValue(d) as string)
+      }
+      return seen.size ? [...seen] : null
+    }
+    let min = Infinity
+    let max = -Infinity
+    let any = false
+    for (const layer of props.layers) {
+      for (const d of layerData(layer)) {
+        const v = +(xValue(d) as number)
+        if (!Number.isFinite(v)) continue
+        any = true
+        if (v < min) min = v
+        if (v > max) max = v
+      }
+    }
+    if (!any) return null
+    // 連續型 X 軸的取值必為 number 或 Date；時間軸要轉回 Date，d3.scaleTime 的刻度才正確
+    const isTime = props.xScaleType === 'time'
+    const domain = (isTime ? [new Date(min), new Date(max)] : [min, max]) as [number, number]
+    return padDomainForBars<number, T>(
+      domain,
+      props.layers.map((layer) => ({ ...layer, data: layerData(layer) }))
+    )
+  })
+
+  /** 沒有縮放時的 X domain */
+  const baseXDomain = computed<XDomain | null>(() => {
+    const hasData = props.layers.some((layer) => layerData(layer).length > 0)
+    if (!hasData) return null
+    return props.xDomain ?? dataXDomain.value ?? (props.xScaleType === 'band' ? [] : [0, 0])
+  })
+
+  /** 滾輪縮放的邊界（見回傳型別說明） */
+  const xZoomBounds = computed<XDomain | null>(() => {
+    const data = dataXDomain.value
+    const explicit = props.xDomain ?? null
+    if (props.xScaleType === 'band') {
+      const cats = (data ?? []) as string[]
+      // 呼叫端給的類別清單通常是用來指定順序；涵蓋所有資料類別時以它為準
+      if (explicit && (explicit as string[]).length >= cats.length) return explicit
+      return cats.length ? cats : explicit
+    }
+    if (!data) return explicit
+    if (!explicit) return data
+    // 連續型：資料範圍與 props.xDomain 取聯集
+    const [a0, a1] = (data as [number, number]).map(Number)
+    const [b0, b1] = (explicit as [number, number]).map(Number)
+    const lo = Math.min(a0, b0)
+    const hi = Math.max(a1, b1)
+    return (props.xScaleType === 'time' ? [new Date(lo), new Date(hi)] : [lo, hi]) as XDomain
+  })
+
   /**
    * X 軸比例尺。
    * band 用於離散類別，其餘走連續型；隨 currentXDomain 變化實現縮放。
+   * ✅ 縮放時只換 domain，不重新掃描資料（原本每次縮放都把全部資料攤平再算一次範圍）
    */
   const xScale = computed<XScale | null>(() => {
-    const allData = props.layers.flatMap((layer) => layer.data ?? [])
-    if (!allData.length) return null
-
-    const layer = props.layers[0]
-    const xValue: XAccessor<T> = layer.xValue ?? ((d) => d.category as string)
-
-    let baseDomain: XDomain
-    if (props.xScaleType === 'band') {
-      baseDomain = props.xDomain ?? (allData.map(xValue) as string[])
-    } else {
-      // 連續型 X 軸的取值必為 number 或 Date；xValue 的回傳型別涵蓋 string，
-      // 這裡收窄成 number 讓 d3.extent 推論正確（資料為空時 extent 回傳
-      // [undefined, undefined]，以 [0, 0] 兜底避免 domain 變成 undefined）
-      const numericX = (d: T): number => xValue(d) as unknown as number
-      const [min, max] = d3.extent(allData, numericX)
-      baseDomain = props.xDomain ?? padDomainForBars<number, T>([min ?? 0, max ?? 0], props.layers)
-    }
+    const baseDomain = baseXDomain.value
+    if (!baseDomain) return null
 
     // 首次計算時記下原始 domain，供 brush 重置
     if (!originalXDomain.value) {
@@ -205,50 +282,47 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
   /**
    * 建立一側 Y 軸的比例尺。左右兩側邏輯相同，只差圖層來源與 domain 設定。
    */
-  function buildYScale(
+  function buildBaseYDomain(
     layers: ChartLayer<T>[],
-    explicitDomain: YDomain | null | undefined,
+    explicitDomain: YDomain | null | undefined
+  ): YDomain | null {
+    if (!layers.length) return null
+    const maxValue = calculateMaxYValue(layers)
+    // 上方留 10% 空白，折線或標籤才不會貼到頂
+    return explicitDomain ?? [0, maxValue * 1.1]
+  }
+
+  const yLeftBaseDomain = computed(() => buildBaseYDomain(leftLayers.value, props.yLeftDomain))
+  const yRightBaseDomain = computed(() => buildBaseYDomain(rightLayers.value, props.yRightDomain))
+
+  function buildYScale(
+    baseDomain: YDomain | null,
     originalDomain: Ref<YDomain | null>,
     currentDomain: Ref<YDomain | null>,
     scaleType: ContinuousScaleType | undefined
   ): YScale | null {
-    if (!layers.length) return null
-
-    const maxValue = calculateMaxYValue(layers)
-    // 上方留 10% 空白，折線或標籤才不會貼到頂
-    const baseDomain: YDomain = explicitDomain ?? [0, maxValue * 1.1]
+    if (!baseDomain) return null
 
     if (!originalDomain.value) {
       originalDomain.value = baseDomain
     }
 
-    const effectiveDomain = currentDomain.value ?? baseDomain
-
-    return resolveScale(scaleType)
+    const scale = resolveScale(scaleType)
       .call(null)
-      .domain(effectiveDomain)
+      .domain(currentDomain.value ?? baseDomain)
       .range([chartHeight.value, 0])
-      .nice()
+
+    // 🔧 只有全覽時取整刻度。使用者縮放後的範圍要原樣呈現：
+    //    nice() 會把 [5.5, 104.5] 取整回 [0, 110] —— 滾輪每次小幅縮放都被取整抵銷，等於縮不動
+    return currentDomain.value ? scale : scale.nice()
   }
 
   const yLeftScale = computed(() =>
-    buildYScale(
-      leftLayers.value,
-      props.yLeftDomain,
-      originalYLeftDomain,
-      currentYLeftDomain,
-      props.yLeftScaleType
-    )
+    buildYScale(yLeftBaseDomain.value, originalYLeftDomain, currentYLeftDomain, props.yLeftScaleType)
   )
 
   const yRightScale = computed(() =>
-    buildYScale(
-      rightLayers.value,
-      props.yRightDomain,
-      originalYRightDomain,
-      currentYRightDomain,
-      props.yRightScaleType
-    )
+    buildYScale(yRightBaseDomain.value, originalYRightDomain, currentYRightDomain, props.yRightScaleType)
   )
 
   /**
@@ -256,11 +330,16 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
    */
   function processLayers(layers: ChartLayer<T>[]): ProcessedChartLayer<T>[] {
     return layers.map((layer) => {
-      if (!currentXDomain.value || !layer.xValue) return layer
+      if (!currentXDomain.value || !layer.xValue) {
+        // 資料是響應式 Proxy 時換成原始陣列，渲染時逐筆讀取才不會經過 Proxy；
+        // 本來就是一般陣列就原樣回傳（不必要的複製會讓渲染誤判變更）
+        const raw = layerData(layer)
+        return raw === layer.data ? layer : { ...layer, data: raw }
+      }
 
       return {
         ...layer,
-        data: filterDataByXDomain(layer.data ?? [], layer.xValue),
+        data: filterDataByXDomain(layerData(layer), layer.xValue),
         _isFiltered: true as const,
       }
     })
@@ -280,6 +359,10 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
     originalXDomain,
     originalYLeftDomain,
     originalYRightDomain,
+    baseXDomain,
+    xZoomBounds,
+    yLeftBaseDomain,
+    yRightBaseDomain,
     filterDataByXDomain,
     calculateMaxYValue,
   }
