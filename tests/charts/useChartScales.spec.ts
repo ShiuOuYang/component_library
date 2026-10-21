@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { computed, ref } from 'vue'
-import { padDomainForBars, useChartScales } from '@/components/library/charts/composables/useChartScales'
+import { computed, isProxy, reactive, ref } from 'vue'
+import { layerData, padDomainForBars, useChartScales } from '@/components/library/charts/composables/useChartScales'
 import type {
   ChartScalesProps,
   XDomain,
@@ -321,5 +321,77 @@ describe('padDomainForBars', () => {
     expect(lo).toBeInstanceOf(Date)
     expect((lo as Date).getTime()).toBe(a.getTime() - day / 2)
     expect((hi as Date).getTime()).toBe(b.getTime() + day / 2)
+  })
+})
+
+describe('useChartScales：滾輪縮放與大量資料', () => {
+  /** 連續 X 軸的折線，x 為 0..n-1 */
+  function lineSetup(n: number, overrides: Partial<ChartScalesProps<Row>> = {}) {
+    const rows = Array.from({ length: n }, (_, i) => ({ category: String(i), value: i, a: 0, b: 0, x: i }))
+    return setup({
+      layers: [{ type: 'line', yAxis: 'left', data: rows, xValue: (d) => d.x as number, yValue: (d) => d.value }],
+      xScaleType: 'linear',
+      ...overrides,
+    })
+  }
+
+  it('全覽時 Y 軸 nice() 取整；縮放後原樣呈現（否則小幅縮放會被取整抵銷，等於縮不動）', () => {
+    const { api, currentYLeftDomain } = setup()
+    expect(api.yLeftScale.value!.domain()).toEqual([0, 35])
+    currentYLeftDomain.value = [5.5, 31.5]
+    expect(api.yLeftScale.value!.domain()).toEqual([5.5, 31.5])
+  })
+
+  it('yLeftBaseDomain 是沒有縮放時的範圍，不受目前縮放影響', () => {
+    const { api, currentYLeftDomain } = setup()
+    currentYLeftDomain.value = [10, 20]
+    expect(api.yLeftBaseDomain.value![1]).toBeCloseTo(33)
+  })
+
+  it('xZoomBounds：連續型取資料範圍與 props.xDomain 的聯集（分面同步縮放時 xDomain 是縮放後的範圍）', () => {
+    const { api } = lineSetup(100, { xDomain: [20, 30] })
+    expect(api.xZoomBounds.value).toEqual([0, 99])
+    expect(api.baseXDomain.value).toEqual([20, 30])
+  })
+
+  it('xZoomBounds：band 時呼叫端給的類別清單涵蓋全部資料才以它為準（通常用來指定順序）', () => {
+    expect(setup({ xDomain: ['Q3', 'Q2', 'Q1'] }).api.xZoomBounds.value).toEqual(['Q3', 'Q2', 'Q1'])
+    expect(setup({ xDomain: ['Q2'] }).api.xZoomBounds.value).toEqual(['Q1', 'Q2', 'Q3'])
+  })
+
+  it('縮放只換 domain：X 比例尺跟著 currentXDomain 變，邊界不變', () => {
+    const { api, currentXDomain } = lineSetup(100)
+    currentXDomain.value = [10, 20]
+    expect(api.xScale.value!.domain()).toEqual([10, 20])
+    expect(api.xZoomBounds.value).toEqual([0, 99])
+  })
+
+  it('時間軸的資料範圍是 Date', () => {
+    const t0 = new Date('2026-01-01T00:00:00').getTime()
+    const rows = Array.from({ length: 10 }, (_, i) => ({ category: '', value: i, a: 0, b: 0, t: new Date(t0 + i * 1000) }))
+    const { api } = setup({
+      layers: [{ type: 'line', data: rows, xValue: (d) => d.t as Date, yValue: (d) => d.value }],
+      xScaleType: 'time',
+    })
+    const [lo, hi] = api.xScale.value!.domain() as Date[]
+    expect(lo).toBeInstanceOf(Date)
+    expect(hi.getTime() - lo.getTime()).toBe(9000)
+  })
+
+  it('layerData：響應式資料取原始陣列（逐筆掃描不經過 Proxy）', () => {
+    const rows = reactive([{ v: 1 }, { v: 2 }])
+    const raw = layerData({ data: rows })
+    expect(isProxy(raw)).toBe(false)
+    expect(isProxy(raw[0])).toBe(false)
+    expect(raw).toHaveLength(2)
+  })
+
+  it('processedLayers：響應式資料換成原始陣列', () => {
+    const rows = reactive(Array.from({ length: 3 }, (_, i) => ({ category: String(i), value: i, a: 0, b: 0, x: i })))
+    const { api } = setup({
+      layers: [{ type: 'line', data: rows as Row[], xValue: (d) => d.x as number, yValue: (d) => d.value }],
+      xScaleType: 'linear',
+    })
+    expect(isProxy(api.processedLeftLayers.value[0].data)).toBe(false)
   })
 })

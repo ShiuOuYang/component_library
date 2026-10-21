@@ -1,5 +1,16 @@
 <template>
   <div ref="containerRef" class="dual-axis-chart" :style="autoResize ? {} : { width: width + 'px', height: height + 'px' }">
+    <!--
+      ✅ 大量資料模式：散點與長條畫在 Canvas 上（數萬個 SVG 節點光排版就要好幾秒）。
+      疊在 SVG 下方、對齊繪圖區；SVG 沒有底色，折線、參考線、brush 都在它上面。
+      不用 <foreignObject> 放進 SVG：Safari 對變形／裁切中的 foreignObject 長期有繪製錯位的問題
+    -->
+    <canvas
+      ref="canvasRef"
+      class="canvas-layer"
+      :style="{ left: `${margin.left}px`, top: `${margin.top}px` }"
+      aria-hidden="true"
+    ></canvas>
     <svg ref="svgRef" :width="effectiveWidth" :height="effectiveHeight">
       <defs>
         <!-- 定義漸層、陰影等可重用的 SVG 元素 -->
@@ -8,7 +19,7 @@
         </clipPath>
       </defs>
 
-      <g :transform="`translate(${margin.left}, ${margin.top})`">
+      <g ref="plotRef" :transform="`translate(${margin.left}, ${margin.top})`">
         <!-- 圖層順序很重要：背景 -> 網格 -> 圖表 -> 座標軸 -> 標題 -->
         <g ref="gridLayerRef" class="grid-layer"></g>
         
@@ -18,6 +29,8 @@
           <g ref="lineLayerRef" class="line-layer"></g>
           <!-- ✅ Trigger 線圖層（在數據圖層之上，Brush 之下） -->
           <g ref="triggerLineLayerRef" class="trigger-line-layer"></g>
+          <!-- ✅ 大量資料模式的 hover 標記（Canvas 上的點沒有 DOM 元素可以放大） -->
+          <g ref="hoverLayerRef" class="hover-layer"></g>
           <!-- ✅ Brush 圖層 (必須在最上層以接收事件) -->
           <g v-if="enableBrush" ref="brushLayerRef" class="brush-layer"></g>
         </g>
@@ -38,7 +51,7 @@
 
   
 <button type="button"
-  v-if="resetBtnShow && enableBrush && showResetButton"
+  v-if="resetBtnShow && showResetButton && (enableBrush || enableWheelZoom || enableAxisDrag)"
   @click="handleResetZoom"
   class="
     absolute top-2 right-2 px-3 py-1.5
@@ -68,7 +81,7 @@
 
 <script setup lang="ts">
 import { chartTheme } from './chartTheme';
-import { ref, computed, watch, watchEffect, onMounted, onUnmounted, type Ref } from 'vue';
+import { ref, computed, nextTick, watch, watchEffect, onMounted, onUnmounted, type Ref } from 'vue';
 import * as d3 from 'd3';
 import { useD3Brush } from './composables/useD3Brush';
 import { useChartScales } from './composables/useChartScales';
@@ -92,6 +105,15 @@ import type {
 } from './types/chart.types'
 import type { TriggerLine } from './composables/faceChart/useFacetLayout'
 import { layerLabel as layerLabelOf } from './composables/faceChart/facetHelpers'
+import {
+  minMaxDownsample,
+  nearestPointIndex,
+  panContinuousDomain,
+  rectIndexAt,
+  resolveCanvasColor,
+  zoomBandWindow,
+  zoomContinuousDomain,
+} from './utils/largeData'
 
 interface DualAxisComboChartProps {
 
@@ -138,6 +160,23 @@ interface DualAxisComboChartProps {
   brushMode?: BrushMode
   enableAxisDrag?: boolean
   showResetButton?: boolean
+  /**
+   * 滑鼠滾輪縮放：在繪圖區以游標為中心縮放 X 軸、在左右 Y 軸上縮放該軸；
+   * 觸控板左右滑動（或 Shift + 滾輪）平移 X 軸。已在全覽時往外滾會交還給頁面捲動。
+   */
+  enableWheelZoom?: boolean
+  /** 要按住哪個鍵才用滾輪縮放（'ctrl' 也接受 Mac 的 ⌘）；頁面上圖表很多時可設 'ctrl' 避免捲動頁面時誤觸 */
+  wheelZoomModifier?: 'none' | 'ctrl' | 'alt'
+  /** 最大放大倍率（相對全覽範圍） */
+  maxZoomScale?: number
+
+  // === 大量資料 ===
+  /**
+   * 圖層「目前可見」的資料筆數超過此值時切換為大量資料模式：
+   * 折線依像素降採樣（不畫圓點）、散點與長條改畫在 Canvas 上；滑鼠提示仍指到每一筆原始資料。
+   * 放大到可見筆數低於此值時自動切回一般 SVG 模式。
+   */
+  largeDataThreshold?: number
 
   // === Trigger 線配置（管制圖、良率分析圖） ===
   /** 參考線，例如規格上下限或良率門檻 */
@@ -170,6 +209,10 @@ const props = withDefaults(defineProps<DualAxisComboChartProps>(), {
   brushMode: 'xy',
   enableAxisDrag: true,
   showResetButton: true,
+  enableWheelZoom: true,
+  wheelZoomModifier: 'none',
+  maxZoomScale: 10000,
+  largeDataThreshold: 2000,
   triggerLines: () => [],
 })
 
@@ -182,7 +225,8 @@ const emit = defineEmits([
   'chart-resize', // 圖表尺寸變化
   'selection-change', // Brush 選取範圍改變
   'zoom-reset', // 重置縮放
-  'axis-drag' // 座標軸拖曳平移
+  'axis-drag', // 座標軸拖曳平移
+  'wheel-zoom' // 滾輪縮放／平移：{ axis: 'x' | 'yLeft' | 'yRight', domain }（domain 為 null 代表回到全覽）
 ]);
 
 // === 圖例 ===
@@ -211,6 +255,42 @@ interface BoundDatum {
   seriesKey?: string
 }
 
+/**
+ * 大量資料模式的命中測試資料。
+ * Canvas 上畫的點與長條沒有 DOM 元素，滑鼠提示改用這些座標陣列找出指到哪一筆。
+ */
+type LargeHitStore =
+  | {
+      kind: 'point'
+      layer: ChartLayer
+      data: ChartDatum[]
+      px: Float32Array
+      py: Float32Array
+      color: string
+      /** hover 標記的半徑 */
+      radius: number
+    }
+  | {
+      kind: 'rect'
+      layer: ChartLayer
+      /** 每個矩形對應的資料列（堆疊圖同一列會出現多次，一段一次） */
+      data: ChartDatum[]
+      seriesKeys: string[] | null
+      x0: Float32Array
+      y0: Float32Array
+      x1: Float32Array
+      y1: Float32Array
+    }
+
+/** 滾輪作用的軸 */
+type WheelTarget = 'x' | 'yLeft' | 'yRight'
+
+/** 一般模式下可以 hover 的 SVG 元素 class */
+const HOVERABLE_CLASSES = ['stacked-bar', 'bar', 'line-dot', 'scatter-dot'];
+
+/** 滾輪縮放速度：一般滑鼠一格（deltaY = 100）約縮放 1.22 倍 */
+const WHEEL_ZOOM_SPEED = 0.002;
+
 /** brush 結束事件；x 模式的 selection 是一對座標，xy 模式是兩個角 */
 interface BrushSelectionEvent {
   selection: [number, number] | [[number, number], [number, number]] | null
@@ -230,6 +310,9 @@ const yAxisRightRef = ref<SVGGElement | null>(null);
 const legendLayerRef = ref<SVGGElement | null>(null);
 const titleLayerRef = ref<SVGGElement | null>(null);
 const brushLayerRef = ref<SVGGElement | null>(null);
+const plotRef = ref<SVGGElement | null>(null);
+const canvasRef = ref<HTMLCanvasElement | null>(null);
+const hoverLayerRef = ref<SVGGElement | null>(null);
 
 /**
  * 每個實例的唯一 id。
@@ -281,7 +364,10 @@ const {
   processedRightLayers,  // ✅ 已過濾數據的右側圖層
   originalXDomain,
   originalYLeftDomain,
-  originalYRightDomain
+  originalYRightDomain,
+  xZoomBounds,
+  yLeftBaseDomain,
+  yRightBaseDomain
 } = useChartScales(
   props,
   chartWidth,
@@ -376,6 +462,318 @@ function makeAccessors(
   return { xPos, yPos, isDefined };
 }
 
+// === 大量資料模式：Canvas 與命中測試 ===
+
+/** 這一輪渲染登記的命中測試資料；每次重繪重建 */
+let largeHits: LargeHitStore[] = [];
+/** 目前 tooltip 是否由大量資料模式的命中測試顯示 */
+let largeHoverKey: string | null = null;
+
+let ctx2d: CanvasRenderingContext2D | null = null;
+let ctx2dCanvas: HTMLCanvasElement | null = null;
+let canvasHasContent = false;
+let canvasDpr = 1;
+
+/**
+ * 每一輪渲染開始時呼叫：依繪圖區與裝置像素比設定 Canvas 尺寸並清空，重置命中測試資料。
+ * 沒有圖層進入大量資料模式時不會取用 2D context（Canvas 維持空白）。
+ */
+function beginCanvasFrame(): void {
+  largeHits = [];
+  clearLargeHover();
+  const canvas = canvasRef.value;
+  if (!canvas) return;
+  const w = Math.max(0, chartWidth.value);
+  const h = Math.max(0, chartHeight.value);
+  canvasDpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+  const pw = Math.round(w * canvasDpr);
+  const ph = Math.round(h * canvasDpr);
+  // 改寬高本身就會清空畫布；尺寸沒變才需要手動清
+  if (canvas.width !== pw || canvas.height !== ph) {
+    canvas.width = pw;
+    canvas.height = ph;
+  } else if (canvasHasContent && ctx2d && ctx2dCanvas === canvas) {
+    ctx2d.setTransform(1, 0, 0, 1, 0, 0);
+    ctx2d.clearRect(0, 0, pw, ph);
+  }
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+  canvasHasContent = false;
+}
+
+/** 取得已套用裝置像素比的 2D context；環境不支援 Canvas 時回傳 null */
+function getCanvasContext(): CanvasRenderingContext2D | null {
+  const canvas = canvasRef.value;
+  if (!canvas) return null;
+  if (ctx2dCanvas !== canvas) {
+    ctx2d = canvas.getContext?.('2d') ?? null;
+    ctx2dCanvas = canvas;
+  }
+  if (!ctx2d) return null;
+  ctx2d.setTransform(canvasDpr, 0, 0, canvasDpr, 0, 0);
+  canvasHasContent = true;
+  return ctx2d;
+}
+
+/** 圖層顏色交給 Canvas 前先解析（CSS 變數 Canvas 看不懂） */
+function canvasColor(color: string): string {
+  return resolveCanvasColor(color, containerRef.value);
+}
+
+/** 圖層目前可見的筆數是否超過門檻 */
+function isLargeLayer(count: number): boolean {
+  return props.largeDataThreshold > 0 && count > props.largeDataThreshold;
+}
+
+/**
+ * 計算一批資料的像素座標（無法定位的點為 NaN）。
+ * 降採樣、Canvas 繪製與命中測試共用，只算一次。
+ */
+function projectPoints(
+  data: ChartDatum[],
+  xPos: (d: ChartDatum) => number | undefined,
+  yPos: (d: ChartDatum) => number
+): { px: Float32Array; py: Float32Array } {
+  const n = data.length;
+  const px = new Float32Array(n);
+  const py = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const d = data[i];
+    px[i] = xPos(d) ?? NaN;
+    py[i] = yPos(d);
+  }
+  return { px, py };
+}
+
+/**
+ * 預先畫好一顆圓點，之後每個資料點只要貼圖（drawImage）。
+ * ✅ 10 萬個 arc() 路徑約要 250ms；貼圖約 20ms。環境不支援時回傳 null，改畫路徑。
+ */
+function makeDotSprite(color: string, radius: number): HTMLCanvasElement | null {
+  if (typeof document === 'undefined') return null;
+  const size = Math.ceil((radius * 2 + 2) * canvasDpr);
+  const sprite = document.createElement('canvas');
+  sprite.width = size;
+  sprite.height = size;
+  const sctx = sprite.getContext?.('2d');
+  if (!sctx || typeof sctx.arc !== 'function') return null;
+  sctx.fillStyle = color;
+  sctx.beginPath();
+  sctx.arc(size / 2, size / 2, radius * canvasDpr, 0, Math.PI * 2);
+  sctx.fill();
+  return sprite;
+}
+
+/**
+ * 在 Canvas 上畫一批點，並登記命中測試資料。
+ * 半徑小的點用正方形代替圓形（看起來一樣）；較大的點用預畫好的圓點貼圖。
+ */
+function drawPointsOnCanvas(
+  layer: ChartLayer,
+  data: ChartDatum[],
+  px: Float32Array,
+  py: Float32Array,
+  options: { color: string; radius: number; opacity: number }
+): void {
+  const { color, radius, opacity } = options;
+  const ctx = getCanvasContext();
+  if (ctx) {
+    const fill = canvasColor(color);
+    ctx.globalAlpha = opacity;
+    const sprite = radius > 1.5 && typeof ctx.drawImage === 'function' ? makeDotSprite(fill, radius) : null;
+    if (sprite) {
+      const d = sprite.width / canvasDpr;
+      const offset = d / 2;
+      for (let i = 0; i < px.length; i++) {
+        const x = px[i];
+        const y = py[i];
+        if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+        ctx.drawImage(sprite, x - offset, y - offset, d, d);
+      }
+    } else {
+      ctx.fillStyle = fill;
+      ctx.beginPath();
+      const square = radius <= 1.5;
+      for (let i = 0; i < px.length; i++) {
+        const x = px[i];
+        const y = py[i];
+        if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
+        if (square) {
+          ctx.rect(x - radius, y - radius, radius * 2, radius * 2);
+        } else {
+          ctx.moveTo(x + radius, y);
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+        }
+      }
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  largeHits.push({ kind: 'point', layer, data, px, py, color, radius: Math.max(4, radius + 2) });
+}
+
+/** 一批要畫在 Canvas 上的矩形（長條） */
+interface RectBatch {
+  data: ChartDatum[]
+  seriesKeys: string[] | null
+  x0: Float32Array
+  y0: Float32Array
+  x1: Float32Array
+  y1: Float32Array
+  /** 每個矩形的顏色索引（對應 colors） */
+  colorIndex: Uint16Array
+  colors: string[]
+}
+
+/** 配置一批矩形的儲存空間 */
+function createRectBatch(n: number, colors: string[], withSeries: boolean): RectBatch {
+  return {
+    data: new Array<ChartDatum>(n),
+    seriesKeys: withSeries ? new Array<string>(n) : null,
+    x0: new Float32Array(n),
+    y0: new Float32Array(n),
+    x1: new Float32Array(n),
+    y1: new Float32Array(n),
+    colorIndex: new Uint16Array(n),
+    colors,
+  };
+}
+
+/** 在 Canvas 上畫一批矩形，同色的一次填完；並登記命中測試資料 */
+function drawRectsOnCanvas(layer: ChartLayer, batch: RectBatch, count: number): void {
+  const ctx = getCanvasContext();
+  if (ctx) {
+    batch.colors.forEach((color, ci) => {
+      ctx.fillStyle = canvasColor(color);
+      ctx.beginPath();
+      for (let i = 0; i < count; i++) {
+        if (batch.colorIndex[i] !== ci) continue;
+        ctx.rect(batch.x0[i], batch.y0[i], batch.x1[i] - batch.x0[i], batch.y1[i] - batch.y0[i]);
+      }
+      ctx.fill();
+    });
+  }
+  largeHits.push({
+    kind: 'rect',
+    layer,
+    data: batch.data.slice(0, count),
+    seriesKeys: batch.seriesKeys ? batch.seriesKeys.slice(0, count) : null,
+    x0: batch.x0.subarray(0, count),
+    y0: batch.y0.subarray(0, count),
+    x1: batch.x1.subarray(0, count),
+    y1: batch.y1.subarray(0, count),
+  });
+}
+
+/**
+ * 找出游標指到的大量資料項目：點（折線、散點）優先，取最近的；其次是包含游標的長條。
+ */
+function findLargeHit(mx: number, my: number): { store: LargeHitStore; index: number } | null {
+  const HIT_RADIUS = 8;
+  let best: { store: LargeHitStore; index: number } | null = null;
+  let bestDist = Infinity;
+  for (const store of largeHits) {
+    if (store.kind !== 'point') continue;
+    const i = nearestPointIndex(store.px, store.py, mx, my, HIT_RADIUS);
+    if (i < 0) continue;
+    const dist = (store.px[i] - mx) ** 2 + (store.py[i] - my) ** 2;
+    if (dist <= bestDist) {
+      bestDist = dist;
+      best = { store, index: i };
+    }
+  }
+  if (best) return best;
+  for (let s = largeHits.length - 1; s >= 0; s--) {
+    const store = largeHits[s];
+    if (store.kind !== 'rect') continue;
+    const i = rectIndexAt(store.x0, store.y0, store.x1, store.y1, mx, my);
+    if (i >= 0) return { store, index: i };
+  }
+  return null;
+}
+
+/** 畫出（或移除）大量資料模式的 hover 標記 */
+function drawHoverMarker(hit: { store: LargeHitStore; index: number } | null): void {
+  if (!hoverLayerRef.value) return;
+  const g = d3.select(hoverLayerRef.value);
+  const point = hit?.store.kind === 'point' ? hit : null;
+  const rect = hit?.store.kind === 'rect' ? hit : null;
+
+  g.selectAll('circle.hover-point')
+    .data(point ? [point] : [])
+    .join('circle')
+    .attr('class', 'hover-point')
+    .attr('cx', (h) => (h.store as Extract<LargeHitStore, { kind: 'point' }>).px[h.index])
+    .attr('cy', (h) => (h.store as Extract<LargeHitStore, { kind: 'point' }>).py[h.index])
+    .attr('r', (h) => (h.store as Extract<LargeHitStore, { kind: 'point' }>).radius)
+    .attr('fill', (h) => (h.store as Extract<LargeHitStore, { kind: 'point' }>).color)
+    .style('stroke', chartTheme.surface)
+    .attr('stroke-width', 2);
+
+  g.selectAll('rect.hover-rect')
+    .data(rect ? [rect] : [])
+    .join('rect')
+    .attr('class', 'hover-rect')
+    .attr('x', (h) => (h.store as Extract<LargeHitStore, { kind: 'rect' }>).x0[h.index])
+    .attr('y', (h) => (h.store as Extract<LargeHitStore, { kind: 'rect' }>).y0[h.index])
+    .attr('width', (h) => {
+      const st = h.store as Extract<LargeHitStore, { kind: 'rect' }>;
+      return Math.max(1, st.x1[h.index] - st.x0[h.index]);
+    })
+    .attr('height', (h) => {
+      const st = h.store as Extract<LargeHitStore, { kind: 'rect' }>;
+      return Math.max(1, st.y1[h.index] - st.y0[h.index]);
+    })
+    .attr('fill', 'none')
+    .style('stroke', chartTheme.text)
+    .attr('stroke-width', 1.5);
+}
+
+/**
+ * 依游標位置對大量資料做命中測試，命中就顯示 tooltip。
+ * @returns 是否命中
+ */
+function hoverLargeAt(event: MouseEvent): boolean {
+  if (!largeHits.length || !plotRef.value) return false;
+  const [mx, my] = d3.pointer(event, plotRef.value);
+  if (mx < 0 || my < 0 || mx > chartWidth.value || my > chartHeight.value) return false;
+  const hit = findLargeHit(mx, my);
+  if (!hit) return false;
+
+  const key = `${largeHits.indexOf(hit.store)}:${hit.index}`;
+  drawHoverMarker(hit);
+  // 同一筆資料不重複發事件（滑鼠在同一點上移動時）
+  if (key !== largeHoverKey) {
+    largeHoverKey = key;
+    const seriesKey = hit.store.kind === 'rect' ? hit.store.seriesKeys?.[hit.index] : undefined;
+    handleLayerHover(event, hit.store.data[hit.index], hit.store.layer, seriesKey);
+  }
+  return true;
+}
+
+/** 移除大量資料模式的 hover 標記；emitLeave 時一併隱藏 tooltip */
+function clearLargeHover(emitLeave = true): void {
+  if (largeHoverKey === null) return;
+  largeHoverKey = null;
+  drawHoverMarker(null);
+  if (emitLeave) handleLayerLeave();
+}
+
+/** brush 關閉時沒有 overlay，大量資料的 hover 改由 SVG 本身的 mousemove 處理 */
+function onSvgMouseMove(event: MouseEvent): void {
+  if (props.enableBrush) return; // brush overlay 的穿透檢測會處理
+  const target = event.target as Element | null;
+  if (target?.classList && HOVERABLE_CLASSES.some((cls) => target.classList.contains(cls))) {
+    clearLargeHover(false);
+    return;
+  }
+  if (!hoverLargeAt(event)) clearLargeHover();
+}
+
+function onSvgMouseLeave(): void {
+  clearLargeHover();
+}
+
 // === 渲染函數 ===
 
 /**
@@ -403,20 +801,23 @@ const setupTooltipDetection = (
       
       // 檢查是否為圖表元素
       // 原本只認 stacked-bar 與 line-dot —— 散點在 brush 開啟時永遠沒有 tooltip
-      const hoverable = ['stacked-bar', 'bar', 'line-dot', 'scatter-dot'];
-      if (elementBelow && hoverable.some((cls) => elementBelow.classList.contains(cls))) {
+      if (elementBelow && HOVERABLE_CLASSES.some((cls) => elementBelow.classList.contains(cls))) {
+        clearLargeHover(false);
         // ✅ 直接從 DOM 元素讀取已綁定的完整資料
         // 元素上綁的是 renderStackedBars / renderLines 在 .datum() 存進去的物件
         const boundData = d3.select(elementBelow).datum() as BoundDatum | undefined;
         if (boundData?.layer) {
           handleLayerHover(event, boundData.rawData, boundData.layer, boundData.seriesKey);
         }
-      } else {
+      } else if (!hoverLargeAt(event)) {
+        // 🔧 大量資料模式的點畫在 Canvas 上，elementFromPoint 找不到 —— 改用座標命中測試
+        clearLargeHover(false);
         handleLayerLeave();
       }
     })
     .on('mouseleave.tooltip', () => {
       isDragging = false;
+      clearLargeHover(false);
       handleLayerLeave();
     });
 };
@@ -859,11 +1260,32 @@ const renderGrid = () => {
  * （band scale 直接用 bandwidth，不走這裡）
  */
 function continuousBarWidth(positions: number[]): number {
-  const xs = [...new Set(positions.filter(Number.isFinite))].sort((a, b) => a - b);
-  let gap = Infinity;
-  for (let i = 1; i < xs.length; i++) gap = Math.min(gap, xs[i] - xs[i - 1]);
+  const gap = minPositiveGap(positions);
   if (!Number.isFinite(gap)) return 24;
   return Math.max(2, Math.min(48, gap * 0.7));
+}
+
+/**
+ * 相鄰資料點的最小間距。
+ * ✅ 資料已依 X 排序（時間序列幾乎都是）時一次掃過即可；否則才去重排序 —— 10 萬筆省下約 30ms／次重繪。
+ */
+function minPositiveGap(positions: number[]): number {
+  let gap = Infinity;
+  let prev = NaN;
+  let sorted = true;
+  for (const p of positions) {
+    if (!Number.isFinite(p)) continue;
+    if (Number.isFinite(prev)) {
+      if (p < prev) { sorted = false; break; }
+      if (p > prev) gap = Math.min(gap, p - prev);
+    }
+    prev = p;
+  }
+  if (sorted) return gap;
+  const xs = [...new Set(positions.filter(Number.isFinite))].sort((a, b) => a - b);
+  gap = Infinity;
+  for (let i = 1; i < xs.length; i++) gap = Math.min(gap, xs[i] - xs[i - 1]);
+  return gap;
 }
 
 /**
@@ -899,24 +1321,49 @@ const renderSimpleBars = (
     const baseValue = Math.min(Math.max(0, Math.min(d0, d1)), Math.max(d0, d1));
     const baseY = ys(baseValue);
     const color = layer.color || resolveSeriesColor(layer.colorScale, layerLabelOf(layer), layerIndex);
-
-    const layerGroup = g.append('g').attr('class', `bar-layer bar-layer-${layerIndex}`);
-
-    data.forEach((d) => {
+    const barX = (d: ChartDatum): number | undefined => {
       const raw = xValue(d);
       const start = band
         ? (xs as d3.ScaleBand<string>)(String(raw))
         : (xs as d3.ScaleContinuousNumeric<number, number>)(Number(raw)) - fullWidth / 2;
+      return start === undefined || !Number.isFinite(start) ? undefined : start + slotWidth * layerIndex;
+    };
+    const barW = Math.max(1, slotWidth - (layers.length > 1 ? 1 : 0));
+
+    // ✅ 大量資料：畫在 Canvas 上
+    if (isLargeLayer(data.length)) {
+      const batch = createRectBatch(data.length, [color], false);
+      let count = 0;
+      for (const d of data) {
+        const x = barX(d);
+        const v = Number(yValue(d));
+        if (x === undefined || !Number.isFinite(v)) continue;
+        const y = ys(v);
+        batch.data[count] = d;
+        batch.x0[count] = x;
+        batch.x1[count] = x + barW;
+        batch.y0[count] = Math.min(y, baseY);
+        batch.y1[count] = Math.max(y, baseY);
+        count++;
+      }
+      drawRectsOnCanvas(layer, batch, count);
+      return;
+    }
+
+    const layerGroup = g.append('g').attr('class', `bar-layer bar-layer-${layerIndex}`);
+
+    data.forEach((d) => {
+      const x = barX(d);
       const v = Number(yValue(d));
-      if (start === undefined || !Number.isFinite(start) || !Number.isFinite(v)) return;
+      if (x === undefined || !Number.isFinite(v)) return;
 
       const y = ys(v);
       const top = Math.min(y, baseY);
       const height = Math.abs(baseY - y);
       const bar = layerGroup.append('rect')
         .attr('class', 'bar')
-        .attr('x', start + slotWidth * layerIndex)
-        .attr('width', Math.max(1, slotWidth - (layers.length > 1 ? 1 : 0)))
+        .attr('x', x)
+        .attr('width', barW)
         .attr('fill', color)
         .style('cursor', 'pointer')
         .datum({ rawData: d, layer })
@@ -986,6 +1433,32 @@ const renderStackedBars = () => {
       .offset(d3.stackOffsetNone);
 
     const series = stack(data);
+
+    // ✅ 大量資料：所有段落畫在 Canvas 上，同色的一次填完
+    if (isLargeLayer(data.length * stackKeys.length)) {
+      const colors = series.map((sd, si) => resolveSeriesColor(colorScale, sd.key, si));
+      const batch = createRectBatch(data.length * series.length, colors, true);
+      const bandwidth = xs.bandwidth();
+      let count = 0;
+      series.forEach((seriesData, seriesIndex) => {
+        for (const d of seriesData) {
+          const x = xs(String(xValue(d.data)));
+          const y0 = yScale(d[0]);
+          const y1 = yScale(d[1]);
+          if (x === undefined || !Number.isFinite(y0) || !Number.isFinite(y1) || y0 - y1 < 0) continue;
+          batch.data[count] = d.data;
+          batch.seriesKeys![count] = seriesData.key;
+          batch.colorIndex[count] = seriesIndex;
+          batch.x0[count] = x;
+          batch.x1[count] = x + Math.max(bandwidth, 0.5);
+          batch.y0[count] = y1;
+          batch.y1[count] = y0;
+          count++;
+        }
+      });
+      drawRectsOnCanvas(layer, batch, count);
+      return;
+    }
 
     // 為每個 layer 創建獨立的 group
     const layerGroup = g.append('g')
@@ -1095,6 +1568,18 @@ const renderLines = () => {
     const { xPos, yPos, isDefined } = makeAccessors(xs, ys, xValue, yValue);
     const color = lineColor || layer.color || '#ef4444';
 
+    // ✅ 大量資料：依像素欄降採樣（每欄保留首、尾、最小、最大），畫出來與原始資料逐像素相同；
+    //    原始座標留給滑鼠提示做命中測試。10 萬點的 path 從上百萬字元降到數千點
+    const large = isLargeLayer(data.length);
+    let drawData = data;
+    if (large) {
+      const { px, py } = projectPoints(data, xPos, yPos);
+      drawData = minMaxDownsample(px, py).map((i) => data[i]);
+      largeHits.push({ kind: 'point', layer, data, px, py, color, radius: 5 });
+    }
+    // 大量資料不做 path 動畫：d3 對 path 的 d 是逐字串插值，幾千個點也很吃力
+    const pathDuration = large ? 0 : effectiveAnimationDuration.value;
+
     // 面積：從基準線（0，或 domain 下緣）填到資料線
     const [yd0, yd1] = ys.domain() as [number, number];
     const areaBase = ys(Math.min(Math.max(0, Math.min(yd0, yd1)), Math.max(yd0, yd1)));
@@ -1106,7 +1591,7 @@ const renderLines = () => {
       .y1(yPos)
       .curve(curve || d3.curveMonotoneX);
     g.selectAll(`path.area-${layerIndex}`)
-      .data(layer.type === 'area' ? [data] : [])
+      .data(layer.type === 'area' ? [drawData] : [])
       .join(
         enter => enter.append('path')
           .attr('class', `area-${layerIndex} area`)
@@ -1118,7 +1603,7 @@ const renderLines = () => {
       )
       .attr('fill', color)
       .transition()
-      .duration(effectiveAnimationDuration.value)
+      .duration(pathDuration)
       .ease(d3.easeCubicOut)
       .attr('d', areaGenerator);
 
@@ -1138,7 +1623,7 @@ const renderLines = () => {
 
     // 渲染線條
     g.selectAll(`path.line-${layerIndex}`)
-      .data([data]) // ✅ 直接使用已過濾的 data
+      .data([drawData]) // ✅ 已過濾（大量資料時再降採樣）的 data
       .join(
         enter => enter.append('path')
           .attr('class', `line-${layerIndex} line`)
@@ -1150,14 +1635,16 @@ const renderLines = () => {
         exit => exit.remove()
       )
       .transition()
-      .duration(effectiveAnimationDuration.value)
+      .duration(pathDuration)
       .ease(d3.easeCubicOut)
       .attr('d', lineGenerator)
       .attr('stroke', color)
       .attr('stroke-width', strokeWidth || 2);
 
-    // 渲染數據點
-    if (showDots) {
+    // 渲染數據點（大量資料模式不畫：數萬個圓點疊在一起只是一條粗線，hover 改用命中測試）
+    if (!showDots || large) {
+      g.selectAll(`circle.dot-${layerIndex}`).remove();
+    } else {
       // ✅ 過濾掉會產生 NaN 的數據點
       const validData = data.filter(isDefined);
 
@@ -1254,6 +1741,14 @@ const renderScatter = () => {
     const size = dotSize || 4;
     const opacity = dotOpacity ?? 0.7;
 
+    // ✅ 大量資料：改畫在 Canvas 上（10 萬個 <circle> 光排版就要好幾秒）
+    if (isLargeLayer(data.length)) {
+      g.selectAll(`circle.scatter-dot-${layerIndex}`).remove();
+      const { px, py } = projectPoints(data, xPos, yPos);
+      drawPointsOnCanvas(layer, data, px, py, { color, radius: size, opacity });
+      return;
+    }
+
     // 渲染散點
     g.selectAll<SVGCircleElement, BoundDatum>(`circle.scatter-dot-${layerIndex}`)
       .data(
@@ -1321,7 +1816,17 @@ const renderAxes = () => {
     // XScale 是 band / 連續型的聯集，d3.axisBottom 需要一個具體的 AxisScale；
     // 兩者在座標軸的用法相同，這裡統一視為 AxisScale<d3.AxisDomain>
     const xAxis = d3.axisBottom(xScale.value as d3.AxisScale<d3.AxisDomain>);
-    if (!isBandScale(xScale.value)) xAxis.ticks(xTickCount.value);
+    if (!isBandScale(xScale.value)) {
+      xAxis.ticks(xTickCount.value);
+    } else {
+      // 🔧 類別很多時（例如 10 萬個）只標一部分：原本每個類別一個刻度，10 萬個 <text> 直接卡死頁面
+      const categories = xScale.value.domain();
+      const maxTicks = Math.max(xTickCount.value, Math.floor(chartWidth.value / 20));
+      if (categories.length > maxTicks) {
+        const step = Math.ceil(categories.length / maxTicks);
+        xAxis.tickValues(categories.filter((_c, i) => i % step === 0));
+      }
+    }
     if (props.xAxisFormat) {
       const format = props.xAxisFormat as unknown as (value: d3.AxisDomain) => string;
       xAxis.tickFormat((value) => format(value));
@@ -1827,8 +2332,192 @@ const buildTooltipPosition = (event: MouseEvent): TooltipPosition => {
   };
 };
 
+// === 滾輪縮放 ===
+
+let wheelZoomAcc = 0;
+let wheelPanAcc = 0;
+let wheelTarget: WheelTarget | null = null;
+let wheelAnchor: [number, number] = [0, 0];
+let wheelFrame: number | null = null;
+/** 註冊了滾輪與 hover 監聽的 SVG 元素 */
+let listenerTarget: SVGSVGElement | null = null;
+
+const requestFrame = (cb: () => void): number =>
+  typeof requestAnimationFrame === 'function' ? requestAnimationFrame(cb) : (setTimeout(cb, 16) as unknown as number);
+const cancelFrame = (id: number): void => {
+  if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(id);
+  else clearTimeout(id);
+};
+
+/** 是否按著設定的修飾鍵 */
+function wheelModifierPressed(event: WheelEvent): boolean {
+  switch (props.wheelZoomModifier) {
+    case 'ctrl': return event.ctrlKey || event.metaKey;
+    case 'alt': return event.altKey;
+    default: return true;
+  }
+}
+
+/** 游標位置對應哪一個軸：繪圖區與 X 軸 → X；左右 Y 軸的邊界區 → 該 Y 軸 */
+function wheelTargetAt(mx: number, my: number): WheelTarget | null {
+  const w = chartWidth.value;
+  const h = chartHeight.value;
+  if (w <= 0 || h <= 0) return null;
+  if (mx >= 0 && mx <= w && my >= 0 && my <= h + props.margin.bottom) return xScale.value ? 'x' : null;
+  if (my >= 0 && my <= h) {
+    if (mx < 0 && mx >= -props.margin.left && yLeftScale.value) return 'yLeft';
+    if (mx > w && mx <= w + props.margin.right && yRightScale.value) return 'yRight';
+  }
+  return null;
+}
+
+/** X 軸目前是否顯示完整範圍 */
+function isXAtFullExtent(): boolean {
+  const xs = xScale.value;
+  const bounds = xZoomBounds.value;
+  if (!xs || !bounds) return true;
+  if (isBandScale(xs)) return xs.domain().length >= (bounds as string[]).length;
+  const isTime = props.xScaleType === 'time';
+  const [c0, c1] = toNumericDomain(xs.domain() as XDomain, isTime);
+  const [b0, b1] = toNumericDomain(bounds, isTime);
+  return c1 - c0 >= (b1 - b0) * (1 - 1e-9);
+}
+
+/**
+ * 這次滾動會不會改變畫面。不會的就不攔截，交還給頁面捲動：
+ * 已是全覽還往外縮、或全覽時左右平移。
+ */
+function wheelWouldChange(target: WheelTarget, zoomDelta: number, panDelta: number): boolean {
+  const zoomed = target === 'x'
+    ? !isXAtFullExtent()
+    : (target === 'yLeft' ? currentYLeftDomain.value : currentYRightDomain.value) !== null;
+  if (panDelta !== 0) return zoomed;
+  if (zoomDelta > 0) return zoomed;
+  return zoomDelta < 0;
+}
+
+/**
+ * 滾輪事件：累積到下一個 animation frame 再一次套用。
+ * ✅ 觸控板一秒會送上百個 wheel 事件，逐一重繪會卡；合併後一個畫面最多重繪一次
+ */
+function onWheel(event: WheelEvent): void {
+  if (!props.enableWheelZoom || !plotRef.value || !wheelModifierPressed(event)) return;
+  const [mx, my] = d3.pointer(event, plotRef.value);
+  const target = wheelTargetAt(mx, my);
+  if (!target) return;
+
+  // deltaMode：0 像素、1 行、2 頁
+  const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? (chartHeight.value || 400) : 1;
+  const dx = event.deltaX * unit;
+  const dy = event.deltaY * unit;
+  const isPan = Math.abs(dx) > Math.abs(dy);
+  // Y 軸不做左右平移
+  if (isPan && target !== 'x') return;
+  const zoomDelta = isPan ? 0 : dy;
+  const panDelta = isPan ? dx : 0;
+  if (!wheelWouldChange(target, zoomDelta, panDelta)) return;
+
+  event.preventDefault();
+  if (wheelTarget !== target) {
+    wheelZoomAcc = 0;
+    wheelPanAcc = 0;
+  }
+  wheelTarget = target;
+  wheelAnchor = [mx, my];
+  wheelZoomAcc += zoomDelta;
+  wheelPanAcc += panDelta;
+  if (wheelFrame === null) wheelFrame = requestFrame(applyWheel);
+}
+
+/** 套用累積的滾輪量 */
+function applyWheel(): void {
+  wheelFrame = null;
+  const target = wheelTarget;
+  const k = Math.exp(wheelZoomAcc * WHEEL_ZOOM_SPEED);
+  const pan = wheelPanAcc;
+  wheelZoomAcc = 0;
+  wheelPanAcc = 0;
+  if (!target) return;
+  if (target === 'x') applyXWheel(k, pan, wheelAnchor[0]);
+  else applyYWheel(target, k, wheelAnchor[1]);
+}
+
+/** 縮放／平移 X 軸；縮到全覽時清除縮放狀態 */
+function applyXWheel(k: number, pan: number, mx: number): void {
+  const xs = xScale.value;
+  const bounds = xZoomBounds.value;
+  const w = chartWidth.value;
+  if (!xs || !bounds || w <= 0) return;
+
+  let next: XDomain | null;
+  if (isBandScale(xs)) {
+    const all = bounds as string[];
+    const current = xs.domain();
+    let win: { start: number; length: number } | null = {
+      start: Math.max(0, all.indexOf(current[0])),
+      length: current.length,
+    };
+    if (k !== 1) win = zoomBandWindow(win.start, win.length, all.length, mx / w, k, 2);
+    if (win && pan !== 0) {
+      const shift = Math.round((pan / w) * win.length) || Math.sign(pan);
+      win.start = Math.min(Math.max(0, win.start + shift), all.length - win.length);
+    }
+    next = win ? all.slice(win.start, win.start + win.length) : null;
+  } else {
+    const isTime = props.xScaleType === 'time';
+    const full = toNumericDomain(bounds, isTime);
+    const fullSpan = full[1] - full[0];
+    let win: [number, number] | null = toNumericDomain(xs.domain() as XDomain, isTime);
+    if (k !== 1) {
+      const anchor = +(xs as d3.ScaleContinuousNumeric<number, number>).invert(mx);
+      win = zoomContinuousDomain(win, anchor, k, {
+        bounds: full,
+        minSpan: fullSpan / Math.max(1, props.maxZoomScale),
+      });
+    }
+    if (win && pan !== 0) {
+      win = panContinuousDomain(win, (pan / w) * (win[1] - win[0]), full);
+    }
+    next = win ? ((isTime ? [new Date(win[0]), new Date(win[1])] : win) as XDomain) : null;
+  }
+
+  // 與 brush 相同：標記為本地縮放，分面圖把同步後的 xDomain 傳回來時不會被當成外部變更清掉
+  isLocalBrush.value = true;
+  currentXDomain.value = next;
+  syncZoomedState();
+  emit('wheel-zoom', { axis: 'x', domain: next });
+  // 🔧 這一輪更新跑完就清掉標記：父層沒有把 domain 傳回來（單獨使用的圖表）時，
+  //    標記一直留著會讓下一次真正的外部 xDomain 變更被忽略
+  nextTick(() => {
+    isLocalBrush.value = false;
+  });
+}
+
+/** 以游標所在的值為中心縮放一側 Y 軸；縮回原本寬度時清除縮放狀態 */
+function applyYWheel(target: 'yLeft' | 'yRight', k: number, my: number): void {
+  const ys = target === 'yLeft' ? yLeftScale.value : yRightScale.value;
+  const base = target === 'yLeft' ? yLeftBaseDomain.value : yRightBaseDomain.value;
+  if (!ys || !base || k === 1) return;
+  const baseSpan = Math.abs(base[1] - base[0]);
+  const next = zoomContinuousDomain(ys.domain() as [number, number], ys.invert(my), k, {
+    minSpan: baseSpan / Math.max(1, props.maxZoomScale),
+    maxSpan: baseSpan,
+  });
+  if (target === 'yLeft') currentYLeftDomain.value = next;
+  else currentYRightDomain.value = next;
+  syncZoomedState();
+  emit('wheel-zoom', { axis: target, domain: next });
+}
+
+/** 任一軸有縮放就顯示「重置」按鈕（同時關閉動畫，縮放時不拖泥帶水） */
+function syncZoomedState(): void {
+  resetBtnShow.value =
+    currentXDomain.value !== null || currentYLeftDomain.value !== null || currentYRightDomain.value !== null;
+}
+
 // === 主渲染循環 ===
 watchEffect(() => {
+  beginCanvasFrame(); // ✅ 大量資料模式的 Canvas 與命中測試資料每輪重建
   renderGrid();
   renderAxes();
   renderStackedBars();
@@ -1865,6 +2554,8 @@ watch(
         currentXDomain.value = null;
         currentYLeftDomain.value = null;
         currentYRightDomain.value = null;
+        // 🔧 縮放狀態清掉了，重置按鈕也要跟著收起
+        resetBtnShow.value = false;
       }
     }
     
@@ -1920,6 +2611,13 @@ onMounted(() => {
     resizeObserver.observe(containerRef.value);
   }
 
+  // 滾輪要能 preventDefault（攔下頁面捲動），必須註冊成非 passive。
+  // 🔧 記住元素本身：卸載時 template ref 已被清成 null，拿 svgRef 會移除不到監聽
+  listenerTarget = svgRef.value;
+  listenerTarget?.addEventListener('wheel', onWheel, { passive: false });
+  listenerTarget?.addEventListener('mousemove', onSvgMouseMove);
+  listenerTarget?.addEventListener('mouseleave', onSvgMouseLeave);
+
   emit('chart-ready', {
     scales: { x: xScale.value, yLeft: yLeftScale.value, yRight: yRightScale.value },
     dimensions: { width: chartWidth.value, height: chartHeight.value }
@@ -1941,6 +2639,19 @@ onUnmounted(() => {
     clearTimeout(resizeDebounceTimer);
     resizeDebounceTimer = null;
   }
+
+  // 滾輪縮放與大量資料 hover
+  if (wheelFrame !== null) {
+    cancelFrame(wheelFrame);
+    wheelFrame = null;
+  }
+  listenerTarget?.removeEventListener('wheel', onWheel);
+  listenerTarget?.removeEventListener('mousemove', onSvgMouseMove);
+  listenerTarget?.removeEventListener('mouseleave', onSvgMouseLeave);
+  listenerTarget = null;
+  largeHits = [];
+  ctx2d = null;
+  ctx2dCanvas = null;
 });
 
 // SVG 與容器對外開放，方便呼叫端截圖或量測
@@ -1961,6 +2672,8 @@ defineExpose({ containerRef, svgRef })
 
 .dual-axis-chart svg {
   display: block;
+  /* 疊在 Canvas 之上（定位元素的繪製順序高於一般元素） */
+  position: relative;
 }
 
 .stacked-bar:hover {
@@ -2056,6 +2769,17 @@ defineExpose({ containerRef, svgRef })
   stroke: rgb(var(--t-surface-primary));
   stroke-width: 3px;
   stroke-linejoin: round;
+}
+
+/* ✅ 大量資料模式的 Canvas：不攔截滑鼠，事件交給上層的 brush / SVG 處理 */
+.canvas-layer {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+}
+
+:deep(.hover-layer) {
+  pointer-events: none;
 }
 
 /* ✅ 座標軸拖曳樣式 */

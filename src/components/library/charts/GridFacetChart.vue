@@ -87,6 +87,7 @@
         :animation-duration="300"
         :title="''"
         :enable-axis-drag="enableAxisDrag"
+        :enable-wheel-zoom="enableWheelZoom"
         @selection-change="handleSelectionChange($event, facetData.id)"
         @axis-drag="handleAxisDrag($event, facetData.id)"
         @zoom-reset="handleResetZoom"
@@ -211,6 +212,8 @@ interface GridFacetChartProps {
   syncMode?: FacetSyncMode
   /** 是否可拖曳座標軸平移 */
   enableAxisDrag?: boolean
+  /** 滑鼠滾輪縮放（各格獨立縮放）；預設關閉，滾輪預設捲動頁面 */
+  enableWheelZoom?: boolean
   /** 是否顯示重置縮放按鈕 */
   showResetButton?: boolean
 }
@@ -234,6 +237,7 @@ const props = withDefaults(defineProps<GridFacetChartProps>(), {
   brushMode: 'xy',
   syncMode: 'both',
   enableAxisDrag: false,
+  enableWheelZoom: false,
   showResetButton: true,
 })
 

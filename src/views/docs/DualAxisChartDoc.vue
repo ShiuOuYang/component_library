@@ -45,6 +45,18 @@
         <ScatterPlotExample />
         <ResponsiveDashboardExample />
         <FacetedChartExample />
+        <LargeDataExample />
+      </section>
+
+      <!-- 大量資料與縮放 API -->
+      <section id="large-data-api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">大量資料與滾輪縮放</h2>
+        <p class="text-sm text-content-secondary">
+          10 萬筆等級的資料請用 <code>shallowRef</code> 或 <code>markRaw</code> 傳入，避免 Vue 把每一筆包成響應式代理。
+          大量資料模式下折線不畫圓點；長條與散點畫在 Canvas 上，沒有個別元素的 hover 樣式，改以標記顯示指到的那一筆。
+        </p>
+        <ApiTable title="Props" :rows="largeDataProps" />
+        <ApiTable title="Events" :rows="largeDataEvents" />
       </section>
     </div>
   </div>
@@ -60,6 +72,18 @@ import TimeSeriesExample from '../../components/docs/DualAxisChartexamples/TimeS
 import ScatterPlotExample from '../../components/docs/DualAxisChartexamples/ScatterPlotExample.vue'
 import ResponsiveDashboardExample from '../../components/docs/DualAxisChartexamples/ResponsiveDashboardExample.vue'
 import FacetedChartExample from '../../components/docs/DualAxisChartexamples/FacetedChartExample.vue'
+import LargeDataExample from '../../components/docs/DualAxisChartexamples/LargeDataExample.vue'
+import ApiTable from './components/_ApiTable.vue'
+
+const largeDataProps = [
+  { name: 'enableWheelZoom', type: 'boolean', def: 'true', desc: '滾輪縮放：繪圖區縮放 X 軸（以游標為中心）、左右 Y 軸上縮放該軸；左右滑動或 Shift + 滾輪平移。已在全覽時往外滾會交還給頁面捲動' },
+  { name: 'wheelZoomModifier', type: "'none' | 'ctrl' | 'alt'", def: "'none'", desc: "按住哪個鍵才縮放；頁面上圖表很多時可設 'ctrl'（Mac 的 ⌘ 也算）避免捲動頁面時誤觸" },
+  { name: 'maxZoomScale', type: 'number', def: '10000', desc: '最大放大倍率（相對全覽範圍）' },
+  { name: 'largeDataThreshold', type: 'number', def: '2000', desc: '圖層目前可見筆數超過此值時：折線依像素降採樣、散點與長條改用 Canvas；放大到低於此值自動切回 SVG' },
+]
+const largeDataEvents = [
+  { name: 'wheel-zoom', type: "{ axis: 'x' | 'yLeft' | 'yRight', domain }", desc: '滾輪縮放或平移後送出；domain 為 null 代表回到全覽' },
+]
 
 const demoLayers = [
   {

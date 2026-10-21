@@ -87,8 +87,10 @@
         :animation-duration="300"
         :title="''"
         :enable-axis-drag="enableAxisDragging"
+        :enable-wheel-zoom="enableWheelZoom"
         @selection-change="handleSelectionChange($event, facet.id)"
         @axis-drag="handleAxisDrag($event, facet.id)"
+        @wheel-zoom="handleWheelZoom($event, facet.id)"
         @zoom-reset="handleResetZoom"
       >
         <!-- Tooltip 插槽 -->
@@ -213,6 +215,11 @@ interface FacetedChartProps {
   /** 框選與拖曳是否同步到所有分面 */
   syncBrush?: boolean
   enableAxisDragging?: boolean
+  /**
+   * 滑鼠滾輪縮放 X 軸（syncBrush 時同步到所有分面）。
+   * 預設關閉：分面圖通常很高，滾輪預設應該捲動頁面
+   */
+  enableWheelZoom?: boolean
   showResetButton?: boolean
   /** 最後一個分面的額外高度（只有它要畫 X 軸刻度） */
   lastFacetExtraHeight?: number
@@ -240,6 +247,7 @@ const props = withDefaults(defineProps<FacetedChartProps>(), {
   brushMode: 'x',
   syncBrush: true,
   enableAxisDragging: false,
+  enableWheelZoom: false,
   showResetButton: true,
   lastFacetExtraHeight: 50,
   crosshair: true,
@@ -263,6 +271,7 @@ interface FacetAxisDragEvent {
 const emit = defineEmits<{
   'selection-change': [payload: FacetSelectionEvent & { facetId: string | number }]
   'axis-drag': [payload: FacetAxisDragEvent & { facetId: string | number }]
+  'wheel-zoom': [payload: FacetAxisDragEvent & { facetId: string | number }]
   'zoom-reset': []
   'chart-resize': [size: { width: number; height: number }]
 }>();
@@ -482,6 +491,14 @@ const handleAxisDrag = (event: FacetAxisDragEvent, facetId: string | number): vo
     currentXDomain.value = event.domain;
   }
   emit('axis-drag', { ...event, facetId });
+};
+
+/** 滾輪縮放：X 軸同步到所有分面；縮回全覽（domain 為 null）時一起回到全覽 */
+const handleWheelZoom = (event: FacetAxisDragEvent, facetId: string | number): void => {
+  if (props.syncBrush && event.axis === 'x') {
+    currentXDomain.value = event.domain ?? null;
+  }
+  emit('wheel-zoom', { ...event, facetId });
 };
 
 const handleResetZoom = (): void => {
