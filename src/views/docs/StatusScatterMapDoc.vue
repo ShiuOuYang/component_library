@@ -50,6 +50,20 @@
             title="同一批資料（顯示筆數）"
           />
         </div>
+        <div class="mt-4 bg-surface-secondary rounded-xl p-4 border border-stroke-light">
+          <p class="text-sm text-content-secondary mb-2">
+            設定的範圍只是<strong>預設視窗</strong>：下圖聚焦在左上角，在圖上往外滾（或拖曳平移）就看得到範圍外的其他點，按「重設縮放」回到聚焦範圍。
+          </p>
+          <StatusScatterMap
+            class="ssm-focus-demo"
+            :data="boardPoints"
+            :x-domain="[-13500, -8500]"
+            :y-domain="[8000, 15000]"
+            :width="560"
+            :height="420"
+            title="聚焦左上角（往外滾看全部）"
+          />
+        </div>
       </section>
 
       <!-- 大量資料 -->
@@ -172,7 +186,7 @@ const propsRows = [
   { name: 'keyField / keyFn', type: 'string / (datum, index) => string', def: "'id' / null", desc: '資料鍵（highlightKey 與事件的 key）；沒有該欄位時用索引' },
   { name: 'statuses', type: '{ value, label?, color }[]', def: 'PASS / NEARFAIL / FAIL', desc: '狀態與顏色；順序就是繪製順序，後面的畫在上層。不在清單裡的狀態歸為「其他」（otherColor）' },
   { name: 'hiddenStatuses', type: 'string[]', def: '[]', desc: '隱藏的狀態，可用 v-model:hidden-statuses；點圖例也會切換' },
-  { name: 'xDomain / yDomain', type: '[min, max] | null', def: 'null', desc: '座標範圍（例如板子尺寸）；未指定時依資料並外推 domainPadding' },
+  { name: 'xDomain / yDomain', type: '[min, max] | null', def: 'null', desc: '座標範圍（例如板子尺寸）；未指定時依資料並外推 domainPadding。這是預設視窗：資料超出時，往外縮或平移仍看得到範圍外的點，「重設縮放」回到這個範圍' },
   { name: 'equalAspect', type: 'boolean', def: 'true', desc: 'X、Y 每單位像素相同，繪圖區置中' },
   { name: 'showEndTicks / endTickFormat', type: 'boolean / (v) => string', def: "true / ',.1f'", desc: '在軸兩端標出範圍端點值（如 15,643.0）' },
   { name: 'tickFormat', type: '(v) => string', def: "d3.format(',')", desc: '一般刻度格式' },

@@ -7,6 +7,7 @@ import {
   nearestInDrawOrder,
   stampDots,
   ticksWithEnds,
+  zoomBounds,
 } from '@/components/library/charts/utils/statusScatter'
 
 describe('extentWithPadding', () => {
@@ -161,5 +162,26 @@ describe('stampDots（直接寫入像素）', () => {
     expect(pixel(buf, 10, 10)).toEqual([0, 200, 0, 255]) // (5, 5) × 2
     expect(pixel(buf, 0, 0)).toEqual([0, 200, 0, 255]) // 左上角的點只畫一部分
     expect(pixel(buf, 19, 19)).toEqual([0, 0, 0, 0])
+  })
+})
+
+describe('zoomBounds（設定範圍 ∪ 資料範圍）', () => {
+  it('資料都在範圍內：就是設定範圍', () => {
+    expect(zoomBounds([0, 100], [10, 50, 90])).toEqual([0, 100])
+  })
+
+  it('資料超出的那一側延伸，並外推 5%', () => {
+    // 聯集 [-20, 100]，寬 120 → 外推 6
+    expect(zoomBounds([0, 100], [-20, 50])).toEqual([-26, 100])
+    expect(zoomBounds([40, 60], [0, 100])).toEqual([-5, 105])
+  })
+
+  it('沒有有效資料：設定範圍；反向的設定範圍會排好順序', () => {
+    expect(zoomBounds([10, 20], [NaN])).toEqual([10, 20])
+    expect(zoomBounds([20, 10], [])).toEqual([10, 20])
+  })
+
+  it('負的 padRatio 視為 0', () => {
+    expect(zoomBounds([0, 10], [20], -1)).toEqual([0, 20])
   })
 })

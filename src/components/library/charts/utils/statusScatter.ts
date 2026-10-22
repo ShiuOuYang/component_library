@@ -27,6 +27,29 @@ export function extentWithPadding(values: ArrayLike<number>, padRatio = 0.05): [
   return [min - pad, max + pad]
 }
 
+/**
+ * 縮放邊界：基準範圍（呼叫端設定的 xDomain / yDomain）與資料實際範圍的聯集。
+ * 資料超出的那一側再外推 padRatio × 聯集寬度，點才不會貼在邊上；
+ * 資料都在基準範圍內時原樣回傳基準範圍（縮小上限就是基準範圍）。
+ */
+export function zoomBounds(base: [number, number], values: ArrayLike<number>, padRatio = 0.05): [number, number] {
+  let lo = Math.min(base[0], base[1])
+  let hi = Math.max(base[0], base[1])
+  let min = Infinity
+  let max = -Infinity
+  for (let i = 0; i < values.length; i++) {
+    const v = values[i]
+    if (!Number.isFinite(v)) continue
+    if (v < min) min = v
+    if (v > max) max = v
+  }
+  if (min > max) return [lo, hi]
+  const pad = (Math.max(hi, max) - Math.min(lo, min)) * Math.max(0, padRatio)
+  if (min < lo) lo = min - pad
+  if (max > hi) hi = max + pad
+  return [lo, hi]
+}
+
 // === 版面 ===
 
 /** 繪圖區在可用空間中的位置與大小 */

@@ -331,3 +331,53 @@ describe('StatusScatterMap', () => {
     })
   })
 })
+
+/**
+ * 回歸：設定了 Y（或 X）軸範圍後，滾輪縮放被限縮在那個範圍裡 ——
+ * 資料超出範圍時往外縮看不到超出的部分。範圍是預設視窗，不是資料的邊界。
+ */
+describe('StatusScatterMap：設定範圍後仍能縮放到範圍外的資料', () => {
+  // 資料 y 從 0 到 100；範圍設 [40, 60]
+  const SPREAD: Pt[] = Array.from({ length: 11 }, (_, i) => ({ id: `S${i}`, x: 50, y: i * 10, status: 'PASS' }))
+
+  function wheelAt(w: VueWrapper, deltaY: number) {
+    const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, clientX: 148, clientY: 148, deltaY })
+    w.find('.ssm-surface').element.dispatchEvent(event)
+    return event
+  }
+
+  it('在設定範圍上往外滾會縮小，看得到範圍外的點', async () => {
+    const w = await mountMap({ data: SPREAD, xDomain: [40, 60], yDomain: [40, 60] })
+    const event = wheelAt(w, 300)
+    await nextTick()
+    expect(event.defaultPrevented).toBe(true)
+    const { yDomain, scale } = w.emitted('zoom-change')!.at(-1)![0] as { yDomain: [number, number]; scale: number }
+    expect(scale).toBeLessThan(1)
+    expect(yDomain[0]).toBeLessThan(40)
+    expect(yDomain[1]).toBeGreaterThan(60)
+    // 縮小後也顯示「重設縮放」
+    expect(w.find('button:not([aria-pressed])').text()).toBe('重設縮放')
+  })
+
+  it('一直往外縮：停在涵蓋全部資料的範圍，之後的滾動交還給頁面', async () => {
+    const w = await mountMap({ data: SPREAD, xDomain: [40, 60], yDomain: [40, 60] })
+    for (let i = 0; i < 10; i++) wheelAt(w, 600)
+    await nextTick()
+    const { yDomain } = w.emitted('zoom-change')!.at(-1)![0] as { yDomain: [number, number] }
+    expect(yDomain[0]).toBeLessThanOrEqual(0)
+    expect(yDomain[1]).toBeGreaterThanOrEqual(100)
+    // d3.zoom 把 150ms 內連續的滾輪視為同一個手勢（手勢中持續攔截）；下一次滾動才交還頁面
+    await new Promise((r) => setTimeout(r, 200))
+    expect(wheelAt(w, 300).defaultPrevented).toBe(false)
+  })
+
+  it('重設回到設定的範圍', async () => {
+    const w = await mountMap({ data: SPREAD, xDomain: [40, 60], yDomain: [40, 60] })
+    wheelAt(w, 300)
+    await nextTick()
+    await w.find('button:not([aria-pressed])').trigger('click')
+    const ys = w.findAll('.ssm-y-axis .tick text').map((t) => t.text())
+    expect(ys[0]).toBe('40.0')
+    expect(ys.at(-1)).toBe('60.0')
+  })
+})

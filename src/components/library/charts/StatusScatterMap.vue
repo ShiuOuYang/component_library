@@ -123,6 +123,7 @@ import {
   nearestInDrawOrder,
   stampDots,
   ticksWithEnds,
+  zoomBounds,
   type DotStamp,
   type PlotRect,
 } from './utils/statusScatter'
@@ -417,7 +418,18 @@ const plot = computed<PlotRect>(() => {
 
 /** 目前的縮放（d3.zoom 的 transform） */
 const zoomTransform = shallowRef<d3.ZoomTransform>(d3.zoomIdentity)
-const isZoomed = computed(() => zoomTransform.value.k > 1 + 1e-9)
+/** 不在基準視窗（放大、縮小或平移過）就算縮放中，顯示「重設縮放」 */
+const isZoomed = computed(() => {
+  const t = zoomTransform.value
+  return Math.abs(t.k - 1) > 1e-9 || Math.abs(t.x) > 1e-6 || Math.abs(t.y) > 1e-6
+})
+
+/**
+ * 縮放邊界：設定的範圍與資料實際範圍的聯集。
+ * 🔧 原本縮放上限就是 xDomain / yDomain，資料超出設定範圍時往外縮也看不到超出的部分
+ */
+const xZoomBounds = computed(() => zoomBounds(baseXDomain.value, parsed.value.xs))
+const yZoomBounds = computed(() => zoomBounds(baseYDomain.value, parsed.value.ys))
 
 const baseX = computed(() => d3.scaleLinear().domain(baseXDomain.value).range([0, plot.value.width]))
 const baseY = computed(() => d3.scaleLinear().domain(baseYDomain.value).range([plot.value.height, 0]))
@@ -762,13 +774,22 @@ function setupZoom(): void {
   const el = surfaceRef.value
   if (!el) return
   const { width: w, height: h } = plot.value
+  // 縮放邊界換成基準比例尺下的像素範圍（Y 軸像素方向與數值相反）
+  const xb = xZoomBounds.value.map((v) => baseX.value(v))
+  const yb = yZoomBounds.value.map((v) => baseY.value(v))
+  const tx0 = Math.min(0, ...xb)
+  const tx1 = Math.max(w, ...xb)
+  const ty0 = Math.min(0, ...yb)
+  const ty1 = Math.max(h, ...yb)
+  // 最小倍率：整個邊界剛好放得進繪圖區（資料都在設定範圍內時為 1，行為不變）
+  const kMin = Math.min(1, w > 0 ? w / (tx1 - tx0) : 1, h > 0 ? h / (ty1 - ty0) : 1)
   // d3.zoom 把目前的 transform 存在元素的 __zoom 上，重新綁定時不會清掉 —— 手動歸零
   d3.select(el).property('__zoom', d3.zoomIdentity)
   zoomBehavior = d3
     .zoom<SVGRectElement, unknown>()
-    .scaleExtent([1, Math.max(1, props.maxZoomScale)])
+    .scaleExtent([kMin, Math.max(1, props.maxZoomScale)])
     .extent([[0, 0], [w, h]])
-    .translateExtent([[0, 0], [w, h]])
+    .translateExtent([[tx0, ty0], [tx1, ty1]])
     // ✅ 已在全覽還往外滾時 d3.zoom 不會攔截，頁面照常捲動
     .filter((event: Event) => {
       if (!props.enableZoom) return false
@@ -798,7 +819,11 @@ function resetZoom(): void {
 
 // 繪圖區大小或範圍改變：舊的 transform 是像素位移，已經對不上 —— 回到全覽並重設邊界
 watch(
-  () => [plot.value.width, plot.value.height, baseXDomain.value[0], baseXDomain.value[1], baseYDomain.value[0], baseYDomain.value[1]],
+  () => [
+    plot.value.width, plot.value.height,
+    baseXDomain.value[0], baseXDomain.value[1], baseYDomain.value[0], baseYDomain.value[1],
+    xZoomBounds.value[0], xZoomBounds.value[1], yZoomBounds.value[0], yZoomBounds.value[1],
+  ],
   () => {
     if (!surfaceRef.value) return
     if (zoomBehavior) d3.select(surfaceRef.value).on('.zoom', null)
