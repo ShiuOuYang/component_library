@@ -395,3 +395,36 @@ describe('useChartScales：滾輪縮放與大量資料', () => {
     expect(isProxy(api.processedLeftLayers.value[0].data)).toBe(false)
   })
 })
+
+describe('useChartScales：Y 軸滾輪縮放邊界', () => {
+  it('設定範圍比資料窄：邊界延伸到資料（超出的那一側外推 5%）', () => {
+    // ROWS 的 value 為 10 / 30 / 20
+    const { api } = setup({ yLeftDomain: [15, 25] })
+    const [lo, hi] = api.yLeftZoomBounds.value!
+    expect(lo).toBeLessThan(10)
+    expect(hi).toBeGreaterThan(30)
+  })
+
+  it('資料都在設定範圍內：邊界就是（取整後的）設定範圍', () => {
+    expect(setup({ yLeftDomain: [0, 50] }).api.yLeftZoomBounds.value).toEqual([0, 50])
+  })
+
+  it('沒有設定範圍：邊界與全覽時顯示的範圍相同', () => {
+    const { api } = setup()
+    expect(api.yLeftZoomBounds.value).toEqual(api.yLeftScale.value!.domain())
+  })
+
+  it('堆疊圖用每列總和，並含 0', () => {
+    const { api } = setup({
+      layers: [{ type: 'stacked-bar', data: ROWS, xValue: (d) => d.category, stackKeys: ['a', 'b'] }],
+      yLeftDomain: [2, 5],
+    })
+    const [lo, hi] = api.yLeftZoomBounds.value!
+    expect(lo).toBeLessThan(0) // 含 0（外推）
+    expect(hi).toBeGreaterThan(10) // 最大總和 5 + 5
+  })
+
+  it('沒有右軸圖層時為 null', () => {
+    expect(setup().api.yRightZoomBounds.value).toBeNull()
+  })
+})

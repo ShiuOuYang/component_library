@@ -100,9 +100,15 @@ export interface UseChartScalesReturn<T = ChartDatum> {
    * 不能拿它當邊界，否則縮小不回去。
    */
   xZoomBounds: ComputedRef<XDomain | null>
-  /** 沒有縮放時的左右 Y domain（滾輪縮小到這個寬度就回到全覽） */
+  /** 沒有縮放時的左右 Y domain（重設縮放回到這裡） */
   yLeftBaseDomain: ComputedRef<YDomain | null>
   yRightBaseDomain: ComputedRef<YDomain | null>
+  /**
+   * Y 軸滾輪縮放的邊界：顯示中的基準範圍（取整後）與資料實際範圍的聯集。
+   * 呼叫端設了 yLeftDomain 而資料超出時，往外縮仍看得到超出的部分。
+   */
+  yLeftZoomBounds: ComputedRef<YDomain | null>
+  yRightZoomBounds: ComputedRef<YDomain | null>
   originalYLeftDomain: Ref<YDomain | null>
   originalYRightDomain: Ref<YDomain | null>
 
@@ -250,6 +256,33 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
   })
 
   /**
+   * 一組圖層的 Y 值實際範圍（不受縮放影響）。堆疊圖用每列 stackKeys 的總和，並含 0（從 0 往上疊）。
+   */
+  const calculateYExtent = (layers: ChartLayer<T>[]): YDomain | null => {
+    let min = Infinity
+    let max = -Infinity
+    for (const layer of layers) {
+      const data = layerData(layer)
+      if (layer.type === 'stacked-bar') {
+        const keys = layer.stackKeys ?? []
+        for (const d of data) {
+          const sum = keys.reduce((acc, key) => acc + (Number(d[key]) || 0), 0)
+          min = Math.min(min, 0, sum)
+          max = Math.max(max, sum)
+        }
+      } else if (layer.yValue) {
+        for (const d of data) {
+          const v = Number(layer.yValue(d))
+          if (!Number.isFinite(v)) continue
+          if (v < min) min = v
+          if (v > max) max = v
+        }
+      }
+    }
+    return min <= max ? [min, max] : null
+  }
+
+  /**
    * X 軸比例尺。
    * band 用於離散類別，其餘走連續型；隨 currentXDomain 變化實現縮放。
    * ✅ 縮放時只換 domain，不重新掃描資料（原本每次縮放都把全部資料攤平再算一次範圍）
@@ -317,6 +350,34 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
     return currentDomain.value ? scale : scale.nice()
   }
 
+  /**
+   * Y 軸縮放邊界。基準範圍先取整（與畫面上全覽時一致）；資料超出的那一側再外推 5%，
+   * 點才不會貼在邊上。資料都在基準範圍內時，邊界就是基準範圍本身。
+   */
+  function buildYZoomBounds(
+    layers: ChartLayer<T>[],
+    baseDomain: YDomain | null,
+    scaleType: ContinuousScaleType | undefined
+  ): YDomain | null {
+    if (!baseDomain) return null
+    const [b0, b1] = resolveScale(scaleType).call(null).domain(baseDomain).nice().domain() as YDomain
+    let lo = Math.min(b0, b1)
+    let hi = Math.max(b0, b1)
+    const extent = calculateYExtent(layers)
+    if (!extent) return [lo, hi]
+    const pad = (Math.max(hi, extent[1]) - Math.min(lo, extent[0])) * 0.05
+    if (extent[0] < lo) lo = extent[0] - pad
+    if (extent[1] > hi) hi = extent[1] + pad
+    return [lo, hi]
+  }
+
+  const yLeftZoomBounds = computed(() =>
+    buildYZoomBounds(leftLayers.value, yLeftBaseDomain.value, props.yLeftScaleType)
+  )
+  const yRightZoomBounds = computed(() =>
+    buildYZoomBounds(rightLayers.value, yRightBaseDomain.value, props.yRightScaleType)
+  )
+
   const yLeftScale = computed(() =>
     buildYScale(yLeftBaseDomain.value, originalYLeftDomain, currentYLeftDomain, props.yLeftScaleType)
   )
@@ -363,6 +424,8 @@ export function useChartScales<T extends ChartDatum = ChartDatum>(
     xZoomBounds,
     yLeftBaseDomain,
     yRightBaseDomain,
+    yLeftZoomBounds,
+    yRightZoomBounds,
     filterDataByXDomain,
     calculateMaxYValue,
   }

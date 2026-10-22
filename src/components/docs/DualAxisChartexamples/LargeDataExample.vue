@@ -4,6 +4,7 @@
     <p class="text-content-secondary mb-4">
       在圖上<strong>滾動滑鼠滾輪</strong>以游標為中心放大／縮小 X 軸；在左右 Y 軸上滾動則縮放該軸；
       觸控板左右滑動（或 <kbd>Shift</kbd> + 滾輪）平移。縮到底會自動回到全覽。
+      左軸用 <code>y-left-domain</code> 聚焦在 56～64，超出的資料在 Y 軸上往外滾就看得到。
       超過 <code>largeDataThreshold</code>（預設 2000 筆）的圖層自動切換為大量資料模式：
       折線依像素降採樣、散點與長條改用 Canvas 繪製，滑鼠提示仍可指到每一筆原始資料。
     </p>
@@ -23,7 +24,7 @@
             :layers="layers"
             x-scale-type="time"
             :x-axis-format="timeFormat"
-            :y-left-domain="[50, 70]"
+            :y-left-domain="[56, 64]"
             brush-mode="x"
             title="產線感測器（每秒一筆）"
             y-left-axis-label="溫度"

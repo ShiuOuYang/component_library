@@ -387,7 +387,10 @@ const {
   originalYRightDomain,
   xZoomBounds,
   yLeftBaseDomain,
-  yRightBaseDomain
+  yRightBaseDomain,
+  yLeftZoomBounds,
+  yRightZoomBounds,
+  baseXDomain
 } = useChartScales(
   props,
   chartWidth,
@@ -2572,14 +2575,21 @@ function isXAtFullExtent(): boolean {
   return c1 - c0 >= (b1 - b0) * (1 - 1e-9);
 }
 
+/** 某側 Y 軸目前是否已顯示完整的縮放邊界 */
+function isYAtFullExtent(target: 'yLeft' | 'yRight'): boolean {
+  const ys = target === 'yLeft' ? yLeftScale.value : yRightScale.value;
+  const bounds = target === 'yLeft' ? yLeftZoomBounds.value : yRightZoomBounds.value;
+  if (!ys || !bounds) return true;
+  const [c0, c1] = ys.domain() as [number, number];
+  return Math.abs(c1 - c0) >= Math.abs(bounds[1] - bounds[0]) * (1 - 1e-9);
+}
+
 /**
  * 這次滾動會不會改變畫面。不會的就不攔截，交還給頁面捲動：
  * 已是全覽還往外縮、或全覽時左右平移。
  */
 function wheelWouldChange(target: WheelTarget, zoomDelta: number, panDelta: number): boolean {
-  const zoomed = target === 'x'
-    ? !isXAtFullExtent()
-    : (target === 'yLeft' ? currentYLeftDomain.value : currentYRightDomain.value) !== null;
+  const zoomed = target === 'x' ? !isXAtFullExtent() : !isYAtFullExtent(target);
   if (panDelta !== 0) return zoomed;
   if (zoomDelta > 0) return zoomed;
   return zoomDelta < 0;
@@ -2651,7 +2661,7 @@ function applyXWheel(k: number, pan: number, mx: number): void {
       const shift = Math.round((pan / w) * win.length) || Math.sign(pan);
       win.start = Math.min(Math.max(0, win.start + shift), all.length - win.length);
     }
-    next = win ? all.slice(win.start, win.start + win.length) : null;
+    next = win ? all.slice(win.start, win.start + win.length) : fullXWindow(all);
   } else {
     const isTime = props.xScaleType === 'time';
     const full = toNumericDomain(bounds, isTime);
@@ -2667,7 +2677,7 @@ function applyXWheel(k: number, pan: number, mx: number): void {
     if (win && pan !== 0) {
       win = panContinuousDomain(win, (pan / w) * (win[1] - win[0]), full);
     }
-    next = win ? ((isTime ? [new Date(win[0]), new Date(win[1])] : win) as XDomain) : null;
+    next = win ? ((isTime ? [new Date(win[0]), new Date(win[1])] : win) as XDomain) : fullXWindow(bounds);
   }
 
   // 與 brush 相同：標記為本地縮放，分面圖把同步後的 xDomain 傳回來時不會被當成外部變更清掉
@@ -2682,16 +2692,39 @@ function applyXWheel(k: number, pan: number, mx: number): void {
   });
 }
 
-/** 以游標所在的值為中心縮放一側 Y 軸；縮回原本寬度時清除縮放狀態 */
+/**
+ * 縮到底（超過縮放邊界）時要顯示的 X 範圍。
+ * 邊界就是沒縮放時的範圍 → null（清除縮放）；
+ * 🔧 呼叫端設的 xDomain 比資料窄時邊界比它寬 —— 停在邊界，不能跳回比較窄的設定範圍
+ */
+function fullXWindow(bounds: XDomain): XDomain | null {
+  const base = baseXDomain.value;
+  if (!base) return null;
+  const same = isBandScale(xScale.value!)
+    ? base.length === bounds.length && (base as string[]).every((c, i) => c === (bounds as string[])[i])
+    : (base as Array<number | Date>).every((v, i) => +v === +(bounds as Array<number | Date>)[i]);
+  return same ? null : bounds;
+}
+
+/**
+ * 以游標所在的值為中心縮放一側 Y 軸。
+ * 🔧 邊界是「設定的範圍」與「資料實際範圍」的聯集：原本只能縮到設定的範圍（yLeftDomain），
+ *    資料超出時往外縮也看不到；縮到底就停在聯集，邊界與基準相同時才清除縮放狀態
+ */
 function applyYWheel(target: 'yLeft' | 'yRight', k: number, my: number): void {
   const ys = target === 'yLeft' ? yLeftScale.value : yRightScale.value;
-  const base = target === 'yLeft' ? yLeftBaseDomain.value : yRightBaseDomain.value;
-  if (!ys || !base || k === 1) return;
-  const baseSpan = Math.abs(base[1] - base[0]);
-  const next = zoomContinuousDomain(ys.domain() as [number, number], ys.invert(my), k, {
-    minSpan: baseSpan / Math.max(1, props.maxZoomScale),
-    maxSpan: baseSpan,
+  const bounds = target === 'yLeft' ? yLeftZoomBounds.value : yRightZoomBounds.value;
+  if (!ys || !bounds || k === 1) return;
+  const boundsSpan = bounds[1] - bounds[0];
+  let next = zoomContinuousDomain(ys.domain() as [number, number], ys.invert(my), k, {
+    bounds,
+    minSpan: boundsSpan / Math.max(1, props.maxZoomScale),
   });
+  if (next === null) {
+    // 基準範圍（取整後，也就是重設後看到的範圍）若與邊界相同，就直接清除縮放
+    const [b0, b1] = ys.copy().domain((target === 'yLeft' ? yLeftBaseDomain.value : yRightBaseDomain.value) ?? bounds).nice().domain();
+    next = Math.min(b0, b1) === bounds[0] && Math.max(b0, b1) === bounds[1] ? null : [bounds[0], bounds[1]];
+  }
   if (target === 'yLeft') currentYLeftDomain.value = next;
   else currentYRightDomain.value = next;
   syncZoomedState();
