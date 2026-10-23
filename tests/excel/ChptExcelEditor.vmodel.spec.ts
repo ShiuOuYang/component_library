@@ -110,6 +110,33 @@ describe('ChptExcelEditor v-model 同步', () => {
     wrapper.unmount()
   })
 
+  /**
+   * 回歸：toModelValue 原本跳過空白列，loadModelValue 卻依陣列位置放回 ——
+   * 第 3 列的 ABC123 重新載入後跑到第 2 列。
+   */
+  it('空白列保留位置：modelValue[i] 一定是第 i+1 列，往返後位置不變', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 1, 1, '料號')
+    await typeInCell(wrapper, 3, 1, 'ABC123')
+    const rows = lastEmitted(wrapper)
+    // 中間的空白列是 {}；最後一列有內容之後的空白列不輸出
+    expect(rows).toEqual([{ A: '料號' }, {}, { A: 'ABC123' }])
+
+    const reloaded = await mountEditor({ modelValue: rows })
+    expect(cellText(reloaded, 1, 1)).toBe('料號')
+    expect(cellText(reloaded, 2, 1)).toBe('')
+    expect(cellText(reloaded, 3, 1)).toBe('ABC123')
+    wrapper.unmount()
+    reloaded.unmount()
+  })
+
+  it('開頭的空白列也保留', async () => {
+    const wrapper = await mountEditor()
+    await typeInCell(wrapper, 2, 2, 'x')
+    expect(lastEmitted(wrapper)).toEqual([{}, { B: 'x' }])
+    wrapper.unmount()
+  })
+
   it('換資料時正在編輯的儲存格會結束編輯，不會把舊的輸入寫進新資料', async () => {
     const wrapper = await mountEditor({ modelValue: [{ A: 'a' }] })
     await wrapper.find('[data-rc="1,1"]').trigger('dblclick')
