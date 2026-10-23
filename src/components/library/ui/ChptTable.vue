@@ -816,12 +816,15 @@ function emitChange(reason: ChangeEvent['reason']): void {
   })
 }
 
-// 監聽表格數據變化，重置到第一頁
-// （remote 模式不行：換頁後 API 回來的新資料會把頁碼又打回第 1 頁）
-watch(() => props.data, () => {
+// 資料更新時保留頁碼，只在超出總頁數時拉回最後一頁
+// ⚠️ 原本 deep watch props.data 一變就回第 1 頁：即時同步、改某一列的值都會把正在看第 5 頁的人打回第 1 頁，
+//    而且每次都要走遍整份資料。回第 1 頁只留給搜尋 / 排序（performSearch、handleSort）；
+//    父層換了一批不相干的資料要從頭看時，呼叫 expose 的 resetPage()。
+//    （remote 模式的頁碼與總筆數由父層決定，這裡不動）
+watch(totalPages, (pages) => {
   if (props.remote) return
-  currentPage.value = 1
-}, { deep: true })
+  if (currentPage.value > pages) currentPage.value = pages
+})
 
 // 監聽搜尋查詢變化
 watch(searchQuery, (newVal) => {
@@ -869,7 +872,17 @@ const selectedKeySet = computed(() => new Set(innerSelected.value))
  */
 const seenRows = new Map<RowKey, DataRow>()
 watch(() => props.data, (rows) => {
-  rows.forEach((row, i) => seenRows.set(keyOf(row, i), row))
+  const current = new Set<RowKey>()
+  rows.forEach((row, i) => {
+    const key = keyOf(row, i)
+    current.add(key)
+    seenRows.set(key, row)
+  })
+  // 只留這次的資料與勾選中的列：remote 長時間翻頁時快取才不會一直長大
+  const selected = selectedKeySet.value
+  for (const key of seenRows.keys()) {
+    if (!current.has(key) && !selected.has(key)) seenRows.delete(key)
+  }
 }, { immediate: true })
 
 const selectedRows = computed(() =>
