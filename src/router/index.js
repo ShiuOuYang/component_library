@@ -15,7 +15,6 @@ const D3LearningIndex = () => import("../views/D3Learning/D3LearningIndex.vue");
 const D3Week3_4View = () => import("../views/D3Learning/D3Week3-4View.vue");
 const D3Week5_6View = () => import("../components/D3Learning/Week5/D3Week5-6View.vue");
 const TestReusableBarChart = () => import("../components/D3Learning/Week5/TestReusableBarChart.vue");
-const ChptTableGuide = () => import("../views/ChptTableGuide.vue");
 const DualAxisChartDoc = () => import("../views/docs/DualAxisChartDoc.vue");
 const HeatmapDoc = () => import("../views/docs/HeatmapDoc.vue");
 const ParetoDoc = () => import("../views/docs/ParetoDoc.vue");
@@ -35,15 +34,6 @@ const routes = [
   {
     path: "/",
     redirect: "/docs",
-  },
-  {
-    path: "/chpt-table-guide",
-    name: "ChptTableGuide",
-    component: ChptTableGuide,
-    meta: {
-      title: "ChptFixedTable 使用指南",
-      requiresAuth: true,
-    },
   },
   
   // ========== 組件庫文檔系統 ==========
