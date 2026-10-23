@@ -158,10 +158,12 @@ function handleGlobalKeydown(event: KeyboardEvent): void {
   const last = focusable[focusable.length - 1]
   const active = document.activeElement as HTMLElement | null
 
-  if (event.shiftKey && (active === first || !container.contains(active))) {
+  // 焦點跑到浮層外（例如其他程式呼叫了 .focus()）時，Tab / Shift+Tab 都把它拉回來
+  const outside = !container.contains(active)
+  if (event.shiftKey && (active === first || outside)) {
     event.preventDefault()
     last.focus()
-  } else if (!event.shiftKey && active === last) {
+  } else if (!event.shiftKey && (active === last || outside)) {
     event.preventDefault()
     first.focus()
   }
@@ -172,6 +174,13 @@ function ensureKeydownBound(): void {
   // capture 階段：確保在元件自己的 handler 之前判斷是否為最上層
   document.addEventListener('keydown', handleGlobalKeydown, true)
   keydownBound = true
+}
+
+/** 浮層全部關閉後解除監聽；下次開啟時 ensureKeydownBound 會重新綁定 */
+function unbindKeydownIfIdle(): void {
+  if (!isBrowser || !keydownBound || stack.length > 0) return
+  document.removeEventListener('keydown', handleGlobalKeydown, true)
+  keydownBound = false
 }
 
 export function useOverlay(
@@ -211,6 +220,7 @@ export function useOverlay(
 
     const index = stack.indexOf(entry)
     if (index !== -1) stack.splice(index, 1)
+    unbindKeydownIfIdle()
 
     if (options.lockScroll !== false) unlockScroll()
 

@@ -168,6 +168,29 @@ describe('ChptAutocomplete：非同步建議', () => {
     expect(optionLabels(w)).toEqual(['ab-1', 'ab-2'])
   })
 
+  /**
+   * 回歸：token 原本在 debounce 結束、真正送出時才遞增 ——
+   * 打了 'ab' 還在 debounce 等待時，'a' 的結果回來仍會被採用，短暫顯示過期的建議。
+   */
+  it('debounce 等待新查詢時，舊查詢回來的結果不採用，顯示載入中', async () => {
+    vi.useFakeTimers()
+    const fetchSuggestions = vi.fn((q: string) =>
+      new Promise<string[]>((resolve) => setTimeout(() => resolve([`${q}-1`]), q === 'a' ? 50 : 10))
+    )
+    const w = mountAc({ fetchSuggestions, openOnFocus: false, debounce: 100 })
+    await input(w).setValue('a')
+    vi.advanceTimersByTime(100) // 'a' 送出，50ms 後回來
+    await input(w).setValue('ab') // 'ab' 開始 debounce
+    await vi.advanceTimersByTimeAsync(60) // 'a' 在 'ab' 的 debounce 期間回來
+    await nextTick()
+    expect(optionLabels(w)).not.toContain('a-1')
+    expect(w.text()).toContain('載入中')
+
+    await vi.advanceTimersByTimeAsync(100)
+    await nextTick()
+    expect(optionLabels(w)).toEqual(['ab-1'])
+  })
+
   it('載入中顯示提示並帶 aria-busy', async () => {
     let resolve!: (v: string[]) => void
     const w = mountAc({ fetchSuggestions: () => new Promise<string[]>((r) => (resolve = r)), debounce: 0 })

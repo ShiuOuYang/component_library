@@ -168,6 +168,22 @@ describe('useOverlay', () => {
       wrapper.unmount()
     })
 
+    /** 回歸：原本只有 Shift+Tab 會把跑到浮層外的焦點拉回來，正向 Tab 不會 */
+    it('焦點被程式移到浮層外時，Tab 也會拉回浮層第一個元素', async () => {
+      const outside = document.createElement('button')
+      document.body.appendChild(outside)
+      const { wrapper } = makeOverlay()
+      await nextTick()
+      await nextTick()
+
+      outside.focus()
+      pressKey('Tab')
+
+      expect(document.activeElement).toBe(document.querySelector('button.first'))
+      wrapper.unmount()
+      outside.remove()
+    })
+
     it('Shift+Tab 在第一個元素上會繞到最後一個', async () => {
       const { wrapper } = makeOverlay()
       await nextTick()
@@ -232,6 +248,25 @@ describe('useOverlay', () => {
       expect(document.activeElement).toBe(last)
       wrapper.unmount()
     })
+  })
+
+  it('浮層全部關閉後解除全域 keydown 監聽，再開啟時重新綁定', async () => {
+    const add = vi.spyOn(document, 'addEventListener')
+    const remove = vi.spyOn(document, 'removeEventListener')
+    const a = makeOverlay()
+    await nextTick()
+    a.wrapper.unmount()
+    expect(remove).toHaveBeenCalledWith('keydown', expect.any(Function), true)
+
+    add.mockClear()
+    const b = makeOverlay()
+    await nextTick()
+    expect(add).toHaveBeenCalledWith('keydown', expect.any(Function), true)
+    pressKey('Escape')
+    expect(b.onEscape).toHaveBeenCalledTimes(1)
+    b.wrapper.unmount()
+    add.mockRestore()
+    remove.mockRestore()
   })
 
   it('元件卸載時會離開堆疊，不留下殘存的監聽', async () => {

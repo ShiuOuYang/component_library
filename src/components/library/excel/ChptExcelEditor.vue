@@ -2284,23 +2284,26 @@ function removeSheet(idx: number) {
 }
 
 // ===== 資料轉換（v-model） =====
+/**
+ * 目前工作表的值（公式為計算結果），依列位置對應：rows[i] 就是第 i+1 列。
+ *
+ * ⚠️ 原本跳過空白列，loadModelValue 卻依陣列位置放回 —— 第 3 列的資料往返後跑到第 2 列。
+ *    現在中間（含開頭）的空白列輸出成 {}，只省略最後一列有內容之後的空白列。
+ *    公式、格式、合併儲存格、其他工作表不在 modelValue 裡；要完整保存請用匯出。
+ */
 function toModelValue(): Record<string, unknown>[] {
   const rows: Record<string, unknown>[] = []
-  const max = props.rowCount
-  const cols = props.colCount
-  for (let r = 1; r <= max; r++) {
+  let lastWithContent = 0
+  for (let r = 1; r <= props.rowCount; r++) {
     const row: Record<string, unknown> = {}
-    let hasContent = false
-    for (let c = 1; c <= cols; c++) {
+    for (let c = 1; c <= props.colCount; c++) {
       const v = getCellValue(r, c)
-      if (v !== '' && v !== null && v !== undefined) {
-        row[colName(c)] = v
-        hasContent = true
-      }
+      if (v !== '' && v !== null && v !== undefined) row[colName(c)] = v
     }
-    if (hasContent) rows.push(row)
+    rows.push(row)
+    if (Object.keys(row).length > 0) lastWithContent = r
   }
-  return rows
+  return rows.slice(0, lastWithContent)
 }
 
 // ===== 匯出 .xlsx =====

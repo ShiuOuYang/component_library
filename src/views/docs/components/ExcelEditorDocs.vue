@@ -119,7 +119,7 @@ const editorSample = `<ChptExcelEditor
 
 // ---- API 資料（依元件使用方式整理，細節以元件為準） ----
 const editorProps = [
-  { name: 'modelValue', type: 'Record<string, unknown>[]', def: '[]', desc: '目前工作表的資料（v-model，每列以欄名 A、B… 為鍵）。父層換成新資料或傳 [] 時，編輯器會跟著換並清空復原紀錄；把編輯器送出的值原樣（或同內容的複本）傳回則不會重載，公式與復原紀錄都保留' },
+  { name: 'modelValue', type: 'Record<string, unknown>[]', def: '[]', desc: '目前工作表的值（v-model）。依列位置對應：第 i 個元素就是第 i+1 列，中間的空白列是 {}；每列以欄名 A、B… 為鍵，公式為計算結果。父層換成新資料或傳 [] 時，編輯器會跟著換並清空復原紀錄；把編輯器送出的值原樣（或同內容的複本）傳回則不會重載。公式、格式、合併儲存格、其他工作表不在這裡，要完整保存請用匯出' },
   { name: 'showToolbar', type: 'boolean', def: 'true', desc: '顯示格式化工具列' },
   { name: 'showSheetTabs', type: 'boolean', def: 'true', desc: '顯示工作表頁籤' },
   { name: 'rowCount / colCount', type: 'number', def: '—', desc: '預設列數／欄數' },
@@ -137,7 +137,7 @@ const editorEvents = [
 ]
 const editorExpose = [
   { name: 'exportExcel()', params: '—', desc: '程式化匯出 .xlsx' },
-  { name: 'getData()', params: '—', desc: '取得全部資料' },
+  { name: 'getData()', params: '—', desc: '目前工作表的值，格式同 modelValue（依列位置、空白列為 {}）' },
   { name: 'getCell(r, c)', params: '(row, col)', desc: '取得指定儲存格' },
   { name: 'undo() / redo()', params: '—', desc: '復原／重做' },
   { name: 'addSheet()', params: '—', desc: '新增工作表' },
