@@ -30,7 +30,7 @@
         </div>
       </div>
       
-      <CodeBlock
+      <ChptCodeBlock
         language="javascript"
         :code="controlChartCodeExample"
       />
@@ -41,7 +41,7 @@
 <script setup>
 import { computed } from 'vue';
 import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
-import CodeBlock from '@/components/library/ui/CodeBlock.vue';
+import { ChptCodeBlock } from '@/components/library';
 
 // 定義管制界線
 const UCL = 103;

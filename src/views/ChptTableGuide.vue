@@ -36,12 +36,12 @@
         <div class="mb-6">
           <h3 class="text-lg font-medium text-neutral-700 mb-3">最小範例</h3>
           <div class="bg-neutral-50 rounded p-4 mb-4">
-            <pre class="text-sm overflow-x-auto"><code><ChptFixedTable
+            <pre v-pre class="text-sm overflow-x-auto"><code>&lt;ChptFixedTable
   :columns="columns"
   :data="data"
   :is-fixed="true"
   :viewport-offset="200"
-/></code></pre>
+/&gt;</code></pre>
           </div>
           <ChptFixedTable
             :columns="basicColumns"
@@ -104,13 +104,13 @@
           <p class="text-sm text-neutral-600 mb-2">已套用篩選：</p>
           <div class="flex flex-wrap gap-2">
             <span
-              v-for="(values, column) in displayFilters"
+              v-for="column in activeFilters"
               :key="column"
               class="px-3 py-1 bg-info-100 text-info-700 rounded-full text-xs"
             >
-              {{ column }}: {{ values.join(', ') }}
+              {{ column }}
             </span>
-            <span v-if="Object.keys(displayFilters).length === 0" class="text-neutral-400 text-xs">
+            <span v-if="activeFilters.length === 0" class="text-neutral-400 text-xs">
               尚未套用任何篩選
             </span>
           </div>
@@ -278,7 +278,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { ChptFixedTable, ChptIcon } from '@/components/library'
 
 // 章節索引
@@ -342,11 +342,11 @@ const filterData = [
   { id: 6, name: '吳九', department: '研發部', position: 'UI 設計師', status: '啟用' },
 ]
 
-const activeFilters = ref({})
-function handleFilterUpdate(filters) {
-  activeFilters.value = filters
+/** 有套用篩選的欄位（dataIndex 陣列） */
+const activeFilters = ref([])
+function handleFilterUpdate(columns) {
+  activeFilters.value = columns
 }
-const displayFilters = computed(() => activeFilters.value || {})
 
 // 全文搜尋範例
 const searchColumns = [
@@ -381,12 +381,12 @@ const propsList = [
   { name: 'showSearch', type: 'Boolean', default: 'false', description: '是否顯示全文搜尋框' },
   { name: 'isPagination', type: 'Boolean', default: 'false', description: '是否顯示分頁' },
   { name: 'fixedColumns', type: 'Array', default: '—', description: '已固定欄位（v-model:fixed-columns）' },
-  { name: 'filterColumns', type: 'Object', default: '—', description: '已套用篩選（v-model:filter-columns）' },
+  { name: 'filterColumns', type: 'string[]', default: '[]', description: '有套用篩選的欄位 dataIndex（v-model:filter-columns）' },
   { name: 'searchText', type: 'String', default: '—', description: '搜尋文字（v-model:search-text）' },
 ]
 const eventsList = [
   { name: 'update:fixed-columns', params: 'string[]', description: '固定欄位變更' },
-  { name: 'update:filter-columns', params: 'Record', description: '篩選條件變更' },
+  { name: 'update:filter-columns', params: 'string[]', description: '有套用篩選的欄位變更' },
   { name: 'update:search-text', params: 'string', description: '搜尋文字變更' },
 ]
 const slotsList = [

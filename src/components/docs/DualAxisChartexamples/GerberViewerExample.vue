@@ -69,7 +69,7 @@
       </div>
 
       <!-- 程式碼範例 -->
-      <CodeBlock
+      <ChptCodeBlock
         language="vue"
         :code="codeExample"
       />
@@ -81,7 +81,7 @@
 /* eslint-disable no-useless-escape -- codeExample 裡的結束標籤必須跳脫，否則 SFC 解析器會把 script 區塊提前收尾；ESLint 的 JS parser 看不到 SFC 這一層，故誤判 */
 import { ref } from 'vue'
 import GerberViewer from '@/components/library/viewer/GerberViewer.vue'
-import CodeBlock from '@/components/library/ui/CodeBlock.vue'
+import { ChptCodeBlock } from '@/components/library';
 
 const viewerRef = ref(null)
 const fileName = '3273053a01-cus-sesc-bump.gbr'

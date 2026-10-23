@@ -26,7 +26,7 @@
         </div>
       </div>
       
-      <CodeBlock
+      <ChptCodeBlock
         language="vue"
         tip-type="warning"
         tip="啟用 autoResize 時，圖表會忽略 width 和 height props，<br>改為使用父容器的實際尺寸。"
@@ -39,7 +39,7 @@
 <script setup>
 import { ref } from 'vue';
 import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
-import CodeBlock from '@/components/library/ui/CodeBlock.vue';
+import { ChptCodeBlock } from '@/components/library';
 
 // 響應式圖表數據
 const responsiveLayers = [

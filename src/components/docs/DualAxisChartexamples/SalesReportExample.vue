@@ -20,7 +20,7 @@
         </div>
       </div>
       
-      <CodeBlock
+      <ChptCodeBlock
         language="javascript"
         :code="salesCodeExample"
       />
@@ -30,7 +30,7 @@
 
 <script setup>
 import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
-import CodeBlock from '@/components/library/ui/CodeBlock.vue';
+import { ChptCodeBlock } from '@/components/library';
 
 // 銷售報表數據
 const salesLayers = [

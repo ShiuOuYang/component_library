@@ -21,7 +21,7 @@
         </div>
       </div>
       
-      <CodeBlock
+      <ChptCodeBlock
         language="javascript"
         :code="scatterCodeExample"
       />
@@ -31,7 +31,7 @@
 
 <script setup>
 import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
-import CodeBlock from '@/components/library/ui/CodeBlock.vue';
+import { ChptCodeBlock } from '@/components/library';
 
 // 散點圖數據
 const scatterData = Array.from({ length: 20 }, () => ({
