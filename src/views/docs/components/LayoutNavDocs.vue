@@ -41,9 +41,9 @@
         <ChptCodeBlock :code="cardSample" />
       </div>
 
-      <ApiTable title="Props" :rows="cardProps" />
-      <ApiTable title="Events" :rows="cardEvents" />
-      <ApiTable title="Slots" :rows="cardSlots" />
+      <ApiTable of="ChptCard" title="Props" :rows="cardProps" />
+      <ApiTable of="ChptCard" title="Events" :rows="cardEvents" />
+      <ApiTable of="ChptCard" title="Slots" :rows="cardSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>padding</code> 控制內容留白（none/sm/md/lg）；帶 <code>#footer</code> 時底部會自動加邊框分隔。
@@ -66,8 +66,8 @@
         <ChptCodeBlock :code="collapseSample" />
       </div>
 
-      <ApiTable title="Props" :rows="collapseProps" />
-      <ApiTable title="Events" :rows="collapseEvents" />
+      <ApiTable of="ChptCollapse" title="Props" :rows="collapseProps" />
+      <ApiTable of="ChptCollapse" title="Events" :rows="collapseEvents" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>展開狀態可用 <code>v-model</code> 綁定為 index 陣列；內容想自訂時以
@@ -91,9 +91,9 @@
         <ChptCodeBlock :code="breadcrumbSample" />
       </div>
 
-      <ApiTable title="Props" :rows="breadcrumbProps" />
-      <ApiTable title="Events" :rows="breadcrumbEvents" />
-      <ApiTable title="Slots" :rows="breadcrumbSlots" />
+      <ApiTable of="ChptBreadcrumb" title="Props" :rows="breadcrumbProps" />
+      <ApiTable of="ChptBreadcrumb" title="Events" :rows="breadcrumbEvents" />
+      <ApiTable of="ChptBreadcrumb" title="Slots" :rows="breadcrumbSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>最後一項通常為目前頁面（不可點）；每項文字可用 <code>#item-{index}</code> 插槽自訂。
@@ -122,7 +122,7 @@
         <ChptCodeBlock :code="stepsSample" />
       </div>
 
-      <ApiTable title="Props" :rows="stepsProps" />
+      <ApiTable of="ChptSteps" title="Props" :rows="stepsProps" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>steps</code> 每項為 <code>{ title, status }</code>；<code>status</code>
@@ -154,8 +154,8 @@
         <ChptCodeBlock :code="dividerSample" />
       </div>
 
-      <ApiTable title="Props" :rows="dividerProps" />
-      <ApiTable title="Slots" :rows="dividerSlots" />
+      <ApiTable of="ChptDivider" title="Props" :rows="dividerProps" />
+      <ApiTable of="ChptDivider" title="Slots" :rows="dividerSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>垂直分隔線需自訂高度（如 <code>h-10</code>）才有可見長度；<code>color</code>

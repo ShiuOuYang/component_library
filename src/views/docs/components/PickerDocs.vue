@@ -41,8 +41,8 @@
           <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ state.station || '(空)' }} / {{ state.part || '(空)' }}</span></p>
         </div>
         <ChptCodeBlock :code="autocompleteSample" />
-        <ApiTable title="Props" :rows="autocompleteProps" />
-        <ApiTable title="Events" :rows="autocompleteEvents" />
+        <ApiTable of="ChptAutocomplete" title="Props" :rows="autocompleteProps" />
+        <ApiTable of="ChptAutocomplete" title="Events" :rows="autocompleteEvents" />
         <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>WAI-ARIA combobox：焦點一直留在輸入框，↑↓ 以 aria-activedescendant 移動、Enter 選取、
           Escape 關閉（清單已關且 clearable 時清空）、Alt+↓ 只打開不移動。fetchSuggestions 會 debounce，且只採用最後一次查詢的結果。</p>
       </section>
@@ -63,8 +63,8 @@
           <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ JSON.stringify(state.line) }} / {{ JSON.stringify(state.area) }} / {{ JSON.stringify(state.lazy) }}</span></p>
         </div>
         <ChptCodeBlock :code="cascaderSample" />
-        <ApiTable title="Props" :rows="cascaderProps" />
-        <ApiTable title="Events" :rows="cascaderEvents" />
+        <ApiTable of="ChptCascader" title="Props" :rows="cascaderProps" />
+        <ApiTable of="ChptCascader" title="Events" :rows="cascaderEvents" />
         <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>每一欄是一個 listbox（第 2 欄起以上一層命名）。↑↓ 在同一欄移動、→ 或 Enter 進入下一層、← 回上一層、
           Escape 關閉並把焦點還給觸發鈕。使用 load 時，沒有 children 且沒標 <code>leaf: true</code> 的節點都視為還有下一層。</p>
       </section>
@@ -81,8 +81,8 @@
           <p class="text-sm text-content-secondary mt-3">已選：<span class="font-mono">{{ state.members.join(', ') || '(無)' }}</span></p>
         </div>
         <ChptCodeBlock :code="transferSample" />
-        <ApiTable title="Props" :rows="transferProps" />
-        <ApiTable title="Events" :rows="transferEvents" />
+        <ApiTable of="ChptTransfer" title="Props" :rows="transferProps" />
+        <ApiTable of="ChptTransfer" title="Events" :rows="transferEvents" />
         <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>刻意用原生 checkbox 與按鈕組成，鍵盤與螢幕閱讀器不需要學新的操作方式；
           全選只作用在「搜尋結果中未停用」的項目，移動後以 live region 報讀移了幾項。窄螢幕時左右清單改為上下排列。</p>
       </section>
@@ -101,8 +101,8 @@
           <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ state.color ?? 'null' }} / {{ state.seriesColor ?? 'null' }}</span></p>
         </div>
         <ChptCodeBlock :code="colorSample" />
-        <ApiTable title="Props" :rows="colorProps" />
-        <ApiTable title="Events" :rows="colorEvents" />
+        <ApiTable of="ChptColorPicker" title="Props" :rows="colorProps" />
+        <ApiTable of="ChptColorPicker" title="Events" :rows="colorEvents" />
         <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>取色交給原生 <code>&lt;input type="color"&gt;</code>（含滴管、鍵盤可操作）；
           色碼欄接受 #abc／abc／#AABBCC 並正規化。預設色按鈕以色碼命名並帶 aria-pressed。</p>
       </section>
@@ -123,8 +123,8 @@
           </div>
         </div>
         <ChptCodeBlock :code="rateSample" />
-        <ApiTable title="Props" :rows="rateProps" />
-        <ApiTable title="Events" :rows="rateEvents" />
+        <ApiTable of="ChptRate" title="Props" :rows="rateProps" />
+        <ApiTable of="ChptRate" title="Events" :rows="rateEvents" />
         <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>WAI-ARIA radiogroup：整組一個 Tab 停駐點，方向鍵直接改分數、Home／End、Delete 清除。
           分數靠實心／空心形狀區分，不只靠顏色。唯讀時改為 role="img" 一次唸出「評分 4 / 5」。</p>
       </section>
@@ -145,8 +145,8 @@
           <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ state.shiftStart ?? 'null' }} / {{ state.meeting ?? 'null' }} / {{ state.stamp ?? 'null' }}</span></p>
         </div>
         <ChptCodeBlock :code="timeSample" />
-        <ApiTable title="Props" :rows="timeProps" />
-        <ApiTable title="Events" :rows="timeEvents" />
+        <ApiTable of="ChptTimePicker" title="Props" :rows="timeProps" />
+        <ApiTable of="ChptTimePicker" title="Events" :rows="timeEvents" />
         <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>可以直接打字：930、0930、9:30 都會變成 09:30，打錯或超出範圍會還原。
           面板的時／分／秒各是一個 listbox：輸入框按 ↓ 進入，↑↓ 改值（立即生效）、← → 換欄、Enter／Escape 關閉並回到輸入框。</p>
       </section>
@@ -166,8 +166,8 @@
           <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ JSON.stringify(state.dept) }} / {{ JSON.stringify(state.depts) }}</span></p>
         </div>
         <ChptCodeBlock :code="treeSelectSample" />
-        <ApiTable title="Props" :rows="treeSelectProps" />
-        <ApiTable title="Events" :rows="treeSelectEvents" />
+        <ApiTable of="ChptTreeSelect" title="Props" :rows="treeSelectProps" />
+        <ApiTable of="ChptTreeSelect" title="Events" :rows="treeSelectEvents" />
         <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>多選的 v-model 與 ChptTree 的 checked 相同（完整勾選的節點，含父節點）；
           欄位上顯示哪些標籤由 displayStrategy 決定，不影響值。觸發鈕的名稱是「標籤 + 目前的值」。</p>
       </section>
@@ -198,9 +198,9 @@
           <p class="text-sm text-content-secondary mt-3">選取：<span class="font-mono">{{ state.day || '(未選擇)' }}</span>（小月曆停用週末）</p>
         </div>
         <ChptCodeBlock :code="calendarSample" />
-        <ApiTable title="Props" :rows="calendarProps" />
-        <ApiTable title="Events" :rows="calendarEvents" />
-        <ApiTable title="Slots" :rows="calendarSlots" />
+        <ApiTable of="ChptCalendar" title="Props" :rows="calendarProps" />
+        <ApiTable of="ChptCalendar" title="Events" :rows="calendarEvents" />
+        <ApiTable of="ChptCalendar" title="Slots" :rows="calendarSlots" />
         <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>WAI-ARIA grid：整個月曆一個 Tab 停駐點，←→ 一天、↑↓ 一週、Home／End 本週頭尾、
           PageUp／PageDown 換月（加 Shift 換年）。日期一律以本地時區計算，'2026-03-01' 不會因為 UTC 解析而變成 2 月 28 日。</p>
       </section>
@@ -217,8 +217,8 @@
           <ChptInputTag v-model="state.keywords" label="關鍵字" placeholder="輸入後按 Enter" full-width />
         </div>
         <ChptCodeBlock :code="inputTagSample" />
-        <ApiTable title="Props" :rows="inputTagProps" />
-        <ApiTable title="Events" :rows="inputTagEvents" />
+        <ApiTable of="ChptInputTag" title="Props" :rows="inputTagProps" />
+        <ApiTable of="ChptInputTag" title="Events" :rows="inputTagEvents" />
         <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>重複、超過上限或 validate 不通過的值不會加入，並以 aria-live 說明原因；
           輸入框空白時 Backspace 第一次只標記最後一個標籤、第二次才刪，避免連按刪過頭。中文輸入法選字的 Enter 不會送出。</p>
       </section>

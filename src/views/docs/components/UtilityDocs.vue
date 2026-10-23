@@ -27,7 +27,7 @@
         </ChptSplitter>
       </div>
       <ChptCodeBlock class="mt-6" :code="splitterSample" />
-      <ApiTable title="Props / Events" :rows="splitterProps" />
+      <ApiTable of="ChptSplitter" title="Props / Events" :rows="splitterProps" />
     </section>
 
     <!-- ============ ChptVirtualList ============ -->
@@ -53,7 +53,7 @@
         </ChptVirtualList>
       </div>
       <ChptCodeBlock class="mt-6" :code="virtualSample" />
-      <ApiTable title="Props / Events" :rows="virtualProps" />
+      <ApiTable of="ChptVirtualList" title="Props / Events" :rows="virtualProps" />
       <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>每列必須同高（itemHeight）。只有畫出來的列在 DOM 裡，所以每列帶
         aria-setsize / aria-posinset，螢幕閱讀器會唸「第 1,234 項，共 10,000 項」。</p>
     </section>
@@ -76,7 +76,7 @@
         <p v-for="n in 20" :key="n" class="px-4 py-2 text-sm text-content-secondary">第 {{ n }} 筆資料</p>
       </div>
       <ChptCodeBlock class="mt-6" :code="affixSample" />
-      <ApiTable title="Props / Events" :rows="affixProps" />
+      <ApiTable of="ChptAffix" title="Props / Events" :rows="affixProps" />
     </section>
 
     <!-- ============ ChptCarousel ============ -->
@@ -95,7 +95,7 @@
         </template>
       </ChptCarousel>
       <ChptCodeBlock class="mt-6" :code="carouselSample" />
-      <ApiTable title="Props" :rows="carouselProps" />
+      <ApiTable of="ChptCarousel" title="Props" :rows="carouselProps" />
       <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>照 WAI-ARIA carousel：自動輪播時 aria-live="off"（不會每幾秒打斷報讀），
         看不到的那幾張設為 inert（Tab 不會跑進去）。使用者設定「減少動態效果」時不自動播放。</p>
     </section>
@@ -141,7 +141,7 @@
       </div>
 
       <ChptCodeBlock class="mt-6" :code="smallUtilsSample" />
-      <ApiTable title="Props" :rows="smallUtilsProps" />
+      <ApiTable of="-" title="Props" :rows="smallUtilsProps" />
     </section>
 
     <!-- ============ ChptSpace ============ -->
@@ -168,7 +168,7 @@
         </ChptSpace>
       </div>
       <ChptCodeBlock class="mt-6" :code="spaceSample" />
-      <ApiTable title="Props / Slots" :rows="spaceProps" />
+      <ApiTable of="ChptSpace" title="Props / Slots" :rows="spaceProps" />
     </section>
 
   </div>

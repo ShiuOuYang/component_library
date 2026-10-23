@@ -51,7 +51,7 @@
       </p>
       <ChptCodeBlock language="html" :code="darkShade" />
 
-      <ApiTable title="會不會自動翻轉" :rows="darkTokenRows" />
+      <ApiTable of="-" title="會不會自動翻轉" :rows="darkTokenRows" />
     </section>
 
     <!-- ============ 無障礙 ============ -->
@@ -103,7 +103,7 @@
         <code class="bg-surface-tertiary px-1 py-0.5 rounded">npm run check:boundary</code> 會擋下違規，CI 也會跑。
       </p>
 
-      <ApiTable title="允許的相依" :rows="boundaryRows" />
+      <ApiTable of="-" title="允許的相依" :rows="boundaryRows" />
 
       <p class="text-sm text-content-secondary mt-5 mb-2">
         需要應用邏輯的元件一律以 props / emit 注入，不要在組件庫裡 import 應用程式的模組：
@@ -140,7 +140,7 @@
       <p class="text-sm text-content-secondary mb-4">
         以下每一項都曾經真的存在於程式碼中。
       </p>
-      <ApiTable title="" :rows="pitfallRows" />
+      <ApiTable of="-" title="" :rows="pitfallRows" />
     </section>
   </div>
 </template>

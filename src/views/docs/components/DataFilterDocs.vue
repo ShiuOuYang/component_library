@@ -104,10 +104,10 @@
         <ChptCodeBlock :code="tableRemoteSample" />
       </div>
 
-      <ApiTable title="Props" :rows="tableProps" />
-      <ApiTable title="Events" :rows="tableEvents" />
-      <ApiTable title="Slots" :rows="tableSlots" />
-      <ApiTable title="方法（ref）" :rows="tableMethods" />
+      <ApiTable of="ChptTable" title="Props" :rows="tableProps" />
+      <ApiTable of="ChptTable" title="Events" :rows="tableEvents" />
+      <ApiTable of="ChptTable" title="Slots" :rows="tableSlots" />
+      <ApiTable of="ChptTable" title="方法（ref）" :rows="tableMethods" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>欄位可設 <code>sortable</code>＋<code>sortType</code>（string/number）啟用排序；
@@ -145,8 +145,8 @@
         <ChptCodeBlock :code="fixedTableSample" />
       </div>
 
-      <ApiTable title="Props" :rows="fixedTableProps" />
-      <ApiTable title="Events" :rows="fixedTableEvents" />
+      <ApiTable of="ChptFixedTable" title="Props" :rows="fixedTableProps" />
+      <ApiTable of="ChptFixedTable" title="Events" :rows="fixedTableEvents" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>欄位以 <code>{ title, dataIndex, width }</code> 定義，設
@@ -197,8 +197,8 @@
         <ChptCodeBlock :code="paginationSample" />
       </div>
 
-      <ApiTable title="Props" :rows="paginationProps" />
-      <ApiTable title="Events" :rows="paginationEvents" />
+      <ApiTable of="ChptPagination" title="Props" :rows="paginationProps" />
+      <ApiTable of="ChptPagination" title="Events" :rows="paginationEvents" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>頁碼與每頁筆數採 <code>v-model:current-page</code>／<code>v-model:items-per-page</code>
@@ -237,8 +237,8 @@
         <ChptCodeBlock :code="filterSample" />
       </div>
 
-      <ApiTable title="Props" :rows="filterProps" />
-      <ApiTable title="Events" :rows="filterEvents" />
+      <ApiTable of="ChptFilter" title="Props" :rows="filterProps" />
+      <ApiTable of="ChptFilter" title="Events" :rows="filterEvents" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>type="select"</code> 的 modelValue 為單一值；<code>dropdown</code>／
@@ -266,8 +266,8 @@
         <ChptCodeBlock :code="filterBarSample" />
       </div>
 
-      <ApiTable title="Props" :rows="filterBarProps" />
-      <ApiTable title="Events" :rows="filterBarEvents" />
+      <ApiTable of="ChptFilterBar" title="Props" :rows="filterBarProps" />
+      <ApiTable of="ChptFilterBar" title="Events" :rows="filterBarEvents" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>每個欄位以 <code>{ key, label, options, allLabel?, allCount? }</code> 描述；

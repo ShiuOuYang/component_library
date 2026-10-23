@@ -30,9 +30,9 @@
         <ChptCodeBlock :code="tabsSample" />
       </div>
 
-      <ApiTable title="Props" :rows="tabsProps" />
-      <ApiTable title="Events" :rows="tabsEvents" />
-      <ApiTable title="Slots" :rows="tabsSlots" />
+      <ApiTable of="ChptTabs" title="Props" :rows="tabsProps" />
+      <ApiTable of="ChptTabs" title="Events" :rows="tabsEvents" />
+      <ApiTable of="ChptTabs" title="Slots" :rows="tabsSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>以 <code>v-model</code> 綁定目前 index；選項可設 <code>disabled</code> 禁止點擊，
@@ -60,7 +60,7 @@
         <ChptCodeBlock :code="toastSample" />
       </div>
 
-      <ApiTable title="useToast 方法" :rows="toastMethods" />
+      <ApiTable of="-" title="useToast 方法" :rows="toastMethods" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>ChptToast 為 Teleport 到 body 的全域容器；同一 App 只掛載一份，
@@ -86,8 +86,8 @@
         <ChptCodeBlock :code="btnSample" />
       </div>
 
-      <ApiTable title="Props" :rows="btnProps" />
-      <ApiTable title="Events" :rows="btnEvents" />
+      <ApiTable of="ChptButton" title="Props" :rows="btnProps" />
+      <ApiTable of="ChptButton" title="Events" :rows="btnEvents" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>同時帶 <code>loading</code> 會忽略點擊並顯示 spinner；角標 <code>badgeBgColor</code>
         接受語意鍵（primary/success/…）。
@@ -110,8 +110,8 @@
       <div class="mt-4">
         <ChptCodeBlock :code="progressSample" />
       </div>
-      <ApiTable title="Props" :rows="progressProps" />
-      <ApiTable title="Events" :rows="progressEvents" />
+      <ApiTable of="ChptProgress" title="Props" :rows="progressProps" />
+      <ApiTable of="ChptProgress" title="Events" :rows="progressEvents" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>modelValue 自動夾在 0–100；<code>trackColor</code> 傳的是 Tailwind class（預設 neutral-100）。
       </p>
@@ -132,9 +132,9 @@
       <div class="mt-4">
         <ChptCodeBlock :code="alertSample" />
       </div>
-      <ApiTable title="Props" :rows="alertProps" />
-      <ApiTable title="Events" :rows="alertEvents" />
-      <ApiTable title="Slots" :rows="alertSlots" />
+      <ApiTable of="ChptAlert" title="Props" :rows="alertProps" />
+      <ApiTable of="ChptAlert" title="Events" :rows="alertEvents" />
+      <ApiTable of="ChptAlert" title="Slots" :rows="alertSlots" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>show</code> 預設 true 控制顯示；內容可用 <code>#default</code> 自訂取代 <code>message</code>。
         info / success 以 role="status" 禮貌報讀，warning / danger 以 role="alert" 立即報讀。
@@ -157,7 +157,7 @@
       <div class="mt-4">
         <ChptCodeBlock :code="avatarSample" />
       </div>
-      <ApiTable title="Props" :rows="avatarProps" />
+      <ApiTable of="ChptAvatar" title="Props" :rows="avatarProps" />
     </section>
 
     <!-- ============ ChptTooltip ============ -->
@@ -183,7 +183,7 @@
       <div class="mt-4">
         <ChptCodeBlock :code="tooltipSample" />
       </div>
-      <ApiTable title="Props" :rows="tooltipProps" />
+      <ApiTable of="ChptTooltip" title="Props" :rows="tooltipProps" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>提示會以 aria-describedby 掛到觸發元素上（螢幕閱讀器聚焦按鈕時會唸出）；
         游標可以移到提示上不讓它消失、任何時候按 Esc 都能關閉（WCAG 1.4.13）。層級為 z-tooltip，放在 Modal 裡也不會被蓋住。
@@ -257,7 +257,7 @@ const tabsEvents = [
 ]
 const tabsSlots = [
   { name: 'panel-<index>', params: '{ tab }', desc: '第 index 個面板內容' },
-  { name: 'default', params: '{ tab, index }', desc: '未指定 panel-N 時的內容' },
+  { name: 'panel', params: '{ tab, index }', desc: '未指定 panel-N 時的內容；兩者都沒給時顯示 tab.content' },
 ]
 
 const toastMethods = [

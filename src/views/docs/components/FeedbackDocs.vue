@@ -37,9 +37,9 @@
         <ChptCodeBlock :code="alertSample" />
       </div>
 
-      <ApiTable title="Props" :rows="alertProps" />
-      <ApiTable title="Events" :rows="alertEvents" />
-      <ApiTable title="Slots" :rows="alertSlots" />
+      <ApiTable of="ChptAlert" title="Props" :rows="alertProps" />
+      <ApiTable of="ChptAlert" title="Events" :rows="alertEvents" />
+      <ApiTable of="ChptAlert" title="Slots" :rows="alertSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>以 <code>show</code> 控制顯示／隱藏（預設 true）；若需要自訂訊息排版，
@@ -73,9 +73,9 @@
         <ChptCodeBlock :code="tagSample" />
       </div>
 
-      <ApiTable title="Props" :rows="tagProps" />
-      <ApiTable title="Events" :rows="tagEvents" />
-      <ApiTable title="Slots" :rows="tagSlots" />
+      <ApiTable of="ChptTag" title="Props" :rows="tagProps" />
+      <ApiTable of="ChptTag" title="Events" :rows="tagEvents" />
+      <ApiTable of="ChptTag" title="Slots" :rows="tagSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>文字可直接用 <code>label</code> 或放進 <code>#default</code>；前置圖示可經
@@ -124,8 +124,8 @@
         <ChptCodeBlock :code="badgeSample" />
       </div>
 
-      <ApiTable title="Props" :rows="badgeProps" />
-      <ApiTable title="Slots" :rows="badgeSlots" />
+      <ApiTable of="ChptBadge" title="Props" :rows="badgeProps" />
+      <ApiTable of="ChptBadge" title="Slots" :rows="badgeSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>count</code> 為 0 且未設 <code>showZero</code> 時不顯示；純圓點請設
@@ -155,7 +155,7 @@
         <ChptCodeBlock :code="toastSample" />
       </div>
 
-      <ApiTable title="useToast 方法" :rows="toastMethods" />
+      <ApiTable of="-" title="useToast 方法" :rows="toastMethods" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>ChptToast 透過 Teleport 掛到 body 頂端；同一 App 只掛一份即可，過多訊息會自動堆疊。
@@ -184,7 +184,7 @@
       <div class="mt-6">
         <ChptCodeBlock :code="notifySample" />
       </div>
-      <ApiTable title="notify.open(options) / success / info / warning / error" :rows="notifyOptions" />
+      <ApiTable of="-" title="notify.open(options) / success / info / warning / error" :rows="notifyOptions" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>滑鼠停在通知上、或焦點在通知裡的按鈕時，倒數會暫停（WCAG 2.2.1：要有足夠時間讀完、按到按鈕）；
         有動作按鈕的通知預設不自動消失。warning / error 以 role="alert" 立即報讀。
@@ -222,8 +222,8 @@
         <ChptCodeBlock :code="progressSample" />
       </div>
 
-      <ApiTable title="Props" :rows="progressProps" />
-      <ApiTable title="Events" :rows="progressEvents" />
+      <ApiTable of="ChptProgress" title="Props" :rows="progressProps" />
+      <ApiTable of="ChptProgress" title="Events" :rows="progressEvents" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>modelValue</code> 會自動夾在 0–100；<code>trackColor</code> 傳的是
@@ -259,7 +259,7 @@
         <ChptCodeBlock :code="spinnerSample" />
       </div>
 
-      <ApiTable title="Props" :rows="spinnerProps" />
+      <ApiTable of="ChptSpinner" title="Props" :rows="spinnerProps" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>SVG 以 <code>currentColor</code> 上色；想指定顏色請在外層包一個帶
@@ -293,8 +293,8 @@
         <ChptCodeBlock :code="emptySample" />
       </div>
 
-      <ApiTable title="Props" :rows="emptyProps" />
-      <ApiTable title="Slots" :rows="emptySlots" />
+      <ApiTable of="ChptEmpty" title="Props" :rows="emptyProps" />
+      <ApiTable of="ChptEmpty" title="Slots" :rows="emptySlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>操作按鈕放進 <code>#action</code> 插槽即可置中顯示；標題可經 <code>#default</code>
@@ -330,8 +330,8 @@
         <ChptCodeBlock :code="skeletonSample" />
       </div>
 
-      <ApiTable title="Props" :rows="skeletonProps" />
-      <ApiTable title="Slots" :rows="skeletonSlots" />
+      <ApiTable of="ChptSkeleton" title="Props" :rows="skeletonProps" />
+      <ApiTable of="ChptSkeleton" title="Slots" :rows="skeletonSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>rowWidth</code> 可為單一數值／百分比，或以陣列逐列指定（如
@@ -370,8 +370,8 @@
         <ChptCodeBlock :code="resultSample" />
       </div>
 
-      <ApiTable title="Props" :rows="resultProps" />
-      <ApiTable title="Slots" :rows="resultSlots" />
+      <ApiTable of="ChptResult" title="Props" :rows="resultProps" />
+      <ApiTable of="ChptResult" title="Slots" :rows="resultSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>失敗類（error／warning／403／404／500）使用 <code>role="alert"</code>，螢幕閱讀器會立即唸出；

@@ -44,10 +44,10 @@
         <ChptCodeBlock :code="modalSample" />
       </div>
 
-      <ApiTable title="Props（通用＋dialog）" :rows="modalCommonProps" />
-      <ApiTable title="Props（window 模式專屬）" :rows="modalWindowProps" />
-      <ApiTable title="Events" :rows="modalEvents" />
-      <ApiTable title="Slots" :rows="modalSlots" />
+      <ApiTable of="ChptModal" title="Props（通用＋dialog）" :rows="modalCommonProps" />
+      <ApiTable of="ChptModal" title="Props（window 模式專屬）" :rows="modalWindowProps" />
+      <ApiTable of="ChptModal" title="Events" :rows="modalEvents" />
+      <ApiTable of="ChptModal" title="Slots" :rows="modalSlots" />
 
       <div class="mt-6 flex gap-2 flex-wrap">
         <ChptButton size="sm" is-outline color="secondary" @click="modalOpen = true">開啟編輯對話框（表單示範）</ChptButton>
@@ -134,9 +134,9 @@
         <ChptCodeBlock :code="drawerSample" />
       </div>
 
-      <ApiTable title="Props" :rows="drawerProps" />
-      <ApiTable title="Events" :rows="drawerEvents" />
-      <ApiTable title="Slots" :rows="drawerSlots" />
+      <ApiTable of="ChptDrawer" title="Props" :rows="drawerProps" />
+      <ApiTable of="ChptDrawer" title="Events" :rows="drawerEvents" />
+      <ApiTable of="ChptDrawer" title="Slots" :rows="drawerSlots" />
 
       <ChptDrawer v-model="drawerOpen" title="詳細資訊" :placement="drawerPlacement" :size="380">
         <div class="space-y-4">
@@ -198,9 +198,9 @@
         <ChptCodeBlock :code="popconfirmSample" />
       </div>
 
-      <ApiTable title="Props" :rows="popconfirmProps" />
-      <ApiTable title="Events" :rows="popconfirmEvents" />
-      <ApiTable title="Slots" :rows="popconfirmSlots" />
+      <ApiTable of="ChptPopconfirm" title="Props" :rows="popconfirmProps" />
+      <ApiTable of="ChptPopconfirm" title="Events" :rows="popconfirmEvents" />
+      <ApiTable of="ChptPopconfirm" title="Slots" :rows="popconfirmSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>預設以 <code>color</code>（danger）上色確認按鈕；訊息可用 <code>#message</code> 插槽放自訂內容。
@@ -239,9 +239,9 @@
         <ChptCodeBlock :code="dropdownSample" />
       </div>
 
-      <ApiTable title="Props" :rows="dropdownProps" />
-      <ApiTable title="Events" :rows="dropdownEvents" />
-      <ApiTable title="Slots" :rows="dropdownSlots" />
+      <ApiTable of="ChptDropdown" title="Props" :rows="dropdownProps" />
+      <ApiTable of="ChptDropdown" title="Events" :rows="dropdownEvents" />
+      <ApiTable of="ChptDropdown" title="Slots" :rows="dropdownSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>鍵盤行為照 WAI-ARIA menu button：Enter／↓ 開啟並聚焦第一項、↑ 聚焦最後一項、
@@ -296,9 +296,9 @@
         <ChptCodeBlock :code="popoverSample" />
       </div>
 
-      <ApiTable title="Props" :rows="popoverProps" />
-      <ApiTable title="Events" :rows="popoverEvents" />
-      <ApiTable title="Slots" :rows="popoverSlots" />
+      <ApiTable of="ChptPopover" title="Props" :rows="popoverProps" />
+      <ApiTable of="ChptPopover" title="Events" :rows="popoverEvents" />
+      <ApiTable of="ChptPopover" title="Slots" :rows="popoverSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>卡片是非模態 dialog，緊接在觸發元素後面（不 Teleport），Tab 從觸發鈕往下就會進到卡片裡。
@@ -333,7 +333,7 @@
         <ChptCodeBlock :code="confirmSample" />
       </div>
 
-      <ApiTable title="confirm(options) / alert(options)" :rows="confirmOptions" />
+      <ApiTable of="-" title="confirm(options) / alert(options)" :rows="confirmOptions" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>對話框是 role="alertdialog"：焦點困在裡面、Escape 等於取消、關閉後焦點回到原本的按鈕。
@@ -360,7 +360,7 @@
         <ChptCodeBlock :code="dockSample" />
       </div>
 
-      <ApiTable title="Props" :rows="dockProps" />
+      <ApiTable of="ChptModalDock" title="Props" :rows="dockProps" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>ChptModalDock 透過 Teleport 固定於右下角，僅在有最小化視窗時顯示；透過全域
@@ -387,7 +387,7 @@
       <ChptTour v-model:open="tourOpen" v-model:current="tourStep" :steps="tourSteps" @finish="tourDone = true" />
       <p class="text-sm text-content-secondary mt-2">目前第 {{ tourStep + 1 }} 步{{ tourDone ? '（已完成過）' : '' }}</p>
       <ChptCodeBlock class="mt-4" :code="tourSample" />
-      <ApiTable title="Props / Events" :rows="tourProps" />
+      <ApiTable of="ChptTour" title="Props / Events" :rows="tourProps" />
       <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>導覽是對話框（role=dialog、aria-modal）：焦點鎖在面板內、Esc 關閉、← → 切換步驟，
         關閉後焦點回到按下「開始導覽」的按鈕。遮罩會擋住其他地方的點擊。</p>
     </section>

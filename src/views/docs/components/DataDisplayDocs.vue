@@ -44,8 +44,8 @@
       <div class="mt-6">
         <ChptCodeBlock :code="statisticSample" />
       </div>
-      <ApiTable title="Props" :rows="statisticProps" />
-      <ApiTable title="Slots" :rows="statisticSlots" />
+      <ApiTable of="ChptStatistic" title="Props" :rows="statisticProps" />
+      <ApiTable of="ChptStatistic" title="Slots" :rows="statisticSlots" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>趨勢除了顏色與箭頭，也會給螢幕閱讀器一段文字（「上升 0.8%（表現較差）」），
         色盲使用者也能從箭頭方向判斷。數字以遠離零的方式四捨五入，與 Excel 的 ROUND 一致。
@@ -81,8 +81,8 @@
       <div class="mt-6">
         <ChptCodeBlock :code="descriptionsSample" />
       </div>
-      <ApiTable title="Props" :rows="descriptionsProps" />
-      <ApiTable title="Slots" :rows="descriptionsSlots" />
+      <ApiTable of="ChptDescriptions" title="Props" :rows="descriptionsProps" />
+      <ApiTable of="ChptDescriptions" title="Slots" :rows="descriptionsSlots" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>值是 null／undefined／空字串時顯示 <code>emptyText</code>（預設「—」），
         不會出現空白格讓人以為還沒載入。<code>span</code> 超過 <code>column</code> 時以 column 為上限。
@@ -114,9 +114,9 @@
       <div class="mt-6">
         <ChptCodeBlock :code="timelineSample" />
       </div>
-      <ApiTable title="Props" :rows="timelineProps" />
-      <ApiTable title="TimelineItem" :rows="timelineItemRows" />
-      <ApiTable title="Slots" :rows="timelineSlots" />
+      <ApiTable of="ChptTimeline" title="Props" :rows="timelineProps" />
+      <ApiTable of="-" title="TimelineItem" :rows="timelineItemRows" />
+      <ApiTable of="ChptTimeline" title="Slots" :rows="timelineSlots" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>時間請同時給顯示用的 <code>time</code> 與機器可讀的 <code>datetime</code>（ISO 8601）。
         通往「進行中」節點的連接線會畫成虛線。
@@ -157,9 +157,9 @@
       <div class="mt-6">
         <ChptCodeBlock :code="treeSample" />
       </div>
-      <ApiTable title="Props" :rows="treeProps" />
-      <ApiTable title="Events" :rows="treeEvents" />
-      <ApiTable title="Slots / 方法" :rows="treeSlots" />
+      <ApiTable of="ChptTree" title="Props" :rows="treeProps" />
+      <ApiTable of="ChptTree" title="Events" :rows="treeEvents" />
+      <ApiTable of="ChptTree" title="Slots / 方法" :rows="treeSlots" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>鍵盤照 WAI-ARIA tree：整棵樹一個 Tab 停駐點，↑↓ 移動、→ 展開／進入子節點、← 收合／回到父節點、
         Home／End、Enter 選取、Space 勾選、* 展開同層、打字跳轉。停用節點不會被勾父節點時一起勾選；
@@ -198,8 +198,8 @@
       <div class="mt-6">
         <ChptCodeBlock :code="imageSample" />
       </div>
-      <ApiTable title="ChptImage Props" :rows="imageProps" />
-      <ApiTable title="ChptImageViewer Props / Events" :rows="viewerProps" />
+      <ApiTable of="ChptImage" title="ChptImage Props" :rows="imageProps" />
+      <ApiTable of="ChptImageViewer" title="ChptImageViewer Props / Events" :rows="viewerProps" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>alt 是必填 —— 描述圖片內容（「焊點橋接」），純裝飾的圖傳 <code>alt=""</code>。
         檢視器是模態 dialog：焦點困在裡面、背景不捲動、關閉後回到原本的縮圖；← → 切換、+／− 或滾輪縮放、0 重設、R 旋轉、Esc 關閉，
@@ -228,7 +228,7 @@
         </ChptList>
       </div>
       <ChptCodeBlock class="mt-6" :code="listSample" />
-      <ApiTable title="Props / Events" :rows="listProps" />
+      <ApiTable of="ChptList" title="Props / Events" :rows="listProps" />
     </section>
 
     <!-- ============ ChptQRCode ============ -->
@@ -251,7 +251,7 @@
         </div>
       </div>
       <ChptCodeBlock class="mt-6" :code="qrSample" />
-      <ApiTable title="Props" :rows="qrProps" />
+      <ApiTable of="ChptQRCode" title="Props" :rows="qrProps" />
     </section>
 
   </div>
