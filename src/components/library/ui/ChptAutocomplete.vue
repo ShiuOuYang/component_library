@@ -239,14 +239,23 @@ const liveMessage = computed(() => {
 
 let timer: ReturnType<typeof setTimeout> | undefined
 let token = 0
-onBeforeUnmount(() => clearTimeout(timer))
+onBeforeUnmount(() => {
+  clearTimeout(timer)
+  token++ // 已送出的查詢回來後一律丟棄
+})
 
+/**
+ * ⚠️ token 要在 query() 一開始就遞增，不能等 debounce 結束才遞增：
+ *    打了 'ab' 還在 debounce 等待時，'a' 的結果回來會被當成最新的採用，短暫顯示過期建議。
+ *    現在新的輸入一進來，舊查詢就作廢，等待期間顯示「載入中」。
+ */
 function query(text: string, immediate = false): void {
   if (!props.fetchSuggestions) return
   clearTimeout(timer)
+  const mine = ++token
+  loading.value = true
   const run = async () => {
-    const mine = ++token
-    loading.value = true
+    if (mine !== token) return
     try {
       const result = await props.fetchSuggestions!(text)
       if (mine !== token) return
