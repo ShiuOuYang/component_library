@@ -40,6 +40,7 @@ export interface NotificationOptions {
   onClose?: () => void
 }
 
+/** ChptNotificationHost 內部用的佇列項目 @internal */
 export interface NotificationItem extends Required<Pick<NotificationOptions, 'title' | 'type' | 'duration' | 'closable'>> {
   id: number
   message: string

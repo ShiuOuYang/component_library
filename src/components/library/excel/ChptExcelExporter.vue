@@ -149,15 +149,15 @@ import ChptModal from '@/components/library/ui/ChptModal.vue'
  * - 支援欄位選擇、工作表命名、儲存格樣式
  */
 
-type ExporterSize = 'xs' | 'sm' | 'md' | 'lg'
-type ExporterVariant = 'green' | 'blue' | 'primary' | 'outline' | 'soft'
+export type ExporterSize = 'xs' | 'sm' | 'md' | 'lg'
+export type ExporterVariant = 'green' | 'blue' | 'primary' | 'outline' | 'soft'
 
-interface ExporterColumn {
+export interface ExporterColumn {
   key: string
   title?: string
 }
 
-interface ExporterCellStyle {
+export interface ExporterCellStyle {
   row: number
   col: string
   style: object

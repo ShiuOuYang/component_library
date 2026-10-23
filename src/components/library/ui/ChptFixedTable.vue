@@ -192,7 +192,7 @@ import ChptDataTooltip from './ChptDataTooltip.vue'
  */
 
 /** 欄位定義 */
-interface ChptFixedTableColumn {
+export interface ChptFixedTableColumn {
   title: string
   dataIndex: string
   width: number
@@ -201,7 +201,7 @@ interface ChptFixedTableColumn {
   showUnfixedIcon?: boolean
 }
 
-type ChptFixedTableRow = Record<string, unknown>
+export type ChptFixedTableRow = Record<string, unknown>
 
 interface ChptFixedTableProps {
   /** 是否啟用欄位固定 */

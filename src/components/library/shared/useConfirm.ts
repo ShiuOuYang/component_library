@@ -37,6 +37,7 @@ export interface ConfirmOptions {
   focus?: 'confirm' | 'cancel'
 }
 
+/** ChptConfirmHost 內部用的佇列項目 @internal */
 export interface ConfirmRequest extends Required<Pick<ConfirmOptions, 'title' | 'type' | 'confirmText'>> {
   id: number
   kind: 'confirm' | 'alert'

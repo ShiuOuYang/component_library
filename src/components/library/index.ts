@@ -33,7 +33,6 @@ export {
   DualAxisComboChart, EnterpriseHeatmap, EnterprisePareto, ParetoChart,
   FacetedChart, GridFacetChart, StatusScatterMap,
 } from './charts/index.js'
-export type { StatusDef, StatusScatterTooltip } from './charts/index.js'
 
 // ===== viewer =====
 export { GerberViewer, PcbLayout } from './viewer/index.js'
@@ -45,25 +44,50 @@ export {
 
 // ===== shared =====
 export { useToast } from './shared/useToast'
+export type { ChptToastItem } from './shared/useToast'
 export { useConfirm } from './shared/useConfirm'
 export { useNotification } from './shared/useNotification'
 export { useConfig, provideConfig, zhTW, enUS } from './shared/config'
-export type { ChptConfig, ChptLocale, ConfigSize } from './shared/config'
-export type { TourStep } from './ui/ChptTour.vue'
-export type { NotificationOptions, NotificationAction } from './shared/useNotification'
+export type { ChptConfig, ChptConfigInput, ChptLocale, ConfigSize } from './shared/config'
+export type { NotificationOptions, NotificationAction, NotificationType } from './shared/useNotification'
 export type { ConfirmOptions } from './shared/useConfirm'
 export { useDarkMode, initDarkMode, THEME_STORAGE_KEY } from './shared/useDarkMode'
+export type { ChptThemeMode } from './shared/useDarkMode'
 export { useModalManager, generateModalId } from './shared/useModalManager'
+export type { MinimizedModalInfo } from './shared/useModalManager'
 export { useOptionalRouter } from './shared/useOptionalRouter'
 export { useOverlay } from './shared/useOverlay'
+export type { UseOverlayOptions } from './shared/useOverlay'
 export { warnDeprecated } from './shared/warnDeprecated'
 export { validateValue, checkRule } from './shared/formValidation'
 export type { FormRule, FormRules } from './shared/formValidation'
-export type { UploadFile, UploadRequest } from './ui/ChptUpload.vue'
-export type { TreeNode } from './ui/ChptTree.vue'
-export type { AutocompleteSuggestion } from './ui/ChptAutocomplete.vue'
-export type { CascaderOption } from './ui/ChptCascader.vue'
-export type { TransferItem } from './ui/ChptTransfer.vue'
-export type { MenuItem } from './ui/chptMenuContext'
-export type { AnchorItem } from './ui/ChptAnchor.vue'
-export type { ViewerImage } from './ui/ChptImageViewer.vue'
+export type {
+  ComponentSize, ColorVariant, RadiusSize, SelectOption, Recordable, DividerDirection,
+  Placement, Direction, ButtonNativeType, InputNativeType,
+} from './shared/types/ui.types'
+
+// ===== 各子入口的型別（props 的資料形狀與事件 payload） =====
+export type {
+  AnchorItem, AutocompleteSuggestion, CascaderOption, ChptDatePickerValue, DescriptionItem,
+  DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
+  SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
+  TableDefaultSort, TableChangeEvent, TableSortEvent, TimelineItem, TourStep, TransferItem,
+  TreeNode, UploadFile, UploadRequest, UploadStatus,
+} from './ui/index.js'
+export type {
+  ChartDatum, XAccessor, YAccessor, ContinuousScaleType, XScaleType, XDomain, YDomain,
+  ChartLayerType, ChartAxisSide, ChartLayerLegend, ChartLayer,
+  BrushMode, BrushSelectionPayload, ChartMargin, TooltipPosition, TooltipPayload,
+  TriggerLine, FacetConfig, GridFacet, GridFacetDatum, ParetoDatum, ParetoSortOrder,
+  HeatmapDatum, ColorLegendPosition, HeatmapHighlightMode, HeatmapColorScale, HeatmapCell,
+  GradientStop, HeatmapCustomRenderers, ParetoHighlightMode, ParetoCustomRenderers,
+  VerticalFacet, ParetoInputItem, ParetoChartDatum, StatusDef, StatusScatterTooltip,
+} from './charts/index.js'
+export type {
+  GerberLayerInput, GerberImageInfo, PcbBoardInfo, PcbElementEvent,
+  PcbElementType, PcbPadShape, PcbPoint, PcbOutline, PcbRegion, PcbTrace, PcbPad, PcbVia,
+  PcbSilk, PcbComponent, PcbElement, PcbLayerInput, PcbBoard, PcbData,
+} from './viewer/index.js'
+export type {
+  ExcelExporterColumn, ExcelExporterCellStyle, ExcelExporterSize, ExcelExporterVariant,
+} from './excel/index.js'

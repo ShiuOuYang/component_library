@@ -95,6 +95,33 @@ export { default as ChptUpload } from './ChptUpload.vue'
 export { default as ChptVirtualList } from './ChptVirtualList.vue'
 export { default as ChptWatermark } from './ChptWatermark.vue'
 
+// ===== 型別（props 的資料形狀與事件 payload） =====
+export type { AnchorItem } from './ChptAnchor.vue'
+export type { AutocompleteSuggestion } from './ChptAutocomplete.vue'
+export type { CascaderOption } from './ChptCascader.vue'
+export type { ChptDatePickerValue } from './ChptDatePicker.vue'
+export type { DescriptionItem } from './ChptDescriptions.vue'
+export type { DropdownItem } from './ChptDropdown.vue'
+export type { ChptFixedTableColumn, ChptFixedTableRow } from './ChptFixedTable.vue'
+export type { ViewerImage } from './ChptImageViewer.vue'
+export type { MenuItem, MenuKey } from './chptMenuContext'
+export type { SegmentOption } from './ChptSegmented.vue'
+export type { SliderMark } from './ChptSlider.vue'
+export type {
+  Column as TableColumn,
+  DataRow as TableRow,
+  RowKey as TableRowKey,
+  SortItem as TableSortItem,
+  DefaultSort as TableDefaultSort,
+  ChangeEvent as TableChangeEvent,
+  SortEvent as TableSortEvent,
+} from './ChptTable.vue'
+export type { TimelineItem } from './ChptTimeline.vue'
+export type { TourStep } from './ChptTour.vue'
+export type { TransferItem } from './ChptTransfer.vue'
+export type { TreeNode } from './ChptTree.vue'
+export type { UploadFile, UploadRequest, UploadStatus } from './ChptUpload.vue'
+
 // ===== legacy 相容層（@deprecated — 全部為轉發用的薄包裝） =====
 //
 // 每一項後面標的是它實際轉發到的 canonical 元件。
