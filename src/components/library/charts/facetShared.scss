@@ -1,5 +1,5 @@
 // 分面圖（FacetedChart / GridFacetChart）共用的樣式：共用圖例、預設 tooltip、重設縮放按鈕。
-// 兩個元件都以 <style scoped src="./facetShared.scss"> 引入。
+// 兩個元件都在自己的 <style scoped> 開頭以 @use './facetShared' 內嵌（不要改回 <style src>，原因見元件內註解）。
 
 .shared-legend {
   display: flex;
