@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, vi } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import GerberViewer from '@/components/library/viewer/GerberViewer.vue'
@@ -338,6 +338,164 @@ describe('GerberViewer', () => {
       const wrapper = await mountViewer({ gerberText: DRILL })
 
       expect(wrapper.findAll('button').find((b) => b.text() === 'D02')).toBeUndefined()
+      wrapper.unmount()
+    })
+  })
+
+  describe('非同步載入的競態', () => {
+    /**
+     * 可控制回應時機的 fetch：每個 URL 一個待決的請求，測試決定誰先回來。
+     * 請求被 abort 時照瀏覽器的行為以 AbortError 拒絕。
+     */
+    function controllableFetch() {
+      const pending = new Map<string, { resolve: (text: string) => void; reject: (e: unknown) => void; signal?: AbortSignal }>()
+      const fetchMock = vi.fn((url: string, init?: RequestInit) =>
+        new Promise((resolve, reject) => {
+          const signal = init?.signal ?? undefined
+          signal?.addEventListener('abort', () => reject(new DOMException('aborted', 'AbortError')))
+          pending.set(url, {
+            resolve: (text) => resolve({ ok: true, status: 200, text: () => Promise.resolve(text) }),
+            reject,
+            signal,
+          })
+        })
+      )
+      vi.stubGlobal('fetch', fetchMock)
+      return { fetchMock, pending }
+    }
+
+    /** 讓 fetch 之後的 await（解析、動態 import）跑完 */
+    const settle = async () => {
+      for (let i = 0; i < 20; i++) {
+        await nextTick()
+        await new Promise((resolve) => setTimeout(resolve, 5))
+      }
+    }
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('快速切換 src：舊請求較慢回來也不會重畫、不會多發 loaded', async () => {
+      const { pending } = controllableFetch()
+      const wrapper = mount(GerberViewer, { props: { autoResize: false, src: 'old.drl' }, attachTo: document.body })
+      await settle()
+      await wrapper.setProps({ src: 'new.gbr' })
+      await settle()
+
+      pending.get('new.gbr')!.resolve(GERBER)
+      await waitUntilLoaded(wrapper)
+      pending.get('old.drl')!.resolve(DRILL)
+      await settle()
+
+      expect(wrapper.emitted('loaded')).toHaveLength(1)
+      expect(wrapper.emitted('error')).toBeUndefined()
+      // 畫面是新的 Gerber（4 個圖形），不是舊的鑽孔檔（2 個孔）
+      expect(wrapper.text()).toContain('4 個圖形')
+      expect(wrapper.text()).not.toContain('2 個圖形')
+      wrapper.unmount()
+    })
+
+    it('舊請求先回來時，不會在新請求還在載入中就報「全部失敗」或關掉載入中', async () => {
+      const { pending } = controllableFetch()
+      const wrapper = mount(GerberViewer, { props: { autoResize: false, src: 'a.gbr' }, attachTo: document.body })
+      await settle()
+      await wrapper.setProps({ src: 'b.gbr' })
+      await settle()
+
+      pending.get('a.gbr')!.resolve(GERBER)
+      await settle()
+      expect(wrapper.emitted('error')).toBeUndefined()
+      expect(wrapper.find('.animate-spin').exists()).toBe(true)
+
+      pending.get('b.gbr')!.resolve(GERBER)
+      await waitUntilLoaded(wrapper)
+      expect(wrapper.emitted('loaded')).toHaveLength(1)
+      wrapper.unmount()
+    })
+
+    it('換來源時取消上一批還沒回來的請求', async () => {
+      const { pending } = controllableFetch()
+      const wrapper = mount(GerberViewer, { props: { autoResize: false, src: 'a.gbr' }, attachTo: document.body })
+      await settle()
+      await wrapper.setProps({ src: 'b.gbr' })
+      await settle()
+
+      expect(pending.get('a.gbr')!.signal?.aborted).toBe(true)
+      expect(pending.get('b.gbr')!.signal?.aborted).toBe(false)
+      wrapper.unmount()
+    })
+
+    it('卸載時取消請求，之後回來的結果不再發事件', async () => {
+      const { pending } = controllableFetch()
+      const wrapper = mount(GerberViewer, { props: { autoResize: false, src: 'a.gbr' }, attachTo: document.body })
+      await settle()
+      wrapper.unmount()
+
+      expect(pending.get('a.gbr')!.signal?.aborted).toBe(true)
+      await settle()
+      expect(wrapper.emitted('loaded')).toBeUndefined()
+      expect(wrapper.emitted('error')).toBeUndefined()
+    })
+
+    it('只改顏色不重新抓檔：fillColor 重畫、backgroundColor 只換底色', async () => {
+      const { fetchMock, pending } = controllableFetch()
+      const wrapper = mount(GerberViewer, { props: { autoResize: false, src: 'a.gbr', fillColor: '#00ff88' }, attachTo: document.body })
+      await settle()
+      pending.get('a.gbr')!.resolve(GERBER)
+      await waitUntilLoaded(wrapper)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+
+      await wrapper.setProps({ fillColor: '#ff0000' })
+      await settle()
+      expect(wrapper.html()).toContain('#ff0000')
+      expect(wrapper.html()).not.toContain('#00ff88')
+
+      await wrapper.setProps({ backgroundColor: 'rgb(1, 2, 3)' })
+      await settle()
+      expect(wrapper.find('svg').attributes('style')).toContain('rgb(1, 2, 3)')
+
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(wrapper.emitted('loaded')).toHaveLength(1)
+      wrapper.unmount()
+    })
+
+    it('layers 只改顏色、名稱、顯示不重新抓檔；改 src 才重新載入', async () => {
+      const { fetchMock, pending } = controllableFetch()
+      const wrapper = mount(GerberViewer, {
+        props: { autoResize: false, layers: [{ src: 'a.gbr', name: '頂層', color: '#00ff88' }, { gerberText: DRILL, name: '鑽孔' }] },
+        attachTo: document.body,
+      })
+      await settle()
+      pending.get('a.gbr')!.resolve(GERBER)
+      await waitUntilLoaded(wrapper)
+
+      await wrapper.setProps({ layers: [{ src: 'a.gbr', name: '銅箔', color: '#ff0000', visible: false }, { gerberText: DRILL, name: '鑽孔' }] })
+      await settle()
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+      expect(wrapper.text()).toContain('銅箔')
+      expect(wrapper.html()).toContain('#ff0000')
+      expect(wrapper.find('#gerber-layer-0').attributes('display')).toBe('none')
+
+      await wrapper.setProps({ layers: [{ src: 'b.gbr', name: '銅箔' }, { gerberText: DRILL, name: '鑽孔' }] })
+      await settle()
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+      wrapper.unmount()
+    })
+
+    it('改顏色重畫時保留目前的縮放', async () => {
+      const wrapper = await mountViewer({ gerberText: GERBER })
+      const svg = wrapper.find('svg').element as SVGSVGElement & { __zoom?: { k: number } }
+      ;(wrapper.vm as unknown as { zoomIn: () => void }).zoomIn()
+      await new Promise((resolve) => setTimeout(resolve, 400)) // 等縮放動畫跑完
+      const zoomed = svg.__zoom!.k
+      expect(zoomed).toBeGreaterThan(1)
+
+      await wrapper.setProps({ fillColor: '#123456' })
+      await settle()
+      expect(wrapper.html()).toContain('#123456')
+      expect(svg.__zoom!.k).toBeCloseTo(zoomed)
+      expect(wrapper.find('.gerber-root').attributes('transform')).toContain(`scale(${zoomed}`)
       wrapper.unmount()
     })
   })
