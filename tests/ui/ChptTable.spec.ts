@@ -171,6 +171,96 @@ describe('ChptTable：伺服器端模式', () => {
   })
 })
 
+describe('ChptTable：資料更新時的頁碼', () => {
+  const goTo = async (w: VueWrapper, page: number) => {
+    w.findComponent({ name: 'ChptPagination' }).vm.$emit('update:current-page', page)
+    await nextTick()
+  }
+
+  it('資料內容更新（即時同步、改某一列）時保留頁碼', async () => {
+    const w = mountTable()
+    await goTo(w, 3)
+    expect(bodyRows(w)[0].text()).toContain('WO-011')
+    await w.setProps({ data: rows.map((r) => (r.id === 11 ? { ...r, qty: 99 } : { ...r })) })
+    expect(w.vm.currentPage).toBe(3)
+    expect(bodyRows(w)[0].text()).toContain('99')
+  })
+
+  it('原地修改列的值不會跳頁', async () => {
+    const data = rows.map((r) => ({ ...r }))
+    const w = mountTable({ data })
+    await goTo(w, 2)
+    data[5].qty = 42
+    await w.setProps({ data: [...data] })
+    expect(w.vm.currentPage).toBe(2)
+  })
+
+  it('資料變少、目前頁超出總頁數時拉回最後一頁', async () => {
+    const w = mountTable()
+    await goTo(w, 3)
+    await w.setProps({ data: rows.slice(0, 7) })
+    expect(w.vm.currentPage).toBe(2)
+    expect(bodyRows(w)[0].text()).toContain('WO-006')
+    await w.setProps({ data: [] })
+    expect(w.vm.currentPage).toBe(1)
+  })
+
+  it('打字即時過濾讓頁數變少時，不會停在空白頁', async () => {
+    const w = mountTable()
+    await goTo(w, 3)
+    await w.find('input[type="text"]').setValue('WO-00')
+    expect(w.vm.totalPages).toBe(2)
+    expect(w.vm.currentPage).toBe(2)
+    expect(bodyRows(w).length).toBeGreaterThan(0)
+  })
+
+  it('搜尋與排序仍回到第 1 頁；resetPage() 讓父層換資料時從頭看', async () => {
+    const w = mountTable()
+    await goTo(w, 3)
+    await w.findAll('th')[1].trigger('click')
+    expect(w.vm.currentPage).toBe(1)
+
+    await goTo(w, 2)
+    const input = w.find('input[type="text"]')
+    await input.setValue('WO')
+    await input.trigger('keyup', { key: 'Enter' })
+    expect(w.vm.currentPage).toBe(1)
+
+    await goTo(w, 3)
+    ;(w.vm as unknown as { resetPage: () => void }).resetPage()
+    await nextTick()
+    expect(w.vm.currentPage).toBe(1)
+  })
+
+  it('remote 模式頁碼由父層決定：總筆數變少也不自動改頁', async () => {
+    const w = mountTable({ remote: true, data: rows.slice(0, 5), total: 120 })
+    await goTo(w, 10)
+    await w.setProps({ data: rows.slice(0, 5), total: 12 })
+    expect(w.vm.currentPage).toBe(10)
+  })
+})
+
+describe('ChptTable：跨頁勾選的列快取', () => {
+  it('勾選中的列翻過好幾頁仍拿得到；沒勾的別頁列不留在快取', async () => {
+    const pageOf = (n: number) => rows.slice((n - 1) * 4, n * 4)
+    const w = mountTable({ remote: true, selectable: true, data: pageOf(1), total: 12, defaultPageSize: 4 })
+    await rowChecks(w)[0].setValue(true) // WO-001
+    await w.setProps({ data: pageOf(2) })
+    await w.setProps({ data: pageOf(3) })
+    await rowChecks(w)[0].setValue(true) // WO-009
+    let [keys, selected] = w.emitted('selection-change')!.at(-1) as [number[], Row[]]
+    expect(keys).toEqual([1, 9])
+    expect(selected.map((r) => r.name)).toEqual(['WO-001', 'WO-009'])
+
+    // 第 2 頁的列沒被勾過，離開後就不再快取：父層事後把它設成已選也查不到列資料
+    await w.setProps({ selectedKeys: [1, 9, 5] })
+    await rowChecks(w)[1].setValue(true) // WO-010
+    ;[keys, selected] = w.emitted('selection-change')!.at(-1) as [number[], Row[]]
+    expect(keys).toEqual([1, 9, 5, 10])
+    expect(selected.map((r) => r.name)).toEqual(['WO-001', 'WO-009', 'WO-010'])
+  })
+})
+
 describe('ChptTable：載入中', () => {
   it('蓋上遮罩與 Spinner，table 設 aria-busy', () => {
     const w = mountTable({ loading: true })

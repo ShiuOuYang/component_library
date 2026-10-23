@@ -107,6 +107,7 @@
       <ApiTable title="Props" :rows="tableProps" />
       <ApiTable title="Events" :rows="tableEvents" />
       <ApiTable title="Slots" :rows="tableSlots" />
+      <ApiTable title="方法（ref）" :rows="tableMethods" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>欄位可設 <code>sortable</code>＋<code>sortType</code>（string/number）啟用排序；
@@ -427,6 +428,12 @@ const barFilters = [
 ]
 
 // ---- 程式碼範例（字串，避免模板解析） ----
+const tableMethods = [
+  { name: 'resetPage()', type: '() => void', desc: '回到第 1 頁；父層換了一批不相干的資料、要從頭看時呼叫' },
+  { name: 'clearSelection()', type: '() => void', desc: '清除勾選' },
+  { name: 'selectedRows', type: 'DataRow[]', desc: '目前勾選的列（含 remote 模式其他頁勾選的列）' },
+]
+
 const tableSlots = [
   { name: 'cell', params: '{ item, column, value }', desc: '自訂單一格內容（其他格照 columns 預設顯示）' },
   { name: 'expand', params: '{ item, index }', desc: '展開明細；提供時自動多一個展開欄' },
@@ -513,7 +520,7 @@ const filterBarSample = `<ChptFilterBar
 
 // ---- API 資料（與元件 props/emits 對齊） ----
 const tableProps = [
-  { name: 'data', type: 'DataRow[]', def: '[]', desc: '資料列（每列為物件）' },
+  { name: 'data', type: 'DataRow[]', def: '[]', desc: '資料列（每列為物件）；更新時保留目前頁碼（頁數變少時拉回最後一頁），搜尋與排序才回到第 1 頁' },
   { name: 'columns', type: 'Column[]', def: '[]', desc: '欄位：{ key, title, sortable?, sortType? }' },
   { name: 'searchPlaceholder', type: 'string', def: "'輸入關鍵字搜尋...'", desc: '搜尋框提示' },
   { name: 'noDataText', type: 'string', def: "'無資料'", desc: '空資料文字' },
