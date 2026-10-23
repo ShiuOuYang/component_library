@@ -31,8 +31,9 @@ export {
 // ===== charts =====
 export {
   DualAxisComboChart, EnterpriseHeatmap, EnterprisePareto, ParetoChart,
-  FacetedChart, GridFacetChart,
+  FacetedChart, GridFacetChart, StatusScatterMap,
 } from './charts/index.js'
+export type { StatusDef, StatusScatterTooltip } from './charts/index.js'
 
 // ===== viewer =====
 export { GerberViewer, PcbLayout } from './viewer/index.js'
