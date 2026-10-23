@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <CodeBlock language="javascript" :code="codeExample" />
+      <ChptCodeBlock language="javascript" :code="codeExample" />
     </div>
   </div>
 </template>
@@ -51,7 +51,7 @@
 import { computed, nextTick, ref, shallowRef, watch } from 'vue';
 import * as d3 from 'd3';
 import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
-import CodeBlock from '@/components/library/ui/CodeBlock.vue';
+import { ChptCodeBlock } from '@/components/library';
 import ChptSegmented from '@/components/library/ui/ChptSegmented.vue';
 
 const countOptions = [

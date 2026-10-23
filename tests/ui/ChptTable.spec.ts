@@ -261,6 +261,27 @@ describe('ChptTable：跨頁勾選的列快取', () => {
   })
 })
 
+describe('ChptTable：勾選列的資料跟著父層更新', () => {
+  /**
+   * 回歸：seenRows 原本是一般的 Map，selectedRows 只依賴勾選的鍵 ——
+   * 父層更新了已勾選那列的內容（同一個鍵、新的資料），鍵沒變，
+   * selection-actions 插槽與 ref 的 selectedRows 仍是舊資料。
+   */
+  it('同一個鍵、內容改變：插槽與 selectedRows 拿到新資料', async () => {
+    const w = mountTable(
+      { selectable: true },
+      { 'selection-actions': '<template #selection-actions="{ rows }"><span class="acts">{{ rows.map((r) => r.name).join(",") }}</span></template>' }
+    )
+    await rowChecks(w)[0].setValue(true)
+    expect(w.find('.acts').text()).toBe('WO-001')
+
+    await w.setProps({ data: rows.map((r) => (r.id === 1 ? { ...r, name: 'WO-001-改' } : r)) })
+    expect(w.find('.acts').text()).toBe('WO-001-改')
+    const exposed = (w.vm as unknown as { selectedRows: Row[] }).selectedRows
+    expect(exposed.map((r) => r.name)).toEqual(['WO-001-改'])
+  })
+})
+
 describe('ChptTable：載入中', () => {
   it('蓋上遮罩與 Spinner，table 設 aria-busy', () => {
     const w = mountTable({ loading: true })

@@ -240,7 +240,7 @@ const virtualProps = [
 // ---- Affix ----
 const affixed = ref(false)
 const affixSample = `<ChptAffix :offset-top="64" affixed-class="shadow-md" @change="v => stuck = v">
-  <FilterBar />
+  <ChptFilterBar v-model="query" :filters="filters" />
 </ChptAffix>`
 const affixProps = [
   { name: 'offsetTop', type: 'number', def: '0', desc: '距離捲動容器頂端（px）' },

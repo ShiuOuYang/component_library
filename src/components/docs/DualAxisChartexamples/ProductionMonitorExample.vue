@@ -19,7 +19,7 @@
         </div>
       </div>
       
-      <CodeBlock
+      <ChptCodeBlock
         language="javascript"
         :code="productionCodeExample"
       />
@@ -29,7 +29,7 @@
 
 <script setup>
 import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue';
-import CodeBlock from '@/components/library/ui/CodeBlock.vue';
+import { ChptCodeBlock } from '@/components/library';
 
 // 生產監控數據
 const productionLayers = [

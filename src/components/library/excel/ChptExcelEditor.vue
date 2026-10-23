@@ -346,7 +346,10 @@ interface SheetData {
 }
 
 interface ExcelEditorProps {
-  /** 初始資料（v-model，可選） */
+  /**
+   * 目前工作表的資料（v-model，可選）。父層換成新資料或傳 [] 會換掉內容並清空復原紀錄；
+   * 原樣傳回編輯器送出的值則不重載（見下方「v-model 同步」）
+   */
   modelValue?: Record<string, unknown>[]
   /** 是否顯示工具列 */
   showToolbar?: boolean
@@ -968,7 +971,7 @@ function performFill() {
       fillLine(line, count, t.dir, 'col')
     }
   }
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 // ===== 就地編輯 =====
@@ -1007,7 +1010,7 @@ async function commitEditing() {
       activeSheet.value.cells[key] = { ...existing, raw: newVal }
     }
     emit('cell-change', { ref: key, value: newVal })
-    emit('update:modelValue', toModelValue())
+    emitModelValue()
   }
   editing.value = null
   formulaBarValue.value = String(getCellRaw(r, c))
@@ -1314,7 +1317,7 @@ function fillFromEdge(axis: 'row' | 'col') {
       cells[key] = next
     }
   }
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 /**
@@ -1344,7 +1347,7 @@ function commitToSelection() {
   }
   editing.value = null
   formulaBarValue.value = String(getCellRaw(activeR.value, activeC.value))
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
   containerRef.value?.focus()
 }
 
@@ -1389,7 +1392,7 @@ function undo() {
   // 重做紀錄要存「被復原的那張表」現在的樣子，而不是目前顯示的表
   redoStack.value.push(snapshotOf(entry.sheetIndex, (entry.linked ?? []).map((l) => l.sheetIndex)))
   restore(entry)
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 function redo() {
@@ -1397,7 +1400,7 @@ function redo() {
   const entry = redoStack.value.pop()!
   undoStack.value.push(snapshotOf(entry.sheetIndex, (entry.linked ?? []).map((l) => l.sheetIndex)))
   restore(entry)
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 /**
@@ -1437,7 +1440,7 @@ function toggleStyle(prop: 'bold' | 'italic' | 'underline') {
       activeSheet.value.cells[key] = cell
     }
   }
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 function setAlign(align: CellAlign) {
@@ -1455,7 +1458,7 @@ function setAlign(align: CellAlign) {
       activeSheet.value.cells[key] = cell
     }
   }
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 function setNumFmt(numFmt: string) {
@@ -1476,7 +1479,7 @@ function setNumFmt(numFmt: string) {
       activeSheet.value.cells[key] = cell
     }
   }
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 // ===== 公式列 =====
@@ -1492,7 +1495,7 @@ function commitFormulaBar() {
     if (newVal === '') delete activeSheet.value.cells[key]
     else activeSheet.value.cells[key] = { ...(activeSheet.value.cells[key] || {}), raw: newVal }
     emit('cell-change', { ref: key, value: newVal })
-    emit('update:modelValue', toModelValue())
+    emitModelValue()
   }
   formulaSuggestions.value = []
   formulaHint.value = null
@@ -1689,7 +1692,7 @@ function insertFunction(name: string) {
   pushUndo()
   activeSheet.value.cells[key] = { ...(activeSheet.value.cells[key] || {}), raw: '=' + name + '(' }
   emit('cell-change', { ref: key, value: '=' + name + '(' })
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
   formulaBarValue.value = '=' + name + '('
   showFxPanel.value = false
   // 開始編輯該儲存格，方便繼續輸入參數
@@ -1857,7 +1860,7 @@ function pasteInternal() {
       activeSheet.value.cells[key] = { raw, style: src.style ? { ...src.style } : undefined }
     }
   }
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 /** 貼上外部文字（從 Excel、網頁複製來的 TSV） */
@@ -1883,7 +1886,7 @@ function pasteText(text: string) {
       }
     }
   }
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 /**
@@ -1965,7 +1968,7 @@ function applyChange(axis: 'row' | 'col', mode: 'insert' | 'delete') {
     const c = Math.min(activeC.value, props.colCount)
     setActive(axis === 'row' ? Math.min(rs, props.rowCount) : r, axis === 'col' ? Math.min(cs, props.colCount) : c)
   }
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 function insertRow() {
@@ -2045,7 +2048,7 @@ function toggleMerge() {
     for (const key of Object.keys(merges)) {
       if (within(merges[key])) delete merges[key]
     }
-    emit('update:modelValue', toModelValue())
+    emitModelValue()
     return
   }
 
@@ -2083,7 +2086,7 @@ function toggleMerge() {
   selection.endC = range.ce
   activeR.value = range.rs
   activeC.value = range.cs
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 // ===== 排序 =====
@@ -2138,7 +2141,7 @@ function sortRange(direction: 'asc' | 'desc' = 'asc') {
           : data
     })
   })
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 // ===== 工作表操作 =====
@@ -2438,7 +2441,7 @@ function clearRange(
       else delete activeSheet.value.cells[key]
     }
   }
-  emit('update:modelValue', toModelValue())
+  emitModelValue()
 }
 
 function clearSelection() {
@@ -2454,12 +2457,45 @@ watch(
   { deep: true }
 )
 
+// ===== v-model 同步 =====
+//
+// ⚠️ 原本只在「目前工作表是空的」時才載入 modelValue：父層換了新資料（重新查詢）或傳入 [] 清空，
+//    只要編輯器裡有東西就被忽略。但也不能改成「一變就重載」——
+//    v-model 每次編輯都會把值送出去、父層再原樣傳回來；那時重載會把公式換成計算結果、
+//    清掉復原紀錄、打斷正在進行的操作。
+//    所以：父層傳回的就是剛送出的那一份（同一個陣列，或內容相同的複本）→ 不動；其他才算外部換資料。
+
+/** 最後一次送給父層的值；父層原樣傳回時用來辨認 */
+let lastEmitted: Record<string, unknown>[] | null = null
+
+function emitModelValue(): void {
+  lastEmitted = toModelValue()
+  emit('update:modelValue', lastEmitted)
+}
+
+/** 兩份列資料內容是否相同（數字與文字以字串比較，空值不算） */
+function sameRows(a: Record<string, unknown>[], b: Record<string, unknown>[]): boolean {
+  if (a.length !== b.length) return false
+  const filled = (row: Record<string, unknown>) =>
+    Object.entries(row).filter(([, v]) => v !== '' && v !== null && v !== undefined)
+  return a.every((row, i) => {
+    const x = filled(row)
+    const y = filled(b[i])
+    return x.length === y.length && x.every(([k, v]) => k in b[i] && String(v) === String(b[i][k]))
+  })
+}
+
 watch(
   () => props.modelValue,
   (val) => {
-    if (val && val.length > 0 && Object.keys(activeSheet.value.cells).length === 0) {
-      loadModelValue(val)
-    }
+    const rows = val ?? []
+    if (rows === lastEmitted || sameRows(rows, toModelValue())) return
+    // 外部換了資料：結束編輯（別把打到一半的內容寫進新資料）、換內容、清掉復原紀錄
+    editing.value = null
+    loadModelValue(rows)
+    undoStack.value = []
+    redoStack.value = []
+    formulaBarValue.value = String(getCellRaw(activeR.value, activeC.value))
   },
   { immediate: true }
 )

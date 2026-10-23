@@ -17,7 +17,7 @@
         </div>
       </div>
 
-      <CodeBlock
+      <ChptCodeBlock
         language="javascript"
         :code="facetCodeExample"
       />
@@ -27,7 +27,7 @@
 
 <script setup>
 import FacetedChart from '@/components/library/charts/FacetedChart.vue';
-import CodeBlock from '@/components/library/ui/CodeBlock.vue';
+import { ChptCodeBlock } from '@/components/library';
 
 const northData = [
   { month: 'Jan', online: 120, offline: 70, profit: 26 },

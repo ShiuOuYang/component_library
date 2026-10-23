@@ -207,8 +207,8 @@ describe('DualAxisComboChart：滾輪縮放', () => {
     expect(b - a).toBeCloseTo(990 / Math.exp(0.2), 0)
     // 游標（75% 處、值 742.5）的位置不變
     expect((742.5 - a) / (b - a)).toBeCloseTo(0.75, 2)
-    // 縮放後出現重置按鈕
-    expect(w.find('button').exists()).toBe(true)
+    // 縮放後出現重設縮放按鈕（文字與 StatusScatterMap、分面圖一致）
+    expect(w.find('button').text()).toBe('重設縮放')
   })
 
   it('已在全覽時往外滾：不攔截（交還給頁面捲動）也不送事件', async () => {
