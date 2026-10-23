@@ -92,8 +92,13 @@ import type {
   BrushMode,
   ChartAxisSide,
   ChartDatum,
+  ChartAxisDomainEvent,
   ChartLayer,
+  ChartLayerEvent,
   ChartMargin,
+  ChartReadyEvent,
+  ChartResizeEvent,
+  ChartSelectionEvent,
   ContinuousScaleType,
   TooltipPayload,
   TooltipPosition,
@@ -228,18 +233,23 @@ const props = withDefaults(defineProps<DualAxisComboChartProps>(), {
   triggerLines: () => [],
 })
 
-const emit = defineEmits([
-  'layer-click',
-  'layer-hover',
-  'tooltip-show',
-  'tooltip-hide',
-  'chart-ready',
-  'chart-resize', // 圖表尺寸變化
-  'selection-change', // Brush 選取範圍改變
-  'zoom-reset', // 重置縮放
-  'axis-drag', // 座標軸拖曳平移
-  'wheel-zoom' // 滾輪縮放／平移：{ axis: 'x' | 'yLeft' | 'yRight', domain }（domain 為 null 代表回到全覽）
-]);
+const emit = defineEmits<{
+  'layer-click': [payload: ChartLayerEvent]
+  'layer-hover': [payload: ChartLayerEvent]
+  'tooltip-show': [payload: TooltipPayload]
+  'tooltip-hide': []
+  'chart-ready': [payload: ChartReadyEvent]
+  /** 圖表尺寸變化（autoResize） */
+  'chart-resize': [payload: ChartResizeEvent]
+  /** Brush 選取範圍改變 */
+  'selection-change': [payload: ChartSelectionEvent]
+  /** 重置縮放 */
+  'zoom-reset': []
+  /** 座標軸拖曳平移 */
+  'axis-drag': [payload: ChartAxisDomainEvent]
+  /** 滾輪縮放／平移；domain 為 null 代表回到全覽 */
+  'wheel-zoom': [payload: ChartAxisDomainEvent]
+}>();
 
 // === 圖例 ===
 
@@ -349,7 +359,8 @@ let resizeObserver: ResizeObserver | null = null;
 let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 // === Brush 功能整合 ===
-const { resetBtnShow } = useD3Brush(emit);
+// 框選事件由本元件的 handleBrushEnd 自己發（含 mode 與左右 Y 軸），不經過 composable
+const { resetBtnShow } = useD3Brush();
 
 // 儲存當前的 domain（用於 Brush 縮放）
 const currentXDomain = ref<XDomain | null>(null) as Ref<XDomain | null>;
@@ -1684,6 +1695,8 @@ const renderStackedBars = () => {
             emit('layer-click', {
               data: barData.rawData,
               layer: barData.layer,
+              seriesKey: barData.seriesKey,
+              // 舊版長條圖用 series 這個名稱，保留給既有的監聽端
               series: barData.seriesKey,
               key: barData.key,
             });

@@ -327,8 +327,11 @@ describe('DualAxisComboChart', () => {
 
       const events = wrapper.emitted('layer-click')
       expect(events).toBeTruthy()
-      const payload = events![0][0] as { data: Row; series?: string }
+      const payload = events![0][0] as { data: Row; seriesKey?: string; series?: string }
       expect(payload.data.category).toBeDefined()
+      // 與 layer-hover / tooltip-show 同名；舊名 series 保留相容
+      expect(payload.seriesKey).toBeDefined()
+      expect(payload.series).toBe(payload.seriesKey)
       wrapper.unmount()
     })
 

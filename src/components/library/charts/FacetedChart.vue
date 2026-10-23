@@ -155,8 +155,10 @@ import {
 } from './composables/useStackedFacetLayout';
 import type {
   BrushMode,
+  ChartAxisDomainEvent,
   ChartLayer,
   ChartMargin,
+  ChartSelectionEvent,
   ContinuousScaleType,
   TooltipPayload,
   XDomain,
@@ -255,23 +257,13 @@ const props = withDefaults(defineProps<FacetedChartProps>(), {
   facetLabelPosition: 'left',
 });
 
-/** 子圖表回傳的框選結果 */
-interface FacetSelectionEvent {
-  xDomain?: XDomain | null
-  [key: string]: unknown
-}
-
-/** 子圖表回傳的軸拖曳結果 */
-interface FacetAxisDragEvent {
-  axis?: string
-  domain?: XDomain | null
-  [key: string]: unknown
-}
+/** 子圖表事件再加上是哪個分面 */
+type WithFacetId<T> = T & { facetId: string | number }
 
 const emit = defineEmits<{
-  'selection-change': [payload: FacetSelectionEvent & { facetId: string | number }]
-  'axis-drag': [payload: FacetAxisDragEvent & { facetId: string | number }]
-  'wheel-zoom': [payload: FacetAxisDragEvent & { facetId: string | number }]
+  'selection-change': [payload: WithFacetId<ChartSelectionEvent>]
+  'axis-drag': [payload: WithFacetId<ChartAxisDomainEvent>]
+  'wheel-zoom': [payload: WithFacetId<ChartAxisDomainEvent>]
   'zoom-reset': []
   'chart-resize': [size: { width: number; height: number }]
 }>();
@@ -476,7 +468,7 @@ const crosshairLabel = computed(() => {
 
 // ===== Event Handlers =====
 const handleSelectionChange = (
-  event: FacetSelectionEvent,
+  event: ChartSelectionEvent,
   facetId: string | number
 ): void => {
   if (props.syncBrush && event.xDomain) {
@@ -485,7 +477,7 @@ const handleSelectionChange = (
   emit('selection-change', { ...event, facetId });
 };
 
-const handleAxisDrag = (event: FacetAxisDragEvent, facetId: string | number): void => {
+const handleAxisDrag = (event: ChartAxisDomainEvent, facetId: string | number): void => {
   // X 軸拖曳同步到所有分面
   if (props.syncBrush && event.axis === 'x' && event.domain) {
     currentXDomain.value = event.domain;
@@ -494,7 +486,7 @@ const handleAxisDrag = (event: FacetAxisDragEvent, facetId: string | number): vo
 };
 
 /** 滾輪縮放：X 軸同步到所有分面；縮回全覽（domain 為 null）時一起回到全覽 */
-const handleWheelZoom = (event: FacetAxisDragEvent, facetId: string | number): void => {
+const handleWheelZoom = (event: ChartAxisDomainEvent, facetId: string | number): void => {
   if (props.syncBrush && event.axis === 'x') {
     currentXDomain.value = event.domain ?? null;
   }

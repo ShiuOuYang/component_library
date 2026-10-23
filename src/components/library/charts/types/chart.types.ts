@@ -26,13 +26,13 @@ export type ContinuousScaleType = 'linear' | 'log' | 'sqrt' | 'time' | 'symlog'
 /** X 軸可用的比例尺種類；band 為離散類別 */
 export type XScaleType = ContinuousScaleType | 'band'
 
-/** 離散或連續的 X 軸比例尺 @internal */
+/** 離散或連續的 X 軸比例尺（chart-ready 事件會帶出） */
 export type XScale =
   | d3.ScaleBand<string>
   | d3.ScaleContinuousNumeric<number, number>
   | d3.ScaleTime<number, number>
 
-/** Y 軸比例尺一律為連續型 @internal */
+/** Y 軸比例尺一律為連續型 */
 export type YScale = d3.ScaleContinuousNumeric<number, number>
 
 /** X / Y 軸的 domain。band 為類別陣列，連續型為 [min, max] */
@@ -201,6 +201,58 @@ export interface TooltipPayload<T = ChartDatum> {
   key?: string
   /** 觸發懸停時的滑鼠位置 */
   position: TooltipPosition
+}
+
+// ===== 事件 payload =====
+
+/** layer-click / layer-hover */
+export interface ChartLayerEvent<T = ChartDatum> {
+  /** 被點擊／懸停元素對應的資料列 */
+  data: T
+  /** 該元素所屬的圖層設定 */
+  layer: ChartLayer<T>
+  /** 堆疊圖的系列鍵；非堆疊圖為 undefined */
+  seriesKey?: string
+  /** @deprecated 改用 seriesKey（舊版長條圖的 layer-click 用這個名稱，保留相容） */
+  series?: string
+  /** 資料鍵（圖層 keyFn，沒有時為 X 值）；參考線沒有 */
+  key?: string
+}
+
+/** selection-change：brush 框選結束 */
+export interface ChartSelectionEvent {
+  xDomain: XDomain
+  /** xy 模式才有；x 模式為 null */
+  yLeftDomain: YDomain | null
+  yRightDomain: YDomain | null
+  mode: BrushMode
+}
+
+/** axis-drag / wheel-zoom：哪個軸改成什麼範圍；domain 為 null 代表縮回全覽（只有 wheel-zoom 會出現） */
+export interface ChartAxisDomainEvent {
+  axis: 'x' | 'yLeft' | 'yRight'
+  domain: XDomain | YDomain | null
+}
+
+/** chart-resize：autoResize 量到的新尺寸（width / height 是容器，chartWidth / chartHeight 是扣掉邊距的繪圖區） */
+export interface ChartResizeEvent {
+  width: number
+  height: number
+  chartWidth: number
+  chartHeight: number
+}
+
+/** chart-ready：首次掛載完成 */
+export interface ChartReadyEvent {
+  scales: { x: XScale | null; yLeft: YScale | null; yRight: YScale | null }
+  dimensions: { width: number; height: number }
+}
+
+/** GridFacetChart 事件附帶的分面位置 */
+export interface GridFacetCell {
+  facetId: string
+  row: number
+  col: number
 }
 
 // ===== 型別守衛 =====

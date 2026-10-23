@@ -336,15 +336,22 @@ function layerNameFromSrc(src: string): string {
   return src.split('/').pop()?.split('?')[0] || 'Gerber'
 }
 
+/** 第 i 個圖層的外觀（名稱、顏色、顯示）；改這些只需重畫，不必重新抓檔 */
+function layerAppearance(i: number): Pick<ViewerLayer, 'name' | 'color' | 'visible'> {
+  const input = props.layers[i]
+  if (input) {
+    return { name: input.name || `圖層 ${i + 1}`, color: input.color || defaultLayerColor(i), visible: input.visible !== false }
+  }
+  return { name: props.src ? layerNameFromSrc(props.src) : 'Gerber', color: props.fillColor, visible: true }
+}
+
 function buildActiveLayers(): void {
   if (props.layers && props.layers.length > 0) {
     activeLayers.value = props.layers.map((l, i) => ({
       id: `layer-${i}`,
       src: l.src || '',
       gerberText: l.gerberText || '',
-      name: l.name || `圖層 ${i + 1}`,
-      color: l.color || defaultLayerColor(i),
-      visible: l.visible !== false,
+      ...layerAppearance(i),
       loading: false,
       error: null,
       imageTree: null,
@@ -358,9 +365,7 @@ function buildActiveLayers(): void {
         id: 'layer-0',
         src: props.src,
         gerberText: props.gerberText,
-        name: props.src ? layerNameFromSrc(props.src) : 'Gerber',
-        color: props.fillColor,
-        visible: true,
+        ...layerAppearance(0),
         loading: false,
         error: null,
         imageTree: null,
@@ -404,7 +409,7 @@ function toMessage(e: unknown): string {
 }
 
 // ===== 載入單一圖層 =====
-async function loadLayer(layer: ViewerLayer): Promise<void> {
+async function loadLayer(layer: ViewerLayer, signal: AbortSignal): Promise<void> {
   layer.loading = true
   layer.error = null
   layer.imageTree = null
@@ -417,9 +422,11 @@ async function loadLayer(layer: ViewerLayer): Promise<void> {
     if (layer.gerberText) {
       text = layer.gerberText
     } else if (layer.src) {
-      const res = await fetch(layer.src)
+      const res = await fetch(layer.src, { signal })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       text = await res.text()
+      // 已被更新的載入取代：不必再花時間解析
+      if (signal.aborted) return
     } else {
       throw new Error('缺少 src 或 gerberText')
     }
@@ -441,6 +448,7 @@ async function loadLayer(layer: ViewerLayer): Promise<void> {
       }
     }
   } catch (e) {
+    if (signal.aborted) return
     layer.error = toMessage(e)
     console.warn(`圖層 "${layer.name}" 載入失敗:`, e)
   } finally {
@@ -813,26 +821,47 @@ function resetView(): void {
 }
 
 // ===== 主載入流程 =====
+
+/**
+ * 載入的世代編號與取消控制。
+ *
+ * ⚠️ src / layers 快速切換時會同時有兩次載入在跑。舊的那次 await 回來後，
+ *    activeLayers 已經是新一批（還沒載完）的圖層 —— 以前會拿它來數成功數，
+ *    誤報「所有圖層均載入失敗」、提早關掉載入中，或用舊請求再畫一次、多發一次 loaded。
+ *    現在每次載入拿一個編號，await 回來編號不是最新就整個放棄；上一批的 fetch 也一併取消。
+ */
+let loadSeq = 0
+let loadAbort: AbortController | null = null
+
 async function loadAndRender(): Promise<void> {
+  const seq = ++loadSeq
+  const isStale = () => seq !== loadSeq
+  loadAbort?.abort()
+  const abort = new AbortController()
+  loadAbort = abort
+
   globalLoading.value = true
   fatalError.value = null
   imageInfo.value = null
 
   try {
     buildActiveLayers()
+    const layers = activeLayers.value
 
-    if (activeLayers.value.length === 0) {
+    if (layers.length === 0) {
       throw new Error('請提供 src、gerberText 或 layers 屬性')
     }
 
-    loadingMessage.value = `載入 ${activeLayers.value.length} 個圖層...`
-    await Promise.all(activeLayers.value.map(loadLayer))
+    loadingMessage.value = `載入 ${layers.length} 個圖層...`
+    await Promise.all(layers.map((layer) => loadLayer(layer, abort.signal)))
+    if (isStale()) return
 
-    const successCount = activeLayers.value.filter((l) => l.imageTree || l.parsed).length
+    const successCount = layers.filter((l) => l.imageTree || l.parsed).length
     if (successCount === 0) throw new Error('所有圖層均載入失敗')
 
     loadingMessage.value = '渲染圖形...'
     await nextTick()
+    if (isStale()) return
 
     if (!containerRef.value || !svgRef.value) throw new Error('容器尚未掛載')
     const { width, height } = containerRef.value.getBoundingClientRect()
@@ -843,15 +872,29 @@ async function loadAndRender(): Promise<void> {
 
     emit('loaded', {
       info: imageInfo.value,
-      layerCount: activeLayers.value.length,
+      layerCount: layers.length,
       successCount,
     })
   } catch (e) {
+    if (isStale()) return
     console.error('GerberViewer 錯誤:', e)
     fatalError.value = toMessage(e)
     emit('error', { message: toMessage(e) })
   } finally {
-    globalLoading.value = false
+    if (!isStale()) globalLoading.value = false
+  }
+}
+
+/** 只有外觀（顏色、名稱、顯示）變了：更新圖層後重畫，保留目前的縮放與平移 */
+function applyAppearance(): void {
+  // 載入中的那批圖層建立時就讀了最新的 props，載完自然會用新外觀畫
+  if (globalLoading.value) return
+  activeLayers.value.forEach((layer, i) => Object.assign(layer, layerAppearance(i)))
+
+  const view = svgRef.value ? d3.zoomTransform(svgRef.value) : d3.zoomIdentity
+  // 重畫會重建 zoom behavior（縮放歸 1），畫完再把原本的視角套回去
+  if (rerenderAtCurrentSize() && svgSelection && zoomBehavior) {
+    svgSelection.call(zoomBehavior.transform, view)
   }
 }
 
@@ -892,6 +935,9 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  // 進行中的載入作廢、請求取消，回來的結果不再寫入或發事件
+  loadSeq++
+  loadAbort?.abort()
   if (resizeTimer) clearTimeout(resizeTimer)
   if (resizeObserver) {
     resizeObserver.disconnect()
@@ -901,11 +947,22 @@ onBeforeUnmount(() => {
 })
 
 // ===== 監聽 Props 變化 =====
+// 來源（src / gerberText）變了才重新抓檔；顏色、名稱、顯示只重畫；
+// backgroundColor 直接綁在模板的 SVG 上，什麼都不用做。
+const sameList = (a: unknown[], b: unknown[]) => a.length === b.length && a.every((v, i) => v === b[i])
+
 watch(
-  () => [props.src, props.gerberText, props.fillColor, props.backgroundColor],
-  () => loadAndRender()
+  () => (props.layers.length > 0 ? props.layers.flatMap((l) => [l.src ?? '', l.gerberText ?? '']) : [props.src, props.gerberText]),
+  (now, before) => {
+    if (!sameList(now, before)) loadAndRender()
+  }
 )
-watch(() => props.layers, () => loadAndRender(), { deep: true })
+watch(
+  () => (props.layers.length > 0 ? props.layers.flatMap((l) => [l.name, l.color, l.visible]) : [props.fillColor, props.src]),
+  (now, before) => {
+    if (!sameList(now, before)) applyAppearance()
+  }
+)
 watch(
   () => props.showMovePath,
   (v) => {

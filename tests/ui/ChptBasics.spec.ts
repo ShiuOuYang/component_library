@@ -179,6 +179,13 @@ describe('ChptCheckbox', () => {
     expect(w.emitted('update:modelValue')!.at(-1)).toEqual([['smt', 'dip']])
   })
 
+  /** 回歸：元件宣告了 click 事件卻從來沒發出 */
+  it('使用者切換某個選項時送出 click（帶該選項）', async () => {
+    const w = track(mount(ChptCheckbox, { props: { items, modelValue: [] } }))
+    await w.findAll('input')[1].setValue(true)
+    expect(w.emitted('click')).toEqual([[items[1]]])
+  })
+
   it('停用項目的 input 是 disabled', () => {
     const w = track(mount(ChptCheckbox, { props: { items } }))
     expect(w.findAll('input')[2].attributes('disabled')).toBeDefined()

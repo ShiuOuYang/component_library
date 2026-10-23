@@ -13,7 +13,9 @@ export { default as StatusScatterMap } from './StatusScatterMap.vue'
 export type {
   ChartDatum, XAccessor, YAccessor, ContinuousScaleType, XScaleType, XDomain, YDomain,
   ChartLayerType, ChartAxisSide, ChartLayerLegend, ChartLayer,
-  BrushMode, BrushSelectionPayload, ChartMargin, TooltipPosition, TooltipPayload,
+  BrushMode, BrushSelectionPayload, ChartMargin, TooltipPosition, TooltipPayload, XScale, YScale,
+  ChartLayerEvent, ChartSelectionEvent, ChartAxisDomainEvent, ChartResizeEvent, ChartReadyEvent,
+  GridFacetCell,
 } from './types/chart.types'
 export type { TriggerLine, FacetConfig, GridFacet, GridFacetDatum } from './composables/faceChart/useFacetLayout'
 export type { ParetoDatum, ParetoSortOrder } from './composables/useParetoData'

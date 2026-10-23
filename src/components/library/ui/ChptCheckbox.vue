@@ -19,6 +19,7 @@
           :value="item.value"
           v-model="innerModelValue"
           :disabled="item.disabled"
+          @change="emit('click', item)"
           class="absolute opacity-0 w-0 h-0"
           :aria-label="item.label"
         />
