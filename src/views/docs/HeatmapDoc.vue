@@ -77,6 +77,12 @@
           </table>
         </div>
       </section>
+
+      <!-- Events -->
+      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">事件</h2>
+        <ApiTable of="EnterpriseHeatmap" title="Events" :rows="eventsList" />
+      </section>
     </div>
   </div>
 </template>
@@ -93,6 +99,16 @@ const colorRangeSnippet =
 import { computed } from 'vue'
 import { EnterpriseHeatmap } from '@/components/library/charts'
 import { ChptCodeBlock } from '@/components/library'
+import ApiTable from './components/_ApiTable.vue'
+
+const eventsList = [
+  { name: 'cell-click / cell-hover', params: '{ event, data, … }', desc: '點擊／滑過格子' },
+  { name: 'tooltip-show / tooltip-hide', params: '{ data, position } / —', desc: '提示框顯示與隱藏' },
+  { name: 'chart-ready', params: '—', desc: '第一次畫完（只發一次）' },
+  { name: 'chart-rendered', params: '—', desc: '每次畫完；資料、尺寸、範圍改變後的重畫都會發' },
+  { name: 'chart-resize', params: '{ width, height }', desc: 'autoResize 量到新尺寸' },
+  { name: 'selection-change / zoom-reset', params: '{ xDomain, yDomain } / —', desc: 'Brush 框選結束／按「重設縮放」' },
+]
 
 const stations = ['電鍍站', '蝕刻站', '曝光站', '壓合站', '鑽孔站', '印刷站']
 const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8']

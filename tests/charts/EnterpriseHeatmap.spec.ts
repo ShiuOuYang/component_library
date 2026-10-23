@@ -335,6 +335,23 @@ describe('EnterpriseHeatmap', () => {
       wrapper.unmount()
     })
 
+    /**
+     * 回歸：原本每次重畫都發 chart-ready（render 由 watchEffect 觸發），
+     * 與 DualAxisComboChart「首次完成才發」的語意不一致。每次重畫改發 chart-rendered。
+     */
+    it('chart-ready 只在第一次畫完發；之後每次重畫發 chart-rendered', async () => {
+      const wrapper = await mountHeatmap()
+      expect(wrapper.emitted('chart-ready')).toHaveLength(1)
+      const renderedBefore = wrapper.emitted('chart-rendered')?.length ?? 0
+      expect(renderedBefore).toBeGreaterThan(0)
+
+      await wrapper.setProps({ title: '換個標題觸發重畫' })
+      await nextTick()
+      expect(wrapper.emitted('chart-ready')).toHaveLength(1)
+      expect(wrapper.emitted('chart-rendered')!.length).toBeGreaterThan(renderedBefore)
+      wrapper.unmount()
+    })
+
     it('點擊單元格發出 cell-click 並帶上原始資料', async () => {
       const wrapper = await mountHeatmap()
       await wrapper.find('rect.heatmap-cell').trigger('click')

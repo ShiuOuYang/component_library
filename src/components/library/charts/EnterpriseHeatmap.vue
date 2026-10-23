@@ -261,7 +261,10 @@ const emit = defineEmits<{
   }]
   'tooltip-show': [payload: { data: HeatmapDatum; position: { pageX: number; pageY: number } }]
   'tooltip-hide': []
+  /** 第一次畫完（只發一次，與 DualAxisComboChart 一致） */
   'chart-ready': []
+  /** 每次畫完（資料、尺寸、範圍改變後的重畫都會發） */
+  'chart-rendered': []
   'chart-resize': [size: { width: number; height: number }]
   /** Brush 選取範圍改變 */
   'selection-change': [payload: { xDomain: string[]; yDomain: string[] }]
@@ -1058,6 +1061,13 @@ const handleResetZoom = (): void => {
 };
 
 /**
+ * ⚠️ render 由 watchEffect 觸發，資料、尺寸、範圍一變就重畫。原本每次都發 chart-ready，
+ *    與 DualAxisComboChart「首次完成才發」不一致 —— 現在 chart-ready 只發一次，
+ *    每次重畫改發 chart-rendered（與 ParetoChart 同名）。
+ */
+let readyEmitted = false
+
+/**
  * 主渲染函數
  */
 const render = (): void => {
@@ -1068,7 +1078,11 @@ const render = (): void => {
   renderTitle();
   renderBrush();
 
-  emit('chart-ready');
+  if (!readyEmitted) {
+    readyEmitted = true;
+    emit('chart-ready');
+  }
+  emit('chart-rendered');
 };
 
 // === 響應式渲染 ===
