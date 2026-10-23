@@ -17,6 +17,17 @@ npm ci             # 使用 lockfile 安裝（不要用 npm install，會改寫 
 npm run dev        # 開發 / 文件站
 ```
 
+遇到 `net::ERR_ABORTED 504 (Outdated Optimize Dep)`（常見於新增／升級依賴、或 `npm ci` 之後
+還開著舊分頁，例如 `qrcode-generator.js?v=...`）：
+
+```bash
+npm run dev:clean  # 刪掉 node_modules/.vite 並以 --force 重新預打包依賴
+```
+
+然後對瀏覽器做一次硬重新整理（`Ctrl + Shift + R`）。原因是 Vite 的依賴預打包快取與頁面上的
+`?v=` 雜湊失去同步，舊分頁會去要一個已經不存在的 dep 檔。若一個依賴只在延遲載入的頁面才被
+發現，請一併加進 [`vite.config.js`](vite.config.js) 的 `optimizeDeps.include`，讓它冷啟動就預打包。
+
 品質檢查：
 
 ```bash

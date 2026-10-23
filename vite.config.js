@@ -10,6 +10,21 @@ export default defineConfig({
       "@": resolve(__dirname, "src"),
     },
   },
+  /*
+   * dev 的依賴預打包（pre-bundle）清單。
+   *
+   * qrcode-generator 只被「資料展示元件」文件頁（/docs/components/data-display）
+   * 間接用到，而那個頁面是延遲載入的。冷啟動時若沒把它收進預打包，第一次進
+   * 那個頁面 Vite 才會臨時重跑 optimizer —— 於是產生新的 dep 檔名與新的 ?v=
+   * 雜湊，已經載入的分頁仍拿著舊雜湊去要檔案，得到
+   * `504 (Outdated Optimize Dep)`；而失敗發生在動態 import()，Vite 的整頁
+   * 重載救援不會觸發，畫面就直接壞掉。
+   *
+   * 寫在這裡讓它冷啟動就預打包、雜湊保持穩定。只影響 dev，不影響 build。
+   */
+  optimizeDeps: {
+    include: ["qrcode-generator"],
+  },
   build: {
     outDir: "dist",
     emptyOutDir: true,
