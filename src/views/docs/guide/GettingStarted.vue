@@ -44,6 +44,13 @@
         圖表、檢視器、Excel 元件較重，可依群別引入以利 code splitting：
       </p>
       <ChptCodeBlock language="ts" :code="groupImportCode" />
+
+      <p class="text-sm text-content-secondary mt-4">
+        Props 的資料形狀與事件 payload 的型別也從同一個入口取得（<code class="bg-surface-tertiary px-1 py-0.5 rounded">import type</code>），
+        不要 import 元件內部檔案 —— 內部路徑可能隨重構改變。元件完整的 Props 型別用
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">InstanceType&lt;typeof 元件&gt;['$props']</code> 取得。
+      </p>
+      <ChptCodeBlock language="ts" :code="typeImportCode" />
     </section>
 
     <!-- ============ 前置條件 ============ -->
@@ -154,6 +161,27 @@ import { ChptButton, ChptInput, ChptTable } from '@/components/library'
 const groupImportCode = `import { DualAxisComboChart, EnterprisePareto } from '@/components/library/charts'
 import { GerberViewer, PcbLayout } from '@/components/library/viewer'
 import { ChptExcelEditor } from '@/components/library/excel'`
+
+const typeImportCode = `import type { ChartLayer, TableColumn, TableChangeEvent, ComponentSize } from '@/components/library'
+import { ChptTable } from '@/components/library'
+
+const columns: TableColumn[] = [{ key: 'name', title: '工單', sortable: true }]
+const layers: ChartLayer[] = [
+  {
+    type: 'line',
+    name: '良率',
+    data: rows,
+    xValue: (d) => d.date as string,
+    yValue: (d) => d.yield as number,
+  },
+]
+
+function onChange(e: TableChangeEvent) {
+  fetchPage(e.page, e.pageSize, e.sortColumns, e.query)
+}
+
+// 元件完整的 Props 型別
+type TableProps = InstanceType<typeof ChptTable>['$props']`
 
 const mainCode = `import { createApp } from 'vue'
 import '@/styles/index.css'

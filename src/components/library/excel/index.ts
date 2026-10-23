@@ -5,6 +5,14 @@ export { default as ChptExcelEditor } from './ChptExcelEditor.vue'
 export { default as ChptExcelExporter } from './ChptExcelExporter.vue'
 export { default as ChptExcelUploader } from './ChptExcelUploader.vue'
 
+// ===== 型別 =====
+export type {
+  ExporterColumn as ExcelExporterColumn,
+  ExporterCellStyle as ExcelExporterCellStyle,
+  ExporterSize as ExcelExporterSize,
+  ExporterVariant as ExcelExporterVariant,
+} from './ChptExcelExporter.vue'
+
 // 相容 alias stub（@deprecated — 請改用 ChptExcel*）
 export { default as ExcelEditor } from './ExcelEditor.vue'
 export { default as ExcelExporter } from './ExcelExporter.vue'

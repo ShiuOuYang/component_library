@@ -26,13 +26,13 @@ export type ContinuousScaleType = 'linear' | 'log' | 'sqrt' | 'time' | 'symlog'
 /** X 軸可用的比例尺種類；band 為離散類別 */
 export type XScaleType = ContinuousScaleType | 'band'
 
-/** 離散或連續的 X 軸比例尺 */
+/** 離散或連續的 X 軸比例尺 @internal */
 export type XScale =
   | d3.ScaleBand<string>
   | d3.ScaleContinuousNumeric<number, number>
   | d3.ScaleTime<number, number>
 
-/** Y 軸比例尺一律為連續型 */
+/** Y 軸比例尺一律為連續型 @internal */
 export type YScale = d3.ScaleContinuousNumeric<number, number>
 
 /** X / Y 軸的 domain。band 為類別陣列，連續型為 [min, max] */
@@ -117,6 +117,8 @@ export interface ChartLayer<T = ChartDatum> {
  * 結構與 ChartLayer 相同；用不同名稱只是為了在回傳型別上標示
  * 「這批圖層的 data 可能已按 brush 範圍過濾」（看 _isFiltered 旗標）。
  * 不把 _isFiltered 收窄成 true —— 沒有 brush 範圍時會原樣回傳未過濾的圖層。
+ *
+ * @internal
  */
 export type ProcessedChartLayer<T = ChartDatum> = ChartLayer<T>
 
@@ -141,7 +143,7 @@ export interface ChartMargin {
   left: number
 }
 
-/** 建立 brush 實例所需的尺寸 */
+/** 建立 brush 實例所需的尺寸 @internal */
 export interface BrushDimensions {
   width: number
   height: number
@@ -153,6 +155,8 @@ export interface BrushDimensions {
  *
  * 刻意只宣告它真正用到的欄位 —— 元件的完整 props 型別各自定義，
  * 傳進來時結構相容即可。
+ *
+ * @internal
  */
 export interface ChartScalesProps<T = ChartDatum> {
   layers: ChartLayer<T>[]

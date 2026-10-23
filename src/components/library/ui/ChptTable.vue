@@ -298,9 +298,9 @@ import ChptSpinner from './ChptSpinner.vue'
 import { useConfig } from '@/components/library/shared/config'
 
 // === 型別定義 ===
-type DataRow = Record<string, unknown> //=type DataRow = { [key: string]: unknown };
+export type DataRow = Record<string, unknown>
 
-interface Column {
+export interface Column {
   key?: string
   title: string
   sortable?: boolean
@@ -314,20 +314,20 @@ interface Column {
   resizable?: boolean
 }
 
-type RowKey = string | number
+export type RowKey = string | number
 
-interface SortItem {
+export interface SortItem {
   key: string
   direction: 'asc' | 'desc'
 }
 
-interface DefaultSort {
+export interface DefaultSort {
   column: string | null
   direction: 'asc' | 'desc'
 }
 
 /** remote 模式下，任何會影響查詢的變動都會送出這個 payload（交給 API） */
-interface ChangeEvent {
+export interface ChangeEvent {
   page: number
   pageSize: number
   sortColumns: SortItem[]
@@ -336,7 +336,7 @@ interface ChangeEvent {
   reason: 'page' | 'pageSize' | 'sort' | 'search'
 }
 
-interface SortEvent {
+export interface SortEvent {
   // 多欄排序陣列（依照點擊順序）
   sortColumns: SortItem[]
   // 向下相容：第一個排序欄位
