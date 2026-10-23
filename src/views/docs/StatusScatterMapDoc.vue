@@ -5,7 +5,7 @@
         <h1 class="text-4xl font-bold text-content-primary mb-2">StatusScatterMap 狀態散佈圖</h1>
         <p class="text-lg text-content-secondary">
           量測點／探針點的位置分佈，依 PASS／NEARFAIL／FAIL 著色。X、Y 等比例（實體座標不會被拉扁），
-          不良點畫在最上層。請由 <code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">@/components/library/charts</code> 匯入。
+          不良點畫在最上層。請由 <code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">@/components/library</code>（或 <code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">@/components/library/charts</code>）匯入；型別 <code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">StatusDef</code>、<code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">StatusScatterTooltip</code> 也從同一個入口取得。
         </p>
       </div>
 
