@@ -18,7 +18,7 @@
           role="listitem"
           :aria-setsize="props.items.length"
           :aria-posinset="row.index + 1"
-          :style="{ height: `${props.itemHeight}px` }"
+          :style="{ height: `${rowHeight}px` }"
           class="overflow-hidden"
         >
           <slot :item="row.item" :index="row.index"></slot>
@@ -86,12 +86,15 @@ const viewport = useTemplateRef<HTMLElement>('viewport')
 const scrollTop = ref(0)
 const viewportHeight = ref(0)
 
-const totalHeight = computed(() => props.items.length * props.itemHeight)
-const first = computed(() => Math.max(0, Math.floor(scrollTop.value / props.itemHeight) - props.overscan))
+/** 實際使用的列高：0、負數或 NaN 會讓索引算成 NaN、整個清單空白，退回 1px */
+const rowHeight = computed(() => (props.itemHeight > 0 ? props.itemHeight : 1))
+
+const totalHeight = computed(() => props.items.length * rowHeight.value)
+const first = computed(() => Math.max(0, Math.floor(scrollTop.value / rowHeight.value) - props.overscan))
 const last = computed(() =>
-  Math.min(props.items.length, Math.ceil((scrollTop.value + viewportHeight.value) / props.itemHeight) + props.overscan)
+  Math.min(props.items.length, Math.ceil((scrollTop.value + viewportHeight.value) / rowHeight.value) + props.overscan)
 )
-const offsetY = computed(() => first.value * props.itemHeight)
+const offsetY = computed(() => first.value * rowHeight.value)
 const visible = computed(() => {
   const out: { item: T; index: number }[] = []
   for (let i = first.value; i < last.value; i++) out.push({ item: props.items[i], index: i })
@@ -128,6 +131,18 @@ watch(
   () => (bottomArmed = true)
 )
 
+/**
+ * 資料變少（篩選）或列高改變時，把捲動位置拉回範圍內。
+ * ⚠️ 原本不校正：捲到第 8,000 筆後篩到剩 20 筆，第一個可見索引大於資料長度 → 畫面空白，
+ *    要等瀏覽器自己把 DOM 捲動位置拉回來、送出 scroll 事件才恢復，元件不該依賴這個副作用。
+ */
+watch([() => props.items.length, rowHeight], () => {
+  const max = Math.max(0, totalHeight.value - viewportHeight.value)
+  if (scrollTop.value <= max) return
+  scrollTop.value = max
+  if (viewport.value) viewport.value.scrollTop = max
+})
+
 let observer: ResizeObserver | null = null
 onMounted(() => {
   const el = viewport.value
@@ -144,9 +159,9 @@ function scrollToIndex(index: number, align: 'start' | 'center' | 'end' = 'start
   const el = viewport.value
   if (!el) return
   const i = Math.min(Math.max(0, index), Math.max(0, props.items.length - 1))
-  let top = i * props.itemHeight
-  if (align === 'center') top -= (el.clientHeight - props.itemHeight) / 2
-  if (align === 'end') top -= el.clientHeight - props.itemHeight
+  let top = i * rowHeight.value
+  if (align === 'center') top -= (el.clientHeight - rowHeight.value) / 2
+  if (align === 'end') top -= el.clientHeight - rowHeight.value
   el.scrollTop = Math.max(0, top)
   onScroll()
 }

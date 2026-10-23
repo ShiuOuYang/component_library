@@ -230,6 +230,30 @@ describe('ChptVirtualList', () => {
     expect(w.emitted('reach-bottom')).toHaveLength(2)
   })
 
+  /**
+   * 回歸：捲到第 8,000 筆後資料篩到只剩 20 筆，scrollTop 狀態沒校正，
+   * 第一個可見索引大於資料長度 → 畫面空白（要等瀏覽器自己把捲動位置拉回來才恢復）。
+   */
+  it('資料變少時把捲動位置拉回範圍內，不會畫出空白', async () => {
+    const w = mountList()
+    const el = w.element as HTMLElement
+    el.scrollTop = 30 * 8000
+    el.dispatchEvent(new Event('scroll'))
+    await nextTick()
+
+    await w.setProps({ items: items.slice(0, 20) })
+    expect(w.findAll('[role="listitem"]').length).toBeGreaterThan(0)
+    expect(w.findAll('.row').map((r) => r.text())).toContain('序號 19')
+    expect(el.scrollTop).toBeLessThanOrEqual(20 * 30)
+  })
+
+  it('itemHeight 不是正數時退回 1px，不會整個空白', async () => {
+    const w = mountList({ itemHeight: 0, items: items.slice(0, 3) })
+    w.element.dispatchEvent(new Event('scroll'))
+    await nextTick()
+    expect(w.findAll('.row').map((r) => r.text())).toEqual(['序號 0', '序號 1', '序號 2'])
+  })
+
   it('scrollToIndex', async () => {
     const w = mountList()
     ;(w.vm as unknown as { scrollToIndex: (i: number) => void }).scrollToIndex(500)
