@@ -292,7 +292,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, useSlots, onMounted, onBeforeUnmount, getCurrentInstance, useId } from 'vue'
+import { ref, computed, watch, shallowReactive, useSlots, onMounted, onBeforeUnmount, getCurrentInstance, useId } from 'vue'
 import ChptPagination from './ChptPagination.vue'
 import ChptSpinner from './ChptSpinner.vue'
 import { useConfig } from '@/components/library/shared/config'
@@ -869,8 +869,13 @@ const selectedKeySet = computed(() => new Set(innerSelected.value))
 /**
  * 看過的列（鍵 → 列）：remote 模式下其他頁的資料不在 props.data 裡，
  * selection-change 仍要能回傳跨頁勾選的完整列。
+ *
+ * ⚠️ 必須是響應式的 Map：原本是一般的 Map，selectedRows 只依賴勾選的鍵，
+ *    父層更新了已勾選那列的內容（同一個鍵、新的資料）時不會重算，
+ *    selection-actions 插槽與 ref 的 selectedRows 停在舊資料。
+ *    用 shallowReactive：只追蹤 Map 的增刪改，不把每一列包成深層 Proxy。
  */
-const seenRows = new Map<RowKey, DataRow>()
+const seenRows = shallowReactive(new Map<RowKey, DataRow>())
 watch(() => props.data, (rows) => {
   const current = new Set<RowKey>()
   rows.forEach((row, i) => {
