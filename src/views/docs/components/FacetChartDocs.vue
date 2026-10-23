@@ -39,7 +39,7 @@
       <div class="mt-6">
         <ChptCodeBlock :code="facetedSample" />
       </div>
-      <ApiTable title="Props（新增）" :rows="facetedProps" />
+      <ApiTable of="FacetedChart" title="Props（新增）" :rows="facetedProps" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>共用圖例點一下會在<em>每個分面</em>同時隱藏該系列（色塊變空心並加刪除線，不只靠顏色表示）；
         各分面自己的圖例會自動關掉。預設 tooltip 會顯示「被滑到的那個圖層」的值，並依左右軸各自的格式化函式顯示。
@@ -83,7 +83,7 @@
       <div class="mt-6">
         <ChptCodeBlock :code="gridSample" />
       </div>
-      <ApiTable title="Props（新增 / 變更）" :rows="gridProps" />
+      <ApiTable of="GridFacetChart" title="Props（新增 / 變更）" :rows="gridProps" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>修正：</strong>title 原本不會顯示（模板被註解掉）；有負值的長條原本會被左軸裁掉、全負值時軸會倒過來；
         框選同步模式下原本忽略每格自己的 domain；預設 tooltip 原本用 absolute 定位視窗座標，圖表不在頁面左上角時會離游標很遠。

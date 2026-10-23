@@ -88,9 +88,9 @@
 
       <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
-        <ApiTable title="Props" :rows="propsRows" />
-        <ApiTable title="Events" :rows="eventRows" />
-        <ApiTable title="Slots" :rows="slotRows" />
+        <ApiTable of="StatusScatterMap" title="Props" :rows="propsRows" />
+        <ApiTable of="StatusScatterMap" title="Events" :rows="eventRows" />
+        <ApiTable of="StatusScatterMap" title="Slots" :rows="slotRows" />
       </section>
     </div>
   </div>

@@ -45,8 +45,8 @@
             <ChptInput v-model="form.inputErr" label="必填欄位" placeholder="請輸入" error-text="此欄為必填" full-width />
           </div>
           <ChptCodeBlock :code="inputSample" />
-          <ApiTable title="Props" :rows="inputProps" />
-          <ApiTable title="Events" :rows="inputEvents" />
+          <ApiTable of="ChptInput" title="Props" :rows="inputProps" />
+          <ApiTable of="ChptInput" title="Events" :rows="inputEvents" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>有 errorText 時呈現 danger 樣式；clearable 需有值才出現 ✕。</p>
         </section>
 
@@ -61,8 +61,8 @@
             <p class="text-sm text-content-secondary mt-2">目前值：<span class="font-mono">{{ form.site || '(未選擇)' }}</span></p>
           </div>
           <ChptCodeBlock :code="selectSample" />
-          <ApiTable title="Props" :rows="selectProps" />
-          <ApiTable title="Events" :rows="selectEvents" />
+          <ApiTable of="ChptSelect" title="Props" :rows="selectProps" />
+          <ApiTable of="ChptSelect" title="Events" :rows="selectEvents" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>物件選項可用 valueKey/labelKey 對映；numberValue 會把值轉數字。</p>
         </section>
 
@@ -77,8 +77,8 @@
             <p class="text-sm text-content-secondary mt-2">目前值：<span class="font-mono">{{ form.priority }}</span></p>
           </div>
           <ChptCodeBlock :code="radioSample" />
-          <ApiTable title="Props" :rows="radioProps" />
-          <ApiTable title="Events" :rows="radioEvents" />
+          <ApiTable of="ChptRadio" title="Props" :rows="radioProps" />
+          <ApiTable of="ChptRadio" title="Events" :rows="radioEvents" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>欄位禁用由 item.disabled 控制；錯誤以 errors[] 顯示於下方。</p>
         </section>
 
@@ -95,8 +95,8 @@
             </div>
           </div>
           <ChptCodeBlock :code="switchSample" />
-          <ApiTable title="Props" :rows="switchProps" />
-          <ApiTable title="Events" :rows="switchEvents" />
+          <ApiTable of="ChptSwitch" title="Props" :rows="switchProps" />
+          <ApiTable of="ChptSwitch" title="Events" :rows="switchEvents" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>color 語意色；disabled 時不觸發 change。</p>
         </section>
 
@@ -114,8 +114,8 @@
             <p class="text-sm text-content-secondary mt-2 break-all">單日：<span class="font-mono">{{ form.date ? String(form.date) : '(未選擇)' }}</span></p>
           </div>
           <ChptCodeBlock :code="dateSample" />
-          <ApiTable title="Props" :rows="dateProps" />
-          <ApiTable title="Events" :rows="dateEvents" />
+          <ApiTable of="ChptDatePicker" title="Props" :rows="dateProps" />
+          <ApiTable of="ChptDatePicker" title="Events" :rows="dateEvents" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>range=true 回傳區間陣列；format 例：yyyy-MM-dd 或含時間 HH:mm。</p>
         </section>
 
@@ -135,8 +135,8 @@
             <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ form.qty }} / {{ form.threshold }} / {{ form.lot ?? 'null' }}</span></p>
           </div>
           <ChptCodeBlock :code="inputNumberSample" />
-          <ApiTable title="Props" :rows="inputNumberProps" />
-          <ApiTable title="Events" :rows="inputNumberEvents" />
+          <ApiTable of="ChptInputNumber" title="Props" :rows="inputNumberProps" />
+          <ApiTable of="ChptInputNumber" title="Events" :rows="inputNumberEvents" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>清空欄位時值是 null（不是 0）；打錯字會還原成原本的值。
             − / + 按鈕不佔 Tab 停駐點，鍵盤使用者用方向鍵。</p>
         </section>
@@ -155,8 +155,8 @@
             </div>
           </div>
           <ChptCodeBlock :code="sliderSample" />
-          <ApiTable title="Props" :rows="sliderProps" />
-          <ApiTable title="Events" :rows="sliderEvents" />
+          <ApiTable of="ChptSlider" title="Props" :rows="sliderProps" />
+          <ApiTable of="ChptSlider" title="Events" :rows="sliderEvents" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>update:modelValue 在拖曳中持續觸發，要打 API 請聽 change（放開時一次）。
             formatter 也會成為螢幕閱讀器唸出的 aria-valuetext。</p>
         </section>
@@ -176,8 +176,8 @@
             <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ form.period }} / {{ form.view }}</span></p>
           </div>
           <ChptCodeBlock :code="segmentedSample" />
-          <ApiTable title="Props" :rows="segmentedProps" />
-          <ApiTable title="Events" :rows="segmentedEvents" />
+          <ApiTable of="ChptSegmented" title="Props" :rows="segmentedProps" />
+          <ApiTable of="ChptSegmented" title="Events" :rows="segmentedEvents" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>整組只佔一個 Tab 停駐點，←→ 直接切換並略過停用項（WAI-ARIA radiogroup）。
             畫面上沒有標籤時務必給 aria-label。</p>
         </section>
@@ -193,7 +193,7 @@
             <p class="text-sm text-content-secondary mt-3">目前值：<span class="font-mono">{{ form.stations.join(', ') || '—' }}</span></p>
           </div>
           <ChptCodeBlock :code="checkboxSample" />
-          <ApiTable title="Props" :rows="checkboxProps" />
+          <ApiTable of="ChptCheckbox" title="Props" :rows="checkboxProps" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>停用但已勾選的項目仍顯示勾勾（只變淡）；
             原生 input 視覺上隱藏，Tab 到時焦點框畫在方框上。</p>
         </section>
@@ -209,8 +209,8 @@
             <ChptTextarea v-model="form.memo" label="交接備註" show-count :error-text="form.memo ? '' : '交接備註必填'" full-width />
           </div>
           <ChptCodeBlock :code="textareaSample" />
-          <ApiTable title="Props" :rows="textareaProps" />
-          <ApiTable title="Events" :rows="textareaEvents" />
+          <ApiTable of="ChptTextarea" title="Props" :rows="textareaProps" />
+          <ApiTable of="ChptTextarea" title="Events" :rows="textareaEvents" />
         </section>
 
         <!-- 引入方式 -->

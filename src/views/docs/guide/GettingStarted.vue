@@ -60,7 +60,7 @@
         組件庫刻意不在自己內部處理這些事，因為它們屬於應用程式層的設定。
       </p>
 
-      <ApiTable title="前置條件" :rows="prerequisites" />
+      <ApiTable of="-" title="前置條件" :rows="prerequisites" />
 
       <p class="text-sm text-content-secondary mt-5 mb-2">
         <strong>應用程式進入點的最小設定：</strong>

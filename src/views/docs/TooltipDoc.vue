@@ -89,9 +89,9 @@
         <ChptCodeBlock :code="contentSample" />
       </div>
 
-      <ApiTable title="Props" :rows="tooltipProps" />
-      <ApiTable title="Events" :rows="tooltipEvents" />
-      <ApiTable title="Slots" :rows="tooltipSlots" />
+      <ApiTable of="ChptTooltip" title="Props" :rows="tooltipProps" />
+      <ApiTable of="ChptTooltip" title="Events" :rows="tooltipEvents" />
+      <ApiTable of="ChptTooltip" title="Slots" :rows="tooltipSlots" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>content</code> 提供純文字快速提示；有複雜內容時用 <code>#content</code>

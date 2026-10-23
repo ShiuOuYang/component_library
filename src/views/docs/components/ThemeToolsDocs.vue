@@ -39,9 +39,9 @@
         <ChptCodeBlock :code="darkModeSample" />
       </div>
 
-      <ApiTable title="Props" :rows="darkModeProps" />
-      <ApiTable title="Events" :rows="darkModeEvents" />
-      <ApiTable title="Expose（ref）" :rows="darkModeExpose" />
+      <ApiTable of="ChptDarkModeToggle" title="Props" :rows="darkModeProps" />
+      <ApiTable of="ChptDarkModeToggle" title="Events" :rows="darkModeEvents" />
+      <ApiTable of="ChptDarkModeToggle" title="Expose（ref）" :rows="darkModeExpose" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>syncBodyByDefault</code> 預設為 true，會自動在 body 上寫
@@ -75,8 +75,8 @@
         <ChptCodeBlock :code="logoutSample" />
       </div>
 
-      <ApiTable title="Props" :rows="logoutProps" />
-      <ApiTable title="Events" :rows="logoutEvents" />
+      <ApiTable of="ChptHeaderLogoutButton" title="Props" :rows="logoutProps" />
+      <ApiTable of="ChptHeaderLogoutButton" title="Events" :rows="logoutEvents" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>本元件是純展示元件，只負責「確認 → loading → 回報結果」，
@@ -136,7 +136,8 @@
         </div>
       </ChptConfigProvider>
       <ChptCodeBlock class="mt-6" :code="configSample" />
-      <ApiTable title="Props" :rows="configProps" />
+      <ApiTable of="ChptConfigProvider" title="Props" :rows="configProps" />
+      <ApiTable of="-" title="相關 composable" :rows="configComposables" />
       <p class="text-sm text-content-secondary mt-4"><strong>目前會讀取設定的元件：</strong>尺寸 —— ChptButton、ChptInput、ChptSelect、ChptInputNumber、ChptTextarea、ChptInputTag；
         文字 —— ChptTable（含分頁）、ChptPagination、ChptEmpty、ChptSpinner、ChptSkeleton、ChptList。Provider 可以巢狀，內層只覆寫它有給的欄位。</p>
     </section>
@@ -236,6 +237,8 @@ import { ChptConfigProvider, enUS, zhTW, useConfig } from '@/components/library'
 const configProps = [
   { name: 'size', type: "'sm'|'md'|'lg'", def: '—', desc: '表單元件與按鈕的預設尺寸（元件自己的 size 優先）' },
   { name: 'locale', type: 'Partial<ChptLocale>', def: 'zhTW', desc: '內建文字；可只給部分欄位。內建 zhTW、enUS' },
-  { name: 'useConfig()', type: 'composable', def: '—', desc: '自訂元件讀取目前設定（{ size, locale }）' },
+]
+const configComposables = [
+  { name: 'useConfig()', type: '() => ComputedRef<ChptConfig>', desc: '自訂元件讀取目前設定（{ size, locale }）' },
 ]
 </script>

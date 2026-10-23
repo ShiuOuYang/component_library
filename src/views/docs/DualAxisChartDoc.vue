@@ -75,7 +75,7 @@
             <ChptCodeBlock :code="highlightCode" />
           </div>
         </div>
-        <ApiTable title="Props" :rows="highlightProps" />
+        <ApiTable of="DualAxisComboChart" title="Props" :rows="highlightProps" />
       </section>
 
       <!-- 大量資料與縮放 API -->
@@ -85,8 +85,8 @@
           10 萬筆等級的資料請用 <code>shallowRef</code> 或 <code>markRaw</code> 傳入，避免 Vue 把每一筆包成響應式代理。
           大量資料模式下折線不畫圓點；長條與散點畫在 Canvas 上，沒有個別元素的 hover 樣式，改以標記顯示指到的那一筆。
         </p>
-        <ApiTable title="Props" :rows="largeDataProps" />
-        <ApiTable title="Events" :rows="largeDataEvents" />
+        <ApiTable of="DualAxisComboChart" title="Props" :rows="largeDataProps" />
+        <ApiTable of="DualAxisComboChart" title="Events" :rows="largeDataEvents" />
       </section>
     </div>
   </div>
@@ -120,7 +120,7 @@ const highlightOptions = [
 const highlightProps = [
   { name: 'highlightKey', type: 'string | number | Date | null', def: 'null', desc: '要高亮的資料鍵；對到的點與長條畫標記、其餘 SVG 元素淡化（大量資料的 Canvas 只畫標記）。換鍵只重畫標記，不會整張圖重繪' },
   { name: 'layer.keyFn', type: '(datum, index) => string', def: '—', desc: '資料鍵的來源（同時用於元素比對）；沒有時用 X 值，Date 以 ISO 字串比對。index 是目前顯示資料中的位置，縮放後會變，請由資料欄位組出鍵' },
-  { name: 'layer-hover / layer-click / tooltip-show', type: '{ …, key }', desc: '事件多帶 key，可直接回填 highlightKey 做雙向連動' },
+  { name: '@layer-hover / @layer-click / @tooltip-show', type: '{ …, key }', desc: '事件多帶 key，可直接回填 highlightKey 做雙向連動' },
 ]
 const highlightCode = `const layers = [
   { type: 'stacked-bar', data: orders, stackKeys: ['online', 'offline'],

@@ -30,6 +30,9 @@ import { computed } from 'vue'
 const props = defineProps({
   title: { type: String, default: '' },
   rows: { type: Array, default: () => [] },
+  // 這張表在說明哪個元件（空白分隔可列多個）；不是元件 API 的表格寫 '-'。
+  // 不顯示在畫面上，給 scripts/check-doc-api.mjs 比對文件與元件實際的 props / events / slots / expose
+  of: { type: String, default: '' },
 })
 
 const hasName = computed(() => props.rows.some((r) => r.name))

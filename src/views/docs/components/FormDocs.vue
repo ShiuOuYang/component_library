@@ -70,11 +70,11 @@
       <div class="mt-6">
         <ChptCodeBlock :code="formSample" />
       </div>
-      <ApiTable title="ChptForm Props" :rows="formProps" />
-      <ApiTable title="ChptForm Events" :rows="formEvents" />
-      <ApiTable title="ChptForm 方法（ref）" :rows="formMethods" />
-      <ApiTable title="ChptFormItem Props" :rows="formItemProps" />
-      <ApiTable title="驗證規則 FormRule" :rows="ruleRows" />
+      <ApiTable of="ChptForm" title="ChptForm Props" :rows="formProps" />
+      <ApiTable of="ChptForm" title="ChptForm Events" :rows="formEvents" />
+      <ApiTable of="ChptForm" title="ChptForm 方法（ref）" :rows="formMethods" />
+      <ApiTable of="ChptFormItem" title="ChptFormItem Props" :rows="formItemProps" />
+      <ApiTable of="-" title="驗證規則 FormRule" :rows="ruleRows" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>送出失敗時焦點會移到畫面上第一個錯誤欄位並捲到可見 —— 只顯示紅字而焦點留在送出鈕，
         鍵盤與螢幕閱讀器使用者不知道哪裡錯了。欄位離開時驗證；已顯示錯誤的欄位一改對就消失。
@@ -115,9 +115,9 @@
       <div class="mt-6">
         <ChptCodeBlock :code="uploadSample" />
       </div>
-      <ApiTable title="Props" :rows="uploadProps" />
-      <ApiTable title="Events" :rows="uploadEvents" />
-      <ApiTable title="方法（ref）" :rows="uploadMethods" />
+      <ApiTable of="ChptUpload" title="Props" :rows="uploadProps" />
+      <ApiTable of="ChptUpload" title="Events" :rows="uploadEvents" />
+      <ApiTable of="ChptUpload" title="方法（ref）" :rows="uploadMethods" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong><code>accept</code> 只是檔案對話框的建議（使用者可以選「所有檔案」，拖放更完全不受限），
         所以元件會再檢查一次並說明拒絕原因。上傳中按 ✕ 會透過 <code>AbortSignal</code> 真的中止請求。

@@ -40,9 +40,9 @@
       <div class="mt-6">
         <ChptCodeBlock :code="menuSample" />
       </div>
-      <ApiTable title="Props" :rows="menuProps" />
-      <ApiTable title="MenuItem" :rows="menuItemProps" />
-      <ApiTable title="Events" :rows="menuEvents" />
+      <ApiTable of="ChptMenu" title="Props" :rows="menuProps" />
+      <ApiTable of="-" title="MenuItem" :rows="menuItemProps" />
+      <ApiTable of="ChptMenu" title="Events" :rows="menuEvents" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>照 WAI-ARIA 的 disclosure navigation，<strong>不是</strong> role="menu" —— 網站導覽用清單 + 連結，
         螢幕閱讀器才會用平常的方式瀏覽、每個連結都能 Tab 到。有 <code>to</code> / <code>href</code> 的項目是真正的 &lt;a&gt;（可中鍵開新分頁），
@@ -75,7 +75,7 @@
       <div class="mt-6">
         <ChptCodeBlock :code="anchorSample" />
       </div>
-      <ApiTable title="Props" :rows="anchorProps" />
+      <ApiTable of="ChptAnchor" title="Props" :rows="anchorProps" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>捲動容器會自動偵測（第一個區塊實際在捲的祖先）—— 內容區是 overflow: auto 的後台版面也能用。
         點連結後焦點移到該區塊，鍵盤使用者接著 Tab 會從那裡繼續；目前區塊以 aria-current="location" 標示。
@@ -92,7 +92,7 @@
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptBackTop } from '@/components/library'</code>
       </p>
       <ChptCodeBlock :code="backTopSample" />
-      <ApiTable title="Props" :rows="backTopProps" />
+      <ApiTable of="ChptBackTop" title="Props" :rows="backTopProps" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>回到頂端後焦點移到容器最上面的標題 —— 否則按鈕消失、焦點掉回 &lt;body&gt;。
         使用者設定「減少動態效果」時直接跳到頂端、不做平滑捲動。

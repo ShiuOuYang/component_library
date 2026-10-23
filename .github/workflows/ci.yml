@@ -56,9 +56,13 @@ jobs:
       - name: Legacy shims stay thin
         run: npm run check:legacy
 
-      # 文件站不得出現佔位頁或斷掉的元件引用
+      # 文件站不得出現佔位頁、斷掉的元件引用或沒人連得到的孤兒頁
       - name: Docs routes
         run: npm run check:docs
+
+      # 文件 API 表列的 props / events / 插槽 / 方法必須是元件真的有的
+      - name: Docs API tables
+        run: npm run check:doc-api
 
       # <button> 少寫 type 會在使用端的 <form> 裡誤觸表單送出
       - name: Button type

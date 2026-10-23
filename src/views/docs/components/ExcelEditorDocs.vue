@@ -32,9 +32,9 @@
         <ChptCodeBlock :code="editorSample" />
       </div>
 
-      <ApiTable title="Props" :rows="editorProps" />
-      <ApiTable title="Events" :rows="editorEvents" />
-      <ApiTable title="Expose（ref）" :rows="editorExpose" />
+      <ApiTable of="ChptExcelEditor" title="Props" :rows="editorProps" />
+      <ApiTable of="ChptExcelEditor" title="Events" :rows="editorEvents" />
+      <ApiTable of="ChptExcelEditor" title="Expose（ref）" :rows="editorExpose" />
 
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>範例提供工具列與工作表頁籤；資料可經 <code>v-model</code> 或
