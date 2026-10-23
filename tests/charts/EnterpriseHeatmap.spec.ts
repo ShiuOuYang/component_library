@@ -536,7 +536,7 @@ describe('EnterpriseHeatmap', () => {
       await flushTransitions()
 
       expect(wrapper.findAll('rect.heatmap-cell')).toHaveLength(1)
-      expect(wrapper.find('button').exists()).toBe(true)
+      expect(wrapper.find('button').text()).toBe('重設縮放')
       wrapper.unmount()
     })
 

@@ -48,29 +48,15 @@
       </g>
     </svg>
 
-    <!-- ✅ 重置縮放按鈕 -->
-    
-
-  
-<button type="button"
-  v-if="resetBtnShow && showResetButton && (enableBrush || enableWheelZoom || enableAxisDrag)"
-  @click="handleResetZoom"
-  class="
-    absolute top-2 right-2 px-3 py-1.5
-    bg-surface-primary/30 hover:bg-surface-primary/80
-    text-content-secondary text-sm
-    rounded-md border border-stroke-light
-    backdrop-blur
-    shadow-sm
-    opacity-70 hover:opacity-100
-    transition-all duration-200 z-10
-  "
->
-  🔄 Reset
-</button>
-
-
-
+    <!-- 重設縮放：與 StatusScatterMap、分面圖同一個文字與樣式 -->
+    <button
+      v-if="resetBtnShow && showResetButton && (enableBrush || enableWheelZoom || enableAxisDrag)"
+      type="button"
+      class="absolute right-2 top-2 z-20 rounded-md border border-stroke-light bg-surface-primary/80 px-2.5 py-1 text-xs text-content-secondary shadow-sm backdrop-blur hover:bg-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
+      @click="handleResetZoom"
+    >
+      重設縮放
+    </button>
 
     <!-- Vue 插槽：允許外部注入自定義 Tooltip -->
     <slot 
@@ -1113,7 +1099,7 @@ const renderBrush = () => {
  * @fires zoom-reset - 當重置縮放時觸發
  * 
  * @example
- * // 點擊「Reset Zoom」按鈕時調用
+ * // 點擊「重設縮放」按鈕時調用
  * handleResetZoom();
  */
 const handleResetZoom = () => {
