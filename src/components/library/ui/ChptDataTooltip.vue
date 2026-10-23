@@ -180,7 +180,7 @@ const props = withDefaults(defineProps<ChptDataTooltipProps>(), {
   clickToClose: true,
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits<{ close: [] }>()
 
 const tooltipEl = ref<HTMLElement | null>(null)
 const actualSize = ref({ width: 0, height: 0 })

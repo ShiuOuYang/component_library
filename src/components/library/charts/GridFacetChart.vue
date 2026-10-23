@@ -147,7 +147,16 @@ import type {
   FacetBrushEvent,
   FacetSyncMode,
 } from './composables/faceChart/useFacetBrush'
-import type { BrushMode, TooltipPayload, XDomain, XScaleType, YDomain } from './types/chart.types'
+import type {
+  BrushMode,
+  ChartAxisDomainEvent,
+  ChartSelectionEvent,
+  GridFacetCell,
+  TooltipPayload,
+  XDomain,
+  XScaleType,
+  YDomain,
+} from './types/chart.types'
 import { useFacetBrush } from './composables/faceChart/useFacetBrush';
 import {
   applySharedLegend,
@@ -242,8 +251,8 @@ const props = withDefaults(defineProps<GridFacetChartProps>(), {
 })
 
 const emit = defineEmits<{
-  'selection-change': [payload: unknown]
-  'axis-drag': [payload: unknown]
+  'selection-change': [payload: ChartSelectionEvent & GridFacetCell]
+  'axis-drag': [payload: ChartAxisDomainEvent & GridFacetCell]
   'zoom-reset': []
   'chart-resize': [size: { width: number; height: number }]
 }>();

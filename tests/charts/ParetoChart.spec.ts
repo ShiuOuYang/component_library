@@ -274,13 +274,26 @@ describe('ParetoChart', () => {
   })
 
   describe('事件', () => {
-    it('繪製完成後發出 chartRendered，帶上處理後的資料', async () => {
+    it('繪製完成後發出 chart-rendered，帶上處理後的資料', async () => {
       const wrapper = await mountPareto({ cumulativeThreshold: 100 })
 
-      const rendered = wrapper.emitted('chartRendered')!
+      const rendered = wrapper.emitted('chart-rendered')!
       expect(rendered).toBeTruthy()
       const data = rendered.at(-1)![0] as Array<{ name: string }>
       expect(data).toHaveLength(4)
+      wrapper.unmount()
+    })
+
+    it('事件改名為 kebab-case 後，舊的 @chartRendered 監聽仍接得到', async () => {
+      // 模板裡 @chartRendered 與 @chart-rendered 都編譯成 onChartRendered
+      const onChartRendered = vi.fn()
+      const wrapper = mount(ParetoChart, {
+        props: { paretoInputData: ROWS, cumulativeThreshold: 100 },
+        attrs: { onChartRendered },
+        attachTo: document.body,
+      })
+      await settle()
+      expect(onChartRendered).toHaveBeenCalled()
       wrapper.unmount()
     })
 

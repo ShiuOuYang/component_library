@@ -88,6 +88,15 @@
         <ApiTable of="DualAxisComboChart" title="Props" :rows="largeDataProps" />
         <ApiTable of="DualAxisComboChart" title="Events" :rows="largeDataEvents" />
       </section>
+
+      <!-- 事件 -->
+      <section id="events" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">事件</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          payload 的型別都可從 <code>@/components/library</code> 以 <code>import type</code> 取得。
+        </p>
+        <ApiTable of="DualAxisComboChart" title="Events" :rows="allEvents" />
+      </section>
     </div>
   </div>
 </template>
@@ -135,6 +144,16 @@ const highlight = ref(null)   // 例如表格滑過的那一列
   :highlight-key="highlight"
   @layer-hover="({ key }) => (highlight = key)"
 />`
+
+const allEvents = [
+  { name: 'layer-click / layer-hover', type: 'ChartLayerEvent', desc: '點擊／滑過資料元素：{ data, layer, seriesKey?, key? }（參考線沒有 key）' },
+  { name: 'tooltip-show / tooltip-hide', type: 'TooltipPayload / —', desc: '提示框顯示（含滑鼠位置 position）與隱藏' },
+  { name: 'selection-change', type: 'ChartSelectionEvent', desc: 'Brush 框選結束：{ xDomain, yLeftDomain, yRightDomain, mode }；x 模式時 Y 軸為 null' },
+  { name: 'axis-drag / wheel-zoom', type: 'ChartAxisDomainEvent', desc: '拖曳座標軸、滾輪縮放後：{ axis, domain }；wheel-zoom 的 domain 為 null 代表回到全覽' },
+  { name: 'zoom-reset', type: '—', desc: '按「重設縮放」' },
+  { name: 'chart-ready', type: 'ChartReadyEvent', desc: '首次掛載完成：{ scales, dimensions }' },
+  { name: 'chart-resize', type: 'ChartResizeEvent', desc: 'autoResize 量到新尺寸：{ width, height, chartWidth, chartHeight }' },
+]
 
 const largeDataEvents = [
   { name: 'wheel-zoom', type: "{ axis: 'x' | 'yLeft' | 'yRight', domain }", desc: '滾輪縮放或平移後送出；domain 為 null 代表回到全覽' },

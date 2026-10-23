@@ -194,6 +194,7 @@
           </div>
           <ChptCodeBlock :code="checkboxSample" />
           <ApiTable of="ChptCheckbox" title="Props" :rows="checkboxProps" />
+          <ApiTable of="ChptCheckbox" title="Events" :rows="checkboxEvents" />
           <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>停用但已勾選的項目仍顯示勾勾（只變淡）；
             原生 input 視覺上隱藏，Tab 到時焦點框畫在方框上。</p>
         </section>
@@ -347,6 +348,11 @@ const checkboxSample = `<ChptCheckbox
   ]"
   direction="row"
 />`
+const checkboxEvents = [
+  { name: 'update:modelValue', params: '(values: Array<string | number | boolean>)', desc: '勾選變更（v-model）' },
+  { name: 'click', params: '(item)', desc: '使用者切換某個選項時，帶出該選項；停用的選項不會觸發' },
+]
+
 const checkboxProps = [
   { name: 'modelValue', type: 'Array<string | number | boolean>', def: '[]', desc: '已勾選的值（v-model）' },
   { name: 'items', type: '{ label, value, disabled? }[]', def: '[]', desc: '選項' },

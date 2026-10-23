@@ -23,14 +23,15 @@ export interface RowYDomain {
 /** 分面 brush 事件的 payload */
 export interface FacetBrushEvent {
   xDomain?: XDomain
-  yLeftDomain?: YDomain
-  yRightDomain?: YDomain
+  /** 子圖 x 模式框選時為 null */
+  yLeftDomain?: YDomain | null
+  yRightDomain?: YDomain | null
 }
 
 /** 座標軸拖曳事件 */
 export interface FacetAxisDragEvent {
   axis: 'x' | 'yLeft' | 'yRight'
-  domain?: XDomain | YDomain
+  domain?: XDomain | YDomain | null
 }
 
 /** 分面圖表對外發出的事件 */

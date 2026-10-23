@@ -77,8 +77,9 @@ export type {
 export type {
   ChartDatum, XAccessor, YAccessor, ContinuousScaleType, XScaleType, XDomain, YDomain,
   ChartLayerType, ChartAxisSide, ChartLayerLegend, ChartLayer,
-  BrushMode, BrushSelectionPayload, ChartMargin, TooltipPosition, TooltipPayload,
-  TriggerLine, FacetConfig, GridFacet, GridFacetDatum, ParetoDatum, ParetoSortOrder,
+  BrushMode, BrushSelectionPayload, ChartMargin, TooltipPosition, TooltipPayload, XScale, YScale,
+  ChartLayerEvent, ChartSelectionEvent, ChartAxisDomainEvent, ChartResizeEvent, ChartReadyEvent,
+  GridFacetCell, TriggerLine, FacetConfig, GridFacet, GridFacetDatum, ParetoDatum, ParetoSortOrder,
   HeatmapDatum, ColorLegendPosition, HeatmapHighlightMode, HeatmapColorScale, HeatmapCell,
   GradientStop, HeatmapCustomRenderers, ParetoHighlightMode, ParetoCustomRenderers,
   VerticalFacet, ParetoInputItem, ParetoChartDatum, StatusDef, StatusScatterTooltip,

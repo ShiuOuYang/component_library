@@ -142,7 +142,8 @@ const props = withDefaults(defineProps<ParetoChartProps>(), {
 
 const emit = defineEmits<{
   'update:paretoData': [data: ParetoChartDatum[]]
-  chartRendered: [data: ParetoChartDatum[]]
+  /** 繪製完成；`@chart-rendered` 與舊的 `@chartRendered` 寫法都接得到 */
+  'chart-rendered': [data: ParetoChartDatum[]]
   error: [error: unknown]
 }>()
 
@@ -478,7 +479,7 @@ const drawParetoChart = async (): Promise<void> => {
       .text(props.yAxisRightLabel)
 
     // 發送渲染完成事件
-    emit('chartRendered', paretoData.value)
+    emit('chart-rendered', paretoData.value)
   } catch (error) {
     console.error('ParetoChart - 繪製圖表失敗:', error)
     emit('error', error)
