@@ -555,6 +555,14 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+/*
+ * 分面圖共用樣式（共用圖例、預設 tooltip、重設縮放按鈕），由 Sass 內嵌到這個 scoped 區塊。
+ * 🔧 原本用 <style scoped src="./facetShared.scss"> 引入：@vitejs/plugin-vue 處理共用的 src 樣式時，
+ *    若 .scss 的請求先於 .vue 抵達（開發伺服器重啟、Windows 路徑大小寫不一致…），會退回只有
+ *    styles[0] 的暫時描述，而這個區塊是第 2 個 → "Cannot read properties of undefined (reading 'scoped')"
+ */
+@use './facetShared';
+
 .faceted-chart {
   position: relative;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
@@ -703,5 +711,3 @@ onUnmounted(() => {
 }
 
 </style>
-
-<style lang="scss" scoped src="./facetShared.scss"></style>
