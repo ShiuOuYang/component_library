@@ -28,6 +28,17 @@
 
 ### 新增
 
+- **StateTimeline**（機台狀態時間軸）：每台機台一列，畫出實際發生的狀態（預設運轉、待機、保養、故障，可用 `states` 自訂）。
+  紀錄可以只有開始時間（下一筆開始就是這一筆結束，最後一筆畫到 `openEndTime`）；每列依像素合併，資料再多也只畫寬度個矩形，
+  一個像素裡有故障就畫故障（`priority`），短暫停機不會被蓋掉。右側統計稼動率（圖示 + 文字）、停機時間與次數，
+  `sortRows` 依稼動率或停機時間排序；`summary-change` 送出 MTTR、MTBF 與最長的一次停機。Ctrl + 滾輪縮放、拖曳平移，
+  統計跟著可見範圍（`summaryScope`）。滑鼠或方向鍵逐段查看。
+- **BoxPlotChart**（箱型圖／小提琴圖）：依組別比較分布，箱子 Q1～Q3、中位數、平均、1.5 倍 IQR 的鬚與離群值；
+  `mode="violin"` 畫出核密度形狀（看得出雙峰）；`quartileMethod="exclusive"` 與 Minitab 一致；`showPoints` 畫出離群值或每一筆；
+  參考線（規格上下限）、`highlightKey`、依中位數排序。滑過組看統計、滑過離群值看是哪一筆，方向鍵逐組查看。
+- **WaterfallChart**（瀑布圖）：起點、增減、小計、總計（`kindField`），`totalLabel` 自動補最後的總計；
+  增減帶 ▲▼ 與正負號（不只靠顏色），`increaseIsGood` 決定增加是綠還是紅；`showPercent` 標出佔起點的比例（總計就是良率）；
+  `zeroBaseline=false` 讓軸從資料附近開始，起點與合計畫截斷記號。滑鼠或方向鍵逐項查看。
 - **ControlChart**（SPC 管制圖）：I-MR、X̄-R、X̄-S、p、u 五種，計量值圖附副圖（MR／R／S）。
   自動計算中心線與 ±3σ 界限（子組大小或樣本數不同時逐點計算）；Nelson 8 條判異規則可選（預設 1、2、3、5、6），
   異常點畫成紅色菱形並標上規則編號；`baselineCount` 用前 N 點建立界限、`limits` 指定已核定的界限；規格線、±1σ／2σ 區帶；

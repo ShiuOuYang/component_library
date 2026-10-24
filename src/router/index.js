@@ -126,6 +126,30 @@ const routes = [
         },
       },
       {
+        path: "components/state-timeline",
+        name: "StateTimelineDoc",
+        component: () => import("../views/docs/StateTimelineDoc.vue"),
+        meta: {
+          title: "機台狀態時間軸",
+        },
+      },
+      {
+        path: "components/box-plot-chart",
+        name: "BoxPlotChartDoc",
+        component: () => import("../views/docs/BoxPlotChartDoc.vue"),
+        meta: {
+          title: "箱型圖",
+        },
+      },
+      {
+        path: "components/waterfall-chart",
+        name: "WaterfallChartDoc",
+        component: () => import("../views/docs/WaterfallChartDoc.vue"),
+        meta: {
+          title: "瀑布圖",
+        },
+      },
+      {
         path: "components/gerber-viewer",
         name: "GerberViewerDoc",
         component: () => import("../views/docs/GerberViewerDoc.vue"),

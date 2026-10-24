@@ -413,6 +413,18 @@ const navSections = [
         ],
       },
       {
+        to: '/docs/components/box-plot-chart', icon: '📦', label: '箱型圖',
+        anchors: [{ label: '箱型圖', id: 'basic' }, { label: '小提琴圖', id: 'violin' }, { label: '四分位數算法', id: 'minitab' }, { label: 'API', id: 'api' }],
+      },
+      {
+        to: '/docs/components/waterfall-chart', icon: '🪜', label: '瀑布圖',
+        anchors: [{ label: '良率損失', id: 'yield' }, { label: '小計與成本', id: 'subtotal' }, { label: 'API', id: 'api' }],
+      },
+      {
+        to: '/docs/components/state-timeline', icon: '🚦', label: '機台狀態時間軸',
+        anchors: [{ label: '一天的狀態', id: 'basic' }, { label: '停最久的機台', id: 'summary' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/kpi-charts', icon: '🎛️', label: 'KPI 小圖',
         anchors: [{ label: 'KPI 卡片', id: 'cards' }, { label: '迷你趨勢線', id: 'sparkline' }, { label: '儀表', id: 'gauge' }, { label: 'API', id: 'api' }],
       },
