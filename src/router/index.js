@@ -86,6 +86,14 @@ const routes = [
         },
       },
       {
+        path: "components/gantt-chart",
+        name: "GanttChartDoc",
+        component: () => import("../views/docs/GanttChartDoc.vue"),
+        meta: {
+          title: "甘特圖",
+        },
+      },
+      {
         path: "components/gerber-viewer",
         name: "GerberViewerDoc",
         component: () => import("../views/docs/GerberViewerDoc.vue"),
