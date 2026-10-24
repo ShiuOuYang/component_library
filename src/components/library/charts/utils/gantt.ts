@@ -276,3 +276,135 @@ export function groupByRow(tasks: GanttTask[], rows: GanttRowDef[]): number[][] 
   })
   return groups
 }
+
+// === 編輯：吸附 ===
+
+/** 吸附設定：'auto' 依縮放程度自動選；數字是毫秒；null 不吸附 */
+export type GanttSnap = 'auto' | 'minute' | 'hour' | 'day' | number | null
+
+const SNAP_UNITS: Record<'minute' | 'hour' | 'day', number> = { minute: MINUTE, hour: HOUR, day: DAY }
+/** auto 的候選單位，由小到大 */
+const AUTO_UNITS = [MINUTE, 5 * MINUTE, 15 * MINUTE, HOUR, DAY]
+
+/**
+ * 吸附單位（毫秒；0 = 不吸附）。
+ * auto：挑畫面上至少 8px 寬的最小單位 —— 看日的時候以天為單位，放大到小時就以 15 分、5 分為單位，
+ * 滑鼠才拖得準（太細的單位一個像素就跳好幾格）。
+ */
+export function resolveSnap(snap: GanttSnap, msPerPx: number): number {
+  if (snap === null) return 0
+  if (typeof snap === 'number') return Number.isFinite(snap) && snap > 0 ? snap : 0
+  if (snap !== 'auto') return SNAP_UNITS[snap]
+  for (const unit of AUTO_UNITS) if (unit / msPerPx >= 8) return unit
+  return DAY
+}
+
+/** 位移量吸附（移動任務：保留原本的時刻，例如 08:00 開始的工單往後拖一天還是 08:00） */
+export function snapDelta(dt: number, unit: number): number {
+  return unit > 0 ? Math.round(dt / unit) * unit : dt
+}
+
+/**
+ * 時間點吸附（拉長縮短：邊緣對齊整點、整天）。
+ * 以本地時間對齊 —— 直接 Math.round(t / DAY) 會對齊 UTC 午夜，在台灣變成早上 8 點。
+ */
+export function snapEdge(t: number, unit: number): number {
+  if (unit <= 0) return t
+  if (unit >= DAY) return d3.timeDay.round(new Date(t)).getTime()
+  const base = d3.timeDay.floor(new Date(t)).getTime()
+  return base + Math.round((t - base) / unit) * unit
+}
+
+// === 相依關係 ===
+
+/** 一條相依（前置任務 → 後續任務，完成才開始） */
+export interface GanttLink {
+  /** 前置任務在 tasks 中的索引 */
+  from: number
+  /** 後續任務在 tasks 中的索引 */
+  to: number
+}
+
+/** 前置任務欄位的值：單一鍵、鍵的陣列，或以逗號分隔的字串 */
+function predecessorKeys(value: unknown): string[] {
+  if (value === null || value === undefined || value === '') return []
+  if (Array.isArray(value)) return value.filter((v) => v !== null && v !== undefined && v !== '').map(String)
+  return String(value)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+}
+
+/**
+ * 整理相依關係：任務自己的前置欄位 + 另外給的清單。
+ * 找不到的鍵、自己指向自己、重複的關係都略過。
+ */
+export function buildLinks(
+  tasks: GanttTask[],
+  rows: Record<string, unknown>[],
+  dependencyField: string,
+  extra: { from: string | number; to: string | number }[] | null
+): GanttLink[] {
+  const byKey = new Map<string, number>()
+  tasks.forEach((t, i) => {
+    if (!byKey.has(t.key)) byKey.set(t.key, i)
+  })
+  const out: GanttLink[] = []
+  const seen = new Set<string>()
+  const add = (fromKey: string, to: number) => {
+    const from = byKey.get(fromKey)
+    if (from === undefined || from === to) return
+    const id = `${from}>${to}`
+    if (seen.has(id)) return
+    seen.add(id)
+    out.push({ from, to })
+  }
+  tasks.forEach((t, i) => {
+    for (const k of predecessorKeys(rows[t.index]?.[dependencyField])) add(k, i)
+  })
+  for (const link of extra ?? []) {
+    const to = byKey.get(String(link.to))
+    if (to !== undefined) add(String(link.from), to)
+  }
+  return out
+}
+
+/**
+ * 相依箭頭的路徑（直角折線）：從前置任務的右端出發，到後續任務的左端。
+ * 後續任務在右邊夠遠時只轉一次彎；太近或在左邊時，先往右出去、走到兩列之間的縫，再繞回來。
+ */
+export function linkPath(x1: number, y1: number, x2: number, y2: number, rowHeight: number): string {
+  const gap = 8
+  if (x2 - x1 >= gap * 2) return `M${x1},${y1} H${x2 - gap} V${y2} H${x2}`
+  const midY = y2 > y1 ? y2 - rowHeight / 2 : y2 < y1 ? y2 + rowHeight / 2 : y1 + rowHeight / 2
+  return `M${x1},${y1} H${x1 + gap} V${midY} H${x2 - gap} V${y2} H${x2}`
+}
+
+// === 非工作時段 ===
+
+/**
+ * 畫面範圍內的非工作日區段（連續的非工作日合併成一段）。
+ * @param weekdays 非工作的星期（0 = 星期日）
+ * @param holidays 假日（當天 00:00 的毫秒數）
+ * @param limit 最多掃幾天（縮到看好幾年時不畫）
+ */
+export function nonWorkingRanges(
+  domain: [number, number],
+  weekdays: Set<number>,
+  holidays: Set<number>,
+  limit = 2000
+): [number, number][] {
+  if (!weekdays.size && !holidays.size) return []
+  const days = d3.timeDay.range(d3.timeDay.floor(new Date(domain[0])), new Date(domain[1]))
+  if (days.length > limit) return []
+  const out: [number, number][] = []
+  for (const d of days) {
+    const t = d.getTime()
+    if (!weekdays.has(d.getDay()) && !holidays.has(t)) continue
+    const next = d3.timeDay.offset(d, 1).getTime()
+    const last = out[out.length - 1]
+    if (last && last[1] === t) last[1] = next
+    else out.push([t, next])
+  }
+  return out
+}

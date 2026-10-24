@@ -31,7 +31,14 @@
 - **GanttChart**：甘特圖（唯讀第一版），用於機台排程、工單、專案進度。同一列可排多個任務、沒有結束時間的任務畫成里程碑、
   依狀態著色並可從圖例隱藏、底部進度線、「今天」線、兩層時間軸（月／日、日／時…）；Ctrl（⌘）+ 滾輪或捏合縮放時間軸、
   拖曳或左右滑動平移；只畫看得到的列，上千列也能順暢捲動。`ref.scrollToTask(key)` 可捲到指定任務。
-  只寫日期的字串（`'2026-10-24'`）一律當本地時間午夜，結束日預設算到那一天結束。拖曳改排程、任務相依箭頭留待下一版。
+  只寫日期的字串（`'2026-10-24'`）一律當本地時間午夜，結束日預設算到那一天結束。（#30）
+- **GanttChart 第二版**：
+  - `editable`：拖曳移動、拖兩端調整長短（`Esc` 取消），`Tab` 選到任務後用方向鍵微調；`allowRowChange` 可拖到別的列（換機台）。
+    元件不改資料 —— 改動用 `task-change` 送出（含 `previous`；資料是日期字串時存回 `displayEnd`），由呼叫端更新 `data`。
+    時間依縮放程度吸附（`snap`，預設 `'auto'`：看日以天、放大到小時以 15 分）。
+  - 相依箭頭：任務的 `dependsOn`（或另給 `dependencies`）畫成完成才開始的箭頭，後續任務開始得比前置任務結束早時標紅。
+  - `nonWorkingDays` / `holidays`：週末、假日畫上底色。
+  - 縮放中資料範圍或圖表寬度改變時，保留目前看到的時間範圍（原本會跳回全覽）。
 - **StatusScatterMap**：依 PASS / NEARFAIL / FAIL 著色的座標散佈圖，Canvas 繪製、可撐數萬點。（#16）
 - **DualAxisComboChart**：10 萬筆資料渲染（Canvas + 降採樣）與滑鼠滾輪縮放（#14）；`highlightKey` 連動高亮與圖層 `keyFn`（#15）。
 - **事件 payload 型別**：`ChartLayerEvent`、`ChartSelectionEvent`、`ChartAxisDomainEvent`、`ChartResizeEvent`、

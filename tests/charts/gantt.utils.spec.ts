@@ -1,14 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import {
   DAY,
+  buildLinks,
   buildRows,
   estimateTextWidth,
   formatDuration,
   groupByRow,
   isDateOnly,
+  linkPath,
+  nonWorkingRanges,
   normalizeTasks,
   parseTime,
   readableTextColor,
+  resolveSnap,
+  snapDelta,
+  snapEdge,
   timeExtent,
   timeTiers,
   upperSegments,
@@ -241,5 +247,103 @@ describe('文字與顏色', () => {
     expect(readableTextColor('#fde68a')).toBe('#111827')
     expect(readableTextColor('#ffffff')).toBe('#111827')
     expect(readableTextColor('not-a-color')).toBe('#ffffff')
+  })
+})
+
+describe('編輯：吸附', () => {
+  it('auto：挑畫面上至少 8px 寬的最小單位', () => {
+    expect(resolveSnap('auto', DAY / 80)).toBe(DAY) // 一天 80px：小時只有 3.3px
+    expect(resolveSnap('auto', 3_600_000 / 70)).toBe(15 * 60_000) // 一小時 70px：15 分 17px
+    expect(resolveSnap('auto', 60_000 / 20)).toBe(60_000)
+    expect(resolveSnap('auto', DAY)).toBe(DAY) // 縮到很小也不會比天大
+  })
+
+  it('指定單位、毫秒數、不吸附', () => {
+    expect(resolveSnap('hour', 1)).toBe(3_600_000)
+    expect(resolveSnap('minute', 1)).toBe(60_000)
+    expect(resolveSnap(900_000, 1)).toBe(900_000)
+    expect(resolveSnap(null, 1)).toBe(0)
+    expect(resolveSnap(-5, 1)).toBe(0)
+  })
+
+  it('位移量四捨五入到單位；單位 0 時不變', () => {
+    expect(snapDelta(1.4 * DAY, DAY)).toBe(DAY)
+    expect(snapDelta(-1.6 * DAY, DAY)).toBe(-2 * DAY)
+    expect(snapDelta(123, 0)).toBe(123)
+  })
+
+  /** 回歸：Math.round(t / DAY) 會對齊 UTC 午夜，在台灣是早上 8 點 */
+  it('時間點對齊本地的整天、整點（台北時區）', () => {
+    const original = process.env.TZ
+    process.env.TZ = 'Asia/Taipei'
+    try {
+      expect(snapEdge(local(2026, 10, 5, 13), DAY)).toBe(local(2026, 10, 6))
+      expect(snapEdge(local(2026, 10, 5, 11), DAY)).toBe(local(2026, 10, 5))
+      expect(snapEdge(new Date(2026, 9, 5, 10, 20).getTime(), 15 * 60_000)).toBe(new Date(2026, 9, 5, 10, 15).getTime())
+      expect(snapEdge(new Date(2026, 9, 5, 10, 40).getTime(), 3_600_000)).toBe(local(2026, 10, 5, 11))
+      expect(snapEdge(12345, 0)).toBe(12345)
+    } finally {
+      if (original === undefined) delete process.env.TZ
+      else process.env.TZ = original
+    }
+  })
+})
+
+describe('相依關係', () => {
+  const rows = [
+    { id: 'a', start: 0, end: 1 },
+    { id: 'b', start: 0, end: 1, dependsOn: 'a' },
+    { id: 'c', start: 0, end: 1, dependsOn: ['a', 'b', 'zzz', null] },
+    { id: 'd', start: 0, end: 1, dependsOn: 'a, c,,d' },
+  ]
+  const { tasks } = normalizeTasks(rows, OPTS)
+
+  it('單一鍵、陣列、逗號分隔；找不到的鍵與自己指向自己略過', () => {
+    expect(buildLinks(tasks, rows, 'dependsOn', null)).toEqual([
+      { from: 0, to: 1 },
+      { from: 0, to: 2 },
+      { from: 1, to: 2 },
+      { from: 0, to: 3 },
+      { from: 2, to: 3 },
+    ])
+  })
+
+  it('另外給的清單合併進來，重複的只算一次', () => {
+    const links = buildLinks(tasks, rows, 'none', [
+      { from: 'a', to: 'b' },
+      { from: 'a', to: 'b' },
+      { from: 'b', to: 'missing' },
+      { from: 'c', to: 'd' },
+    ])
+    expect(links).toEqual([
+      { from: 0, to: 1 },
+      { from: 2, to: 3 },
+    ])
+  })
+
+  it('箭頭路徑：右邊夠遠只轉一次彎；太近時從兩列之間繞回來', () => {
+    expect(linkPath(100, 18, 200, 54, 36)).toBe('M100,18 H192 V54 H200')
+    expect(linkPath(100, 18, 90, 54, 36)).toBe('M100,18 H108 V36 H82 V54 H90')
+    expect(linkPath(100, 54, 90, 18, 36)).toBe('M100,54 H108 V36 H82 V18 H90')
+    expect(linkPath(100, 18, 90, 18, 36)).toBe('M100,18 H108 V36 H82 V18 H90')
+  })
+})
+
+describe('非工作時段', () => {
+  // 2026-10-03 是星期六
+  const domain: [number, number] = [local(2026, 10, 1), local(2026, 10, 12)]
+
+  it('連續的非工作日合併成一段；假日另外加', () => {
+    const ranges = nonWorkingRanges(domain, new Set([0, 6]), new Set([local(2026, 10, 7)]))
+    expect(ranges).toEqual([
+      [local(2026, 10, 3), local(2026, 10, 5)],
+      [local(2026, 10, 7), local(2026, 10, 8)],
+      [local(2026, 10, 10), local(2026, 10, 12)],
+    ])
+  })
+
+  it('沒有設定、或天數超過上限時不畫', () => {
+    expect(nonWorkingRanges(domain, new Set(), new Set())).toEqual([])
+    expect(nonWorkingRanges(domain, new Set([0]), new Set(), 5)).toEqual([])
   })
 })

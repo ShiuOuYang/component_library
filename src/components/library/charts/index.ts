@@ -27,4 +27,7 @@ export type {
 export type { VerticalFacet } from './FacetedChart.vue'
 export type { ParetoInputItem, ParetoChartDatum } from './ParetoChart.vue'
 export type { StatusDef, StatusScatterTooltip } from './StatusScatterMap.vue'
-export type { GanttStatusDef, GanttRowInput, GanttTaskEvent, GanttTooltip } from './GanttChart.vue'
+export type {
+  GanttStatusDef, GanttRowInput, GanttTaskEvent, GanttTooltip, GanttTaskChange, GanttChangeType, GanttDependency,
+} from './GanttChart.vue'
+export type { GanttSnap } from './utils/gantt'
