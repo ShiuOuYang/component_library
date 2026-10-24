@@ -32,15 +32,17 @@ export default mergeConfig(
          * 門檻設在「目前水準略低一點」，留幾個百分點的緩衝 ——
          * 目的是讓覆蓋率只能往上，而不是讓一次小重構就把 CI 弄紅。
          *
-         * 整體數字被還沒有測試的元件拉低（ChptExcelExporter /
-         * ChptExcelUploader 等），但已抽出的純函式模組都接近全覆蓋，
-         * 因此各自掛上獨立門檻，避免日後被改回去。
+         * 已抽出的純函式模組都接近全覆蓋，各自掛上獨立門檻，避免日後被改回去。
+         *
+         * ⚠️ 整體門檻原本是 64 / 79 / 61 / 64（當年被沒有測試的元件拉低時定的），
+         *    補完測試後實際已到 94 / 87 / 88.5 / 94 —— 門檻沒跟上，覆蓋率掉 30 點 CI 也不會擋。
+         *    2026-10 調到現況減 2～3 點。之後覆蓋率明顯上升時，記得再把門檻往上調。
          */
         thresholds: {
-          statements: 64,
-          branches: 79,
-          functions: 61,
-          lines: 64,
+          statements: 92,
+          branches: 85,
+          functions: 86,
+          lines: 92,
 
           // 已測透的部分：各自訂門檻，不讓整體平均掩護退步
           'src/components/library/shared/**': {
