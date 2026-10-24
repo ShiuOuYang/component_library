@@ -11,7 +11,7 @@
       :style="{ left: `${margin.left}px`, top: `${margin.top}px` }"
       aria-hidden="true"
     ></canvas>
-    <svg ref="svgRef" :width="effectiveWidth" :height="effectiveHeight">
+    <svg ref="svgRef" :width="effectiveWidth" :height="effectiveHeight" :class="{ 'is-panning': isPanning }">
       <defs>
         <!-- 定義漸層、陰影等可重用的 SVG 元素 -->
         <clipPath :id="`clip-${chartId}`">
@@ -154,10 +154,13 @@ interface DualAxisComboChartProps {
   enableAxisDrag?: boolean
   showResetButton?: boolean
   /**
-   * 滑鼠滾輪縮放：在繪圖區以游標為中心縮放 X 軸、在左右 Y 軸上縮放該軸；
-   * 觸控板左右滑動（或 Shift + 滾輪）平移 X 軸。已在全覽時往外滾會交還給頁面捲動。
+   * 滑鼠滾輪縮放（像 Allegro）：在繪圖區以游標那一點為中心，X 與 Y 同時縮放；
+   * 在 X 軸或左右 Y 軸的刻度上滾只縮放那一軸。觸控板左右滑動（或 Shift + 滾輪）平移 X 軸，
+   * 按住滑鼠中鍵拖曳平移。已在全覽時往外滾會交還給頁面捲動。
    */
   enableWheelZoom?: boolean
+  /** 在繪圖區滾動時縮放哪些軸：'xy' 同時縮放 X 與 Y（以游標為中心）；'x' 只縮放 X（Y 維持不動） */
+  wheelZoomAxes?: 'xy' | 'x'
   /** 要按住哪個鍵才用滾輪縮放（'ctrl' 也接受 Mac 的 ⌘）；頁面上圖表很多時可設 'ctrl' 避免捲動頁面時誤觸 */
   wheelZoomModifier?: 'none' | 'ctrl' | 'alt'
   /** 最大放大倍率（相對全覽範圍） */
@@ -212,6 +215,7 @@ const props = withDefaults(defineProps<DualAxisComboChartProps>(), {
   enableAxisDrag: true,
   showResetButton: true,
   enableWheelZoom: true,
+  wheelZoomAxes: 'xy',
   wheelZoomModifier: 'none',
   maxZoomScale: 10000,
   largeDataThreshold: 2000,
@@ -297,8 +301,8 @@ type LargeHitStore =
       y1: Float32Array
     }
 
-/** 滾輪作用的軸 */
-type WheelTarget = 'x' | 'yLeft' | 'yRight'
+/** 滾輪作用的軸；'xy' 是繪圖區（X 與 Y 同時） */
+type WheelTarget = 'x' | 'yLeft' | 'yRight' | 'xy'
 
 /** 一般模式下可以 hover 的 SVG 元素 class */
 const HOVERABLE_CLASSES = ['stacked-bar', 'bar', 'line-dot', 'scatter-dot'];
@@ -2549,12 +2553,19 @@ function wheelModifierPressed(event: WheelEvent): boolean {
   }
 }
 
-/** 游標位置對應哪一個軸：繪圖區與 X 軸 → X；左右 Y 軸的邊界區 → 該 Y 軸 */
+/**
+ * 游標位置對應哪一個軸：
+ * 繪圖區 → X 與 Y 同時（wheelZoomAxes='x' 時只有 X）；X 軸刻度區 → 只有 X；左右 Y 軸的邊界區 → 該 Y 軸
+ */
 function wheelTargetAt(mx: number, my: number): WheelTarget | null {
   const w = chartWidth.value;
   const h = chartHeight.value;
   if (w <= 0 || h <= 0) return null;
-  if (mx >= 0 && mx <= w && my >= 0 && my <= h + props.margin.bottom) return xScale.value ? 'x' : null;
+  if (mx >= 0 && mx <= w && my >= 0 && my <= h) {
+    if (!xScale.value) return null;
+    return props.wheelZoomAxes === 'xy' ? 'xy' : 'x';
+  }
+  if (mx >= 0 && mx <= w && my > h && my <= h + props.margin.bottom) return xScale.value ? 'x' : null;
   if (my >= 0 && my <= h) {
     if (mx < 0 && mx >= -props.margin.left && yLeftScale.value) return 'yLeft';
     if (mx > w && mx <= w + props.margin.right && yRightScale.value) return 'yRight';
@@ -2588,6 +2599,12 @@ function isYAtFullExtent(target: 'yLeft' | 'yRight'): boolean {
  * 已是全覽還往外縮、或全覽時左右平移。
  */
 function wheelWouldChange(target: WheelTarget, zoomDelta: number, panDelta: number): boolean {
+  if (target === 'xy') {
+    // 平移只動 X；往外縮時任何一軸還沒到全覽就有作用
+    if (panDelta !== 0) return !isXAtFullExtent();
+    if (zoomDelta > 0) return !isXAtFullExtent() || !isYAtFullExtent('yLeft') || !isYAtFullExtent('yRight');
+    return zoomDelta < 0;
+  }
   const zoomed = target === 'x' ? !isXAtFullExtent() : !isYAtFullExtent(target);
   if (panDelta !== 0) return zoomed;
   if (zoomDelta > 0) return zoomed;
@@ -2610,7 +2627,7 @@ function onWheel(event: WheelEvent): void {
   const dy = event.deltaY * unit;
   const isPan = Math.abs(dx) > Math.abs(dy);
   // Y 軸不做左右平移
-  if (isPan && target !== 'x') return;
+  if (isPan && target !== 'x' && target !== 'xy') return;
   const zoomDelta = isPan ? 0 : dy;
   const panDelta = isPan ? dx : 0;
   if (!wheelWouldChange(target, zoomDelta, panDelta)) return;
@@ -2637,7 +2654,128 @@ function applyWheel(): void {
   wheelPanAcc = 0;
   if (!target) return;
   if (target === 'x') applyXWheel(k, pan, wheelAnchor[0]);
+  else if (target === 'xy') applyXYWheel(k, pan, wheelAnchor[0], wheelAnchor[1]);
   else applyYWheel(target, k, wheelAnchor[1]);
+}
+
+/**
+ * 繪圖區的滾輪：X 與兩側 Y 用同一個倍率、都以游標所在的點為中心縮放 ——
+ * 游標底下的資料點（兩條 Y 軸上的都是）縮放後還在游標底下，跟 Allegro 一樣。
+ * 往外縮時，已經在全覽的軸跳過（不重複送 null 的 wheel-zoom）。
+ */
+function applyXYWheel(k: number, pan: number, mx: number, my: number): void {
+  const zoomingOut = k > 1;
+  if (pan !== 0 || !(zoomingOut && isXAtFullExtent())) applyXWheel(k, pan, mx);
+  if (k === 1) return;
+  for (const side of ['yLeft', 'yRight'] as const) {
+    const ys = side === 'yLeft' ? yLeftScale.value : yRightScale.value;
+    if (ys && !(zoomingOut && isYAtFullExtent(side))) applyYWheel(side, k, my);
+  }
+}
+
+// === 中鍵拖曳平移 ===
+
+/** 按下中鍵時的起點與各軸範圍；沒在平移時為 null */
+let panStart: {
+  x: number
+  y: number
+  /** 連續 X 軸的數值範圍；band 軸為類別視窗；X 在全覽時為 null（不平移） */
+  xWindow: [number, number] | null
+  bandWindow: { start: number; length: number } | null
+  yLeft: [number, number] | null
+  yRight: [number, number] | null
+} | null = null;
+const isPanning = ref(false);
+
+/**
+ * 按住滑鼠中鍵拖曳：X 與 Y 一起平移（畫面跟著游標走）。
+ * 只有已經縮放的軸會動；平移不會超出縮放邊界。
+ */
+function onPanMouseDown(event: MouseEvent): void {
+  if (event.button !== 1 || !props.enableWheelZoom || !plotRef.value) return;
+  const [mx, my] = d3.pointer(event, plotRef.value);
+  if (mx < 0 || my < 0 || mx > chartWidth.value || my > chartHeight.value) return;
+  // 取消瀏覽器中鍵的自動捲動
+  event.preventDefault();
+
+  const xs = xScale.value;
+  let xWindow: [number, number] | null = null;
+  let bandWindow: { start: number; length: number } | null = null;
+  if (xs && !isXAtFullExtent()) {
+    if (isBandScale(xs)) {
+      const all = xZoomBounds.value as string[];
+      bandWindow = { start: Math.max(0, all.indexOf(xs.domain()[0])), length: xs.domain().length };
+    } else {
+      xWindow = toNumericDomain(xs.domain() as XDomain, props.xScaleType === 'time');
+    }
+  }
+  const yWindow = (side: 'yLeft' | 'yRight'): [number, number] | null => {
+    const ys = side === 'yLeft' ? yLeftScale.value : yRightScale.value;
+    return ys && !isYAtFullExtent(side) ? (ys.domain() as [number, number]) : null;
+  };
+  panStart = { x: event.clientX, y: event.clientY, xWindow, bandWindow, yLeft: yWindow('yLeft'), yRight: yWindow('yRight') };
+  isPanning.value = true;
+  window.addEventListener('mousemove', onPanMouseMove);
+  window.addEventListener('mouseup', onPanMouseUp);
+}
+
+function onPanMouseMove(event: MouseEvent): void {
+  const start = panStart;
+  const w = chartWidth.value;
+  const h = chartHeight.value;
+  if (!start || w <= 0 || h <= 0) return;
+  // 從起點算總位移（不是逐次累加），拖久了也不會有誤差
+  const dx = event.clientX - start.x;
+  const dy = event.clientY - start.y;
+
+  if (start.xWindow && xZoomBounds.value) {
+    const isTime = props.xScaleType === 'time';
+    const span = start.xWindow[1] - start.xWindow[0];
+    const win = panContinuousDomain(start.xWindow, (-dx / w) * span, toNumericDomain(xZoomBounds.value, isTime));
+    setPannedX((isTime ? [new Date(win[0]), new Date(win[1])] : win) as XDomain);
+  } else if (start.bandWindow && xZoomBounds.value) {
+    const all = xZoomBounds.value as string[];
+    const { start: s0, length } = start.bandWindow;
+    const shift = Math.round((-dx / w) * length);
+    const s = Math.min(Math.max(0, s0 + shift), all.length - length);
+    setPannedX(all.slice(s, s + length));
+  }
+  for (const side of ['yLeft', 'yRight'] as const) {
+    const from = start[side];
+    const bounds = side === 'yLeft' ? yLeftZoomBounds.value : yRightZoomBounds.value;
+    if (!from || !bounds) continue;
+    // 往下拖 → 畫面往下 → 範圍往上移
+    const win = panContinuousDomain(from, (dy / h) * (from[1] - from[0]), bounds);
+    const current = side === 'yLeft' ? currentYLeftDomain.value : currentYRightDomain.value;
+    if (current && current[0] === win[0] && current[1] === win[1]) continue;
+    if (side === 'yLeft') currentYLeftDomain.value = win;
+    else currentYRightDomain.value = win;
+    emit('axis-drag', { axis: side, domain: win });
+  }
+}
+
+/** 平移 X：標記為本地變更（分面圖同步回來時不會被當成外部變更清掉） */
+function setPannedX(next: XDomain): void {
+  const current = currentXDomain.value as Array<string | number | Date> | null;
+  const same = (a: string | number | Date, b: string | number | Date) => (typeof a === 'string' ? a === b : +a === +b);
+  if (current && current.length === next.length && current.every((v, i) => same(v, (next as Array<string | number | Date>)[i]))) return;
+  isLocalBrush.value = true;
+  currentXDomain.value = next;
+  emit('axis-drag', { axis: 'x', domain: next });
+  nextTick(() => {
+    isLocalBrush.value = false;
+  });
+}
+
+function onPanMouseUp(): void {
+  stopPan();
+}
+
+function stopPan(): void {
+  window.removeEventListener('mousemove', onPanMouseMove);
+  window.removeEventListener('mouseup', onPanMouseUp);
+  panStart = null;
+  isPanning.value = false;
 }
 
 /** 縮放／平移 X 軸；縮到全覽時清除縮放狀態 */
@@ -2839,6 +2977,7 @@ onMounted(() => {
   listenerTarget?.addEventListener('wheel', onWheel, { passive: false });
   listenerTarget?.addEventListener('mousemove', onSvgMouseMove);
   listenerTarget?.addEventListener('mouseleave', onSvgMouseLeave);
+  listenerTarget?.addEventListener('mousedown', onPanMouseDown);
 
   emit('chart-ready', {
     scales: { x: xScale.value, yLeft: yLeftScale.value, yRight: yRightScale.value },
@@ -2870,7 +3009,9 @@ onUnmounted(() => {
   listenerTarget?.removeEventListener('wheel', onWheel);
   listenerTarget?.removeEventListener('mousemove', onSvgMouseMove);
   listenerTarget?.removeEventListener('mouseleave', onSvgMouseLeave);
+  listenerTarget?.removeEventListener('mousedown', onPanMouseDown);
   listenerTarget = null;
+  stopPan();
   largeHits = [];
   ctx2d = null;
   ctx2dCanvas = null;
@@ -2881,6 +3022,12 @@ defineExpose({ containerRef, svgRef })
 </script>
 
 <style scoped>
+/* 中鍵拖曳平移中 */
+svg.is-panning,
+svg.is-panning * {
+  cursor: grabbing !important;
+}
+
 .dual-axis-chart {
   position: relative;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;

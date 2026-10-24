@@ -220,7 +220,10 @@ export function zoomBandWindow(
   const newLength = Math.max(Math.min(minLength, total), stepped)
   if (newLength >= total) return null
   const t = Math.min(1, Math.max(0, anchorFrac))
-  const anchorIndex = start + t * length
-  const newStart = Math.round(anchorIndex - t * newLength)
+  // 🔧 游標底下的類別縮放後要還在游標底下：原本用 round(游標位置 − t × 新長度)，
+  //    每次四捨五入偏一點，連續滾幾格後游標指的類別會被推出畫面。
+  //    條件 anchorCat ≤ 新起點 + t × 新長度 < anchorCat + 1 只有一個整數解：ceil(anchorCat − t × 新長度)
+  const anchorCat = Math.min(total - 1, Math.max(0, Math.floor(start + t * length)))
+  const newStart = Math.ceil(anchorCat - t * newLength - 1e-9)
   return { start: Math.min(Math.max(0, newStart), total - newLength), length: newLength }
 }
