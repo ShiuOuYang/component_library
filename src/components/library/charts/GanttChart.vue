@@ -92,13 +92,23 @@
           :style="{ left: `${labelWidth}px` }"
           :width="plotWidth"
           :height="contentHeight"
-          role="img"
+          :role="editable ? 'group' : 'img'"
           :aria-label="ariaSummary"
         >
           <defs>
             <clipPath :id="clipId">
               <rect :width="plotWidth" :height="contentHeight" />
             </clipPath>
+            <marker
+              v-for="m in arrowMarkers"
+              :id="m.id"
+              :key="m.id"
+              class="gantt-arrow"
+              :class="{ 'is-violated': m.violated }"
+              viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"
+            >
+              <path d="M0,0 L8,4 L0,8 Z" />
+            </marker>
           </defs>
           <!-- 空白處也要接得到拖曳平移 -->
           <rect class="gantt-surface" :width="plotWidth" :height="contentHeight" />
@@ -117,6 +127,9 @@
               :x1="0" :x2="plotWidth" :y1="r.y + rowHeight - 0.5" :y2="r.y + rowHeight - 0.5"
             />
           </g>
+          <g v-if="nonWorkingRects.length" class="gantt-nonworking">
+            <rect v-for="r in nonWorkingRects" :key="r.key" :x="r.x" :width="r.w" :height="contentHeight" />
+          </g>
           <g v-if="showGrid" class="gantt-grid">
             <line v-for="t in lowerTicks" :key="`g${t.value}`" :x1="t.x" :x2="t.x" :y1="0" :y2="contentHeight" />
             <line
@@ -127,16 +140,38 @@
             />
           </g>
           <g :clip-path="`url(#${clipId})`">
+            <!-- 相依箭頭：畫在長條底下，箭頭停在後續任務的左緣 -->
+            <g v-if="visibleLinks.length" class="gantt-links">
+              <path
+                v-for="l in visibleLinks"
+                :key="l.id"
+                class="gantt-link"
+                :class="{ 'is-violated': l.violated, 'is-active': l.active }"
+                :d="l.d"
+                :marker-end="`url(#${l.violated ? arrowMarkers[1].id : arrowMarkers[0].id})`"
+              />
+            </g>
             <g
               v-for="bar in visibleBars"
               :key="bar.task.key + ':' + bar.task.index"
               class="gantt-task"
-              :class="{ 'is-hovered': hoverIndex === bar.taskIndex, 'is-highlighted': bar.highlighted }"
+              :class="{
+                'is-hovered': hoverIndex === bar.taskIndex,
+                'is-highlighted': bar.highlighted,
+                'is-editable': editable,
+                'is-dragging': bar.dragging,
+              }"
               :data-key="bar.task.key"
+              :tabindex="editable ? 0 : undefined"
+              :role="editable ? 'button' : undefined"
+              :aria-label="editable ? bar.ariaLabel : undefined"
+              :aria-describedby="editable ? helpId : undefined"
               @mouseenter="onBarEnter(bar.taskIndex, $event)"
               @mousemove="onBarMove(bar.taskIndex, $event)"
               @mouseleave="clearHover"
               @click="onBarClick(bar.taskIndex)"
+              @pointerdown="onBarPointerDown(bar.taskIndex, $event, 'move')"
+              @keydown="onBarKeydown(bar.taskIndex, $event)"
             >
               <template v-if="bar.task.milestone">
                 <path class="gantt-milestone" :d="bar.diamond" :style="{ fill: bar.color }" />
@@ -169,6 +204,19 @@
                 dominant-baseline="central"
                 :style="{ fill: bar.labelInside ? bar.textColor : chartTheme.text }"
               >{{ bar.labelText }}</text>
+              <!-- 拉長縮短的把手：長條兩端各 6px -->
+              <template v-if="editable && !bar.task.milestone && bar.w >= 16">
+                <rect
+                  class="gantt-handle"
+                  :x="bar.x" :y="bar.y" width="6" :height="barHeight"
+                  @pointerdown.stop="onBarPointerDown(bar.taskIndex, $event, 'resize-start')"
+                />
+                <rect
+                  class="gantt-handle"
+                  :x="bar.x + bar.w - 6" :y="bar.y" width="6" :height="barHeight"
+                  @pointerdown.stop="onBarPointerDown(bar.taskIndex, $event, 'resize-end')"
+                />
+              </template>
             </g>
             <line
               v-if="todayX !== null"
@@ -183,6 +231,10 @@
         {{ emptyText }}
       </p>
     </div>
+
+    <p v-if="editable" :id="helpId" class="sr-only">
+      拖曳或用方向鍵移動任務；Shift + 方向鍵調整結束時間，Alt + 方向鍵調整開始時間{{ allowRowChange ? '；上下鍵換到別的列' : '' }}。
+    </p>
 
     <button
       v-if="isZoomed && showResetButton"
@@ -212,28 +264,36 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, shallowRef, toRaw, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, toRaw, watch } from 'vue'
 import * as d3 from 'd3'
 import { chartTheme } from './chartTheme'
 import { resolveCanvasColor } from './utils/largeData'
 import { zoomBounds } from './utils/statusScatter'
 import {
+  DAY,
+  buildLinks,
   buildRows,
   estimateTextWidth,
   formatDuration,
   groupByRow,
+  linkPath,
+  nonWorkingRanges,
   normalizeTasks,
   parseTime,
   readableTextColor,
+  resolveSnap,
+  snapDelta,
+  snapEdge,
   timeExtent,
   timeTiers,
   upperSegments,
   type GanttRowDef,
+  type GanttSnap,
   type GanttTask,
 } from './utils/gantt'
 
 /**
- * GanttChart —— 甘特圖（唯讀）
+ * GanttChart —— 甘特圖
  *
  * - 每筆資料是一個任務：開始、結束、所在的列（機台、工單、負責人…）、狀態、進度
  * - 同一列可以有多個任務（例如一台機台一天排好幾張工單）
@@ -241,6 +301,9 @@ import {
  * - 時間軸分上下兩層（月／日、日／時…），依縮放程度自動切換
  * - 滾輪捲動列；Ctrl（⌘）+ 滾輪或觸控板捏合縮放時間軸，拖曳平移、雙擊重設
  * - 只畫看得到的列：上千列、上萬筆任務也能順暢捲動
+ * - 相依箭頭（完成才開始）；後續任務開始得比前置任務結束早時標紅
+ * - 非工作日（例如週末、假日）畫上底色
+ * - editable：拖曳移動、拉兩端調整長短、方向鍵微調。元件不改資料 —— 送出 task-change，由呼叫端更新 data
  */
 
 /** 一種狀態的顯示設定 */
@@ -270,6 +333,32 @@ export interface GanttTaskEvent {
   milestone: boolean
   /** 0～1；沒有進度時為 null */
   progress: number | null
+}
+
+/** 編輯的方式 */
+export type GanttChangeType = 'move' | 'resize-start' | 'resize-end'
+
+/** task-change 的 payload：使用者拖曳或用鍵盤改了任務 */
+export interface GanttTaskChange {
+  datum: Record<string, unknown>
+  key: string
+  type: GanttChangeType
+  /** 新的開始時間 */
+  start: Date
+  /** 新的結束時間點（只寫日期且 inclusiveEndDate 時是隔天 00:00） */
+  end: Date
+  /** 新的結束日（只寫日期且 inclusiveEndDate 時是那一天 00:00，可直接存回日期字串；其他情況同 end） */
+  displayEnd: Date
+  /** 新的列 */
+  row: string
+  /** 改之前的值 */
+  previous: { start: Date; end: Date; displayEnd: Date; row: string }
+}
+
+/** 另外給的相依關係（前置任務 from 完成後，後續任務 to 才開始） */
+export interface GanttDependency {
+  from: string | number
+  to: string | number
 }
 
 /** 滑鼠提示的資料 */
@@ -320,6 +409,8 @@ interface GanttChartProps {
   statusField?: string
   /** 為真時畫成里程碑 */
   milestoneField?: string
+  /** 前置任務的欄位：一個鍵、鍵的陣列或以逗號分隔的字串（完成後本任務才開始） */
+  dependencyField?: string
 
   // === 狀態配置 ===
   /** 狀態清單（決定顏色與圖例順序） */
@@ -338,6 +429,10 @@ interface GanttChartProps {
   inclusiveEndDate?: boolean
   /** 下層刻度的格式；未指定時依縮放程度自動選 */
   timeFormat?: ((date: Date) => string) | null
+  /** 非工作的星期（0 = 星期日，6 = 星期六），畫上底色 */
+  nonWorkingDays?: number[]
+  /** 假日（日期），畫上底色 */
+  holidays?: (Date | number | string)[]
 
   // === 版面配置 ===
   /** 每列高度（px） */
@@ -369,6 +464,12 @@ interface GanttChartProps {
   showProgress?: boolean
   /** 沒有任務時的提示 */
   emptyText?: string
+  /** 畫出相依箭頭 */
+  showDependencies?: boolean
+
+  // === 相依配置 ===
+  /** 另外給的相依關係（與 dependencyField 合併） */
+  dependencies?: GanttDependency[] | null
 
   // === 互動配置 ===
   enableTooltip?: boolean
@@ -381,6 +482,14 @@ interface GanttChartProps {
   showResetButton?: boolean
   /** 要標出的任務鍵（對應 keyFn / keyField） */
   highlightKey?: string | number | null
+
+  // === 編輯配置 ===
+  /** 可以拖曳移動、拉兩端調整長短、用方向鍵微調；改動用 task-change 送出，元件不改資料 */
+  editable?: boolean
+  /** 拖曳（或上下鍵）可以換到別的列 */
+  allowRowChange?: boolean
+  /** 吸附：'auto' 依縮放程度（看日以天、看時以 15 分…）；數字為毫秒；null 不吸附 */
+  snap?: GanttSnap
 
   // === 企業級擴展點 ===
   customRenderers?: {
@@ -410,6 +519,7 @@ const props = withDefaults(defineProps<GanttChartProps>(), {
   progressField: 'progress',
   statusField: 'status',
   milestoneField: 'milestone',
+  dependencyField: 'dependsOn',
   // 預設四種狀態；顏色挑過，白字在上面的對比都在 4.5:1 以上
   statuses: () => [
     { value: 'planned', label: '計畫', color: '#64748b' },
@@ -423,6 +533,8 @@ const props = withDefaults(defineProps<GanttChartProps>(), {
   domainPadding: 0.02,
   inclusiveEndDate: true,
   timeFormat: null,
+  nonWorkingDays: () => [],
+  holidays: () => [],
   rowHeight: 36,
   barHeight: 22,
   labelWidth: 160,
@@ -437,12 +549,17 @@ const props = withDefaults(defineProps<GanttChartProps>(), {
   showBarLabels: true,
   showProgress: true,
   emptyText: '沒有任務',
+  showDependencies: true,
+  dependencies: null,
   enableTooltip: true,
   enableZoom: true,
   wheelZoomModifier: 'ctrl',
   maxZoomScale: 500,
   showResetButton: true,
   highlightKey: null,
+  editable: false,
+  allowRowChange: false,
+  snap: 'auto',
   customRenderers: () => ({}),
 })
 
@@ -451,6 +568,7 @@ const emit = defineEmits<{
   'chart-resize': [payload: { width: number; height: number }]
   'task-hover': [payload: GanttTaskEvent]
   'task-click': [payload: GanttTaskEvent]
+  'task-change': [payload: GanttTaskChange]
   'row-click': [payload: { row: string; label: string; tasks: Row[] }]
   'tooltip-show': [payload: GanttTooltip]
   'tooltip-hide': []
@@ -470,8 +588,14 @@ const containerRef = ref<HTMLDivElement | null>(null)
 const bodyRef = ref<HTMLDivElement | null>(null)
 const plotRef = ref<SVGSVGElement | null>(null)
 
-/** clip-path 的 id 每個實例唯一，同頁多張圖才不會互相覆蓋（不用 useId：不同 app 實例之間會重複） */
-const clipId = `gantt-clip-${Math.random().toString(36).slice(2, 11)}`
+/** clip-path、箭頭的 id 每個實例唯一，同頁多張圖才不會互相覆蓋（不用 useId：不同 app 實例之間會重複） */
+const instanceId = Math.random().toString(36).slice(2, 11)
+const clipId = `gantt-clip-${instanceId}`
+const helpId = `gantt-help-${instanceId}`
+const arrowMarkers = [
+  { id: `gantt-arrow-${instanceId}`, violated: false },
+  { id: `gantt-arrow-bad-${instanceId}`, violated: true },
+]
 
 // === 響應式尺寸 ===
 const observedWidth = ref(props.width)
@@ -543,6 +667,9 @@ const rowGroups = computed(() => {
   for (const g of groups) g.sort((a, b) => ts[a].start - ts[b].start || ts[a].end - ts[b].end)
   return groups
 })
+
+/** 列值 → 列索引 */
+const rowIndexOf = computed(() => new Map(rowDefs.value.map((r, i) => [r.value, i])))
 
 const contentHeight = computed(() => Math.max(1, rowDefs.value.length * props.rowHeight))
 
@@ -664,6 +791,38 @@ const isZoomed = computed(() => {
 const baseX = computed(() => d3.scaleTime().domain(baseDomain.value).range([0, plotWidth.value]))
 const xScale = computed(() => zoomTransform.value.rescaleX(baseX.value))
 
+/** 目前每個像素代表幾毫秒（拖曳換算、吸附單位用） */
+const msPerPx = computed(() => {
+  const [d0, d1] = xScale.value.domain().map((d) => d.getTime())
+  return plotWidth.value > 0 ? (d1 - d0) / plotWidth.value : DAY
+})
+
+const snapUnit = computed(() => resolveSnap(props.snap, msPerPx.value))
+
+// === 非工作時段 ===
+
+const nonWorkingDaySet = computed(() => new Set(props.nonWorkingDays))
+const holidaySet = computed(() => {
+  const out = new Set<number>()
+  for (const h of props.holidays) {
+    const t = parseTime(h)
+    if (Number.isFinite(t)) out.add(d3.timeDay.floor(new Date(t)).getTime())
+  }
+  return out
+})
+
+const nonWorkingRects = computed(() => {
+  if (plotWidth.value <= 0) return []
+  // 一天不到 2px（縮到看好幾個月）時不畫：底色糊成一片，反而看不清
+  if (DAY / msPerPx.value < 2) return []
+  const xs = xScale.value
+  const domain = xs.domain().map((d) => d.getTime()) as [number, number]
+  return nonWorkingRanges(domain, nonWorkingDaySet.value, holidaySet.value).map(([a, b]) => {
+    const x = xs(new Date(a))
+    return { key: a, x, w: xs(new Date(b)) - x }
+  })
+})
+
 // === 時間軸 ===
 
 const lowerTicks = computed(() => {
@@ -739,14 +898,23 @@ const visibleRows = computed(() => {
 
 // === 任務長條 ===
 
+/** 任務目前畫在哪：拖曳中的任務用預覽值 */
+function placement(i: number): { start: number; end: number; row: number } {
+  const d = drag.value
+  if (d && d.active && d.index === i) return { start: d.start, end: d.end, row: d.row }
+  const t = tasks.value[i]
+  return { start: t.start, end: t.end, row: rowIndexOf.value.get(t.row) ?? -1 }
+}
+
 function eventPayload(i: number): GanttTaskEvent {
   const t = tasks.value[i]
+  const p = placement(i)
   return {
     datum: parsedRows()[t.index],
     key: t.key,
-    row: t.row,
-    start: new Date(t.start),
-    end: new Date(t.end),
+    row: rowDefs.value[p.row]?.value ?? t.row,
+    start: new Date(p.start),
+    end: new Date(p.end),
     status: t.status,
     milestone: t.milestone,
     progress: t.progress,
@@ -791,72 +959,134 @@ interface BarView {
   labelX: number | null
   labelInside: boolean
   highlighted: boolean
+  dragging: boolean
+  ariaLabel: string
+}
+
+/**
+ * 一條任務的畫法。
+ * @param nextStartX 同一列下一個任務的左緣（名稱放在右邊時不能壓到它）
+ * @returns 完全在畫面外時回傳 null
+ */
+function makeBar(i: number, start: number, end: number, r: number, nextStartX: number, dragging: boolean): BarView | null {
+  const xs = xScale.value
+  const w = plotWidth.value
+  const t = tasks.value[i]
+  const bh = props.barHeight
+  const half = bh / 2
+  const y = r * props.rowHeight + (props.rowHeight - bh) / 2
+  const x0 = xs(new Date(start))
+  const x1 = t.milestone ? x0 : xs(new Date(end))
+  // ✅ 完全在畫面外的任務不畫
+  if (x1 + half < -2 || x0 - half > w + 2) return null
+  const custom = props.customRenderers
+  const payload = custom.barColor || custom.barLabel ? eventPayload(i) : null
+  const color = (payload && custom.barColor?.(payload.datum, payload)) || statusInfo(t.status).color
+  const textColor = textColorFor(color)
+  const bw = t.milestone ? 0 : Math.max(2, x1 - x0)
+  const labelText = props.showBarLabels ? (payload && custom.barLabel ? custom.barLabel(payload.datum, payload) : t.label) : ''
+
+  // 名稱：長條裡放得下就放裡面（被捲出左緣時貼著左緣）；放不下就放右邊，
+  // 但右邊要有空間 —— 不能壓到同一列的下一個任務
+  let labelX: number | null = null
+  let labelInside = false
+  if (labelText) {
+    const tw = estimateTextWidth(labelText)
+    const visibleStart = Math.max(x0, 0)
+    const visibleEnd = Math.min(x0 + bw, w)
+    const outsideX = (t.milestone ? x0 + half : x0 + bw) + 6
+    if (!t.milestone && visibleEnd - visibleStart >= tw + 12) {
+      labelX = visibleStart + 6
+      labelInside = true
+    } else if (outsideX + tw + 6 <= Math.min(nextStartX, w)) {
+      labelX = outsideX
+    }
+  }
+
+  const shift = t.end - t.displayEnd
+  return {
+    taskIndex: i,
+    task: t,
+    x: x0,
+    y,
+    w: bw,
+    color,
+    textColor,
+    diamond: `M${x0},${y} L${x0 + half},${y + half} L${x0},${y + bh} L${x0 - half},${y + half} Z`,
+    // 0% 與 100% 不畫：狀態已經說明了，每條都畫一條線反而雜亂
+    progressW: props.showProgress && t.progress !== null && t.progress > 0 && t.progress < 1 && bw > 12 ? (bw - 6) * t.progress : null,
+    labelText,
+    labelX,
+    labelInside,
+    highlighted: highlightTarget.value !== null && t.key === highlightTarget.value,
+    dragging,
+    ariaLabel: props.editable
+      ? t.milestone
+        ? `${t.label || t.key}：${formatTime(start)}`
+        : `${t.label || t.key}：${formatTime(start)} 至 ${formatTime(end - shift)}`
+      : '',
+  }
 }
 
 const visibleBars = computed<BarView[]>(() => {
   const xs = xScale.value
-  const w = plotWidth.value
   const ts = tasks.value
   const groups = rowGroups.value
   const [first, last] = visibleRange.value
-  const bh = props.barHeight
-  const custom = props.customRenderers
+  const half = props.barHeight / 2
   const out: BarView[] = []
-  if (w <= 0) return out
+  if (plotWidth.value <= 0) return out
+  const d = drag.value
+  const dragIndex = d && d.active ? d.index : -1
   for (let r = first; r <= last; r++) {
-    const y = r * props.rowHeight + (props.rowHeight - bh) / 2
-    // 只看這一列可見的任務，名稱才不會被藏起來的任務擋住
-    const group = groups[r].filter((i) => !hidden.value.has(statusKey(ts[i].status)))
+    // 只看這一列可見的任務，名稱才不會被藏起來的任務擋住；拖曳中的任務另外畫在最上層
+    const group = groups[r].filter((i) => i !== dragIndex && !hidden.value.has(statusKey(ts[i].status)))
     for (let g = 0; g < group.length; g++) {
       const i = group[g]
-      const t = ts[i]
-      const x0 = xs(new Date(t.start))
-      const x1 = t.milestone ? x0 : xs(new Date(t.end))
-      const half = bh / 2
-      // ✅ 完全在畫面外的任務不畫
-      if (x1 + half < -2 || x0 - half > w + 2) continue
-      const payload = custom.barColor || custom.barLabel ? eventPayload(i) : null
-      const color = (payload && custom.barColor?.(payload.datum, payload)) || statusInfo(t.status).color
-      const textColor = textColorFor(color)
-      const bw = t.milestone ? 0 : Math.max(2, x1 - x0)
-      const labelText = props.showBarLabels ? (payload && custom.barLabel ? custom.barLabel(payload.datum, payload) : t.label) : ''
-
-      // 名稱：長條裡放得下就放裡面（被捲出左緣時貼著左緣）；放不下就放右邊，
-      // 但右邊要有空間 —— 不能壓到同一列的下一個任務
-      let labelX: number | null = null
-      let labelInside = false
-      if (labelText) {
-        const tw = estimateTextWidth(labelText)
-        const visibleStart = Math.max(x0, 0)
-        const visibleEnd = Math.min(x0 + bw, w)
-        const nextIndex = group[g + 1]
-        const nextStart = nextIndex === undefined ? Infinity : xs(new Date(ts[nextIndex].start)) - (ts[nextIndex].milestone ? half : 0)
-        const outsideX = (t.milestone ? x0 + half : x0 + bw) + 6
-        if (!t.milestone && visibleEnd - visibleStart >= tw + 12) {
-          labelX = visibleStart + 6
-          labelInside = true
-        } else if (outsideX + tw + 6 <= Math.min(nextStart, w)) {
-          labelX = outsideX
-        }
-      }
-
-      out.push({
-        taskIndex: i,
-        task: t,
-        x: x0,
-        y,
-        w: bw,
-        color,
-        textColor,
-        diamond: `M${x0},${y} L${x0 + half},${y + half} L${x0},${y + bh} L${x0 - half},${y + half} Z`,
-        // 0% 與 100% 不畫：狀態已經說明了，每條都畫一條線反而雜亂
-        progressW: props.showProgress && t.progress !== null && t.progress > 0 && t.progress < 1 && bw > 12 ? (bw - 6) * t.progress : null,
-        labelText,
-        labelX,
-        labelInside,
-        highlighted: highlightTarget.value !== null && t.key === highlightTarget.value,
-      })
+      const next = group[g + 1]
+      const nextStartX = next === undefined ? Infinity : xs(new Date(ts[next].start)) - (ts[next].milestone ? half : 0)
+      const bar = makeBar(i, ts[i].start, ts[i].end, r, nextStartX, false)
+      if (bar) out.push(bar)
     }
+  }
+  if (d && dragIndex >= 0 && d.row >= first && d.row <= last) {
+    const bar = makeBar(dragIndex, d.start, d.end, d.row, Infinity, true)
+    if (bar) out.push(bar)
+  }
+  return out
+})
+
+// === 相依箭頭 ===
+
+const links = computed(() => buildLinks(tasks.value, parsedRows(), props.dependencyField, props.dependencies))
+
+const visibleLinks = computed(() => {
+  if (!props.showDependencies || !links.value.length || plotWidth.value <= 0) return []
+  const xs = xScale.value
+  const w = plotWidth.value
+  const ts = tasks.value
+  const rh = props.rowHeight
+  const half = props.barHeight / 2
+  const [first, last] = visibleRange.value
+  const inView = (r: number) => r >= first && r <= last
+  const d = drag.value
+  const out: { id: string; d: string; violated: boolean; active: boolean }[] = []
+  for (const link of links.value) {
+    const a = placement(link.from)
+    const b = placement(link.to)
+    if (a.row < 0 || b.row < 0 || (!inView(a.row) && !inView(b.row))) continue
+    if (hidden.value.has(statusKey(ts[link.from].status)) || hidden.value.has(statusKey(ts[link.to].status))) continue
+    const x1 = xs(new Date(a.end)) + (ts[link.from].milestone ? half : 0)
+    const x2 = xs(new Date(b.start)) - (ts[link.to].milestone ? half : 0)
+    // 兩端都在畫面同一側的外面：不畫
+    if ((x1 < -20 && x2 < -20) || (x1 > w + 20 && x2 > w + 20)) continue
+    const focus = d && d.active ? d.index : hoverIndex.value
+    out.push({
+      id: `${link.from}>${link.to}`,
+      d: linkPath(x1, a.row * rh + rh / 2, x2, b.row * rh + rh / 2, rh),
+      violated: b.start < a.end,
+      active: focus === link.from || focus === link.to,
+    })
   }
   return out
 })
@@ -898,7 +1128,11 @@ const tooltipLines = computed(() => {
     lines.push(`時間：${formatTime(t.start.getTime())}`)
     return lines
   }
-  lines.push(`開始：${formatTime(task.start)}`, `結束：${formatTime(task.displayEnd)}`, `工期：${formatDuration(task.end - task.start)}`)
+  // 拖曳中顯示預覽的時間
+  const start = t.start.getTime()
+  const end = t.end.getTime()
+  const shift = task.end - task.displayEnd
+  lines.push(`開始：${formatTime(start)}`, `結束：${formatTime(end - shift)}`, `工期：${formatDuration(end - start)}`)
   if (t.progress !== null) lines.push(`進度：${Math.round(t.progress * 100)}%`)
   return lines
 })
@@ -936,14 +1170,14 @@ function showTooltip(i: number, event: MouseEvent): void {
   }
   const payload = eventPayload(i)
   const info = statusInfo(t.status)
-  const rowDef = rowDefs.value.find((r) => r.value === t.row)
+  const rowDef = rowDefs.value.find((r) => r.value === payload.row)
   const color = (props.customRenderers.barColor?.(payload.datum, payload)) || info.color
-  tooltipData.value = { ...payload, label: t.label, rowLabel: rowDef?.label ?? t.row, statusLabel: info.label, color, position }
+  tooltipData.value = { ...payload, label: t.label, rowLabel: rowDef?.label ?? payload.row, statusLabel: info.label, color, position }
   tooltipVisible.value = true
 }
 
 function onBarEnter(i: number, event: MouseEvent): void {
-  if (panning) return
+  if (panning || drag.value?.active) return
   hoverIndex.value = i
   showTooltip(i, event)
   emit('task-hover', eventPayload(i))
@@ -951,7 +1185,7 @@ function onBarEnter(i: number, event: MouseEvent): void {
 }
 
 function onBarMove(i: number, event: MouseEvent): void {
-  if (panning) return
+  if (panning || drag.value?.active) return
   // 平移結束後游標還在長條上：mouseenter 不會再來，從 mousemove 接回來
   if (hoverIndex.value !== i) onBarEnter(i, event)
   else showTooltip(i, event)
@@ -965,12 +1199,196 @@ function clearHover(): void {
 }
 
 function onBarClick(i: number): void {
+  // 拖曳放開時瀏覽器也會送 click：那不是「點一下」
+  if (suppressClick) {
+    suppressClick = false
+    return
+  }
   emit('task-click', eventPayload(i))
+}
+
+// === 編輯：拖曳 ===
+
+interface DragState {
+  index: number
+  type: GanttChangeType
+  /** 按下時的游標位置 */
+  x0: number
+  y0: number
+  origStart: number
+  origEnd: number
+  origRow: number
+  /** 預覽值 */
+  start: number
+  end: number
+  row: number
+  /** 移動超過門檻才算開始拖曳（之前都還可能只是點一下） */
+  active: boolean
+}
+
+const drag = shallowRef<DragState | null>(null)
+/** 拖曳放開後的那一下 click 要忽略 */
+let suppressClick = false
+/** 移動幾個像素才算拖曳 */
+const DRAG_THRESHOLD = 3
+
+function onBarPointerDown(i: number, event: PointerEvent, type: GanttChangeType): void {
+  if (!props.editable || event.button !== 0) return
+  const t = tasks.value[i]
+  if (!t) return
+  // 不讓 d3.zoom 開始平移、也不選取文字（取消 pointerdown 的預設動作，瀏覽器就不會補發 mousedown）
+  event.preventDefault()
+  event.stopPropagation()
+  suppressClick = false
+  const row = rowIndexOf.value.get(t.row) ?? 0
+  drag.value = {
+    index: i,
+    type: t.milestone ? 'move' : type,
+    x0: event.clientX,
+    y0: event.clientY,
+    origStart: t.start,
+    origEnd: t.end,
+    origRow: row,
+    start: t.start,
+    end: t.end,
+    row,
+    active: false,
+  }
+  window.addEventListener('pointermove', onDragMove)
+  window.addEventListener('pointerup', onDragEnd)
+  window.addEventListener('pointercancel', cancelDrag)
+  window.addEventListener('keydown', onDragKeydown)
+}
+
+function onDragMove(event: PointerEvent): void {
+  const d = drag.value
+  if (!d) return
+  const dx = event.clientX - d.x0
+  const dy = event.clientY - d.y0
+  if (!d.active && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return
+  const unit = snapUnit.value
+  const minDuration = unit || 60_000
+  const dt = dx * msPerPx.value
+  let { origStart: start, origEnd: end } = d
+  let row = d.origRow
+  if (d.type === 'move') {
+    const shift = snapDelta(dt, unit)
+    start += shift
+    end += shift
+    if (props.allowRowChange) {
+      row = Math.min(rowDefs.value.length - 1, Math.max(0, d.origRow + Math.round(dy / props.rowHeight)))
+    }
+  } else if (Math.abs(dt) >= unit / 2) {
+    // 拉邊：對齊整點、整天；移動不到半個單位時維持原值（不會一碰就跳到最近的整點）
+    if (d.type === 'resize-start') start = Math.min(snapEdge(start + dt, unit), end - minDuration)
+    else end = Math.max(snapEdge(end + dt, unit), start + minDuration)
+  }
+  drag.value = { ...d, start, end, row, active: true }
+  hoverIndex.value = d.index
+  showTooltip(d.index, event)
+}
+
+function stopDragListeners(): void {
+  window.removeEventListener('pointermove', onDragMove)
+  window.removeEventListener('pointerup', onDragEnd)
+  window.removeEventListener('pointercancel', cancelDrag)
+  window.removeEventListener('keydown', onDragKeydown)
+}
+
+function onDragEnd(): void {
+  const d = drag.value
+  stopDragListeners()
+  drag.value = null
+  if (!d?.active) return
+  suppressClick = true
+  clearHover()
+  if (d.start !== d.origStart || d.end !== d.origEnd || d.row !== d.origRow) {
+    emitChange(d.index, d.type, d.start, d.end, d.row)
+  }
+}
+
+/** 取消拖曳（Esc、pointercancel）：回到原位，不送事件 */
+function cancelDrag(): void {
+  const d = drag.value
+  stopDragListeners()
+  drag.value = null
+  if (d?.active) {
+    suppressClick = true
+    clearHover()
+  }
+}
+
+function onDragKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') cancelDrag()
+}
+
+function emitChange(i: number, type: GanttChangeType, start: number, end: number, row: number): void {
+  const t = tasks.value[i]
+  // 只寫日期的結束時間被算到隔天 00:00；送出時同時給「那一天」，呼叫端才能直接存回日期字串
+  const shift = t.end - t.displayEnd
+  emit('task-change', {
+    datum: parsedRows()[t.index],
+    key: t.key,
+    type,
+    start: new Date(start),
+    end: new Date(end),
+    displayEnd: new Date(end - shift),
+    row: rowDefs.value[row]?.value ?? t.row,
+    previous: { start: new Date(t.start), end: new Date(t.end), displayEnd: new Date(t.displayEnd), row: t.row },
+  })
+}
+
+// === 編輯：鍵盤 ===
+
+/**
+ * 方向鍵微調（以吸附單位為一步；不吸附時一步一小時）：
+ * ←→ 移動、Shift + ←→ 調整結束、Alt + ←→ 調整開始、↑↓ 換列（allowRowChange）
+ */
+function onBarKeydown(i: number, event: KeyboardEvent): void {
+  if (!props.editable) return
+  const t = tasks.value[i]
+  if (!t) return
+  const step = snapUnit.value || 3_600_000
+  let { start, end } = t
+  const origRow = rowIndexOf.value.get(t.row) ?? 0
+  let row = origRow
+  let type: GanttChangeType = 'move'
+  if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    const dir = event.key === 'ArrowRight' ? 1 : -1
+    if (event.shiftKey && !t.milestone) {
+      type = 'resize-end'
+      end = Math.max(end + dir * step, start + step)
+    } else if (event.altKey && !t.milestone) {
+      type = 'resize-start'
+      start = Math.min(start + dir * step, end - step)
+    } else {
+      start += dir * step
+      end += dir * step
+    }
+  } else if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && props.allowRowChange) {
+    row = Math.min(rowDefs.value.length - 1, Math.max(0, origRow + (event.key === 'ArrowDown' ? 1 : -1)))
+  } else {
+    return
+  }
+  event.preventDefault()
+  if (start === t.start && end === t.end && row === origRow) return
+  emitChange(i, type, start, end, row)
+  refocus(t.key)
+}
+
+/** 呼叫端更新資料後，長條可能被移到別的列（DOM 節點搬家會失去焦點）—— 把焦點接回來 */
+function refocus(key: string): void {
+  void nextTick(() => {
+    const el = Array.from(plotRef.value?.querySelectorAll<SVGGElement>('.gantt-task') ?? []).find((g) => g.dataset.key === key)
+    if (el && document.activeElement !== el) el.focus()
+  })
 }
 
 // === 縮放（d3.zoom，只用 X 方向） ===
 
 let zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown> | null = null
+/** 縮放中看到的時間範圍（範圍或尺寸改變後用來還原畫面） */
+let lastVisible: [number, number] | null = null
 
 function wheelModifierPressed(event: WheelEvent): boolean {
   if (props.wheelZoomModifier === 'ctrl') return event.ctrlKey || event.metaKey
@@ -1015,6 +1433,8 @@ function setupZoom(): void {
         return horizontalDelta(we) === 0 && wheelModifierPressed(we)
       }
       if (event.type === 'dblclick') return false // 雙擊改為重設縮放
+      // 可編輯時，在任務上按下是拖曳任務，不是平移
+      if (props.editable && (event.target as Element | null)?.closest?.('.gantt-task')) return false
       return !(event as MouseEvent).button
     })
     .on('zoom', (event: d3.D3ZoomEvent<SVGSVGElement, unknown>) => {
@@ -1025,6 +1445,7 @@ function setupZoom(): void {
       }
       // 只取 X 方向：列的位置由垂直捲動決定
       zoomTransform.value = d3.zoomIdentity.translate(event.transform.x, 0).scale(event.transform.k)
+      lastVisible = isZoomed.value ? (xScale.value.domain().map((d) => d.getTime()) as [number, number]) : null
       emit('zoom-change', { timeDomain: xScale.value.domain() as [Date, Date], scale: event.transform.k })
     })
     .on('end', () => {
@@ -1049,17 +1470,32 @@ function resetZoom(): void {
     d3.select(plotRef.value).call(zoomBehavior.transform, d3.zoomIdentity)
   }
   zoomTransform.value = d3.zoomIdentity
+  lastVisible = null
   emit('zoom-reset')
 }
 
-// 繪圖區大小或範圍改變：舊的 transform 是像素位移，已經對不上 —— 回到預設範圍並重設邊界
+/**
+ * 繪圖區大小或範圍改變：舊的 transform 是像素位移，已經對不上，要重設邊界。
+ * 🔧 縮放中時還原原本看到的時間範圍 —— 否則拖曳改了排程（資料範圍變大）、或視窗縮放，畫面就跳回全覽
+ */
 watch(
   () => [plotWidth.value, contentHeight.value, baseDomain.value[0], baseDomain.value[1], zoomLimits.value[0], zoomLimits.value[1]],
   () => {
-    if (!plotRef.value) return
-    if (zoomBehavior) d3.select(plotRef.value).on('.zoom', null)
+    const el = plotRef.value
+    if (!el) return
+    const keep = isZoomed.value ? lastVisible : null
+    if (zoomBehavior) d3.select(el).on('.zoom', null)
     zoomTransform.value = d3.zoomIdentity
+    lastVisible = null
     setupZoom()
+    if (keep && zoomBehavior && plotWidth.value > 0) {
+      const bx = baseX.value
+      const span = bx(new Date(keep[1])) - bx(new Date(keep[0]))
+      if (span > 0) {
+        const k = plotWidth.value / span
+        d3.select(el).call(zoomBehavior.transform, d3.zoomIdentity.translate(-k * bx(new Date(keep[0])), 0).scale(k))
+      }
+    }
   }
 )
 
@@ -1153,10 +1589,13 @@ onUnmounted(() => {
     clearInterval(nowTimer)
     nowTimer = null
   }
-  // 2. d3.zoom（實例事件）
+  // 2. 拖曳中卸載：移除掛在 window 上的監聽
+  stopDragListeners()
+  drag.value = null
+  // 3. d3.zoom（實例事件）
   if (plotEl) d3.select(plotEl).on('.zoom', null)
   zoomBehavior = null
-  // 3. DOM 事件
+  // 4. DOM 事件
   plotEl?.removeEventListener('dblclick', resetZoom)
   plotEl?.removeEventListener('wheel', onWheel)
   plotEl = null
@@ -1232,6 +1671,56 @@ defineExpose({ resetZoom, scrollToRow, scrollToTask, containerRef })
 
 .gantt-task {
   cursor: pointer;
+  outline: none;
+}
+
+.gantt-task.is-editable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.gantt-task.is-dragging {
+  cursor: grabbing;
+  opacity: 0.85;
+}
+
+.gantt-handle {
+  fill: transparent;
+  cursor: ew-resize;
+}
+
+.gantt-task:focus-visible .gantt-bar,
+.gantt-task:focus-visible .gantt-milestone {
+  stroke: rgb(var(--t-stroke-focus));
+  stroke-width: 3;
+}
+
+.gantt-nonworking rect {
+  fill: rgb(var(--t-stroke-light));
+  opacity: 0.5;
+}
+
+.gantt-link {
+  fill: none;
+  stroke: rgb(var(--t-content-tertiary));
+  stroke-width: 1.25;
+}
+
+.gantt-link.is-active {
+  stroke: rgb(var(--t-content-primary));
+  stroke-width: 1.75;
+}
+
+.gantt-link.is-violated {
+  stroke: rgb(var(--t-danger));
+}
+
+.gantt-arrow path {
+  fill: rgb(var(--t-content-tertiary));
+}
+
+.gantt-arrow.is-violated path {
+  fill: rgb(var(--t-danger));
 }
 
 .gantt-bar,

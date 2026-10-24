@@ -394,7 +394,7 @@ const navSections = [
         to: '/docs/components/gantt-chart', icon: '🗓️', label: '甘特圖',
         anchors: [
           { label: '機台排程', id: 'basic' }, { label: '專案進度', id: 'project' },
-          { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' },
+          { label: '編輯排程', id: 'edit' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' },
         ],
       },
     ],
