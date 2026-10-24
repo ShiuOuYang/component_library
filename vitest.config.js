@@ -77,6 +77,13 @@ export default mergeConfig(
             functions: 95,
             lines: 90,
           },
+          // 浮層家族的核心：window 模式（拖曳、縮放、最小化到口袋）原本幾乎沒測
+          'src/components/library/ui/ChptModal.vue': {
+            statements: 95,
+            branches: 78,
+            functions: 85,
+            lines: 95,
+          },
           'src/components/library/viewer/gerber/**': {
             statements: 95,
             branches: 95,

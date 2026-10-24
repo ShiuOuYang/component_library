@@ -48,6 +48,8 @@
 - **ChptCheckbox**：宣告了 `click` 事件卻從未發出 —— 現在切換選項時會送出該選項。（#24）
 - **ChptVirtualList**：資料變少時校正捲動位置，不會畫出空白；`itemHeight` 不是正數時退回 1px。（#26）
 - **useOverlay**：焦點被移到浮層外時，正向 Tab 也會拉回浮層。（#26）
+- **ChptModal**：window 模式拖曳或縮放到一半被卸載時，body 的游標（move）與 user-select: none 會留著，
+  整頁游標卡住、文字選不起來 —— 卸載時一併還原。
 - **正式入口**：補上漏匯出的 StatusScatterMap。（#21）
 - **開發環境**：`facetShared.scss` 造成的 `Cannot read properties of undefined (reading 'scoped')`（#19）；
   qrcode-generator 的 504 Outdated Optimize Dep。
