@@ -32,6 +32,7 @@ export {
 export {
   DualAxisComboChart, EnterpriseHeatmap, EnterprisePareto, ParetoChart,
   FacetedChart, GridFacetChart, StatusScatterMap, GanttChart,
+  HorizontalBarChart, PieChart, SparklineChart, GaugeChart,
 } from './charts/index.js'
 
 // ===== viewer =====
@@ -85,6 +86,8 @@ export type {
   VerticalFacet, ParetoInputItem, ParetoChartDatum, StatusDef, StatusScatterTooltip,
   GanttStatusDef, GanttRowInput, GanttTaskEvent, GanttTooltip, GanttTaskChange, GanttChangeType, GanttDependency,
   GanttSnap,
+  HorizontalBarEvent, HorizontalBarTooltip, HorizontalBarReferenceLine, PieSliceEvent, PieTooltip,
+  SparklinePoint, SparklineTooltip, GaugeBand,
 } from './charts/index.js'
 export type {
   GerberLayerInput, GerberImageInfo, PcbBoardInfo, PcbElementEvent,

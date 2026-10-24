@@ -9,6 +9,10 @@ export { default as FacetedChart } from './FacetedChart.vue'
 export { default as GridFacetChart } from './GridFacetChart.vue'
 export { default as StatusScatterMap } from './StatusScatterMap.vue'
 export { default as GanttChart } from './GanttChart.vue'
+export { default as HorizontalBarChart } from './HorizontalBarChart.vue'
+export { default as PieChart } from './PieChart.vue'
+export { default as SparklineChart } from './SparklineChart.vue'
+export { default as GaugeChart } from './GaugeChart.vue'
 
 // ===== 型別（props 的資料形狀與事件 payload） =====
 export type {
@@ -31,3 +35,7 @@ export type {
   GanttStatusDef, GanttRowInput, GanttTaskEvent, GanttTooltip, GanttTaskChange, GanttChangeType, GanttDependency,
 } from './GanttChart.vue'
 export type { GanttSnap } from './utils/gantt'
+export type { HorizontalBarEvent, HorizontalBarTooltip, HorizontalBarReferenceLine } from './HorizontalBarChart.vue'
+export type { PieSliceEvent, PieTooltip } from './PieChart.vue'
+export type { SparklinePoint, SparklineTooltip } from './SparklineChart.vue'
+export type { GaugeBand } from './GaugeChart.vue'
