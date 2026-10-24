@@ -6,6 +6,9 @@
 
 import * as d3 from 'd3'
 
+// 文字量測與文字色已移到 chartText（其他圖表也要用）；這裡保留匯出，舊的 import 不會壞
+export { estimateTextWidth, readableTextColor } from './chartText'
+
 /** 一天的毫秒數 */
 export const DAY = 86_400_000
 const HOUR = 3_600_000
@@ -227,18 +230,6 @@ export function upperSegments(domain: [number, number], tiers: TimeTiers, limit 
   return out
 }
 
-/**
- * 估算文字寬度（px）。jsdom 與 SSR 沒有 measureText，用字元寬度近似：
- * 中日韓全形字約一個字高、其他約 0.6 個字高。用來判斷任務名稱放不放得進長條。
- */
-export function estimateTextWidth(text: string, fontSize = 12): number {
-  let w = 0
-  for (const ch of text) {
-    w += /[⺀-鿿가-힯豈-﫿＀-￯]/.test(ch) ? fontSize : fontSize * 0.6
-  }
-  return w
-}
-
 /** 期間的中文寫法：3 天 4 小時、2 小時 30 分、45 分 */
 export function formatDuration(ms: number): string {
   if (!Number.isFinite(ms) || ms <= 0) return '0 分'
@@ -248,22 +239,6 @@ export function formatDuration(ms: number): string {
   if (days > 0) return hours > 0 ? `${days} 天 ${hours} 小時` : `${days} 天`
   if (hours > 0) return minutes > 0 ? `${hours} 小時 ${minutes} 分` : `${hours} 小時`
   return `${Math.max(1, minutes)} 分`
-}
-
-/**
- * 長條上的文字要用深色還是白色：依底色的相對亮度（WCAG）選對比較高的那個。
- * 解析不了的顏色（例如沒解開的 CSS 變數）回傳白色。
- */
-export function readableTextColor(background: string): '#ffffff' | '#111827' {
-  const c = d3.color(background)?.rgb()
-  if (!c) return '#ffffff'
-  const lin = (v: number) => {
-    const s = v / 255
-    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4
-  }
-  const L = 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b)
-  // 白字對比 (1.05) / (L + 0.05)；深字（#111827，L≈0.012）對比 (L + 0.05) / 0.062
-  return 1.05 / (L + 0.05) >= (L + 0.05) / 0.062 ? '#ffffff' : '#111827'
 }
 
 /** 依列分組任務索引（列順序對應 rows） */

@@ -48,7 +48,7 @@ const { colors, shadows, typography, duration, zIndex, control } = designTokens
  */
 function withThemedRoles(base) {
   /** 角色名的第一段就是 Tailwind 的色群名 */
-  const GROUPS = ['content', 'surface', 'stroke', 'accent', 'success', 'warning', 'danger', 'info']
+  const GROUPS = ['content', 'surface', 'stroke', 'accent', 'success', 'warning', 'danger', 'info', 'chart']
   const out = { ...base }
 
   for (const role of Object.keys(themed)) {
