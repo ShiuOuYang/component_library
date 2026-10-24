@@ -64,6 +64,9 @@
 - **DualAxisComboChart 滾輪縮放改成像 Allegro**：在繪圖區滾動時，以游標那一點為中心 **X 與 Y 同時縮放**
   （雙 Y 軸用同一個倍率、游標底下的資料點留在原地）；原本只縮放 X。在 X 軸或左右 Y 軸的刻度上滾仍只縮放那一軸。
   新增**按住滑鼠中鍵拖曳平移** X 與 Y（送出 `axis-drag`）。要維持只縮放 X，設 `wheel-zoom-axes="x"`。
+  **縮小與平移不再受資料範圍限制**：可以縮到比全覽還小、平移到資料範圍外（沒縮放時也能平移）；
+  因此游標在圖上時滾輪一律由圖表處理、不再「全覽時交還頁面捲動」，往外縮也不會自動回到全覽（按「重設縮放」）。
+  要恢復原本的限制設 `limit-zoom-to-data`；類別軸與對數軸一律限制。
   繪圖區的一次滾動現在會依序送出 X、左 Y、右 Y 各一個 `wheel-zoom` 事件（原本只有 X）。分面圖的 Y 只縮放游標所在的那一格。
 - **重設縮放按鈕**：DualAxisComboChart、EnterpriseHeatmap 的「🔄 Reset」改為與其他圖表一致的「重設縮放」。（#25）
 - **ParetoChart**：事件 `chartRendered` 改名為 `chart-rendered`；模板寫 `@chartRendered` 或 `@chart-rendered` 都接得到。（#24）

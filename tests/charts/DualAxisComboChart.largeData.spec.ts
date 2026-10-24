@@ -216,16 +216,16 @@ describe('DualAxisComboChart：滾輪縮放', () => {
     expect(w.find('button').text()).toBe('重設縮放')
   })
 
-  it('已在全覽時往外滾：不攔截（交還給頁面捲動）也不送事件', async () => {
-    const w = await mountChart(base)
+  it('limitZoomToData：已在全覽時往外滾不攔截（交還給頁面捲動）也不送事件', async () => {
+    const w = await mountChart({ ...base, limitZoomToData: true })
     const event = wheel(w.find('svg').element, { deltaY: 100, clientX: 200, clientY: 100 })
     expect(event.defaultPrevented).toBe(false)
     await flushFrame()
     expect(w.emitted('wheel-zoom')).toBeUndefined()
   })
 
-  it('縮回全覽時 domain 回到 null、重置按鈕消失', async () => {
-    const w = await mountChart(base)
+  it('limitZoomToData：縮回全覽時 domain 回到 null、重置按鈕消失', async () => {
+    const w = await mountChart({ ...base, limitZoomToData: true })
     const svg = w.find('svg').element
     wheel(svg, { deltaY: -100, clientX: 200, clientY: 100 })
     await flushFrame()
@@ -440,8 +440,8 @@ describe('DualAxisComboChart：XY 同時縮放與中鍵平移', () => {
     expect(axisEvents(w, 'yLeft')).toHaveLength(0)
   })
 
-  it('往外縮：已經全覽的軸跳過；全部全覽後不攔截', async () => {
-    const w = await mountChart(base)
+  it('limitZoomToData：往外縮時已經全覽的軸跳過；全部全覽後不攔截', async () => {
+    const w = await mountChart({ ...base, limitZoomToData: true })
     const svg = w.find('svg').element
     // 只放大 X（在 X 軸刻度上滾）
     wheel(svg, { deltaY: -300, clientX: 220, clientY: PLOT_H + 20 })
@@ -476,8 +476,8 @@ describe('DualAxisComboChart：XY 同時縮放與中鍵平移', () => {
   const drags = (w: VueWrapper, axis: string) =>
     (w.emitted('axis-drag') ?? []).map((e) => e[0] as { axis: string; domain: [number, number] }).filter((e) => e.axis === axis)
 
-  it('中鍵拖曳：X 與 Y 一起平移（畫面跟著游標走），不超出邊界', async () => {
-    const w = await mountChart(base)
+  it('limitZoomToData：中鍵拖曳 X 與 Y 一起平移（畫面跟著游標走），不超出邊界', async () => {
+    const w = await mountChart({ ...base, limitZoomToData: true })
     const svg = w.find('svg').element
     wheel(svg, { deltaY: -300, clientX: 220, clientY: 140 })
     await flushFrame()
@@ -512,8 +512,8 @@ describe('DualAxisComboChart：XY 同時縮放與中鍵平移', () => {
     expect((w.emitted('axis-drag') ?? []).length).toBe(count)
   })
 
-  it('沒有縮放時中鍵拖曳不動；左鍵、繪圖區外、關掉滾輪縮放都不平移', async () => {
-    const w = await mountChart(base)
+  it('limitZoomToData：沒有縮放時中鍵拖曳不動；左鍵、繪圖區外、關掉滾輪縮放都不平移', async () => {
+    const w = await mountChart({ ...base, limitZoomToData: true })
     const svg = w.find('svg').element
     mouse(svg, 'mousedown', 220, 140)
     mouse(window, 'mousemove', 300, 200)
@@ -562,5 +562,100 @@ describe('DualAxisComboChart：XY 同時縮放與中鍵平移', () => {
     wrapper = null
     expect(remove).toHaveBeenCalledWith('mousemove', expect.any(Function))
     expect(remove).toHaveBeenCalledWith('mouseup', expect.any(Function))
+  })
+})
+
+/**
+ * 預設不設限（像 Allegro）：可以縮到比全覽還小、平移到資料範圍外。
+ * 類別軸（範圍外沒有類別）與對數軸（不能縮到 0 以下）仍限制在資料範圍內。
+ */
+describe('DualAxisComboChart：縮小與平移不設限', () => {
+  const data = Array.from({ length: 100 }, (_, i) => ({ x: i * 10, y: (i % 10) * 10 }))
+  const base = { layers: [line(data)], xScaleType: 'linear', yLeftDomain: [0, 100] }
+  const xs = (w: VueWrapper) => axisEvents(w, 'x').map((e) => e.domain as [number, number])
+  const ys = (w: VueWrapper) => axisEvents(w, 'yLeft').map((e) => e.domain as [number, number])
+
+  it('全覽時往外滾：照樣縮小，X 與 Y 都超出資料範圍，游標底下的點不動', async () => {
+    const w = await mountChart(base)
+    const event = wheel(w.find('svg').element, { deltaY: 300, clientX: 330, clientY: 70 })
+    expect(event.defaultPrevented).toBe(true)
+    await flushFrame()
+    const [x0, x1] = xs(w)[0]
+    const [y0, y1] = ys(w)[0]
+    expect(x1 - x0).toBeCloseTo(990 * Math.exp(0.6), 0)
+    expect(x0).toBeLessThan(0)
+    expect(x1).toBeGreaterThan(990)
+    expect((742.5 - x0) / (x1 - x0)).toBeCloseTo(0.75, 2)
+    expect(y1 - y0).toBeCloseTo(100 * Math.exp(0.6), 3)
+    expect(y0).toBeLessThan(0)
+    expect(y1).toBeGreaterThan(100)
+    // 縮小也是縮放狀態：有「重設縮放」
+    expect(w.find('button').text()).toBe('重設縮放')
+  })
+
+  it('一直往外縮：停在全覽的 100 萬倍，不會變成 Infinity', async () => {
+    const w = await mountChart(base)
+    const svg = w.find('svg').element
+    for (let i = 0; i < 20; i++) {
+      wheel(svg, { deltaY: 5000, clientX: 220, clientY: 140 })
+      await flushFrame()
+    }
+    const [a, b] = xs(w).at(-1)!
+    expect(Number.isFinite(a) && Number.isFinite(b)).toBe(true)
+    expect(b - a).toBeLessThanOrEqual(990 * 1e6)
+  })
+
+  it('沒縮放也能左右滑動平移，可以平移到資料範圍外', async () => {
+    const w = await mountChart(base)
+    const event = wheel(w.find('svg').element, { deltaX: -220, clientX: 220, clientY: 140 })
+    expect(event.defaultPrevented).toBe(true)
+    await flushFrame()
+    const [a, b] = xs(w)[0]
+    // 往左滑半個繪圖區：範圍往左移一半
+    expect(a).toBeCloseTo(-495)
+    expect(b - a).toBeCloseTo(990)
+  })
+
+  /** 中鍵拖曳的滑鼠事件（監聽掛在 window） */
+  function mouse(target: EventTarget, type: string, x: number, y: number, button = 1) {
+    target.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button }))
+  }
+
+  it('沒縮放時中鍵拖曳也能平移 X 與 Y，不受資料範圍限制', async () => {
+    const w = await mountChart(base)
+    const svg = w.find('svg').element
+    mouse(svg, 'mousedown', 220, 140)
+    mouse(window, 'mousemove', 220 + 440, 140 + 280)
+    mouse(window, 'mouseup', 0, 0)
+    await nextTick()
+    const drags = (axis: string) =>
+      (w.emitted('axis-drag') ?? []).map((e) => e[0] as { axis: string; domain: [number, number] }).filter((e) => e.axis === axis)
+    // 往右拖一整個繪圖區寬 → X 範圍往左移一個全覽寬；往下拖一整個高 → Y 往上移 100
+    const [a, b] = drags('x').at(-1)!.domain
+    expect(a).toBeCloseTo(-990)
+    expect(b).toBeCloseTo(0)
+    const [c, d] = drags('yLeft').at(-1)!.domain
+    expect(c).toBeCloseTo(100)
+    expect(d).toBeCloseTo(200)
+  })
+
+  it('對數 Y 軸仍限制在資料範圍內（不能縮到 0 以下）', async () => {
+    const pos = data.map((d) => ({ x: d.x, y: d.y + 1 }))
+    const w = await mountChart({ layers: [line(pos)], xScaleType: 'linear', yLeftScaleType: 'log', wheelZoomAxes: 'xy' })
+    wheel(w.find('svg').element, { deltaY: 300, clientX: 220, clientY: 140 })
+    await flushFrame()
+    // X 照樣縮小；Y（對數）已在全覽，不動
+    expect(xs(w)).toHaveLength(1)
+    expect(ys(w)).toHaveLength(0)
+  })
+
+  it('類別 X 軸仍限制在全部類別內', async () => {
+    const rows = Array.from({ length: 6 }, (_, i) => ({ c: `C${i}`, v: i }))
+    const w = await mountChart({
+      layers: [{ type: 'bar', data: rows, xValue: (d: { c: string }) => d.c, yValue: (d: { v: number }) => d.v }],
+      wheelZoomAxes: 'x',
+    })
+    const event = wheel(w.find('svg').element, { deltaY: 300, clientX: 220, clientY: 140 })
+    expect(event.defaultPrevented).toBe(false)
   })
 })
