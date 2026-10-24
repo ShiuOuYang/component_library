@@ -390,6 +390,13 @@ const navSections = [
         to: '/docs/components/status-scatter-map', icon: '🎯', label: '狀態散佈圖',
         anchors: [{ label: '基本示範', id: 'basic' }, { label: '5 萬個點', id: 'large' }, { label: 'API', id: 'api' }],
       },
+      {
+        to: '/docs/components/gantt-chart', icon: '🗓️', label: '甘特圖',
+        anchors: [
+          { label: '機台排程', id: 'basic' }, { label: '專案進度', id: 'project' },
+          { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' },
+        ],
+      },
     ],
   },
   {

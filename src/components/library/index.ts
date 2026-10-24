@@ -31,7 +31,7 @@ export {
 // ===== charts =====
 export {
   DualAxisComboChart, EnterpriseHeatmap, EnterprisePareto, ParetoChart,
-  FacetedChart, GridFacetChart, StatusScatterMap,
+  FacetedChart, GridFacetChart, StatusScatterMap, GanttChart,
 } from './charts/index.js'
 
 // ===== viewer =====
@@ -83,6 +83,7 @@ export type {
   HeatmapDatum, ColorLegendPosition, HeatmapHighlightMode, HeatmapColorScale, HeatmapCell,
   GradientStop, HeatmapCustomRenderers,
   VerticalFacet, ParetoInputItem, ParetoChartDatum, StatusDef, StatusScatterTooltip,
+  GanttStatusDef, GanttRowInput, GanttTaskEvent, GanttTooltip,
 } from './charts/index.js'
 export type {
   GerberLayerInput, GerberImageInfo, PcbBoardInfo, PcbElementEvent,

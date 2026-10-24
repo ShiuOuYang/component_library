@@ -8,6 +8,7 @@ export { default as ParetoChart } from './ParetoChart.vue'
 export { default as FacetedChart } from './FacetedChart.vue'
 export { default as GridFacetChart } from './GridFacetChart.vue'
 export { default as StatusScatterMap } from './StatusScatterMap.vue'
+export { default as GanttChart } from './GanttChart.vue'
 
 // ===== 型別（props 的資料形狀與事件 payload） =====
 export type {
@@ -26,3 +27,4 @@ export type {
 export type { VerticalFacet } from './FacetedChart.vue'
 export type { ParetoInputItem, ParetoChartDatum } from './ParetoChart.vue'
 export type { StatusDef, StatusScatterTooltip } from './StatusScatterMap.vue'
+export type { GanttStatusDef, GanttRowInput, GanttTaskEvent, GanttTooltip } from './GanttChart.vue'
