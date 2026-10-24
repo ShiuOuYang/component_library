@@ -15,6 +15,9 @@ export { default as SparklineChart } from './SparklineChart.vue'
 export { default as GaugeChart } from './GaugeChart.vue'
 export { default as ControlChart } from './ControlChart.vue'
 export { default as CapabilityHistogram } from './CapabilityHistogram.vue'
+export { default as StateTimeline } from './StateTimeline.vue'
+export { default as BoxPlotChart } from './BoxPlotChart.vue'
+export { default as WaterfallChart } from './WaterfallChart.vue'
 
 // ===== 型別（props 的資料形狀與事件 payload） =====
 export type {
@@ -46,3 +49,11 @@ export type { HistogramBin, HistogramTooltip } from './CapabilityHistogram.vue'
 export type {
   ControlChartType, FixedLimits as ControlChartLimits, Violation as ControlChartViolation, CapabilityResult,
 } from './utils/spc'
+export type { StateTimelineEvent, StateTimelineTooltip, StateTimelineRowInput } from './StateTimeline.vue'
+export type { StateDef, StateSummary } from './utils/stateTimeline'
+export type {
+  BoxPlotGroupEvent, BoxPlotPointEvent, BoxPlotTooltip, BoxPlotReferenceLine, BoxPlotGroupInput,
+} from './BoxPlotChart.vue'
+export type { BoxStats, QuartileMethod } from './utils/boxPlot'
+export type { WaterfallEvent, WaterfallTooltip } from './WaterfallChart.vue'
+export type { WaterfallKind } from './utils/waterfall'
