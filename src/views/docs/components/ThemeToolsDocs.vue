@@ -110,6 +110,12 @@
           <p class="text-xs text-content-secondary">多視窗口袋列與模態框，詳見「浮層元件」。</p>
         </div>
       </div>
+
+      <ApiTable of="ChptPageSwitcher" title="ChptPageSwitcher Props / Events" :rows="pageSwitcherProps" />
+      <ApiTable of="ChptTabNavigation" title="ChptTabNavigation Props / Events" :rows="tabNavigationProps" />
+      <ApiTable of="ChptIcon" title="ChptIcon Props / Slots" :rows="iconProps" />
+      <ApiTable of="ChptCodeBlock" title="ChptCodeBlock Props / Slots" :rows="codeBlockProps" />
+      <ApiTable of="ChptDataTooltip" title="ChptDataTooltip Props / Events / Slots" :rows="dataTooltipProps" />
     </section>
 
     <!-- ============ ChptConfigProvider ============ -->
@@ -234,6 +240,48 @@ const configSample = `<!-- App.vue -->
 <ChptConfigProvider :locale="{ empty: '尚無工單' }">…</ChptConfigProvider>
 
 import { ChptConfigProvider, enUS, zhTW, useConfig } from '@/components/library'`
+const pageSwitcherProps = [
+  { name: 'pages', type: '{ path, title, icon? }[]', def: '[]', desc: '頁面選項' },
+  { name: 'title / footerHint', type: 'string', def: "'頁面切換' / '滑鼠移開自動收起'", desc: '面板標題與底部提示' },
+  { name: 'activePath', type: 'string', def: '—', desc: '目前頁面的路徑；有給時是受控模式，不再讀取目前路由；沒有 vue-router 時要給，才標得出目前頁面' },
+  { name: '@select', type: 'event (page)', def: '—', desc: '選了某一頁；有 vue-router 時元件也會自己切換' },
+]
+const tabNavigationProps = [
+  { name: 'tabs', type: '{ path, label }[]', def: '[]', desc: '頁籤清單' },
+  { name: 'fontSize', type: 'string', def: "'text-sm'", desc: '字級 class' },
+  { name: 'activePath', type: 'string', def: '—', desc: '目前選中的路徑；有給時是受控模式，不再讀取目前路由' },
+  { name: '@select', type: 'event (tab)', def: '—', desc: '選了某個頁籤' },
+]
+const iconProps = [
+  { name: '#default', type: 'slot', def: '—', desc: 'Material Symbols 的圖示名稱，例如 <ChptIcon>search</ChptIcon>' },
+  { name: 'size', type: 'number | string', def: '24', desc: '尺寸（px 數字或字級字串）' },
+  { name: 'color / hoverColor', type: 'string', def: "'content-tertiary' / ''", desc: '顏色 class 後綴（組成 text-{color}），例如 content-secondary、accent、danger' },
+  { name: 'fill / weight / grade', type: 'number | string', def: '0 / 200 / 0', desc: 'Material Symbols 的可變字型軸：填滿 0～1、字重 100～700、字級 -25～200' },
+  { name: 'opacity', type: 'string', def: "'1'", desc: '透明度（0～1）' },
+]
+const codeBlockProps = [
+  { name: 'code', type: 'string', def: "''", desc: '程式碼內容' },
+  { name: 'language', type: 'string', def: "'javascript'", desc: '程式語言（顯示用）' },
+  { name: 'trimIndent', type: 'boolean', def: 'true', desc: '移除多餘的共同縮排' },
+  { name: 'tip / tipType / tipTitle', type: "string / 'info' | 'warning' | 'success' | 'error' / string", def: "'' / 'info' / '重要提示'", desc: '程式碼下方的提示框' },
+  { name: '#tip', type: 'slot', def: '—', desc: '自訂提示框內容' },
+]
+const dataTooltipProps = [
+  { name: 'visible', type: 'boolean', def: 'false', desc: '是否顯示（由外部控制）' },
+  { name: 'position / offset', type: '{ x, y }', def: '{ 0, 0 } / { 15, -40 }', desc: '游標座標，以及相對游標的偏移' },
+  { name: 'data', type: '{ title?, items?: { label, value, color }[], extra? }', def: '{}', desc: '結構化內容；值請先格式化好' },
+  { name: 'theme', type: "'dark' | 'light' | 'info' | 'warning' | 'error'", def: "'info'", desc: '配色' },
+  { name: 'placement', type: "'top' | 'bottom' | 'left' | 'right' | 'top-left' | …", def: "'top-right'", desc: '相對游標的擺放方向' },
+  { name: 'showArrow', type: 'boolean', def: 'true', desc: '指向箭頭' },
+  { name: 'maxWidth', type: "'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'none'", def: "'sm'", desc: '最大寬度級距' },
+  { name: 'strategy', type: "'absolute' | 'fixed'", def: "'absolute'", desc: '定位方式：跟著文件流或跟著視窗' },
+  { name: 'autoAdjustPosition', type: 'boolean', def: 'true', desc: '超出視窗邊界時自動修正位置' },
+  { name: 'interactive', type: 'boolean', def: 'false', desc: '滑鼠可以移進提示框（例如內含連結）' },
+  { name: 'persistent / clickToClose', type: 'boolean', def: 'false / true', desc: '點擊後固定顯示，以及固定時能否點擊關閉' },
+  { name: '@close', type: 'event', def: '—', desc: '固定顯示（persistent）時被點擊或點到外面而關閉' },
+  { name: '#default', type: 'slot { data }', def: '—', desc: '完全自訂內容' },
+]
+
 const configProps = [
   { name: 'size', type: "'sm'|'md'|'lg'", def: '—', desc: '表單元件與按鈕的預設尺寸（元件自己的 size 優先）' },
   { name: 'locale', type: 'Partial<ChptLocale>', def: 'zhTW', desc: '內建文字；可只給部分欄位。內建 zhTW、enUS' },

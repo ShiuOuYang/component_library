@@ -21,6 +21,9 @@
  *      （散在不同表、不同頁都可以）。原本只查第 1 點，結果 EnterpriseHeatmap 37 個 prop
  *      一個都沒進表、DualAxisComboChart 32 個只寫了 5 個。
  *      v-model 的 update:x 事件，在 x 有寫時視為已寫。
+ *   3. 公開元件（charts / viewer 全部；ui / excel 的 Chpt*）只要有 props 或 events，
+ *      就一定要有 API 表 —— 原本有 18 個元件完全沒有表（EnterprisePareto 44 個 prop、
+ *      GerberViewer、PcbLayout、ChptExcelExporter…），第 2 點管不到它們。
  */
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { join, basename, relative } from 'node:path'
@@ -272,6 +275,21 @@ for (const docFile of walk(DOCS, '.vue')) {
           problems.push(`${where}：「${title}」列了 ${name}，但 ${of} 沒有這個 ${lookIn.map((k) => KIND_LABEL[k]).join(' / ')}`)
         }
       }
+    }
+  }
+}
+
+// 公開元件都要有 API 表（沒有任何 props / events 的，例如 ChptToast、ChptConfirmHost 除外）
+const SUB_ENTRIES = { ui: true, charts: false, viewer: false, excel: true } // true = 只算 Chpt*
+for (const [sub, chptOnly] of Object.entries(SUB_ENTRIES)) {
+  const index = readFileSync(join(LIB, sub, 'index.ts'), 'utf8')
+  for (const m of index.matchAll(/export \{ default as (\w+) \} from '\.\/(\w+)\.vue'/g)) {
+    const component = m[2]
+    if (chptOnly && !m[1].startsWith('Chpt')) continue
+    if (documented.has(component)) continue
+    const api = componentApi(component)
+    if (api && (api.props.length || api.emits.length)) {
+      problems.push(`${component} 是公開元件，有 ${api.props.length} 個 props、${api.emits.length} 個 events，但文件沒有任何 <ApiTable of="${component}">`)
     }
   }
 }
