@@ -7,6 +7,7 @@
 - 語意色：`success`＝綠、`danger`＝紅、`warning`＝黃、`info`＝青
 - 中性：`neutral`（等同 Tailwind 內建 neutral）
 - 本倉庫同時是**組件庫＋展示文檔站**（`npm run dev` → `/docs`）
+- 對外行為的變更（特別是破壞性變更）記在 [CHANGELOG.md](./CHANGELOG.md)；改到 props / events / 型別的 PR 要一併更新
 
 ---
 
