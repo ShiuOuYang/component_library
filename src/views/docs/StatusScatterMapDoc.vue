@@ -198,6 +198,12 @@ const propsRows = [
   { name: 'highlightKey', type: 'string | number | null', def: 'null', desc: '在圖上標出這個鍵的點（例如表格選取的那一列）' },
   { name: 'customRenderers', type: '{ point?, tooltip? }', def: '{}', desc: 'point(ctx, x, y, r, color, datum) 自訂點形狀；tooltip(datum, info) 回傳每行文字' },
   { name: 'width / height / autoResize / margin / title', type: '…', def: '640 / 560 / false / … / ""', desc: '尺寸與標題；autoResize 時容器需有高度' },
+  { name: 'xAxisLabel / yAxisLabel', type: 'string', def: "''", desc: '座標軸標題' },
+  { name: 'domainPadding', type: 'number', def: '0.05', desc: '沒給 xDomain / yDomain 時，自動範圍兩端外推的比例' },
+  { name: 'otherColor', type: 'string', def: "'#9ca3af'", desc: '不在 statuses 清單裡的狀態用的顏色（歸為「其他」）' },
+  { name: 'enableTooltip', type: 'boolean', def: 'true', desc: '滑過點時顯示提示框' },
+  { name: 'showResetButton', type: 'boolean', def: 'true', desc: '縮放或平移後顯示「重設縮放」' },
+  { name: 'debounceDelay', type: 'number', def: '150', desc: 'autoResize 的重畫延遲（ms）' },
 ]
 
 const eventRows = [

@@ -648,6 +648,7 @@ const modalCommonProps = [
   { name: 'maskClosable', type: 'boolean', def: 'true', desc: '點擊遮罩關閉' },
   { name: 'backdropOpacity', type: 'number', def: '0.5', desc: '遮罩透明度 0~1' },
   { name: 'bodyHeight', type: 'number|string', def: 'undefined', desc: '內容區高度上限' },
+  { name: 'ariaLabel', type: 'string', def: "'對話方塊'", desc: '沒有標題時的無障礙名稱' },
 ]
 const modalWindowProps = [
   { name: 'draggable', type: 'boolean', def: 'true', desc: '可拖曳移動' },
@@ -661,6 +662,7 @@ const modalWindowProps = [
   { name: 'headerTextColor', type: 'string', def: 'text-content-primary', desc: '標題文字 class' },
   { name: 'borderClass / roundedClass / shadowClass', type: 'string', def: '…', desc: '外框／圓角／陰影 class' },
   { name: 'contentPadding / footerBgColor', type: 'string', def: 'p-4 / bg-surface-secondary', desc: '內容留白／底部底色 class' },
+  { name: 'maxWidth / maxHeight', type: 'number', def: '視窗大小減 40', desc: '視窗的最大寬度／高度（px）' },
 ]
 const modalEvents = [
   { name: 'update:modelValue', params: '(value: boolean)', desc: '開關變更（v-model）' },
@@ -684,6 +686,8 @@ const drawerProps = [
   { name: 'closable', type: 'boolean', def: 'true', desc: '是否顯示關閉按鈕' },
   { name: 'maskClosable', type: 'boolean', def: 'true', desc: '點擊遮罩關閉' },
   { name: 'backdropOpacity', type: 'number', def: '0.4', desc: '遮罩透明度 0~1' },
+  { name: 'ariaLabel', type: 'string', def: "'側邊面板'", desc: '沒有標題時的無障礙名稱' },
+  { name: 'closeOnEscape', type: 'boolean', def: 'true', desc: '按 Escape 關閉' },
 ]
 const drawerEvents = [
   { name: 'update:modelValue', params: '(value: boolean)', desc: '開關變更（v-model）' },

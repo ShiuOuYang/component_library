@@ -359,6 +359,9 @@ const checkboxProps = [
   { name: 'direction', type: "'row' | 'column'", def: "'row'", desc: '排列方向' },
   { name: 'isLabelShow', type: 'boolean', def: 'true', desc: '顯示選項文字（隱藏時仍保留 aria-label）' },
   { name: 'errors', type: 'string[]', def: '[]', desc: '驗證錯誤（顯示第一則）' },
+  { name: 'size', type: 'string', def: "'4'", desc: '方框尺寸（Tailwind 尺寸級距，4 = 16px）' },
+  { name: 'bgColor / borderColor', type: 'string', def: "'primary-500'", desc: '勾選時的背景色與邊框色' },
+  { name: 'labelSize / labelColor', type: 'string', def: "'text-sm' / 'text-content-primary'", desc: '選項文字的尺寸與顏色 class' },
 ]
 const textareaSample = `<ChptTextarea
   v-model="note"
@@ -434,6 +437,7 @@ const selectProps = [
   { name: 'valueKey / labelKey / disabledKey', type: 'string', def: "''", desc: '物件選項對映鍵' },
   { name: 'numberValue', type: 'boolean', def: 'false', desc: '值轉數字' },
   { name: 'errorText', type: 'string', def: "''", desc: '錯誤訊息' },
+  { name: 'fullWidth', type: 'boolean', def: 'false', desc: '撐滿容器寬度' },
 ]
 const selectEvents = [{ name: 'update:modelValue', params: '(value)', desc: '選項變更' }]
 
@@ -444,6 +448,9 @@ const radioProps = [
   { name: 'size', type: "'3'|'4'|'5'|'6'", def: "'4'", desc: '圓點大小(px)' },
   { name: 'direction', type: "'row'|'col'", def: "'row'", desc: '排列' },
   { name: 'errors', type: 'string[]', def: '[]', desc: '錯誤訊息' },
+  { name: 'name', type: 'string', def: '自動產生', desc: '這組 radio 的 name；沒給時自動產生不重複的值' },
+  { name: 'isLabelShow', type: 'boolean', def: 'true', desc: '顯示選項文字' },
+  { name: 'labelSize / labelColor', type: 'string', def: "'text-sm' / 'text-content-primary'", desc: '選項文字的尺寸與顏色 class' },
 ]
 const radioEvents = [{ name: 'update:modelValue', params: '(value)', desc: '選擇變更' }]
 
@@ -453,6 +460,7 @@ const switchProps = [
   { name: 'size', type: "'sm'|'md'|'lg'", def: "'md'", desc: '尺寸' },
   { name: 'color', type: 'ColorVariant', def: "'primary'", desc: '開啟語意色' },
   { name: 'disabled', type: 'boolean', def: 'false', desc: '禁用' },
+  { name: 'ariaLabel', type: 'string', def: "''", desc: '沒有 label 時的無障礙名稱' },
 ]
 const switchEvents = [
   { name: 'update:modelValue', params: '(value)', desc: '狀態變更' },

@@ -250,6 +250,7 @@ const tabsProps = [
   { name: 'tabs', type: 'ChptTabItem[]', def: '[]', desc: '頁籤定義：{ label, icon?, content?, badge?, disabled? }' },
   { name: 'modelValue', type: 'number', def: '0', desc: '目前 index（v-model）' },
   { name: 'centered', type: 'boolean', def: 'false', desc: '頁籤列水平置中' },
+  { name: 'disabledTab', type: '(tab) => boolean', def: '—', desc: '動態判斷某個頁籤是否停用；與 tab.disabled 任一為 true 即停用' },
 ]
 const tabsEvents = [
   { name: 'update:modelValue', params: '(value: number)', desc: 'index 變更' },
@@ -280,6 +281,8 @@ const btnProps = [
   { name: 'disabled', type: 'boolean', def: 'false', desc: '禁用' },
   { name: 'loading', type: 'boolean', def: 'false', desc: '載入中（忽略點擊）' },
   { name: 'hasBadge / badgeText', type: 'boolean/…', def: 'false/0', desc: '角標與文字' },
+  { name: 'badgeBgColor / badgeTextColor', type: 'string', def: "'danger' / 'white'", desc: '角標的背景色與文字色' },
+  { name: 'class', type: 'string', def: '—', desc: '附加在按鈕上的 class' },
 ]
 const btnEvents = [{ name: 'click', params: '(event: MouseEvent)', desc: '點擊（禁用/載入中不觸發）' }]
 
@@ -289,6 +292,7 @@ const progressProps = [
   { name: 'strokeWidth', type: 'number', def: '8', desc: '進度條高度(px)' },
   { name: 'trackColor', type: 'string', def: "''（neutral-100）", desc: '軌道底色 class' },
   { name: 'showLabel', type: 'boolean', def: 'true', desc: '右側百分比標籤' },
+  { name: 'ariaLabel', type: 'string', def: "'進度'", desc: '進度條的無障礙名稱' },
 ]
 const progressEvents = [{ name: 'update:modelValue', params: '(value: number)', desc: '數值變更' }]
 

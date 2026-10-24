@@ -542,6 +542,7 @@ const tableProps = [
   { name: 'loading / loadingText', type: 'boolean / string', def: "false / '載入中'", desc: '半透明遮罩＋Spinner，table 設 aria-busy' },
   { name: 'resizable', type: 'boolean', def: 'false', desc: '可拖曳欄寬（欄位可設 width / minWidth / resizable:false）' },
   { name: 'rowClass', type: 'string | (row, index) => class', def: '—', desc: '每列額外的 class（例如內建的 warning-row）' },
+  { name: 'controlBgColor / bottomControlBgColor', type: 'string', def: "'bg-surface-primary' / 'bg-surface-secondary'", desc: '上方／下方控制列的背景 class' },
 ]
 const tableEvents = [
   { name: 'update:page', params: '(page: number)', desc: '頁碼變更' },
@@ -586,6 +587,7 @@ const paginationProps = [
   { name: 'showSummary', type: 'boolean', def: 'false', desc: '顯示總數摘要' },
   { name: 'showPageSize', type: 'boolean', def: 'false', desc: '顯示每頁筆數切換' },
   { name: 'bgColor', type: 'string', def: "''", desc: 'compact 背景 class' },
+  { name: 'ariaLabel', type: 'string', def: 'locale', desc: '分頁導航的名稱；同一頁有兩個分頁時要各自取名' },
 ]
 const paginationEvents = [
   { name: 'update:currentPage', params: '(page: number)', desc: '頁碼變更' },
@@ -600,6 +602,12 @@ const filterProps = [
   { name: 'label', type: 'string', def: "''", desc: '前置標籤' },
   { name: 'placeholder', type: 'string', def: "''", desc: '提示文字' },
   { name: 'valueKey / labelKey', type: 'string', def: "'value' / 'label'", desc: '物件選項鍵名' },
+  { name: 'showAllOption / allValue', type: 'boolean / string | number', def: "true / ''", desc: '是否顯示「全部」選項與它代表的值（select 模式）' },
+  { name: 'showClearAll', type: 'boolean', def: 'true', desc: 'tag 模式是否顯示「清空」' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '停用' },
+  { name: 'size', type: "'xs' | 'sm' | 'md' | 'lg'", def: "'sm'", desc: '尺寸' },
+  { name: 'fullWidth', type: 'boolean', def: 'false', desc: '撐滿容器寬度' },
+  { name: 'selectClass / labelClass', type: 'string', def: "''", desc: '附加在下拉框／標籤上的 class' },
 ]
 const filterEvents = [
   { name: 'update:modelValue', params: '(value)', desc: '選取值變更' },

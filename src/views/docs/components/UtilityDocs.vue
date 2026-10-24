@@ -235,6 +235,9 @@ const virtualProps = [
   { name: 'threshold / loading', type: 'number / boolean', def: '120 / false', desc: '距底多少 px 送出 reach-bottom／載入中' },
   { name: 'reach-bottom', type: 'event', def: '—', desc: '到底送一次；新資料進來後可再觸發' },
   { name: 'scrollToIndex(i, align?)', type: 'ref 方法', def: '—', desc: "align: 'start' | 'center' | 'end'" },
+  { name: 'emptyText', type: 'string', def: "'沒有資料'", desc: '沒有資料時顯示的文字' },
+  { name: 'ariaLabel', type: 'string', def: "''", desc: '清單的無障礙名稱' },
+  { name: 'scroll', type: 'event (scrollTop)', def: '—', desc: '捲動時送出目前的 scrollTop' },
 ]
 
 // ---- Affix ----
@@ -264,6 +267,7 @@ const carouselProps = [
   { name: 'autoplay / interval', type: 'boolean / number', def: 'false / 5000', desc: '自動播放與間隔' },
   { name: 'loop / arrows / indicators', type: 'boolean', def: 'true', desc: '循環／左右箭頭／指示點' },
   { name: 'height', type: 'string', def: "'16rem'", desc: '高度' },
+  { name: '@change', type: 'event (current, previous)', def: '—', desc: '切換到另一張時' },
 ]
 
 // ---- 小工具 ----

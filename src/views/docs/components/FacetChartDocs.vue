@@ -40,6 +40,8 @@
         <ChptCodeBlock :code="facetedSample" />
       </div>
       <ApiTable of="FacetedChart" title="Props（新增）" :rows="facetedProps" />
+      <ApiTable of="FacetedChart" title="其他 Props" :rows="facetedBaseProps" />
+      <ApiTable of="FacetedChart" title="Events" :rows="facetedEvents" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>共用圖例點一下會在<em>每個分面</em>同時隱藏該系列（色塊變空心並加刪除線，不只靠顏色表示）；
         各分面自己的圖例會自動關掉。預設 tooltip 會顯示「被滑到的那個圖層」的值，並依左右軸各自的格式化函式顯示。
@@ -84,6 +86,8 @@
         <ChptCodeBlock :code="gridSample" />
       </div>
       <ApiTable of="GridFacetChart" title="Props（新增 / 變更）" :rows="gridProps" />
+      <ApiTable of="GridFacetChart" title="其他 Props" :rows="gridBaseProps" />
+      <ApiTable of="GridFacetChart" title="Events" :rows="gridEvents" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>修正：</strong>title 原本不會顯示（模板被註解掉）；有負值的長條原本會被左軸裁掉、全負值時軸會倒過來；
         框選同步模式下原本忽略每格自己的 domain；預設 tooltip 原本用 absolute 定位視窗座標，圖表不在頁面左上角時會離游標很遠。
@@ -171,6 +175,29 @@ const facetedProps = [
   { name: 'facets[].height', type: 'number', def: '—', desc: '全部指定時當作權重（上例產量那格是其他格的兩倍高）' },
 ]
 
+const facetedBaseProps = [
+  { name: 'facets', type: 'VerticalFacet[]', def: '—', desc: '垂直堆疊的分面（必填），共用同一條 X 軸；每個分面有 id、title、layers，以及自己的 Y 軸設定與參考線' },
+  { name: 'title', type: 'string', def: "''", desc: '整張圖的標題' },
+  { name: 'width / totalHeight', type: 'number', def: '1200 / 800', desc: '寬度與所有分面加總的高度（px）；autoResize 時寬度跟著容器' },
+  { name: 'autoResize', type: 'boolean', def: 'false', desc: '跟著容器大小重畫' },
+  { name: 'margin', type: 'ChartMargin', def: '{ top: 40, right: 80, bottom: 40, left: 80 }', desc: '外框四周留白' },
+  { name: 'facetSpacing', type: 'number', def: '10', desc: '分面之間的間距（px）' },
+  { name: 'lastFacetExtraHeight', type: 'number', def: '50', desc: '最後一個分面多留的高度（只有它畫 X 軸刻度）' },
+  { name: 'xScaleType / xDomain', type: 'XScaleType / XDomain | null', def: "'time' / null", desc: '共用 X 軸的比例尺與範圍' },
+  { name: 'xAxisFormat / xAxisLabelRotate', type: '(v) => string / number', def: 'null / -45', desc: 'X 軸刻度格式與旋轉角度' },
+  { name: 'enableBrush / brushMode', type: "boolean / 'x' | 'xy' | 'none'", def: "true / 'x'", desc: '框選縮放' },
+  { name: 'syncBrush', type: 'boolean', def: 'true', desc: '框選、拖曳、滾輪縮放 X 軸時同步到所有分面' },
+  { name: 'enableAxisDragging', type: 'boolean', def: 'false', desc: '拖曳座標軸平移' },
+  { name: 'enableWheelZoom', type: 'boolean', def: 'false', desc: '滾輪縮放 X 軸；預設關閉，分面圖通常很高，滾輪應該捲動頁面' },
+  { name: 'showResetButton', type: 'boolean', def: 'true', desc: '縮放後顯示「重設縮放」' },
+]
+const facetedEvents = [
+  { name: 'selection-change', params: 'ChartSelectionEvent & { facetId }', desc: '某個分面框選結束' },
+  { name: 'axis-drag / wheel-zoom', params: 'ChartAxisDomainEvent & { facetId }', desc: '拖曳座標軸、滾輪縮放；wheel-zoom 的 domain 為 null 代表回到全覽' },
+  { name: 'zoom-reset', params: '—', desc: '按「重設縮放」' },
+  { name: 'chart-resize', params: '{ width, height }', desc: 'autoResize 量到新尺寸' },
+]
+
 // ---- GridFacetChart ----
 const gridOpts = reactive({ scales: 'fixed', sharedLegend: true })
 const scaleOptions = [
@@ -211,6 +238,28 @@ const cells = [
   { site: 'FAB-A', line: 'L1', layers: [{ type: 'stacked-bar', stackKeys: ['good', 'ng'], data, xValue: d => d.week }] },
   { site: 'FAB-B', line: 'L1', layers: [...] },
 ]`
+const gridBaseProps = [
+  { name: 'data', type: 'GridFacetDatum[]', def: '—', desc: '每筆一格（必填）：含 xFacetVar / yFacetVar 指定的欄位與該格的 layers' },
+  { name: 'xFacetVar / yFacetVar', type: 'string', def: '—', desc: '決定欄、列的欄位名稱（必填），例如 region / product' },
+  { name: 'width / height', type: 'number', def: '1200 / 800', desc: '圖表尺寸（px）；autoResize 時跟著容器' },
+  { name: 'autoResize', type: 'boolean', def: 'true', desc: '跟著容器大小重畫' },
+  { name: 'headerHeight / headerWidth', type: 'number', def: '40 / 80', desc: '欄表頭高度、列表頭寬度（px）' },
+  { name: 'xScaleType', type: 'XScaleType', def: "'time'", desc: 'X 軸比例尺' },
+  { name: 'xAxisFormat / xAxisLabelRotate', type: '(v) => string / number', def: 'null / -45', desc: 'X 軸刻度格式與旋轉角度' },
+  { name: 'showGrid', type: 'boolean', def: 'true', desc: '背景格線' },
+  { name: 'enableBrush / brushMode', type: "boolean / 'x' | 'xy' | 'none'", def: "true / 'xy'", desc: '框選縮放' },
+  { name: 'syncMode', type: "'all' | 'row' | 'col' | 'both' | 'none'", def: "'both'", desc: '框選後怎麼同步：全部、同列共用 Y、同欄共用 X、兩者、或各自獨立' },
+  { name: 'enableAxisDrag', type: 'boolean', def: 'false', desc: '拖曳座標軸平移' },
+  { name: 'enableWheelZoom', type: 'boolean', def: 'false', desc: '滾輪縮放（各格獨立）；預設關閉，滾輪預設捲動頁面' },
+  { name: 'showResetButton', type: 'boolean', def: 'true', desc: '縮放後顯示「重設縮放」' },
+]
+const gridEvents = [
+  { name: 'selection-change', params: 'ChartSelectionEvent & GridFacetCell', desc: '某一格框選結束，帶出 facetId、row、col' },
+  { name: 'axis-drag', params: 'ChartAxisDomainEvent & GridFacetCell', desc: '某一格拖曳座標軸' },
+  { name: 'zoom-reset', params: '—', desc: '按「重設縮放」' },
+  { name: 'chart-resize', params: '{ width, height }', desc: 'autoResize 量到新尺寸' },
+]
+
 const gridProps = [
   { name: 'scales', type: "'free' | 'fixed' | 'free_x' | 'free_y'", def: "'free'", desc: '各格座標範圍：fixed 全部共用（互相比大小時用）；free 各自縮放（看形狀時用）' },
   { name: 'sharedLegend', type: 'boolean', def: 'false', desc: '圖例放在標題列右側，所有格共用；點選同時隱藏 / 顯示' },

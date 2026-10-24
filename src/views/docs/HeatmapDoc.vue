@@ -57,25 +57,11 @@
 
       <!-- Props -->
       <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
-        <h2 class="text-2xl font-semibold text-content-primary mb-4">常用 Props</h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-surface-tertiary">
-              <tr>
-                <th class="px-4 py-2 text-left font-semibold">屬性</th>
-                <th class="px-4 py-2 text-left font-semibold">型別/預設</th>
-                <th class="px-4 py-2 text-left font-semibold">說明</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y">
-              <tr v-for="p in propsList" :key="p.name">
-                <td class="px-4 py-3 font-mono text-xs">{{ p.name }}</td>
-                <td class="px-4 py-3 font-mono text-xs text-content-secondary">{{ p.def }}</td>
-                <td class="px-4 py-3 text-content-primary">{{ p.desc }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">Props</h2>
+        <ApiTable of="EnterpriseHeatmap" title="資料與尺寸 Props" :rows="dataProps" />
+        <ApiTable of="EnterpriseHeatmap" title="座標軸 Props" :rows="axisProps" />
+        <ApiTable of="EnterpriseHeatmap" title="色階與格子 Props" :rows="colorProps" />
+        <ApiTable of="EnterpriseHeatmap" title="外觀與互動 Props" :rows="interactionProps" />
       </section>
 
       <!-- Events -->
@@ -124,17 +110,36 @@ const matrixData = computed(() => {
   return rows
 })
 
-const propsList = [
-  { name: 'data', def: 'Array (必填)', desc: '{ x, y, value } 資料點陣列' },
-  { name: 'xField/yField/valueField', def: 'String', desc: '欄位名稱映射（預設 x/y/value）' },
-  { name: 'xDomain/yDomain', def: 'Array|null', desc: '自訂座標順序，null 自動依資料' },
-  { name: 'colorScheme', def: "'interpolateRdYlGn'", desc: 'D3 內建色階名（interpolate*/scheme*）' },
-  { name: 'colorRange', def: 'Array|null', desc: '自訂色階 [起,中,終]，優先於 colorScheme' },
-  { name: 'valueDomain', def: '[min,max]|null', desc: '數值範圍，null 自動計算' },
-  { name: 'showCellValues', def: 'false', desc: '單元格內顯示數值' },
-  { name: 'enableBrush', def: 'true', desc: '框選縮放' },
-  { name: 'highlightMode', def: "'cell'", desc: 'cell/row/column/both 高亮' },
-  { name: 'showColorLegend', def: 'true', desc: '顯示色階圖例' },
-  { name: 'autoResize', def: 'false', desc: '依容器自動響應尺寸（ResizeObserver）' },
+const dataProps = [
+  { name: 'data', type: 'HeatmapDatum[]', def: '—', desc: '資料點陣列（必填），每列一格，例如 { x, y, value }' },
+  { name: 'xField / yField / valueField', type: 'string', def: "'x' / 'y' / 'value'", desc: '欄位名稱映射' },
+  { name: 'width / height', type: 'number', def: '800 / 600', desc: '圖表尺寸（px）；autoResize 時改由容器決定' },
+  { name: 'autoResize / debounceDelay', type: 'boolean / number', def: 'false / 150', desc: '跟著容器大小重畫（容器需有高度）與重畫延遲（ms）' },
+  { name: 'margin', type: 'ChartMargin', def: '{ top: 80, right: 120, bottom: 80, left: 100 }', desc: '繪圖區四周留白' },
+  { name: 'title', type: 'string', def: "''", desc: '圖表標題' },
+]
+const axisProps = [
+  { name: 'xDomain / yDomain', type: '(string | number)[] | null', def: 'null', desc: '自訂座標順序；null 依資料出現的順序' },
+  { name: 'xAxisLabel / yAxisLabel', type: 'string', def: "''", desc: '座標軸標題' },
+  { name: 'xAxisFormat / yAxisFormat', type: '(v: string) => string', def: 'null', desc: '刻度文字格式' },
+  { name: 'xAxisAngle', type: 'number', def: '-45', desc: 'X 軸刻度文字旋轉角度（度）' },
+]
+const colorProps = [
+  { name: 'colorScheme', type: 'string', def: "'interpolateRdYlGn'", desc: 'D3 內建色階名稱（interpolate* / scheme*）' },
+  { name: 'colorRange', type: 'string[] | null', def: 'null', desc: '自訂色階顏色，例如 [低, 中, 高]；優先於 colorScheme' },
+  { name: 'valueDomain', type: '[min, max] | null', def: 'null', desc: '數值範圍；null 依資料計算' },
+  { name: 'reverseColorScale', type: 'boolean', def: 'false', desc: '反轉色階（高值冷色、低值暖色）' },
+  { name: 'cellPadding / cellBorderRadius', type: 'number', def: '2 / 2', desc: '格子間距與圓角（px）' },
+  { name: 'cellBorderWidth / cellBorderColor', type: 'number / string', def: '1 / 圖表底色', desc: '格子邊框；預設用圖表底色，深色模式下不會是一格格白框' },
+  { name: 'showCellValues / cellValueFormat', type: 'boolean / (v: number) => string', def: 'false / 小數 1 位', desc: '在格子內顯示數值與其格式' },
+  { name: 'missingValueColor / showMissingValues', type: 'string / boolean', def: '圖表淡底色 / true', desc: '沒有資料的格子顏色、是否畫出來' },
+  { name: 'showColorLegend / colorLegendPosition / colorLegendTitle', type: "boolean / 'right' | 'bottom' / string", def: "true / 'right' / 'Value'", desc: '色階圖例' },
+]
+const interactionProps = [
+  { name: 'enableBrush', type: 'boolean', def: 'true', desc: '框選縮放；縮放後出現「重設縮放」' },
+  { name: 'enableTooltip', type: 'boolean', def: 'true', desc: '滑過格子時顯示提示框（也可用 #tooltip 插槽自訂）' },
+  { name: 'highlightMode', type: "'cell' | 'row' | 'column' | 'both'", def: "'cell'", desc: '滑過時高亮格子、整列、整欄或十字' },
+  { name: 'animationDuration', type: 'number', def: '500', desc: '轉場動畫時間（ms）' },
+  { name: 'customRenderers', type: '{ cell?(selection, data, colorScale) }', def: '{}', desc: '自訂格子的繪製方式' },
 ]
 </script>

@@ -15,7 +15,12 @@
  *   表格每一列的 name 拆開後（'width / height'、'v-model'、'@change'、'reset()'…）
  *   都必須是該元件真的有的 API。
  *
- * 只檢查「文件寫了、元件沒有」——寫錯比漏寫更糟：照著文件寫的程式會靜靜地不生效。
+ * 兩個方向都檢查：
+ *   1. 文件寫了、元件沒有 —— 寫錯比漏寫更糟：照著文件寫的程式會靜靜地不生效
+ *   2. 元件有、文件沒寫 —— 只要元件有任何一張 API 表，它的每個 prop 與 event 都要寫進文件
+ *      （散在不同表、不同頁都可以）。原本只查第 1 點，結果 EnterpriseHeatmap 37 個 prop
+ *      一個都沒進表、DualAxisComboChart 32 個只寫了 5 個。
+ *      v-model 的 update:x 事件，在 x 有寫時視為已寫。
  */
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { join, basename, relative } from 'node:path'
@@ -184,6 +189,13 @@ function kindsOf(title) {
 }
 
 const problems = []
+
+/** 每個元件在文件裡寫到的名稱（不分是哪一種表） */
+const documented = new Map()
+const documentedOf = (component) => {
+  if (!documented.has(component)) documented.set(component, new Set())
+  return documented.get(component)
+}
 let tableCount = 0
 let checkedNames = 0
 
@@ -253,6 +265,7 @@ for (const docFile of walk(DOCS, '.vue')) {
         rowKinds = ['emits']
       }
       for (const { name, kind } of namesOf(raw)) {
+        for (const [component] of apis) documentedOf(component).add(norm(name))
         checkedNames++
         const lookIn = kind ? [kind] : rowKinds
         if (!has(name, lookIn)) {
@@ -263,10 +276,29 @@ for (const docFile of walk(DOCS, '.vue')) {
   }
 }
 
+// 反方向：有 API 表的元件，每個 prop 與 event 都要寫進文件
+let coveredComponents = 0
+for (const [component, names] of documented) {
+  const api = componentApi(component)
+  coveredComponents++
+  for (const prop of api.props) {
+    if (!names.has(norm(prop))) problems.push(`${component} 的 prop「${prop}」沒有寫進文件（${relative('.', api.file)}）`)
+  }
+  for (const event of api.emits) {
+    const vModel = event.startsWith('update:') && names.has(norm(event.slice('update:'.length)))
+    if (!names.has(norm(event)) && !vModel) {
+      problems.push(`${component} 的 event「${event}」沒有寫進文件（${relative('.', api.file)}）`)
+    }
+  }
+}
+
 if (problems.length > 0) {
   console.error(`文件 API 表檢查失敗（${problems.length} 項）：\n`)
   for (const p of problems) console.error(`  ${p}`)
   process.exit(1)
 }
 
-console.log(`文件 API 表檢查通過：${tableCount} 張表、${checkedNames} 個名稱都對得上元件實際的 API。`)
+console.log(
+  `文件 API 表檢查通過：${tableCount} 張表、${checkedNames} 個名稱都對得上元件實際的 API；` +
+    `${coveredComponents} 個元件的 props 與 events 都有寫進文件。`
+)
