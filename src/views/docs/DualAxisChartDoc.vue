@@ -85,6 +85,11 @@
           10 萬筆等級的資料請用 <code>shallowRef</code> 或 <code>markRaw</code> 傳入，避免 Vue 把每一筆包成響應式代理。
           大量資料模式下折線不畫圓點；長條與散點畫在 Canvas 上，沒有個別元素的 hover 樣式，改以標記顯示指到的那一筆。
         </p>
+        <p class="text-sm text-content-secondary mt-2">
+          滾輪縮放像 Allegro：在繪圖區滾動時，<strong>以游標那一點為中心、X 與 Y 同時縮放</strong>（游標底下的資料點留在原地）；
+          只想調一個軸時，把游標移到那一軸的刻度上再滾。放大後按住<strong>滑鼠中鍵拖曳</strong>平移，觸控板左右滑動平移 X；
+          「重設縮放」回到全覽。只想縮放時間範圍、Y 不動時設 <code>wheel-zoom-axes="x"</code>。
+        </p>
         <ApiTable of="DualAxisComboChart" title="Props" :rows="largeDataProps" />
         <ApiTable of="DualAxisComboChart" title="Events" :rows="largeDataEvents" />
       </section>
@@ -127,7 +132,8 @@ import LargeDataExample from '../../components/docs/DualAxisChartexamples/LargeD
 import ApiTable from './components/_ApiTable.vue'
 
 const largeDataProps = [
-  { name: 'enableWheelZoom', type: 'boolean', def: 'true', desc: '滾輪縮放：繪圖區縮放 X 軸（以游標為中心）、左右 Y 軸上縮放該軸；左右滑動或 Shift + 滾輪平移。已在全覽時往外滾會交還給頁面捲動' },
+  { name: 'enableWheelZoom', type: 'boolean', def: 'true', desc: '滾輪縮放（像 Allegro）：在繪圖區以游標那一點為中心，X 與 Y 同時縮放；在 X 軸或左右 Y 軸的刻度上只縮放那一軸。左右滑動或 Shift + 滾輪平移 X，按住滑鼠中鍵拖曳平移 X 與 Y。已在全覽時往外滾會交還給頁面捲動' },
+  { name: 'wheelZoomAxes', type: "'xy' | 'x'", def: "'xy'", desc: "繪圖區的滾輪縮放哪些軸：'xy' X 與 Y 同時；'x' 只縮放 X（Y 維持不動，只想看時間範圍時用）" },
   { name: 'wheelZoomModifier', type: "'none' | 'ctrl' | 'alt'", def: "'none'", desc: "按住哪個鍵才縮放；頁面上圖表很多時可設 'ctrl'（Mac 的 ⌘ 也算）避免捲動頁面時誤觸" },
   { name: 'maxZoomScale', type: 'number', def: '10000', desc: '最大放大倍率（相對全覽範圍）' },
   { name: 'largeDataThreshold', type: 'number', def: '2000', desc: '圖層目前可見筆數超過此值時：折線依像素降採樣、散點與長條改用 Canvas；放大到低於此值自動切回 SVG' },
@@ -189,14 +195,14 @@ const allEvents = [
   { name: 'layer-click / layer-hover', type: 'ChartLayerEvent', desc: '點擊／滑過資料元素：{ data, layer, seriesKey?, key? }（參考線沒有 key）' },
   { name: 'tooltip-show / tooltip-hide', type: 'TooltipPayload / —', desc: '提示框顯示（含滑鼠位置 position）與隱藏' },
   { name: 'selection-change', type: 'ChartSelectionEvent', desc: 'Brush 框選結束：{ xDomain, yLeftDomain, yRightDomain, mode }；x 模式時 Y 軸為 null' },
-  { name: 'axis-drag / wheel-zoom', type: 'ChartAxisDomainEvent', desc: '拖曳座標軸、滾輪縮放後：{ axis, domain }；wheel-zoom 的 domain 為 null 代表回到全覽' },
+  { name: 'axis-drag / wheel-zoom', type: 'ChartAxisDomainEvent', desc: '拖曳座標軸或中鍵拖曳平移（axis-drag）、滾輪縮放（wheel-zoom）後：{ axis, domain }；繪圖區的滾輪會依序送 X、左 Y、右 Y 各一次；wheel-zoom 的 domain 為 null 代表回到全覽' },
   { name: 'zoom-reset', type: '—', desc: '按「重設縮放」' },
   { name: 'chart-ready', type: 'ChartReadyEvent', desc: '首次掛載完成：{ scales, dimensions }' },
   { name: 'chart-resize', type: 'ChartResizeEvent', desc: 'autoResize 量到新尺寸：{ width, height, chartWidth, chartHeight }' },
 ]
 
 const largeDataEvents = [
-  { name: 'wheel-zoom', type: "{ axis: 'x' | 'yLeft' | 'yRight', domain }", desc: '滾輪縮放或平移後送出；domain 為 null 代表回到全覽' },
+  { name: 'wheel-zoom', type: "{ axis: 'x' | 'yLeft' | 'yRight', domain }", desc: '滾輪縮放或平移後送出（繪圖區的滾輪依序送 X、左 Y、右 Y）；domain 為 null 代表回到全覽' },
 ]
 
 const demoLayers = [

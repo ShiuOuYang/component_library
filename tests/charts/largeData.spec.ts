@@ -181,3 +181,25 @@ describe('resolveCanvasColor（Canvas 看不懂 CSS 變數）', () => {
     host.remove()
   })
 })
+
+/**
+ * 回歸：類別軸連續滾幾格放大，游標底下的類別被推出畫面
+ * （6 個月份、游標指著 Apr，一格一格放大到剩 2 個月時變成 May–Jun）
+ */
+describe('zoomBandWindow：游標底下的類別留在畫面上', () => {
+  it('一格一格放大，游標指的類別一直在視窗裡、而且就在游標底下', () => {
+    const t = 0.6 // 游標在繪圖區 60% 處
+    let win = { start: 0, length: 6 }
+    const under = (w: { start: number; length: number }) => Math.floor(w.start + t * w.length)
+    expect(under(win)).toBe(3) // Apr
+    for (let i = 0; i < 6; i++) {
+      const next = zoomBandWindow(win.start, win.length, 6, t, Math.exp(-120 * 0.002), 2)
+      if (!next) break
+      win = next
+      expect(win.start).toBeLessThanOrEqual(3)
+      expect(win.start + win.length - 1).toBeGreaterThanOrEqual(3)
+      expect(under(win)).toBe(3)
+    }
+    expect(win.length).toBe(2)
+  })
+})

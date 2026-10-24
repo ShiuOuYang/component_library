@@ -188,7 +188,7 @@ const facetedBaseProps = [
   { name: 'enableBrush / brushMode', type: "boolean / 'x' | 'xy' | 'none'", def: "true / 'x'", desc: '框選縮放' },
   { name: 'syncBrush', type: 'boolean', def: 'true', desc: '框選、拖曳、滾輪縮放 X 軸時同步到所有分面' },
   { name: 'enableAxisDragging', type: 'boolean', def: 'false', desc: '拖曳座標軸平移' },
-  { name: 'enableWheelZoom', type: 'boolean', def: 'false', desc: '滾輪縮放 X 軸；預設關閉，分面圖通常很高，滾輪應該捲動頁面' },
+  { name: 'enableWheelZoom', type: 'boolean', def: 'false', desc: '滾輪縮放：X 同步到所有分面，Y 只縮放游標所在的那一格；預設關閉，分面圖通常很高，滾輪應該捲動頁面' },
   { name: 'showResetButton', type: 'boolean', def: 'true', desc: '縮放後顯示「重設縮放」' },
 ]
 const facetedEvents = [

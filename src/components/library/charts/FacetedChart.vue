@@ -218,7 +218,7 @@ interface FacetedChartProps {
   syncBrush?: boolean
   enableAxisDragging?: boolean
   /**
-   * 滑鼠滾輪縮放 X 軸（syncBrush 時同步到所有分面）。
+   * 滑鼠滾輪縮放：X 軸在 syncBrush 時同步到所有分面，Y 軸只縮放游標所在的那一格。
    * 預設關閉：分面圖通常很高，滾輪預設應該捲動頁面
    */
   enableWheelZoom?: boolean
