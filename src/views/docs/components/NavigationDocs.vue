@@ -229,5 +229,6 @@ const backTopProps = [
   { name: 'right / bottom', type: 'number', def: '24 / 24', desc: '距離右下角（px）' },
   { name: 'label', type: 'string', def: "'回到頂端'", desc: '按鈕名稱' },
   { name: '#default', type: 'slot', def: '—', desc: '自訂按鈕內容' },
+  { name: '@click', type: 'event', def: '—', desc: '按下回到頂端時' },
 ]
 </script>

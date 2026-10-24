@@ -89,6 +89,17 @@
         <ApiTable of="DualAxisComboChart" title="Events" :rows="largeDataEvents" />
       </section>
 
+      <!-- 完整 Props -->
+      <section id="props" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">Props</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          大量資料、滾輪縮放與連動高亮的 props 另見上方各區段。
+        </p>
+        <ApiTable of="DualAxisComboChart" title="尺寸與圖層 Props" :rows="baseProps" />
+        <ApiTable of="DualAxisComboChart" title="座標軸 Props" :rows="axisProps" />
+        <ApiTable of="DualAxisComboChart" title="外觀與互動 Props" :rows="interactionProps" />
+      </section>
+
       <!-- 事件 -->
       <section id="events" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">事件</h2>
@@ -144,6 +155,35 @@ const highlight = ref(null)   // 例如表格滑過的那一列
   :highlight-key="highlight"
   @layer-hover="({ key }) => (highlight = key)"
 />`
+
+const baseProps = [
+  { name: 'layers', type: 'ChartLayer[]', def: '—', desc: '圖層陣列（必填）。可疊多個圖層（長條、堆疊長條、折線、面積、散點、參考線），各自帶資料、取值函式與 yAxis（左／右）' },
+  { name: 'width / height', type: 'number', def: '800 / 500', desc: '圖表尺寸（px）；autoResize 時改由容器決定' },
+  { name: 'autoResize', type: 'boolean', def: 'false', desc: '跟著容器大小重畫（容器需有高度）' },
+  { name: 'debounceDelay', type: 'number', def: '150', desc: 'autoResize 的重畫延遲（ms）' },
+  { name: 'margin', type: 'ChartMargin', def: '{ top: 60, right: 80, bottom: 60, left: 80 }', desc: '繪圖區四周留白（放座標軸、標題與圖例）' },
+  { name: 'title', type: 'string', def: "''", desc: '圖表標題' },
+  { name: 'triggerLines', type: 'TriggerLine[]', def: '[]', desc: '參考線，例如規格上下限或良率門檻' },
+]
+
+const axisProps = [
+  { name: 'xScaleType', type: "'band' | 'linear' | 'log' | 'sqrt' | 'time' | 'symlog'", def: "'band'", desc: 'X 軸比例尺；band 為類別，time 為時間序列' },
+  { name: 'xDomain', type: 'XDomain | null', def: 'null', desc: 'X 軸範圍；null 依資料決定。這是預設視窗，縮放仍可超出' },
+  { name: 'xAxisLabel / xAxisFormat', type: 'string / (v) => string', def: "'' / null", desc: 'X 軸標題與刻度格式' },
+  { name: 'xAxisLabelRotate', type: 'number', def: '0', desc: 'X 軸刻度文字旋轉角度（度），類別名稱長時使用' },
+  { name: 'yLeftScaleType / yRightScaleType', type: "'linear' | 'log' | 'sqrt' | 'time' | 'symlog'", def: "'linear'", desc: '左／右 Y 軸比例尺' },
+  { name: 'yLeftDomain / yRightDomain', type: '[number, number] | null', def: 'null', desc: '左／右 Y 軸範圍；null 依資料決定（並取整）。縮放仍可超出' },
+  { name: 'yLeftAxisLabel / yRightAxisLabel', type: 'string', def: "''", desc: '左／右 Y 軸標題' },
+  { name: 'yLeftAxisFormat / yRightAxisFormat', type: '(v: number) => string', def: 'null', desc: '左／右 Y 軸刻度格式' },
+]
+
+const interactionProps = [
+  { name: 'showGrid', type: 'boolean', def: 'true', desc: '背景格線' },
+  { name: 'animationDuration', type: 'number', def: '750', desc: '轉場動畫時間（ms）；0 關閉' },
+  { name: 'enableBrush / brushMode', type: "boolean / 'x' | 'xy' | 'none'", def: "true / 'xy'", desc: '框選縮放；x 只選 X 範圍、xy 同時選左右 Y 軸' },
+  { name: 'enableAxisDrag', type: 'boolean', def: 'true', desc: '拖曳座標軸平移' },
+  { name: 'showResetButton', type: 'boolean', def: 'true', desc: '縮放後在右上角顯示「重設縮放」' },
+]
 
 const allEvents = [
   { name: 'layer-click / layer-hover', type: 'ChartLayerEvent', desc: '點擊／滑過資料元素：{ data, layer, seriesKey?, key? }（參考線沒有 key）' },

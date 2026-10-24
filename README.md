@@ -7,6 +7,7 @@
 - 語意色：`success`＝綠、`danger`＝紅、`warning`＝黃、`info`＝青
 - 中性：`neutral`（等同 Tailwind 內建 neutral）
 - 本倉庫同時是**組件庫＋展示文檔站**（`npm run dev` → `/docs`）
+- 對外行為的變更（特別是破壞性變更）記在 [CHANGELOG.md](./CHANGELOG.md)；改到 props / events / 型別的 PR 要一併更新
 
 ---
 
@@ -35,7 +36,7 @@ npm run typecheck        # vue-tsc，型別必須零錯誤
 npm run check:boundary   # 組件庫邊界檢查（見下方「組件庫邊界」）
 npm run check:legacy     # legacy 相容層必須維持薄包裝
 npm run check:docs       # 文件站路由不得有佔位頁、斷掉的引用或孤兒文件頁
-npm run check:doc-api    # 文件 API 表（<ApiTable of="元件">）必須對得上元件實際的 props / events / 插槽 / 方法
+npm run check:doc-api    # 文件 API 表（<ApiTable of="元件">）與元件實際的 props / events / 插槽 / 方法雙向一致
 npm run test             # Vitest 單元測試
 npm run test:watch       # 監看模式
 npm run test:coverage    # 覆蓋率報告（含門檻檢查）

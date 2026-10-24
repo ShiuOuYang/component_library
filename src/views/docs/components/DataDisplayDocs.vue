@@ -526,6 +526,7 @@ const listProps = [
   { name: 'grid', type: 'number', def: '—', desc: '格狀排列，每張卡的最小寬度（px）' },
   { name: 'bordered / split / size / emptyText', type: '—', def: 'true / true / md / locale', desc: '外框、分隔線、內距、空狀態文字' },
   { name: '@load-more', type: 'event', def: '—', desc: '按下載入更多或捲到底' },
+  { name: 'loadMoreText', type: 'string', def: "'載入更多'", desc: '「載入更多」按鈕的文字' },
 ]
 
 // ===== ChptQRCode =====
@@ -545,5 +546,7 @@ const qrProps = [
   { name: 'status / expiredText', type: "'active'|'expired'|'loading'", def: "'active'", desc: '過期時顯示重新產生（@refresh）' },
   { name: 'title', type: 'string', def: '「QR Code：內容」', desc: '螢幕閱讀器唸的名稱' },
   { name: 'ref: toDataURL(scale) / download(filename)', type: '—', def: '—', desc: '輸出 PNG' },
+  { name: 'bordered', type: 'boolean', def: 'true', desc: '外框' },
+  { name: '@refresh', type: 'event', def: '—', desc: 'status 為 expired 時按「重新產生」' },
 ]
 </script>

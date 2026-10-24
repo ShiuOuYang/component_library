@@ -602,6 +602,11 @@ onUnmounted(() => {
   unregisterZIndex(modalId)
   if (isMinimized.value) unregisterMinimized(modalId)
   window.removeEventListener('resize', handleWindowResize)
+  // ⚠️ 拖曳／縮放到一半被卸載（v-model 設成 false、路由切換）時，原本只移除監聽，
+  //    body 的 cursor 與 user-select 留著 —— 整頁游標卡在「移動」、文字選不起來。
+  //    stopDrag / stopResize 會移除監聽並還原 body 樣式。
+  if (isDragging.value) stopDrag()
+  if (isResizing.value) stopResize()
   document.removeEventListener('mousemove', handleDrag)
   document.removeEventListener('mouseup', stopDrag)
   document.removeEventListener('mousemove', handleResize)
