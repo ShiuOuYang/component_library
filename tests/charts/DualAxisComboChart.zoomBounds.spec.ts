@@ -10,6 +10,8 @@ import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.v
  * 縮到底也不能跳回比較窄的設定範圍。
  *
  * 圖表 600×400、預設 margin → 繪圖區 440×280；jsdom 裡 clientX / clientY 就是繪圖區座標。
+ *
+ * 這組測的是 limitZoomToData（縮小與平移限制在資料範圍內）時的邊界；預設不設限，見 largeData 的測試。
  */
 
 let wrapper: VueWrapper | null = null
@@ -24,7 +26,7 @@ const layers = [{ type: 'line', data: rows, xValue: (d: { x: number }) => d.x, y
 
 async function mountChart(props: Record<string, unknown>) {
   wrapper = mount(DualAxisComboChart, {
-    props: { width: 600, height: 400, animationDuration: 0, layers, xScaleType: 'linear', ...props },
+    props: { width: 600, height: 400, animationDuration: 0, layers, xScaleType: 'linear', limitZoomToData: true, ...props },
     attachTo: document.body,
   })
   await nextTick()

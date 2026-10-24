@@ -161,6 +161,12 @@ interface DualAxisComboChartProps {
   enableWheelZoom?: boolean
   /** 在繪圖區滾動時縮放哪些軸：'xy' 同時縮放 X 與 Y（以游標為中心）；'x' 只縮放 X（Y 維持不動） */
   wheelZoomAxes?: 'xy' | 'x'
+  /**
+   * 縮小與平移限制在資料範圍內（全覽時往外滾交還給頁面捲動）。
+   * 預設 false：像 Allegro，可以縮到比全覽還小、平移到資料範圍外 ——
+   * 游標在圖上時滾輪一律由圖表處理，頁面上圖表很多時可搭配 wheelZoomModifier='ctrl'
+   */
+  limitZoomToData?: boolean
   /** 要按住哪個鍵才用滾輪縮放（'ctrl' 也接受 Mac 的 ⌘）；頁面上圖表很多時可設 'ctrl' 避免捲動頁面時誤觸 */
   wheelZoomModifier?: 'none' | 'ctrl' | 'alt'
   /** 最大放大倍率（相對全覽範圍） */
@@ -216,6 +222,7 @@ const props = withDefaults(defineProps<DualAxisComboChartProps>(), {
   showResetButton: true,
   enableWheelZoom: true,
   wheelZoomAxes: 'xy',
+  limitZoomToData: false,
   wheelZoomModifier: 'none',
   maxZoomScale: 10000,
   largeDataThreshold: 2000,
@@ -309,6 +316,12 @@ const HOVERABLE_CLASSES = ['stacked-bar', 'bar', 'line-dot', 'scatter-dot'];
 
 /** 滾輪縮放速度：一般滑鼠一格（deltaY = 100）約縮放 1.22 倍 */
 const WHEEL_ZOOM_SPEED = 0.002;
+
+/**
+ * 不限制縮小時，範圍最多是全覽的幾倍。
+ * 實際上等於沒有上限，只是避免一直往外滾讓數值溢位成 Infinity（比例尺會壞掉）
+ */
+const MAX_ZOOM_OUT = 1e6;
 
 /** brush 結束事件；x 模式的 selection 是一對座標，xy 模式是兩個角 */
 interface BrushSelectionEvent {
@@ -2595,17 +2608,42 @@ function isYAtFullExtent(target: 'yLeft' | 'yRight'): boolean {
 }
 
 /**
+ * 這一軸是否被限制在資料範圍內（不能再縮小、平移不能超出）：
+ * limitZoomToData 時都是；不限制時只有類別軸（範圍外沒有類別）與對數軸（不能縮到 0 以下）
+ */
+function xLimited(): boolean {
+  const xs = xScale.value;
+  return props.limitZoomToData || !xs || isBandScale(xs) || props.xScaleType === 'log';
+}
+
+function yLimited(side: 'yLeft' | 'yRight'): boolean {
+  const type = side === 'yLeft' ? props.yLeftScaleType : props.yRightScaleType;
+  return props.limitZoomToData || type === 'log';
+}
+
+/** 不能再往外縮（被限制且已經全覽；沒有這一軸也算） */
+function xAtZoomOutLimit(): boolean {
+  return xLimited() ? isXAtFullExtent() : false;
+}
+
+function yAtZoomOutLimit(side: 'yLeft' | 'yRight'): boolean {
+  const ys = side === 'yLeft' ? yLeftScale.value : yRightScale.value;
+  if (!ys) return true;
+  return yLimited(side) ? isYAtFullExtent(side) : false;
+}
+
+/**
  * 這次滾動會不會改變畫面。不會的就不攔截，交還給頁面捲動：
  * 已是全覽還往外縮、或全覽時左右平移。
  */
 function wheelWouldChange(target: WheelTarget, zoomDelta: number, panDelta: number): boolean {
   if (target === 'xy') {
-    // 平移只動 X；往外縮時任何一軸還沒到全覽就有作用
-    if (panDelta !== 0) return !isXAtFullExtent();
-    if (zoomDelta > 0) return !isXAtFullExtent() || !isYAtFullExtent('yLeft') || !isYAtFullExtent('yRight');
+    // 平移只動 X；往外縮時任何一軸還能再縮就有作用
+    if (panDelta !== 0) return !xAtZoomOutLimit();
+    if (zoomDelta > 0) return !xAtZoomOutLimit() || !yAtZoomOutLimit('yLeft') || !yAtZoomOutLimit('yRight');
     return zoomDelta < 0;
   }
-  const zoomed = target === 'x' ? !isXAtFullExtent() : !isYAtFullExtent(target);
+  const zoomed = target === 'x' ? !xAtZoomOutLimit() : !yAtZoomOutLimit(target);
   if (panDelta !== 0) return zoomed;
   if (zoomDelta > 0) return zoomed;
   return zoomDelta < 0;
@@ -2665,11 +2703,11 @@ function applyWheel(): void {
  */
 function applyXYWheel(k: number, pan: number, mx: number, my: number): void {
   const zoomingOut = k > 1;
-  if (pan !== 0 || !(zoomingOut && isXAtFullExtent())) applyXWheel(k, pan, mx);
+  if (pan !== 0 || !(zoomingOut && xAtZoomOutLimit())) applyXWheel(k, pan, mx);
   if (k === 1) return;
   for (const side of ['yLeft', 'yRight'] as const) {
     const ys = side === 'yLeft' ? yLeftScale.value : yRightScale.value;
-    if (ys && !(zoomingOut && isYAtFullExtent(side))) applyYWheel(side, k, my);
+    if (ys && !(zoomingOut && yAtZoomOutLimit(side))) applyYWheel(side, k, my);
   }
 }
 
@@ -2701,7 +2739,8 @@ function onPanMouseDown(event: MouseEvent): void {
   const xs = xScale.value;
   let xWindow: [number, number] | null = null;
   let bandWindow: { start: number; length: number } | null = null;
-  if (xs && !isXAtFullExtent()) {
+  // 不限制時，沒縮放也能平移（像 Allegro）；類別軸與限制模式只有縮放後才能平移
+  if (xs && !(xLimited() && isXAtFullExtent())) {
     if (isBandScale(xs)) {
       const all = xZoomBounds.value as string[];
       bandWindow = { start: Math.max(0, all.indexOf(xs.domain()[0])), length: xs.domain().length };
@@ -2711,7 +2750,7 @@ function onPanMouseDown(event: MouseEvent): void {
   }
   const yWindow = (side: 'yLeft' | 'yRight'): [number, number] | null => {
     const ys = side === 'yLeft' ? yLeftScale.value : yRightScale.value;
-    return ys && !isYAtFullExtent(side) ? (ys.domain() as [number, number]) : null;
+    return ys && !(yLimited(side) && isYAtFullExtent(side)) ? (ys.domain() as [number, number]) : null;
   };
   panStart = { x: event.clientX, y: event.clientY, xWindow, bandWindow, yLeft: yWindow('yLeft'), yRight: yWindow('yRight') };
   isPanning.value = true;
@@ -2731,7 +2770,7 @@ function onPanMouseMove(event: MouseEvent): void {
   if (start.xWindow && xZoomBounds.value) {
     const isTime = props.xScaleType === 'time';
     const span = start.xWindow[1] - start.xWindow[0];
-    const win = panContinuousDomain(start.xWindow, (-dx / w) * span, toNumericDomain(xZoomBounds.value, isTime));
+    const win = panContinuousDomain(start.xWindow, (-dx / w) * span, xLimited() ? toNumericDomain(xZoomBounds.value, isTime) : null);
     setPannedX((isTime ? [new Date(win[0]), new Date(win[1])] : win) as XDomain);
   } else if (start.bandWindow && xZoomBounds.value) {
     const all = xZoomBounds.value as string[];
@@ -2745,7 +2784,7 @@ function onPanMouseMove(event: MouseEvent): void {
     const bounds = side === 'yLeft' ? yLeftZoomBounds.value : yRightZoomBounds.value;
     if (!from || !bounds) continue;
     // 往下拖 → 畫面往下 → 範圍往上移
-    const win = panContinuousDomain(from, (dy / h) * (from[1] - from[0]), bounds);
+    const win = panContinuousDomain(from, (dy / h) * (from[1] - from[0]), yLimited(side) ? bounds : null);
     const current = side === 'yLeft' ? currentYLeftDomain.value : currentYRightDomain.value;
     if (current && current[0] === win[0] && current[1] === win[1]) continue;
     if (side === 'yLeft') currentYLeftDomain.value = win;
@@ -2803,16 +2842,17 @@ function applyXWheel(k: number, pan: number, mx: number): void {
     const isTime = props.xScaleType === 'time';
     const full = toNumericDomain(bounds, isTime);
     const fullSpan = full[1] - full[0];
+    const limited = xLimited();
     let win: [number, number] | null = toNumericDomain(xs.domain() as XDomain, isTime);
     if (k !== 1) {
       const anchor = +(xs as d3.ScaleContinuousNumeric<number, number>).invert(mx);
-      win = zoomContinuousDomain(win, anchor, k, {
-        bounds: full,
-        minSpan: fullSpan / Math.max(1, props.maxZoomScale),
-      });
+      const minSpan = fullSpan / Math.max(1, props.maxZoomScale);
+      win = limited
+        ? zoomContinuousDomain(win, anchor, k, { bounds: full, minSpan })
+        : zoomOutUnbounded(win, anchor, k, minSpan, fullSpan);
     }
     if (win && pan !== 0) {
-      win = panContinuousDomain(win, (pan / w) * (win[1] - win[0]), full);
+      win = panContinuousDomain(win, (pan / w) * (win[1] - win[0]), limited ? full : null);
     }
     next = win ? ((isTime ? [new Date(win[0]), new Date(win[1])] : win) as XDomain) : fullXWindow(bounds);
   }
@@ -2827,6 +2867,15 @@ function applyXWheel(k: number, pan: number, mx: number): void {
   nextTick(() => {
     isLocalBrush.value = false;
   });
+}
+
+/**
+ * 不限制在資料範圍內的縮放：以游標為中心，可以縮到比全覽還小。
+ * 只在範圍大到 MAX_ZOOM_OUT 倍時停住（避免數值溢位），不會回傳 null（不會自動跳回全覽）
+ */
+function zoomOutUnbounded(domain: [number, number], anchor: number, k: number, minSpan: number, fullSpan: number): [number, number] {
+  const next = zoomContinuousDomain(domain, anchor, k, { minSpan }) ?? domain;
+  return Math.abs(next[1] - next[0]) > Math.abs(fullSpan) * MAX_ZOOM_OUT ? domain : next;
 }
 
 /**
@@ -2853,10 +2902,10 @@ function applyYWheel(target: 'yLeft' | 'yRight', k: number, my: number): void {
   const bounds = target === 'yLeft' ? yLeftZoomBounds.value : yRightZoomBounds.value;
   if (!ys || !bounds || k === 1) return;
   const boundsSpan = bounds[1] - bounds[0];
-  let next = zoomContinuousDomain(ys.domain() as [number, number], ys.invert(my), k, {
-    bounds,
-    minSpan: boundsSpan / Math.max(1, props.maxZoomScale),
-  });
+  const minSpan = boundsSpan / Math.max(1, props.maxZoomScale);
+  let next = yLimited(target)
+    ? zoomContinuousDomain(ys.domain() as [number, number], ys.invert(my), k, { bounds, minSpan })
+    : zoomOutUnbounded(ys.domain() as [number, number], ys.invert(my), k, minSpan, boundsSpan);
   if (next === null) {
     // 基準範圍（取整後，也就是重設後看到的範圍）若與邊界相同，就直接清除縮放
     const [b0, b1] = ys.copy().domain((target === 'yLeft' ? yLeftBaseDomain.value : yRightBaseDomain.value) ?? bounds).nice().domain();

@@ -88,7 +88,8 @@
         <p class="text-sm text-content-secondary mt-2">
           滾輪縮放像 Allegro：在繪圖區滾動時，<strong>以游標那一點為中心、X 與 Y 同時縮放</strong>（游標底下的資料點留在原地）；
           只想調一個軸時，把游標移到那一軸的刻度上再滾。放大後按住<strong>滑鼠中鍵拖曳</strong>平移，觸控板左右滑動平移 X；
-          「重設縮放」回到全覽。只想縮放時間範圍、Y 不動時設 <code>wheel-zoom-axes="x"</code>。
+          縮小與平移不受資料範圍限制（可以縮到比全覽還小、移到資料外），「重設縮放」回到全覽。
+          只想縮放時間範圍、Y 不動時設 <code>wheel-zoom-axes="x"</code>；要限制在資料範圍內（全覽時滾輪交還頁面捲動）設 <code>limit-zoom-to-data</code>。
         </p>
         <ApiTable of="DualAxisComboChart" title="Props" :rows="largeDataProps" />
         <ApiTable of="DualAxisComboChart" title="Events" :rows="largeDataEvents" />
@@ -134,6 +135,7 @@ import ApiTable from './components/_ApiTable.vue'
 const largeDataProps = [
   { name: 'enableWheelZoom', type: 'boolean', def: 'true', desc: '滾輪縮放（像 Allegro）：在繪圖區以游標那一點為中心，X 與 Y 同時縮放；在 X 軸或左右 Y 軸的刻度上只縮放那一軸。左右滑動或 Shift + 滾輪平移 X，按住滑鼠中鍵拖曳平移 X 與 Y。已在全覽時往外滾會交還給頁面捲動' },
   { name: 'wheelZoomAxes', type: "'xy' | 'x'", def: "'xy'", desc: "繪圖區的滾輪縮放哪些軸：'xy' X 與 Y 同時；'x' 只縮放 X（Y 維持不動，只想看時間範圍時用）" },
+  { name: 'limitZoomToData', type: 'boolean', def: 'false', desc: "縮小與平移限制在資料範圍內，全覽時往外滾交還給頁面捲動。預設不限制（像 Allegro，可縮到比全覽小、平移到資料外），游標在圖上時滾輪一律由圖表處理；頁面上圖表很多時可搭配 wheelZoomModifier='ctrl'。類別軸與對數軸一律限制" },
   { name: 'wheelZoomModifier', type: "'none' | 'ctrl' | 'alt'", def: "'none'", desc: "按住哪個鍵才縮放；頁面上圖表很多時可設 'ctrl'（Mac 的 ⌘ 也算）避免捲動頁面時誤觸" },
   { name: 'maxZoomScale', type: 'number', def: '10000', desc: '最大放大倍率（相對全覽範圍）' },
   { name: 'largeDataThreshold', type: 'number', def: '2000', desc: '圖層目前可見筆數超過此值時：折線依像素降採樣、散點與長條改用 Canvas；放大到低於此值自動切回 SVG' },
