@@ -26,12 +26,11 @@ npm run dev        # http://localhost:4000 → 自動導向 /docs
 npm run build      # vite build → dist/
 npm run preview
 npx vue-tsc --noEmit   # 型別檢查（專案沒有設 script，但 devDeps 有 vue-tsc）
-node server.js     # express 靜態伺服 dist（port 5000），SPA history fallback
 ```
 
 專案**沒有測試框架、沒有 ESLint/Prettier 設定**。改完至少跑一次 `npm run dev` 確認能編譯；動到 `.ts`/`lang="ts"` 檔再跑 `vue-tsc --noEmit`（tsconfig 是 `strict` + `noUnusedLocals` + `noUnusedParameters`，別留沒用到的變數）。
 
-Node 18（Dockerfile 與 CI 皆為 18）。
+Node 22（CI 為 22）。
 
 ## 目錄地圖
 
@@ -171,7 +170,7 @@ Material Symbols（`<ChptIcon>{{ 'settings' }}</ChptIcon>`）為主；FontAwesom
 |---|---|
 | `references/component-inventory.md` | 要知道「有哪些組件、props/emits/slots 是什麼、哪些是別名」——動手寫任何 template 前先查 |
 | `references/chart-patterns.md` | 新增或修改 D3 圖表組件（layers 結構、brush、autoResize、tooltip slot、facet） |
-| `references/architecture.md` | API / store / 認證 / 路由守衛 / 部署（Docker、GitHub Actions）/ 設計令牌 |
+| `references/architecture.md` | API / store / 認證 / 路由守衛 / CI（GitHub Actions）/ 設計令牌 |
 | `assets/ChptComponent.template.vue` | 新增 TS 原子組件的起手式 |
 | `assets/DocPage.template.vue` | 新增文檔頁的起手式 |
 | `../docs/DESIGN_SYSTEM.md` | 設計令牌用法（Tailwind class / CSS 變數 / D3 色階） |
