@@ -639,6 +639,28 @@ describe('DualAxisComboChart：縮小與平移不設限', () => {
     expect(d).toBeCloseTo(200)
   })
 
+  it('有動畫時，從全覽中鍵平移：立刻套用（不跑過場動畫），也會出現「重設縮放」', async () => {
+    const w = await mountChart({ ...base, animationDuration: 750 })
+    // 等開場動畫跑完，讓折線停在最終位置
+    await new Promise((r) => setTimeout(r, 800))
+    const path = () => w.find('path.line').attributes('d')
+    const tick = () => w.find('.x-axis .tick text').text()
+    const before = { d: path(), tick: tick() }
+    const svg = w.find('svg').element
+    mouse(svg, 'mousedown', 220, 140)
+    mouse(window, 'mousemove', 220 + 110, 140 + 70)
+    await nextTick()
+    // 沒有等任何 timer：折線與座標軸在同一輪就更新了（原本要跑 750ms 的動畫，一路落後游標）
+    expect(path()).not.toBe(before.d)
+    expect(tick()).not.toBe(before.tick)
+    expect(w.find('button').text()).toBe('重設縮放')
+    // 放開後不再變動
+    mouse(window, 'mouseup', 0, 0)
+    const settled = path()
+    await new Promise((r) => setTimeout(r, 100))
+    expect(path()).toBe(settled)
+  })
+
   it('對數 Y 軸仍限制在資料範圍內（不能縮到 0 以下）', async () => {
     const pos = data.map((d) => ({ x: d.x, y: d.y + 1 }))
     const w = await mountChart({ layers: [line(pos)], xScaleType: 'linear', yLeftScaleType: 'log', wheelZoomAxes: 'xy' })

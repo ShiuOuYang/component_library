@@ -421,6 +421,25 @@ const effectiveAnimationDuration = computed(() => {
 });
 
 /**
+ * 有動畫時長就回傳 transition，時長為 0 時直接回傳 selection（立刻套用）。
+ * 🔧 duration(0) 的 transition 要等下一個 animation frame 才生效：拖曳、縮放時長條（直接設定）
+ *    會比折線、散點、座標軸早一個 frame 到位，畫面跟著抖；座標軸的 transition 還會逐個刻度讀 computed style
+ * 回傳型別標成 selection 方便串接，所以後面只能接兩者共有的方法（attr、style、text、call、remove）
+ */
+function animate<E extends d3.BaseType, D, P extends d3.BaseType, PD>(
+  selection: d3.Selection<E, D, P, PD>,
+  duration: number = effectiveAnimationDuration.value,
+  ease: (t: number) => number = d3.easeCubicOut,
+): d3.Selection<E, D, P, PD> {
+  if (duration <= 0) {
+    // 還在跑的舊動畫（例如剛重設縮放）要先停掉，不然下一個 frame 又會被它蓋回去；座標軸的動畫在刻度上，子元素一起停
+    selection.interrupt().selectAll('*').interrupt();
+    return selection;
+  }
+  return selection.transition().duration(duration).ease(ease) as unknown as d3.Selection<E, D, P, PD>;
+}
+
+/**
  * 把 X domain 的兩個端點轉成可做算術的數值。
  *
  * X 軸的 domain 依比例尺種類可能是數值、日期或類別字串；
@@ -1793,7 +1812,7 @@ const renderLines = () => {
       .y0(areaBase)
       .y1(yPos)
       .curve(curve || d3.curveMonotoneX);
-    g.selectAll(`path.area-${layerIndex}`)
+    animate(g.selectAll(`path.area-${layerIndex}`)
       .data(layer.type === 'area' ? [drawData] : [])
       .join(
         enter => enter.append('path')
@@ -1804,10 +1823,7 @@ const renderLines = () => {
         update => update,
         exit => exit.remove()
       )
-      .attr('fill', color)
-      .transition()
-      .duration(pathDuration)
-      .ease(d3.easeCubicOut)
+      .attr('fill', color), pathDuration)
       .attr('d', areaGenerator);
 
     // 線條生成器
@@ -1825,7 +1841,7 @@ const renderLines = () => {
         d3.curveBasis：貝塞爾曲線（非常平滑） */
 
     // 渲染線條
-    g.selectAll(`path.line-${layerIndex}`)
+    animate(g.selectAll(`path.line-${layerIndex}`)
       .data([drawData]) // ✅ 已過濾（大量資料時再降採樣）的 data
       .join(
         enter => enter.append('path')
@@ -1836,10 +1852,7 @@ const renderLines = () => {
           .attr('d', lineGenerator),
         update => update,
         exit => exit.remove()
-      )
-      .transition()
-      .duration(pathDuration)
-      .ease(d3.easeCubicOut)
+      ), pathDuration)
       .attr('d', lineGenerator)
       .attr('stroke', color)
       .attr('stroke-width', strokeWidth || 2);
@@ -1854,7 +1867,7 @@ const renderLines = () => {
         .map((d, i) => ({ rawData: d, layer, key: datumKey(layer, d, i) }))
         .filter((b) => isDefined(b.rawData));
 
-      g.selectAll<SVGCircleElement, BoundDatum>(`circle.dot-${layerIndex}`)
+      animate(g.selectAll<SVGCircleElement, BoundDatum>(`circle.dot-${layerIndex}`)
         .data(validData, makeKeyFn(layer))
         .join(
           enter => enter.append('circle')
@@ -1876,14 +1889,10 @@ const renderLines = () => {
               emit('layer-click', { data: d.rawData, layer: d.layer, key: d.key });
             }),
           update => update,
-          exit => exit.transition()
-            .duration(effectiveAnimationDuration.value / 2)
+          exit => animate(exit, effectiveAnimationDuration.value / 2)
             .attr('r', 0)
             .remove()
-        )
-        .transition()
-        .duration(effectiveAnimationDuration.value)
-        .ease(d3.easeCubicOut)
+        ))
         .attr('cx', (d) => xPos(d.rawData) ?? 0)
         .attr('cy', (d) => yPos(d.rawData))
         .attr('r', 4);
@@ -1956,7 +1965,7 @@ const renderScatter = () => {
     registerPointHighlights(layer, data, xPos, yPos, color, Math.max(4, size + 1));
 
     // 渲染散點
-    g.selectAll<SVGCircleElement, BoundDatum>(`circle.scatter-dot-${layerIndex}`)
+    animate(g.selectAll<SVGCircleElement, BoundDatum>(`circle.scatter-dot-${layerIndex}`)
       .data(
         data.map((d, i) => ({ rawData: d, layer, key: datumKey(layer, d, i) })),
         makeKeyFn(layer)
@@ -1988,14 +1997,10 @@ const renderScatter = () => {
             emit('layer-click', { data: d.rawData, layer: d.layer, key: d.key });
           }),
         update => update,
-        exit => exit.transition()
-          .duration(effectiveAnimationDuration.value / 2)
+        exit => animate(exit, effectiveAnimationDuration.value / 2)
           .attr('r', 0)
           .remove()
-      )
-      .transition()
-      .duration(effectiveAnimationDuration.value)
-      .ease(d3.easeCubicOut)
+      ))
       .attr('cx', (d) => xPos(d.rawData) ?? 0)
       .attr('cy', (d) => yPos(d.rawData))
       .attr('r', size)
@@ -2038,10 +2043,8 @@ const renderAxes = () => {
       xAxis.tickFormat((value) => format(value));
     }
 
-    d3.select(xAxisRef.value)
-      .transition()
-      .duration(effectiveAnimationDuration.value)
-      .call(xAxis as unknown as (t: d3.Transition<SVGGElement, unknown, null, undefined>) => void)
+    animate(d3.select(xAxisRef.value), effectiveAnimationDuration.value, d3.easeCubic)
+      .call(xAxis)
       .selectAll('text')
       .style('text-anchor', props.xAxisLabelRotate !== 0 ? 'end' : 'middle')
       .attr('dx', props.xAxisLabelRotate !== 0 ? '-.8em' : '0')
@@ -2057,10 +2060,8 @@ const renderAxes = () => {
       yAxis.tickFormat((value) => format(Number(value)));
     }
 
-    d3.select(yAxisLeftRef.value)
-      .transition()
-      .duration(effectiveAnimationDuration.value)
-      .call(yAxis as unknown as (t: d3.Transition<SVGGElement, unknown, null, undefined>) => void);
+    animate(d3.select(yAxisLeftRef.value), effectiveAnimationDuration.value, d3.easeCubic)
+      .call(yAxis);
   }
 
   // 右 Y 軸
@@ -2071,10 +2072,8 @@ const renderAxes = () => {
       yAxis.tickFormat((value) => format(Number(value)));
     }
 
-    d3.select(yAxisRightRef.value)
-      .transition()
-      .duration(effectiveAnimationDuration.value)
-      .call(yAxis as unknown as (t: d3.Transition<SVGGElement, unknown, null, undefined>) => void);
+    animate(d3.select(yAxisRightRef.value), effectiveAnimationDuration.value, d3.easeCubic)
+      .call(yAxis);
   }
 };
 
@@ -2352,7 +2351,7 @@ const renderTriggerLines = () => {
     }
 
     // 渲染線條
-    lineGroup
+    animate(lineGroup
       .selectAll<SVGLineElement, TriggerLine>('line.trigger-line')
       .data([triggerLine])
       .join(
@@ -2391,9 +2390,7 @@ const renderTriggerLines = () => {
         },
         update => update,
         exit => exit.remove()
-      )
-      .transition()
-      .duration(effectiveAnimationDuration.value)
+      ), effectiveAnimationDuration.value, d3.easeCubic)
       .attr('x1', x1)
       .attr('y1', y1)
       .attr('x2', x2)
@@ -2432,7 +2429,7 @@ const renderTriggerLines = () => {
         }
       }
 
-      lineGroup.selectAll('text.trigger-label')
+      animate(lineGroup.selectAll('text.trigger-label')
         .data([label])
         .join(
           enter => enter.append('text')
@@ -2443,9 +2440,7 @@ const renderTriggerLines = () => {
             .style('pointer-events', 'none'),
           update => update,
           exit => exit.remove()
-        )
-        .transition()
-        .duration(effectiveAnimationDuration.value)
+        ), effectiveAnimationDuration.value, d3.easeCubic)
         .attr('x', labelX)
         .attr('y', labelY - 3)
         .attr('text-anchor', textAnchor)
@@ -2791,6 +2786,9 @@ function onPanMouseMove(event: MouseEvent): void {
     else currentYRightDomain.value = win;
     emit('axis-drag', { axis: side, domain: win });
   }
+  // 🔧 從全覽直接平移時縮放狀態原本是空的：不同步的話每次移動都跑 750ms 過場動畫，
+  //    畫面一路落後游標、放開後還在滑；重置按鈕也不會出現
+  syncZoomedState();
 }
 
 /** 平移 X：標記為本地變更（分面圖同步回來時不會被當成外部變更清掉） */
