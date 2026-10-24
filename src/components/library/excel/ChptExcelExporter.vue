@@ -166,8 +166,6 @@ export interface ExporterCellStyle {
 interface ChptExcelExporterProps {
   /** 格式化後要匯出的資料 */
   data?: Record<string, unknown>[]
-  /** 原始資料（用於補值判斷） */
-  rawData?: Record<string, unknown>[]
   /** 欄位配置 */
   columns?: ExporterColumn[]
   /** 預設檔案名稱 */
@@ -190,7 +188,6 @@ interface ChptExcelExporterProps {
 
 const props = withDefaults(defineProps<ChptExcelExporterProps>(), {
   data: () => [],
-  rawData: () => [],
   columns: () => [],
   defaultFilename: 'WIP_Report',
   defaultSheetName: 'WIP_Data',

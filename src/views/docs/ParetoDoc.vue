@@ -99,7 +99,6 @@ const seriesProps = [
 const otherProps = [
   { name: 'enableTooltip', type: 'boolean', def: 'true', desc: '滑過長條顯示提示框（也可用 #tooltip 插槽自訂）' },
   { name: 'animationDuration', type: 'number', def: '500', desc: '轉場動畫時間（ms）' },
-  { name: 'highlightMode / customRenderers', type: "'bar' | 'none' / object", def: "'bar' / {}", desc: '目前未使用（保留相容，傳了不會有作用）' },
 ]
 const eventRows = [
   { name: '@bar-click / @bar-hover', type: '{ event, data, … }', def: '—', desc: '點擊／滑過長條' },

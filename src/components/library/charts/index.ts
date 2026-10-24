@@ -23,7 +23,6 @@ export type {
   HeatmapDatum, ColorLegendPosition, HighlightMode as HeatmapHighlightMode, HeatmapColorScale,
   HeatmapCell, GradientStop, HeatmapCustomRenderers,
 } from './EnterpriseHeatmap.vue'
-export type { ParetoHighlightMode, ParetoCustomRenderers } from './EnterprisePareto.vue'
 export type { VerticalFacet } from './FacetedChart.vue'
 export type { ParetoInputItem, ParetoChartDatum } from './ParetoChart.vue'
 export type { StatusDef, StatusScatterTooltip } from './StatusScatterMap.vue'

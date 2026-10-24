@@ -58,12 +58,6 @@ import type { ParetoDatum, ParetoSortOrder } from './composables/useParetoData';
 
 // === 型別 ===
 
-/** hover 時高亮的範圍；none 表示不高亮 */
-export type ParetoHighlightMode = 'bar' | 'none'
-
-/** 企業級擴展點（目前保留，尚未有預設實作被覆寫） */
-export type ParetoCustomRenderers = Record<string, unknown>
-
 interface EnterpriseParetoProps {
   // === 基礎配置 ===
   width?: number
@@ -143,10 +137,6 @@ interface EnterpriseParetoProps {
 
   // === 互動配置 ===
   enableTooltip?: boolean
-  highlightMode?: ParetoHighlightMode
-
-  /** 企業級擴展點 */
-  customRenderers?: ParetoCustomRenderers
 }
 
 const props = withDefaults(defineProps<EnterpriseParetoProps>(), {
@@ -202,9 +192,6 @@ const props = withDefaults(defineProps<EnterpriseParetoProps>(), {
   animationDuration: 500,
 
   enableTooltip: true,
-  highlightMode: 'bar',
-
-  customRenderers: () => ({}),
 });
 
 const emit = defineEmits<{
