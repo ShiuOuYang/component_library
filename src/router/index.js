@@ -118,6 +118,14 @@ const routes = [
         },
       },
       {
+        path: "components/spc-charts",
+        name: "SpcChartsDoc",
+        component: () => import("../views/docs/SpcChartsDoc.vue"),
+        meta: {
+          title: "SPC 管制圖與製程能力",
+        },
+      },
+      {
         path: "components/gerber-viewer",
         name: "GerberViewerDoc",
         component: () => import("../views/docs/GerberViewerDoc.vue"),

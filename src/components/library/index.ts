@@ -32,7 +32,7 @@ export {
 export {
   DualAxisComboChart, EnterpriseHeatmap, EnterprisePareto, ParetoChart,
   FacetedChart, GridFacetChart, StatusScatterMap, GanttChart,
-  HorizontalBarChart, PieChart, SparklineChart, GaugeChart,
+  HorizontalBarChart, PieChart, SparklineChart, GaugeChart, ControlChart, CapabilityHistogram,
 } from './charts/index.js'
 
 // ===== viewer =====
@@ -88,6 +88,8 @@ export type {
   GanttSnap,
   HorizontalBarEvent, HorizontalBarTooltip, HorizontalBarReferenceLine, PieSliceEvent, PieTooltip,
   SparklinePoint, SparklineTooltip, GaugeBand,
+  ControlChartPoint, ControlChartTooltip, ControlChartAnalysis, ControlChartSpec, HistogramBin, HistogramTooltip,
+  ControlChartType, ControlChartLimits, ControlChartViolation, CapabilityResult,
 } from './charts/index.js'
 export type {
   GerberLayerInput, GerberImageInfo, PcbBoardInfo, PcbElementEvent,

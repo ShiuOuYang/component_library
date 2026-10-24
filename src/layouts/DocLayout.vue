@@ -406,6 +406,13 @@ const navSections = [
         anchors: [{ label: '環圈圖', id: 'basic' }, { label: '圓餅與其他', id: 'pie' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/spc-charts', icon: '📉', label: 'SPC 管制圖與 Cpk',
+        anchors: [
+          { label: 'I-MR', id: 'imr' }, { label: 'X̄-R', id: 'xbar' }, { label: 'p 圖', id: 'p' },
+          { label: '判異規則', id: 'rules' }, { label: '製程能力', id: 'capability' }, { label: 'API', id: 'api' },
+        ],
+      },
+      {
         to: '/docs/components/kpi-charts', icon: '🎛️', label: 'KPI 小圖',
         anchors: [{ label: 'KPI 卡片', id: 'cards' }, { label: '迷你趨勢線', id: 'sparkline' }, { label: '儀表', id: 'gauge' }, { label: 'API', id: 'api' }],
       },

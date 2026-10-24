@@ -13,6 +13,8 @@ export { default as HorizontalBarChart } from './HorizontalBarChart.vue'
 export { default as PieChart } from './PieChart.vue'
 export { default as SparklineChart } from './SparklineChart.vue'
 export { default as GaugeChart } from './GaugeChart.vue'
+export { default as ControlChart } from './ControlChart.vue'
+export { default as CapabilityHistogram } from './CapabilityHistogram.vue'
 
 // ===== 型別（props 的資料形狀與事件 payload） =====
 export type {
@@ -39,3 +41,8 @@ export type { HorizontalBarEvent, HorizontalBarTooltip, HorizontalBarReferenceLi
 export type { PieSliceEvent, PieTooltip } from './PieChart.vue'
 export type { SparklinePoint, SparklineTooltip } from './SparklineChart.vue'
 export type { GaugeBand } from './GaugeChart.vue'
+export type { ControlChartPoint, ControlChartTooltip, ControlChartAnalysis, ControlChartSpec } from './ControlChart.vue'
+export type { HistogramBin, HistogramTooltip } from './CapabilityHistogram.vue'
+export type {
+  ControlChartType, FixedLimits as ControlChartLimits, Violation as ControlChartViolation, CapabilityResult,
+} from './utils/spc'
