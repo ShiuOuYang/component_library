@@ -85,9 +85,7 @@ axios 實例：
 
 - `vite.config.js`：alias `@` → `src`；dev server `host 0.0.0.0`、`port 4000`；build `outDir: dist`，`manualChunks` 分出 `vue-vendor`（vue/vue-router/pinia）與 `ui-vendor`（@vueuse/core）
 - `tailwind.config.js`：content 掃 `./src/**/*.{vue,js,ts,jsx,tsx}`；`theme.extend` 目前**有** token 色（primary/secondary/success/warning/danger/info + content/surface/stroke 別名）、品牌陰影、`zIndex`（z-modal/z-tooltip/z-dropdown）、keyframes/animation
-- `server.js`：Express 靜態服務 `dist/`（預設 port 5000），`app.get('*')` 做 SPA history fallback
-- `Dockerfile`：多階段（node:18 builder → 靜態伺服），`docker-compose.yml` 一併提供
-- `.github/workflows/deploy.yml`：self-hosted runner（PowerShell），觸發條件 PR merge 到 `dev`，流程 `npm ci` → `npm run build`
+- `.github/workflows/ci.yml`：每個 PR 跑型別檢查、lint 與建置（沒有部署流程，`dist/` 由使用端自行託管）
 - Windows 開發輔助：`start-dev.bat`、`start-websocket-server.bat`
 
 ## TypeScript 狀態

@@ -23,7 +23,6 @@ export default mergeConfig(
         reporter: ['text', 'html'],
         include: ['src/components/library/**', 'src/design/**'],
         exclude: [
-          '**/*.example.vue',
           'src/components/library/**/index.js',
           // 純型別宣告，沒有執行期程式碼
           'src/components/library/shared/types/**',

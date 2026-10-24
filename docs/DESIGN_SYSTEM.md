@@ -29,7 +29,6 @@ src/design/tokens.js        ← 唯一手動維護的檔案
 | `src/styles/components.css` | `.card` `.panel` 等全域 class（過渡期） |
 | `tailwind.config.js` | Tailwind theme |
 | `postcss.config.js` | 需含 `postcss-import` |
-| `src/styles/_app-shell.css.example` | **不屬於元件庫**，請搬到應用專案 |
 
 ## 組件目錄與匯入（2026-09-06 重整）
 
@@ -311,7 +310,7 @@ selection.transition().duration(duration.chartUpdate)
 | `.spacing-xs / sm / md / lg` | `gap-2 / gap-4 / gap-6 / gap-8` | 純粹重造輪子 |
 | `.truncate-2 / -3` | `line-clamp-2 / line-clamp-3` | Tailwind 3.3+ 已內建 |
 | `.yield-low / normal / high` | 直接刪除 | 業務規則不屬於元件庫 |
-| `#app { height: 100vh }` | 搬到應用專案（見 `_app-shell.css.example`） | 元件庫不該規定宿主版面 |
+| `#app { height: 100vh }` | 需要滿版時寫在應用專案自己的 CSS | 元件庫不該規定宿主版面 |
 
 CSS 變數名稱**全數保持不變**，既有元件的 scoped CSS 不需修改。新增的變數：
 
