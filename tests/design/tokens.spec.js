@@ -320,3 +320,27 @@ describe('tailwind.config：語意 class 必須指向變數', () => {
     expect(c.success[600]).not.toContain('var(')
   })
 })
+
+/**
+ * 圖表類別色：調色盤驗證腳本（dataviz）驗過的順序與色階
+ * 改了任何一個值都要重新驗 —— 這裡只擋「默默被改壞」的情況。
+ */
+describe('themed：圖表類別色 chart-1～8', () => {
+  const roles = Array.from({ length: 8 }, (_, i) => `chart-${i + 1}`)
+
+  it('剛好 8 個，沒有第 9 個（超過要併成「其他」，不能生新顏色）', () => {
+    expect(roles.every((r) => themed[r])).toBe(true)
+    expect(themed['chart-9']).toBeUndefined()
+  })
+
+  it('深色是針對深色底挑的階，不是抄淺色（綠色兩邊同一階除外）', () => {
+    const same = roles.filter((r) => themed[r].light === themed[r].dark)
+    expect(same).toEqual(['chart-6'])
+  })
+
+  it('順序固定：藍、橘、青綠、黃、洋紅、綠、紫、紅', () => {
+    expect(roles.map((r) => themed[r].light)).toEqual([
+      '#2A78D6', '#EB6834', '#1BAF7A', '#EDA100', '#E87BA4', '#008300', '#6250D6', '#E34948',
+    ])
+  })
+})

@@ -397,6 +397,18 @@ const navSections = [
           { label: '編輯排程', id: 'edit' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' },
         ],
       },
+      {
+        to: '/docs/components/horizontal-bar-chart', icon: '📶', label: '水平長條圖',
+        anchors: [{ label: '排行榜', id: 'basic' }, { label: '強調與目標', id: 'emphasis' }, { label: 'API', id: 'api' }],
+      },
+      {
+        to: '/docs/components/pie-chart', icon: '🥧', label: '圓餅圖',
+        anchors: [{ label: '環圈圖', id: 'basic' }, { label: '圓餅與其他', id: 'pie' }, { label: 'API', id: 'api' }],
+      },
+      {
+        to: '/docs/components/kpi-charts', icon: '🎛️', label: 'KPI 小圖',
+        anchors: [{ label: 'KPI 卡片', id: 'cards' }, { label: '迷你趨勢線', id: 'sparkline' }, { label: '儀表', id: 'gauge' }, { label: 'API', id: 'api' }],
+      },
     ],
   },
   {

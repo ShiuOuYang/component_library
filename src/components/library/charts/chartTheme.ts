@@ -31,3 +31,25 @@ export const chartTheme = {
   warning: role('warning'),
   accent: role('accent'),
 } as const
+
+/**
+ * 資料色（給元件的預設值；呼叫端仍可自己傳色）
+ *
+ * categorical 是 8 個依序取用的類別色（tokens.js 的 chart-1～8，兩個主題各自驗過）。
+ * 超過 8 類不要循環：把尾巴併成「其他」用 other。
+ */
+export const chartPalette = {
+  categorical: Array.from({ length: 8 }, (_, i) => role(`chart-${i + 1}`)),
+  /** 「其他」與被淡化的項目 */
+  other: role('stroke-dark'),
+  /** 強調模式下沒被強調的項目（同色系的淡色，不是另一個顏色） */
+  muted: role('surface-muted'),
+  /** 單一系列的預設色（= 類別色第 1 號） */
+  primary: role('chart-1'),
+  /** 迷你趨勢線這類「背景資訊」用的淡化色 */
+  deemphasis: role('content-tertiary'),
+  /** 狀態色：只在顏色「代表好壞」時使用，而且要配圖示與文字，不能只靠顏色 */
+  good: role('success-solid'),
+  warning: role('warning-solid'),
+  critical: role('danger-solid'),
+} as const

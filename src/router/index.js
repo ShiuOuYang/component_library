@@ -94,6 +94,30 @@ const routes = [
         },
       },
       {
+        path: "components/horizontal-bar-chart",
+        name: "HorizontalBarChartDoc",
+        component: () => import("../views/docs/HorizontalBarChartDoc.vue"),
+        meta: {
+          title: "水平長條圖",
+        },
+      },
+      {
+        path: "components/pie-chart",
+        name: "PieChartDoc",
+        component: () => import("../views/docs/PieChartDoc.vue"),
+        meta: {
+          title: "圓餅圖",
+        },
+      },
+      {
+        path: "components/kpi-charts",
+        name: "KpiChartsDoc",
+        component: () => import("../views/docs/KpiChartsDoc.vue"),
+        meta: {
+          title: "KPI 小圖",
+        },
+      },
+      {
         path: "components/gerber-viewer",
         name: "GerberViewerDoc",
         component: () => import("../views/docs/GerberViewerDoc.vue"),
