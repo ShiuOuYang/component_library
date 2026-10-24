@@ -64,6 +64,10 @@
 - `npm run check:doc-api`：文件 API 表列的 props / events / 插槽 / 方法必須是元件真的有的。（#23）
 - `npm run check:docs` 會擋下沒有路由連到的孤兒文件頁。（#23）
 - 對外 API 測試：子入口的元件與對外型別都必須能從正式入口取得。（#21、#22）
+- 文件補齊：所有有 props / events 的公開元件都有 API 表（原本 18 個元件沒有任何表，例如 EnterprisePareto、
+  GerberViewer、PcbLayout、ChptExcelExporter / Uploader）；`check:doc-api` 改為雙向，漏寫也會擋。
+- 文件標明了幾個宣告了卻沒有作用的 props：ChptExcelExporter 的 `rawData`、EnterprisePareto 的
+  `highlightMode` 與 `customRenderers`（保留相容，傳了不會有作用）。
 
 ## 2026-09
 

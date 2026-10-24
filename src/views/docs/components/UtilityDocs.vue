@@ -141,7 +141,10 @@
       </div>
 
       <ChptCodeBlock class="mt-6" :code="smallUtilsSample" />
-      <ApiTable of="-" title="Props" :rows="smallUtilsProps" />
+      <ApiTable of="ChptCopyButton" title="ChptCopyButton Props / Events" :rows="copyButtonProps" />
+      <ApiTable of="ChptEllipsis" title="ChptEllipsis Props / Events" :rows="ellipsisProps" />
+      <ApiTable of="ChptCountdown" title="ChptCountdown Props / Events" :rows="countdownProps" />
+      <ApiTable of="ChptWatermark" title="ChptWatermark Props / Events" :rows="watermarkProps" />
     </section>
 
     <!-- ============ ChptSpace ============ -->
@@ -278,11 +281,41 @@ const smallUtilsSample = `<ChptCopyButton text="WO-2026-0917" subject="工單號
 <ChptEllipsis :text="description" :lines="2" expandable />
 <ChptCountdown :value="nextMaintenance" title="距離定期保養" format="D 天 HH:mm:ss" @finish="notify" />
 <ChptWatermark :content="[user.name, today]"><Report /></ChptWatermark>`
-const smallUtilsProps = [
-  { name: 'CopyButton', type: 'text, label?, subject?, copiedText?, resetAfter?', def: '—', desc: 'events: copy(text) / error(e)' },
-  { name: 'Ellipsis', type: 'text, lines?, expandable?, tooltip?, block?', def: 'lines 1', desc: 'event: toggle(expanded)' },
-  { name: 'Countdown', type: 'value, title?, format?, warningThreshold?, size?', def: "format 'HH:mm:ss'", desc: 'events: finish / change(remaining)；role=timer' },
-  { name: 'Watermark', type: 'content (string | string[]), rotate?, fontSize?, color?, gap?', def: 'rotate -22', desc: 'SVG 背景鋪滿、不擋點擊；嚇阻用，不是防護' },
+const copyButtonProps = [
+  { name: 'text', type: 'string', def: '—', desc: '要複製的文字（必填）' },
+  { name: 'label', type: 'string', def: "''", desc: '按鈕文字；不給時只有圖示' },
+  { name: 'subject', type: 'string', def: "''", desc: '只有圖示時螢幕閱讀器唸的對象（例如「工單號」）；不給時唸出內容本身' },
+  { name: 'tooltip / copiedText', type: 'string', def: "'複製' / '已複製'", desc: '提示文字與複製成功後的文字' },
+  { name: 'resetAfter', type: 'number', def: '2000', desc: '「已複製」狀態維持多久（ms）' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '停用' },
+  { name: '@copy / @error', type: 'event (text) / (error)', def: '—', desc: '複製成功／失敗（例如瀏覽器拒絕剪貼簿權限）' },
+]
+const ellipsisProps = [
+  { name: 'text', type: 'string', def: "''", desc: '文字；也可用預設插槽' },
+  { name: 'lines', type: 'number', def: '1', desc: '最多顯示幾行' },
+  { name: 'expandable / expandText / collapseText', type: 'boolean / string', def: "false / '展開' / '收起'", desc: '被截斷時顯示「展開」按鈕' },
+  { name: 'tooltip', type: 'boolean', def: 'true', desc: '被截斷時滑鼠停留顯示全文' },
+  { name: 'block', type: 'boolean', def: 'false', desc: '撐滿父元素寬度' },
+  { name: '@toggle', type: 'event (expanded)', def: '—', desc: '展開／收起' },
+]
+const countdownProps = [
+  { name: 'value', type: 'Date | number | string', def: '—', desc: '目標時間（必填）：Date、毫秒時間戳或可被 Date 解析的字串' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'format', type: 'string', def: "'HH:mm:ss'", desc: '顯示格式（D、HH、mm、ss、SSS）' },
+  { name: 'warningThreshold', type: 'number', def: '0', desc: '剩餘毫秒少於此值時顯示警示色' },
+  { name: 'finishedText', type: 'string', def: "'時間到'", desc: '倒數結束後顯示的文字' },
+  { name: 'size', type: "'sm' | 'md' | 'lg'", def: "'md'", desc: '尺寸' },
+  { name: 'interval', type: 'number', def: '1000', desc: '更新間隔（ms）；格式含毫秒時自動縮短' },
+  { name: '@finish / @change', type: 'event — / (remaining)', def: '—', desc: '倒數結束／每次更新（剩餘毫秒）；role=timer' },
+  { name: '#default', type: 'slot { parts, remaining, text }', def: '—', desc: '自訂顯示' },
+]
+const watermarkProps = [
+  { name: 'content', type: 'string | string[]', def: '—', desc: '浮水印文字（必填）；陣列時每個元素一行' },
+  { name: 'rotate / fontSize', type: 'number', def: '-22 / 14', desc: '旋轉角度與字級' },
+  { name: 'color', type: 'string', def: "'rgba(128, 128, 128, 0.18)'", desc: '文字顏色；預設半透明中性灰，兩個主題都適用' },
+  { name: 'gap', type: '[number, number]', def: '[120, 90]', desc: '每一格之間的間距（px）' },
+  { name: 'zIndex', type: 'number', def: '10', desc: '浮水印層的 z-index' },
+  { name: '#default', type: 'slot', def: '—', desc: '要加浮水印的內容；SVG 背景鋪滿、不擋點擊，是嚇阻用，不是防護' },
 ]
 
 // ===== ChptSpace =====

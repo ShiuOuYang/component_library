@@ -95,6 +95,19 @@
         </div>
       </div>
     </section>
+
+    <!-- ============ 匯出 / 匯入按鈕 ============ -->
+    <section id="excel-io" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptExcelExporter / ChptExcelUploader</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        不需要編輯器、只要「把表格資料匯出成 .xlsx」或「讓使用者上傳 Excel 讀成資料」時，用這兩顆按鈕。
+        上傳器在解析前會檢查檔案簽章：把 .txt 改名成 .xlsx 會送出 error，而不是一份空資料。
+      </p>
+      <ApiTable of="ChptExcelExporter" title="ChptExcelExporter Props" :rows="exporterProps" />
+      <ApiTable of="ChptExcelExporter" title="ChptExcelExporter Events" :rows="exporterEvents" />
+      <ApiTable of="ChptExcelUploader" title="ChptExcelUploader Props" :rows="uploaderProps" />
+      <ApiTable of="ChptExcelUploader" title="ChptExcelUploader Events" :rows="uploaderEvents" />
+    </section>
   </div>
 </template>
 
@@ -118,6 +131,36 @@ const editorSample = `<ChptExcelEditor
 />`
 
 // ---- API 資料（依元件使用方式整理，細節以元件為準） ----
+const exporterProps = [
+  { name: 'data', type: 'Record<string, unknown>[]', def: '[]', desc: '要匯出的資料（已格式化好的值）' },
+  { name: 'rawData', type: 'Record<string, unknown>[]', def: '[]', desc: '目前未使用（保留相容，傳了不會有作用）' },
+  { name: 'columns', type: 'ExcelExporterColumn[]', def: '[]', desc: '欄位 { key, title? }，決定匯出哪些欄與順序；沒給時用 data 第一列的所有鍵' },
+  { name: 'cellStyles', type: 'ExcelExporterCellStyle[]', def: '[]', desc: '個別儲存格樣式 { row, col, style }' },
+  { name: 'defaultFilename / defaultSheetName', type: 'string', def: "'WIP_Report' / 'WIP_Data'", desc: '預設檔名與工作表名稱' },
+  { name: 'showOptions', type: 'boolean', def: 'false', desc: '按下時先開設定視窗（檔名、工作表名稱），否則直接匯出' },
+  { name: 'buttonLabel / buttonClass', type: 'string', def: "'匯出 Excel' / ''", desc: '按鈕文字與額外 class' },
+  { name: 'size', type: "'xs' | 'sm' | 'md' | 'lg'", def: "'sm'", desc: '按鈕尺寸' },
+  { name: 'variant', type: "'green' | 'blue' | 'primary' | 'outline' | 'soft'", def: "'green'", desc: '按鈕樣式' },
+]
+const exporterEvents = [
+  { name: 'export-start', params: '—', desc: '開始匯出' },
+  { name: 'export-complete', params: '{ filename, recordCount }', desc: '匯出完成' },
+  { name: 'export-error', params: '(error)', desc: '匯出失敗' },
+]
+const uploaderProps = [
+  { name: 'label / loadingText', type: 'string', def: "'匯入 Excel' / '上傳中...'", desc: '按鈕文字與讀檔中的文字' },
+  { name: 'inputId', type: 'string', def: "'excel-upload'", desc: '內部 file input 的 id；同一頁有多個上傳器時要各自不同' },
+  { name: 'size', type: "'sm' | 'md'", def: "'sm'", desc: '尺寸' },
+  { name: 'variant', type: "'solid-green' | 'solid-blue' | 'solid-red' | 'outline-gray' | 'soft-blue' | 'ghost' | 'primary'", def: "'solid-green'", desc: '按鈕樣式' },
+  { name: 'customClass', type: 'string', def: "''", desc: '額外 class' },
+  { name: 'showFileName', type: 'boolean', def: 'false', desc: '在按鈕旁顯示上傳的檔名' },
+]
+const uploaderEvents = [
+  { name: 'data-loaded', params: '(rows: unknown[])', desc: '讀到第一張工作表的資料列' },
+  { name: 'upload-start / upload-success', params: '—', desc: '開始讀檔／讀檔成功' },
+  { name: 'upload-error / error', params: '(error) / (message: string)', desc: '讀檔失敗（含檔案不是 Excel）；兩個事件同時發，error 帶可顯示給使用者的訊息' },
+]
+
 const editorProps = [
   { name: 'modelValue', type: 'Record<string, unknown>[]', def: '[]', desc: '目前工作表的值（v-model）。依列位置對應：第 i 個元素就是第 i+1 列，中間的空白列是 {}；每列以欄名 A、B… 為鍵，公式為計算結果。父層換成新資料或傳 [] 時，編輯器會跟著換並清空復原紀錄；把編輯器送出的值原樣（或同內容的複本）傳回則不會重載。公式、格式、合併儲存格、其他工作表不在這裡，要完整保存請用匯出' },
   { name: 'showToolbar', type: 'boolean', def: 'true', desc: '顯示格式化工具列' },

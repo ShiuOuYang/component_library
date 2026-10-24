@@ -185,6 +185,7 @@
         <ChptCodeBlock :code="notifySample" />
       </div>
       <ApiTable of="-" title="notify.open(options) / success / info / warning / error" :rows="notifyOptions" />
+      <ApiTable of="ChptNotificationHost" title="ChptNotificationHost Props" :rows="notificationHostProps" />
       <p class="text-sm text-content-secondary mt-4">
         <strong>注意：</strong>滑鼠停在通知上、或焦點在通知裡的按鈕時，倒數會暫停（WCAG 2.2.1：要有足夠時間讀完、按到按鈕）；
         有動作按鈕的通知預設不自動消失。warning / error 以 role="alert" 立即報讀。
@@ -472,6 +473,12 @@ notify.warning({
   actions: [{ label: '查看', onClick: () => router.push('/lines/smt-02') }],
 })
 const { close } = notify.info({ title: '上傳中…', duration: 0 })`
+const notificationHostProps = [
+  { name: 'placement', type: "'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'", def: "'top-right'", desc: '通知出現的角落' },
+  { name: 'max', type: 'number', def: '5', desc: '同時最多顯示幾則；超過時最舊的先收掉' },
+  { name: 'ariaLabel', type: 'string', def: "'通知'", desc: '通知區域的無障礙名稱' },
+]
+
 const notifyOptions = [
   { name: 'title / message', type: 'string', def: '—', desc: '標題（必填）與說明' },
   { name: 'type', type: "'info' | 'success' | 'warning' | 'danger'", def: "'info'", desc: '用 success / warning / error 捷徑時自動帶入' },
