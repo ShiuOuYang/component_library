@@ -133,7 +133,6 @@ const editorSample = `<ChptExcelEditor
 // ---- API 資料（依元件使用方式整理，細節以元件為準） ----
 const exporterProps = [
   { name: 'data', type: 'Record<string, unknown>[]', def: '[]', desc: '要匯出的資料（已格式化好的值）' },
-  { name: 'rawData', type: 'Record<string, unknown>[]', def: '[]', desc: '目前未使用（保留相容，傳了不會有作用）' },
   { name: 'columns', type: 'ExcelExporterColumn[]', def: '[]', desc: '欄位 { key, title? }，決定匯出哪些欄與順序；沒給時用 data 第一列的所有鍵' },
   { name: 'cellStyles', type: 'ExcelExporterCellStyle[]', def: '[]', desc: '個別儲存格樣式 { row, col, style }' },
   { name: 'defaultFilename / defaultSheetName', type: 'string', def: "'WIP_Report' / 'WIP_Data'", desc: '預設檔名與工作表名稱' },

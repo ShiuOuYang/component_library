@@ -10,6 +10,12 @@
 
 ### ⚠️ 破壞性變更
 
+- **移除沒有作用的 props**：ChptExcelExporter 的 `rawData`、EnterprisePareto 的 `highlightMode` 與
+  `customRenderers`，連同型別 `ParetoHighlightMode`、`ParetoCustomRenderers`。這三個 props 從來沒被元件使用，
+  傳了也不會有任何效果。請從呼叫端拿掉 —— 不拿掉不會報錯，但值會被當成一般 HTML 屬性掛在元件最外層
+  （例如 `rawdata="[object Object],…"`，資料量大時字串很長）；從 `@/components/library` import 那兩個型別的
+  TypeScript 程式會編譯失敗。
+
 - **ChptExcelEditor**：`modelValue` 與 `ref.getData()` 改為依列位置輸出 —— 第 i 個元素就是第 i+1 列，
   中間（含開頭）的空白列是 `{}`，最後一列有內容之後的空白列不輸出。原本會跳過空白列，往返後資料換列。
   逐筆處理資料的程式要略過 `{}`。（#26）
@@ -56,6 +62,7 @@
 
 ### 移除
 
+- ChptExcelExporter `rawData`、EnterprisePareto `highlightMode` / `customRenderers` 與其型別（見上方破壞性變更）。
 - 沒有路由連到、內容過時的文件頁：`/chpt-table-guide`、CommonTableDoc、DraggableModal、TagFilterDropdown、
   FilterBar、FilterDropdown、FilterSelect 示範頁。對應元件以現行文件頁為準。（#23、#25）
 
@@ -66,8 +73,6 @@
 - 對外 API 測試：子入口的元件與對外型別都必須能從正式入口取得。（#21、#22）
 - 文件補齊：所有有 props / events 的公開元件都有 API 表（原本 18 個元件沒有任何表，例如 EnterprisePareto、
   GerberViewer、PcbLayout、ChptExcelExporter / Uploader）；`check:doc-api` 改為雙向，漏寫也會擋。
-- 文件標明了幾個宣告了卻沒有作用的 props：ChptExcelExporter 的 `rawData`、EnterprisePareto 的
-  `highlightMode` 與 `customRenderers`（保留相容，傳了不會有作用）。
 
 ## 2026-09
 

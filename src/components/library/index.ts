@@ -81,7 +81,7 @@ export type {
   ChartLayerEvent, ChartSelectionEvent, ChartAxisDomainEvent, ChartResizeEvent, ChartReadyEvent,
   GridFacetCell, TriggerLine, FacetConfig, GridFacet, GridFacetDatum, ParetoDatum, ParetoSortOrder,
   HeatmapDatum, ColorLegendPosition, HeatmapHighlightMode, HeatmapColorScale, HeatmapCell,
-  GradientStop, HeatmapCustomRenderers, ParetoHighlightMode, ParetoCustomRenderers,
+  GradientStop, HeatmapCustomRenderers,
   VerticalFacet, ParetoInputItem, ParetoChartDatum, StatusDef, StatusScatterTooltip,
 } from './charts/index.js'
 export type {
