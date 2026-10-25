@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import type { XDomain, YDomain } from '@/components/library/charts/types/chart.types'
+import type { XDomain, YDomain } from '../../types/chart.types'
 
 /** 分面之間的同步模式 */
 export type FacetSyncMode =

@@ -45,9 +45,9 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
-import { resolveSize, useConfig } from '@/components/library/shared/config'
-import { useFormField } from '@/components/library/shared/formContext'
-import type { ComponentSize } from '@/components/library/shared/types/ui.types'
+import { resolveSize, useConfig } from '../shared/config'
+import { useFormField } from '../shared/formContext'
+import type { ComponentSize } from '../shared/types/ui.types'
 /**
  * ChptTextarea（CHPT 主題） - 通用文字區域元件
  *

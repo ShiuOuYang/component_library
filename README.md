@@ -218,10 +218,11 @@ Vitest + @vue/test-utils + jsdom。測試檔在 `tests/`：
 因此它只允許相依：
 
 - npm 套件（`vue` / `d3` / `@vueuse/core` / `xlsx` …）
-- library 內部（`@/components/library/…` 或相對路徑）
-- `@/design`（設計令牌本身就是組件庫的一部分）
+- library 內部，**只能用相對路徑**（`'../shared/config'`）
 
-**不得**出現 `@/composables`、`@/stores`、`@/api`、`@/utils`、`@/router`、`@/views`。
+**不得**出現任何 `@/` 別名，包括 `@/components/library/…` 自己：組件庫要打包給其他 repo 安裝，
+在使用端的專案裡 `@` 指向的是對方的 `src`，別名會整批解析失敗。
+`@/composables`、`@/stores`、`@/api`、`@/utils`、`@/router`、`@/views` 更不行，那會把組件庫綁死在這個應用上。
 `npm run check:boundary` 會擋下違規，CI 也會跑。
 
 ### 使用端要提供什麼

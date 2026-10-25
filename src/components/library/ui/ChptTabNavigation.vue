@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import { useOptionalRouter } from '@/components/library/shared/useOptionalRouter'
+import { useOptionalRouter } from '../shared/useOptionalRouter'
 
 /**
  * ChptTabNavigation（CHPT 主題）- 頁籤導航

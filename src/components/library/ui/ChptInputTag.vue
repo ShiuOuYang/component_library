@@ -69,9 +69,9 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, useId } from 'vue'
-import { useFormField } from '@/components/library/shared/formContext'
-import { resolveSize, useConfig } from '@/components/library/shared/config'
-import type { ComponentSize } from '@/components/library/shared/types/ui.types'
+import { useFormField } from '../shared/formContext'
+import { resolveSize, useConfig } from '../shared/config'
+import type { ComponentSize } from '../shared/types/ui.types'
 
 /**
  * ChptInputTag —— 輸入多個值成為標籤（序號、Email、關鍵字）

@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onBeforeUnmount, type VNode } from 'vue'
-import { useOptionalRouter } from '@/components/library/shared/useOptionalRouter'
+import { useOptionalRouter } from '../shared/useOptionalRouter'
 
 /**
  * ChptPageSwitcher（CHPT 主題） - 側邊頁面切換器

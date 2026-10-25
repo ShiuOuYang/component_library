@@ -12,8 +12,8 @@
 
 <script setup lang="ts">
 import ChptFilter from './ChptFilter.vue'
-import { warnDeprecated } from '@/components/library/shared/warnDeprecated'
-import type { SelectOption } from '@/components/library/shared/types/ui.types'
+import { warnDeprecated } from '../shared/warnDeprecated'
+import type { SelectOption } from '../shared/types/ui.types'
 
 /**
  * TagFilterDropdown（@deprecated）—— 請改用 <ChptFilter type="tag" />

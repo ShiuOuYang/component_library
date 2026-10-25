@@ -60,7 +60,7 @@ import {
   type NotificationAction,
   type NotificationItem,
   type NotificationType,
-} from '@/components/library/shared/useNotification'
+} from '../shared/useNotification'
 
 /**
  * ChptNotificationHost（CHPT 主題） - useNotification() 的顯示端

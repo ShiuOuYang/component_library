@@ -114,8 +114,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef } from 'vue'
 import ChptIcon from './ChptIcon.vue'
-import { useFormField } from '@/components/library/shared/formContext'
-import type { ComponentSize } from '@/components/library/shared/types/ui.types'
+import { useFormField } from '../shared/formContext'
+import type { ComponentSize } from '../shared/types/ui.types'
 
 /**
  * ChptAutocomplete（CHPT 主題） - 自動完成輸入框

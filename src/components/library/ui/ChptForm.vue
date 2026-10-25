@@ -10,7 +10,7 @@
 <script setup lang="ts">
 import { computed, nextTick, provide, ref, useTemplateRef } from 'vue'
 import { FORM_KEY, type FormContext, type FormItemHandle } from './chptFormKeys'
-import type { FormRules } from '@/components/library/shared/formValidation'
+import type { FormRules } from '../shared/formValidation'
 
 /**
  * ChptForm（CHPT 主題） - 表單

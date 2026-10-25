@@ -4,7 +4,7 @@ import type {
   BrushDimensions,
   BrushSelectionPayload,
   YScale,
-} from '@/components/library/charts/types/chart.types'
+} from '../types/chart.types'
 
 /**
  * useD3Brush - D3 Brush（框選縮放）

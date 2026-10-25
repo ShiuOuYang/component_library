@@ -84,7 +84,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
-import { prefersReducedMotion } from '@/components/library/shared/scroll'
+import { prefersReducedMotion } from '../shared/scroll'
 
 /**
  * ChptCarousel（CHPT 主題） - 輪播

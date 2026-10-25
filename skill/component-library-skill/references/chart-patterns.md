@@ -98,7 +98,7 @@ layers: [
 | `useFacetBrush()` | `composables/d3/faceChart/useFacetBrush.js` | 多面板 brush 同步。 |
 | `useScales({ props, containerWidthRef, parseTime })`、`renderXAxis` / `renderValueAxesLeft` / `renderValueAxesRight` | `composables/boxplot/` | 箱形圖專用軸與尺度。 |
 
-顏色：`src/config/colorPalette.js` 目前**沒有任何組件引用**，不要照它寫 import。現有圖表各自取色——`DualAxisComboChart` 用 `d3.schemeCategory10` 或 `layer.colorScale`；`EnterpriseHeatmap`/`ParetoChart` 用 `d3[props.colorScheme]`（如 `d3.interpolateRdYlGn`）；舊版工具 `src/utils/chartUtils.js` 的 `getColor(index)` 是另一份獨立硬編色碼陣列。**新圖表建議改用設計令牌**：`import { categoricalColor, categoricalRange, sequentialRange } from '@/design'`（見 `references/architecture.md` 設計令牌章節），統一走品牌色階，不要再從這三套色源裡挑一套硬寫。其他工具：`src/utils/d3ParetoUtils.js`（`transformToParetoData`）。
+顏色：`src/config/colorPalette.js` 目前**沒有任何組件引用**，不要照它寫 import。現有圖表各自取色——`DualAxisComboChart` 用 `d3.schemeCategory10` 或 `layer.colorScale`；`EnterpriseHeatmap`/`ParetoChart` 用 `d3[props.colorScheme]`（如 `d3.interpolateRdYlGn`）；舊版工具 `src/utils/chartUtils.js` 的 `getColor(index)` 是另一份獨立硬編色碼陣列。**新圖表建議改用設計令牌**，統一走品牌色階，不要再從這三套色源裡挑一套硬寫。⚠️ 但組件庫內部**不能** `import … from '@/design'`（`check:boundary` 會擋，因為組件庫要打包給其他 repo 用，`@` 在那邊會解析失敗）。在設計令牌併入組件庫之前，圖表取色請讀 CSS 變數（scoped CSS 寫 `var(--viz-*)`；D3 需要實際色碼時用 `getComputedStyle(el).getPropertyValue('--viz-…')`）。其他工具：`src/utils/d3ParetoUtils.js`（`transformToParetoData`）。
 
 ## 5. 響應式（autoResize）
 

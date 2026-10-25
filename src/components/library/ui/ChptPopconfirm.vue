@@ -50,7 +50,7 @@
 import { nextTick, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ChptButton from './ChptButton.vue'
-import { useOverlay } from '@/components/library/shared/useOverlay'
+import { useOverlay } from '../shared/useOverlay'
 
 /**
  * ChptPopconfirm（CHPT 主題） - 彈出式確認元件

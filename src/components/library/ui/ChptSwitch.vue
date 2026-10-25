@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ColorVariant } from '@/components/library/shared/types/ui.types'
+import type { ColorVariant } from '../shared/types/ui.types'
 
 /**
  * ChptSwitch（CHPT 主題） - 開關切換元件

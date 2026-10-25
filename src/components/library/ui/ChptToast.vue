@@ -44,8 +44,8 @@
 
 <script setup lang="ts">
 import ChptIcon from './ChptIcon.vue'
-import { useToast } from '@/components/library/shared/useToast'
-import type { ChptToastItem } from '@/components/library/shared/useToast'
+import { useToast } from '../shared/useToast'
+import type { ChptToastItem } from '../shared/useToast'
 
 /**
  * ChptToast（CHPT 主題） - 全域輕提示容器

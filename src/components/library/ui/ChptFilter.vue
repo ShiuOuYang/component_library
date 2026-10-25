@@ -98,8 +98,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, useId } from 'vue'
-import type { ComponentSize } from '@/components/library/shared/types/ui.types'
-import type { Recordable, SelectOption } from '@/components/library/shared/types/ui.types'
+import type { ComponentSize } from '../shared/types/ui.types'
+import type { Recordable, SelectOption } from '../shared/types/ui.types'
 
 /**
  * ChptFilter（CHPT 主題） - 過濾選擇元件

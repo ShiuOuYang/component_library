@@ -113,8 +113,8 @@
 import { computed, nextTick, ref, shallowReactive, useId, useTemplateRef } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ChptIcon from './ChptIcon.vue'
-import { useFormField } from '@/components/library/shared/formContext'
-import type { ComponentSize } from '@/components/library/shared/types/ui.types'
+import { useFormField } from '../shared/formContext'
+import type { ComponentSize } from '../shared/types/ui.types'
 
 /**
  * ChptCascader（CHPT 主題） - 級聯選擇

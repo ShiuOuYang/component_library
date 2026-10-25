@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useConfig } from '@/components/library/shared/config'
+import { useConfig } from '../shared/config'
 import ChptIcon from './ChptIcon.vue'
 
 /**

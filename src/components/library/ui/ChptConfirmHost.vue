@@ -66,8 +66,8 @@
 import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import ChptButton from './ChptButton.vue'
-import { settleConfirm, useConfirm } from '@/components/library/shared/useConfirm'
-import { useOverlay } from '@/components/library/shared/useOverlay'
+import { settleConfirm, useConfirm } from '../shared/useConfirm'
+import { useOverlay } from '../shared/useOverlay'
 
 /**
  * ChptConfirmHost（CHPT 主題） - useConfirm() 的顯示端

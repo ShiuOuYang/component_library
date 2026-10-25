@@ -11,7 +11,7 @@ import type {
   XScale,
   YDomain,
   YScale,
-} from '@/components/library/charts/types/chart.types'
+} from '../types/chart.types'
 
 /**
  * useChartScales - 圖表比例尺與資料處理

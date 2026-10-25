@@ -32,14 +32,14 @@
 
 <script setup lang="ts">
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, useId, useSlots, useTemplateRef, watch } from 'vue'
-import { FORM_ITEM_KEY } from '@/components/library/shared/formContext'
+import { FORM_ITEM_KEY } from '../shared/formContext'
 import {
   getByPath,
   setByPath,
   toRuleList,
   validateValue,
   type FormRule,
-} from '@/components/library/shared/formValidation'
+} from '../shared/formValidation'
 import { FORM_KEY, type FormItemHandle } from './chptFormKeys'
 
 /**

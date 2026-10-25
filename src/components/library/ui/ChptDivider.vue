@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
-import type { DividerDirection } from '@/components/library/shared/types/ui.types'
+import type { DividerDirection } from '../shared/types/ui.types'
 
 /**
  * ChptDivider（CHPT 主題） - 分隔線元件

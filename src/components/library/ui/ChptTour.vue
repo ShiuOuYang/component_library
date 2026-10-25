@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch, type CSSProperties } from 'vue'
-import { prefersReducedMotion } from '@/components/library/shared/scroll'
+import { prefersReducedMotion } from '../shared/scroll'
 
 /**
  * ChptTour —— 新功能導覽（一步一步指出畫面上的元素）

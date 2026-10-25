@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ChptIcon from './ChptIcon.vue'
-import type { ColorVariant, Direction } from '@/components/library/shared/types/ui.types'
+import type { ColorVariant, Direction } from '../shared/types/ui.types'
 
 /**
  * ChptRadio（CHPT 主題） - 單選群組元件
