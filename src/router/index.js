@@ -410,7 +410,7 @@ router.beforeEach(async (to, from, next) => {
   // 如果是登入頁面，檢查是否已經登入
   if (to.path === "/login") {
     if (checkLoginPageRedirect()) {
-      next("/");  // 已登入則導向首頁（會自動重定向到 /redisual）
+      next("/");  // 已登入則導向首頁（會自動重定向到 /docs）
       return;
     } else {
       next();

@@ -53,7 +53,7 @@ src/
 ├── styles/                    index.css / base.css / components.css（樣式進入點在 main.js）
 ├── router/index.js            路由 + beforeEach 認證守衛
 ├── composables/               useApi / useAuth / useWebSocket / useModalManager / d3 chart composables
-├── stores/                    Pinia（user / navigation / yieldMonitor / vi / wpg ...）
+├── stores/                    Pinia（只有 user：登入狀態）
 ├── api/                       axios 實例（index.js）+ 各領域 API（services.js）
 ├── utils/                     純函式：chartUtils / excelUtils / yieldUtils / spcDataUtils ...
 └── config/                    colorPalette.js、excelFieldMapping.js
