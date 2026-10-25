@@ -96,7 +96,7 @@ layers: [
 | `useFacetLayout(props, emit)` / `useVerticalFacetLayout` / `useGridFacetLayout` | `composables/d3/faceChart/useFacetLayout.js` | 分面佈局計算。 |
 | `useFacetBrush()` | `composables/d3/faceChart/useFacetBrush.js` | 多面板 brush 同步。 |
 
-顏色：圖表的類別色用 `chartTheme.ts` 的 `chartPalette`（對應 tokens.js 的 chart-1～8，深淺主題都驗過），外框色用 `chartTheme`；D3 需要真實色碼時從 `@/design` 取。
+顏色：圖表的類別色用 `chartTheme.ts` 的 `chartPalette`（對應 tokens.js 的 chart-1～8，深淺主題都驗過），外框色用 `chartTheme`（都是 `rgb(var(--t-*))` 形式，深淺主題自動切換）。⚠️ 組件庫內部**不能** `import … from '@/design'`（`check:boundary` 會擋，因為組件庫要打包給其他 repo 用，`@` 在那邊會解析失敗）；D3 需要實際色碼時用 `getComputedStyle(el).getPropertyValue('--t-…')` 讀 CSS 變數。
 
 ## 5. 響應式（autoResize）
 

@@ -129,7 +129,7 @@ const emit = defineEmits<{
   (e: 'change', value: string): void
 }>()
 ```
-- 尺寸沿用 `'xs' | 'sm' | 'md' | 'lg'`（按鈕另有 `3xs`/`2xs`）；顏色沿用 `primary | secondary | success | warning | danger | info`（**都是 token**）。共用型別（`ComponentSize`、`ColorVariant`、`SelectOption`、`Placement`、`RadiusSize`）從 `@/components/library/shared/types/ui.types` 匯入，缺什麼就往那檔補。
+- 尺寸沿用 `'xs' | 'sm' | 'md' | 'lg'`（按鈕另有 `3xs`/`2xs`）；顏色沿用 `primary | secondary | success | warning | danger | info`（**都是 token**）。共用型別（`ComponentSize`、`ColorVariant`、`SelectOption`、`Placement`、`RadiusSize`）從 `shared/types/ui.types` 用**相對路徑**匯入（`'../shared/types/ui.types'`），缺什麼就往那檔補。組件庫內部不能用 `@/` 別名，`check:boundary` 會擋。
 - 雙向綁定一律 `modelValue` + `update:modelValue`。
 
 ### 樣式對照表寫法（重要）

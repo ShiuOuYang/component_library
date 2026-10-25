@@ -60,7 +60,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import ChptIcon from './ChptIcon.vue'
-import { useFormField } from '@/components/library/shared/formContext'
+import { useFormField } from '../shared/formContext'
 
 /**
  * ChptRate（CHPT 主題） - 評分

@@ -82,7 +82,7 @@
 
 <script setup lang="ts" generic="T">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useConfig } from '@/components/library/shared/config'
+import { useConfig } from '../shared/config'
 
 /**
  * ChptList —— 通知、待辦、最近活動這類「一筆一行」的清單

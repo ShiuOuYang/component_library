@@ -32,7 +32,7 @@ import {
   scrollTopOf,
   viewportTopOf,
   type ScrollTarget,
-} from '@/components/library/shared/scroll'
+} from '../shared/scroll'
 
 /**
  * ChptAnchor（CHPT 主題） - 頁內目錄（錨點導覽）

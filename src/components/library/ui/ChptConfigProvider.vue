@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { provideConfig, type ChptLocale, type ConfigSize } from '@/components/library/shared/config'
+import { provideConfig, type ChptLocale, type ConfigSize } from '../shared/config'
 
 /**
  * ChptConfigProvider —— 一個區塊內的元件統一尺寸與內建文字

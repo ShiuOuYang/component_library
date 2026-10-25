@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import ChptCodeBlock from './ChptCodeBlock.vue'
-import { warnDeprecated } from '@/components/library/shared/warnDeprecated'
+import { warnDeprecated } from '../shared/warnDeprecated'
 
 /**
  * CodeBlock（@deprecated）—— 請改用 ChptCodeBlock

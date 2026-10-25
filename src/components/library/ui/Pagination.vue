@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import ChptPagination from './ChptPagination.vue'
-import { warnDeprecated } from '@/components/library/shared/warnDeprecated'
+import { warnDeprecated } from '../shared/warnDeprecated'
 
 /**
  * Pagination（@deprecated）—— 請改用 <ChptPagination variant="full" />

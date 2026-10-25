@@ -138,7 +138,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import type * as XLSXTypes from 'xlsx-js-style'
-import ChptModal from '@/components/library/ui/ChptModal.vue'
+import ChptModal from '../ui/ChptModal.vue'
 
 /**
  * ChptExcelExporter（CHPT 主題）- 匯出 Excel

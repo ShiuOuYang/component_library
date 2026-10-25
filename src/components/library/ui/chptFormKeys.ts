@@ -1,5 +1,5 @@
 import type { InjectionKey } from 'vue'
-import type { FormRules } from '@/components/library/shared/formValidation'
+import type { FormRules } from '../shared/formValidation'
 
 /** ChptForm 提供給 ChptFormItem 的 context */
 export interface FormContext {

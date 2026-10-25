@@ -49,8 +49,8 @@
 <script setup lang="ts">
 import { useTemplateRef } from 'vue'
 import ChptModal from './ChptModal.vue'
-import { generateModalId } from '@/components/library/shared/useModalManager'
-import { warnDeprecated } from '@/components/library/shared/warnDeprecated'
+import { generateModalId } from '../shared/useModalManager'
+import { warnDeprecated } from '../shared/warnDeprecated'
 
 /**
  * DraggableModal（@deprecated）—— 請改用 <ChptModal mode="window" />

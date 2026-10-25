@@ -29,10 +29,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue'
-import { resolveSize, useConfig } from '@/components/library/shared/config'
+import { resolveSize, useConfig } from '../shared/config'
 import ChptIcon from './ChptIcon.vue'
 import ChptSpinner from './ChptSpinner.vue'
-import type { ButtonNativeType } from '@/components/library/shared/types/ui.types'
+import type { ButtonNativeType } from '../shared/types/ui.types'
 
 /**
  * ChptButton（CHPT 主題） - 通用按鈕元件

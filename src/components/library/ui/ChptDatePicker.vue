@@ -52,8 +52,8 @@ const VueDatePicker = defineAsyncComponent({
   },
   delay: 0,
 })
-import type { ComponentSize } from '@/components/library/shared/types/ui.types'
-import { FORM_ITEM_KEY } from '@/components/library/shared/formContext'
+import type { ComponentSize } from '../shared/types/ui.types'
+import { FORM_ITEM_KEY } from '../shared/formContext'
 
 /**
  * ChptDatePicker（CHPT 主題） - 日期選擇元件

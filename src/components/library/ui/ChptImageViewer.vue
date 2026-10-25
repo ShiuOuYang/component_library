@@ -109,7 +109,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, useTemplateRef, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
-import { useOverlay } from '@/components/library/shared/useOverlay'
+import { useOverlay } from '../shared/useOverlay'
 
 /**
  * ChptImageViewer（CHPT 主題） - 全螢幕圖片檢視

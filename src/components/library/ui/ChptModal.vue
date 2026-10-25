@@ -196,8 +196,8 @@ import {
 } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import { useId, useTemplateRef } from 'vue'
-import { useModalManager, generateModalId } from '@/components/library/shared/useModalManager'
-import { useOverlay } from '@/components/library/shared/useOverlay'
+import { useModalManager, generateModalId } from '../shared/useModalManager'
+import { useOverlay } from '../shared/useOverlay'
 
 /**
  * ChptModal（CHPT 主題） - 通用模態框 / 多視窗
