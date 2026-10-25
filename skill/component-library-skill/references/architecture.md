@@ -47,10 +47,8 @@ axios 實例：
 
 ## 狀態管理（Pinia）
 
-`src/stores/`：`user.js`、`navigation.js`、`yieldMonitor.js`、`predictYield.js`、`redisual.js`、`vi.js`、`wpg.js`。
-`src/stores/index.js` 只匯出其中三個（`useNavigationStore`、`useYieldMonitorStore`、`useUserStore`）——**新增 store 記得補 export**。
-
-`src/composables/useStores.js` 提供 `useNavigation()`、`useApp()`、`useApiOnly()` 等組合封裝。
+`src/stores/`：只有 `user.js`（登入狀態，給 `useAuth`、路由守衛用），由 `src/stores/index.js` 匯出 `useUserStore`。
+組件庫本身不相依 Pinia；文件站以外的 store 不放在這裡。
 
 ## 認證與路由守衛
 
