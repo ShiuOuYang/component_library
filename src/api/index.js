@@ -33,7 +33,6 @@ api.interceptors.request.use(
     // 添加認證 token（如果存在）//目的是確保每個請求都帶有最新的 token，避免使用過期的 token，未來後端的驗證部分也會根據 token 的有效性來決定是否允許訪問資源
     const token = localStorage.getItem("auth_token");
     if (token) {
-      console.log("🔐 添加認證 token 到請求頭", token);
       config.headers.Authorization = `Bearer ${token}`;
     }
 

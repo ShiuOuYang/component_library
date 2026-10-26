@@ -47,7 +47,7 @@ axios 實例：
 
 ## 狀態管理（Pinia）
 
-`src/stores/`：只有 `user.js`（登入狀態，給 `useAuth`、路由守衛用），由 `src/stores/index.js` 匯出 `useUserStore`。
+`src/stores/`：只有 `user.js`（登入狀態，給 `useAuth`、路由守衛用）。
 組件庫本身不相依 Pinia；文件站以外的 store 不放在這裡。
 
 ## 認證與路由守衛
@@ -84,7 +84,6 @@ axios 實例：
 - `vite.config.js`：alias `@` → `src`；dev server `host 0.0.0.0`、`port 4000`；build `outDir: dist`，`manualChunks` 分出 `vue-vendor`（vue/vue-router/pinia）與 `ui-vendor`（@vueuse/core）
 - `tailwind.config.js`：content 掃 `./src/**/*.{vue,js,ts,jsx,tsx}`；`theme.extend` 目前**有** token 色（primary/secondary/success/warning/danger/info + content/surface/stroke 別名）、品牌陰影、`zIndex`（z-modal/z-tooltip/z-dropdown）、keyframes/animation
 - `.github/workflows/ci.yml`：每個 PR 跑型別檢查、lint 與建置（沒有部署流程，`dist/` 由使用端自行託管）
-- Windows 開發輔助：`start-dev.bat`、`start-websocket-server.bat`
 
 ## TypeScript 狀態
 

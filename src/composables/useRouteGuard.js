@@ -95,7 +95,7 @@ export function useRouteGuard() {
 
   /**
    * 檢查是否在登入頁但已登入
-   * @returns {boolean} 是否需要重定向到 Dashboard
+   * @returns {boolean} 是否需要重定向到首頁
    */
   function checkLoginPageRedirect() {
     const userStore = useUserStore()
@@ -105,9 +105,9 @@ export function useRouteGuard() {
       userStore.initAuth()
     }
 
-    // 如果已登入，需要重定向到 Dashboard
+    // 如果已登入，需要重定向到首頁
     if (userStore.isLoggedIn) {
-      console.log('✅ 已登入，重定向到 Dashboard')
+      console.log('✅ 已登入，重定向到首頁')
       return true
     }
     

@@ -93,12 +93,10 @@ layers: [
 |---|---|---|
 | `useChartScales(props, chartWidth, chartHeight, currentXDomain, currentYLeftDomain, currentYRightDomain)` | `composables/d3/useChartScales.js` | 建立 x / yLeft / yRight scale、依 brush 範圍過濾資料、堆疊資料預處理、自動算 Y domain。回傳 `xScale, yLeftScale, yRightScale, leftLayers, rightLayers, originalXDomain, originalYLeftDomain, originalYRightDomain`。支援 `linear / log / sqrt / time / symlog`。 |
 | `useD3Brush(emit)` | `composables/d3/useD3Brush.js` | 回傳 `resetBtnShow, createBrushInstance(dimensions, onBrushEnd), handleBrushEnd(event, scales, redraw), resetZoom(...)`，並自動 emit `selection-change` / `zoom-reset`。 |
-| `createBrushX({ width, height, xScaleForBrush, onBrush, onEnd })` | `composables/useBrushX.js` | 只需要水平 brush 時用。 |
 | `useFacetLayout(props, emit)` / `useVerticalFacetLayout` / `useGridFacetLayout` | `composables/d3/faceChart/useFacetLayout.js` | 分面佈局計算。 |
 | `useFacetBrush()` | `composables/d3/faceChart/useFacetBrush.js` | 多面板 brush 同步。 |
-| `useScales({ props, containerWidthRef, parseTime })`、`renderXAxis` / `renderValueAxesLeft` / `renderValueAxesRight` | `composables/boxplot/` | 箱形圖專用軸與尺度。 |
 
-顏色：`src/config/colorPalette.js` 目前**沒有任何組件引用**，不要照它寫 import。現有圖表各自取色——`DualAxisComboChart` 用 `d3.schemeCategory10` 或 `layer.colorScale`；`EnterpriseHeatmap`/`ParetoChart` 用 `d3[props.colorScheme]`（如 `d3.interpolateRdYlGn`）；舊版工具 `src/utils/chartUtils.js` 的 `getColor(index)` 是另一份獨立硬編色碼陣列。**新圖表建議改用設計令牌**：`import { categoricalColor, categoricalRange, sequentialRange } from '@/design'`（見 `references/architecture.md` 設計令牌章節），統一走品牌色階，不要再從這三套色源裡挑一套硬寫。其他工具：`src/utils/d3ParetoUtils.js`（`transformToParetoData`）。
+顏色：圖表的類別色用 `chartTheme.ts` 的 `chartPalette`（對應 tokens.js 的 chart-1～8，深淺主題都驗過），外框色用 `chartTheme`；D3 需要真實色碼時從 `@/design` 取。
 
 ## 5. 響應式（autoResize）
 
