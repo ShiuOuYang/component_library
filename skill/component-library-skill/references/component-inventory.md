@@ -226,7 +226,7 @@
 | `ChptExcelExporter` | data, rawData, columns, defaultFilename, defaultSheetName, showOptions, size, variant, buttonLabel, buttonClass, cellStyles | export-start, export-complete, export-error | exportExcel, showExportOptions |
 | `ChptExcelUploader` | label, loadingText, inputId, size, variant, customClass, showFileName | upload-start, upload-success, upload-error, data-loaded, error | – |
 
-底層：`xlsx` + `xlsx-js-style`；共用解析工具在 `src/utils/excelUtils.js`、欄位對照在 `src/config/excelFieldMapping.js`。
+底層：`xlsx` + `xlsx-js-style`。
 
 ## 主題 / 其他
 

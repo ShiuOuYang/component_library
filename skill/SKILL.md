@@ -52,11 +52,9 @@ src/
 ├── design/                    tokens.js / tokensPlugin.js / index.js（設計令牌）
 ├── styles/                    index.css / base.css / components.css（樣式進入點在 main.js）
 ├── router/index.js            路由 + beforeEach 認證守衛
-├── composables/               useApi / useAuth / useWebSocket / useModalManager / d3 chart composables
+├── composables/               useApi / useAuth / useRouteGuard
 ├── stores/                    Pinia（只有 user：登入狀態）
-├── api/                       axios 實例（index.js）+ 各領域 API（services.js）
-├── utils/                     純函式：chartUtils / excelUtils / yieldUtils / spcDataUtils ...
-└── config/                    colorPalette.js、excelFieldMapping.js
+└── api/                       axios 實例（index.js）+ 認證 API（services.js）
 ```
 
 路徑別名：`@` → `src`（`vite.config.js` 與 `tsconfig.json` 都有設）。新程式碼一律用 `@/components/library`；既有檔案若仍用 `@/components/common`（facade）屬過渡，可逐步改。
@@ -156,11 +154,10 @@ Material Symbols（`<ChptIcon>{{ 'settings' }}</ChptIcon>`）為主；FontAwesom
 ## 資料與狀態層
 
 - **API**：`src/api/index.js` 是 axios 實例（`VITE_API_BASE_URL`、request 攔截器帶 token 並記 `config.metadata.startTime`、response 攔截器處理 401）。新 API 加在 `src/api/services.js`，依領域分物件匯出。
-- **狀態**：Pinia，新 store 放 `src/stores/xxx.js` 並在 `src/stores/index.js` 補 export。
+- **狀態**：Pinia，只有文件站的登入狀態（`src/stores/user.js`）。組件庫元件不得相依 store。
 - **認證**：`composables/useAuth.js` + `useRouteGuard.js`；token 存 localStorage。
 - **Toast**：`import { useToast } from '@/components/library'`；需在 App 根層掛 `<ChptToast />` 一次才看得到。
 - **Modal 疊層/最小化**：`composables/useModalManager.ts` 管 z-index 與最小化列表，搭配 `<ChptModalDock />`。新 modal 用 `generateModalId()` 取 id。
-- **WebSocket**：`composables/useWebSocket.js`（另有 `start-websocket-server.bat`、`ws` 依賴）。
 
 環境變數只認 `VITE_` 前綴，見 `.env.development` / `.env.production`。
 

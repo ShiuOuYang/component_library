@@ -5,13 +5,10 @@ export const authApi = {
   // 用戶登入
   login: async (credentials) => {
     try {
-      console.log("🔐 發送登入請求:", credentials);
       const response = await api.post(`${AUTH_BASE_URL}/user/login`, {
         EMPID: credentials.username,
         PWD: credentials.password,
       });
-
-      console.log("🔐 登入回應:", response.data);
 
       if (response.data.status === "success" && response.data.token) {
         // 儲存 token 到 localStorage
@@ -104,64 +101,3 @@ export const authApi = {
     return true;
   },
 };
-
-// 用戶相關 API
-export const userApi = {
-  // 獲取當前用戶資訊（從 localStorage 讀取）
-  getCurrentUser: async () => {
-    try {
-      const userInfo = localStorage.getItem("user_info");
-      if (userInfo) {
-        const user = JSON.parse(userInfo);
-        return {
-          status: "success",
-          data: user,
-        };
-      } else {
-        return {
-          status: "error",
-          message: "用戶資料不存在",
-        };
-      }
-    } catch (error) {
-      console.error("❌ 讀取用戶資料失敗:", error);
-      return {
-        status: "error",
-        message: "讀取用戶資料失敗",
-      };
-    }
-  },
-
-  // 更新用戶設定
-  updateUserSettings: async (settings) => {
-    try {
-      // 更新 localStorage 中的用戶資料
-      const userInfo = localStorage.getItem("user_info");
-      if (userInfo) {
-        const user = JSON.parse(userInfo);
-        const updatedUser = { ...user, ...settings };
-        localStorage.setItem("user_info", JSON.stringify(updatedUser));
-
-        return {
-          status: "success",
-          data: updatedUser,
-        };
-      } else {
-        return {
-          status: "error",
-          message: "用戶資料不存在",
-        };
-      }
-    } catch (error) {
-      console.error("❌ 更新用戶設定失敗:", error);
-      return {
-        status: "error",
-        message: "更新用戶設定失敗",
-      };
-    }
-  },
-};
-
-
-
-
