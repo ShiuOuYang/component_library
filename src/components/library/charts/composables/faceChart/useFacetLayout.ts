@@ -10,7 +10,7 @@ import type {
   XDomain,
   XScaleType,
   YDomain,
-} from '@/components/library/charts/types/chart.types'
+} from '../../types/chart.types'
 
 /**
  * Facet（分面）圖表的佈局計算

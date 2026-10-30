@@ -35,7 +35,7 @@ import {
   scrollToY,
   scrollTopOf,
   type ScrollTarget,
-} from '@/components/library/shared/scroll'
+} from '../shared/scroll'
 
 /**
  * ChptBackTop（CHPT 主題） - 回到頂端

@@ -27,7 +27,7 @@ import { computed, provide, ref, useId, useTemplateRef, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ChptMenuNode from './ChptMenuNode.vue'
 import { MENU_KEY, type MenuItem, type MenuKey } from './chptMenuContext'
-import { useOptionalRouter } from '@/components/library/shared/useOptionalRouter'
+import { useOptionalRouter } from '../shared/useOptionalRouter'
 
 /**
  * ChptMenu（CHPT 主題） - 導覽選單

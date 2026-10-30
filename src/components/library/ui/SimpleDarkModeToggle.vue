@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import ChptDarkModeToggle from './ChptDarkModeToggle.vue'
-import { warnDeprecated } from '@/components/library/shared/warnDeprecated'
+import { warnDeprecated } from '../shared/warnDeprecated'
 
 /**
  * SimpleDarkModeToggle（@deprecated）—— 請改用 <ChptDarkModeToggle variant="simple" />

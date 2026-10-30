@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
-import { scrollParentOf } from '@/components/library/shared/scroll'
+import { scrollParentOf } from '../shared/scroll'
 
 /**
  * ChptAffix（CHPT 主題） - 捲動時固定

@@ -104,7 +104,7 @@ import { computed, nextTick, ref, useId, useTemplateRef } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ChptIcon from './ChptIcon.vue'
 import ChptTree, { type TreeNode } from './ChptTree.vue'
-import { useFormField } from '@/components/library/shared/formContext'
+import { useFormField } from '../shared/formContext'
 
 /**
  * ChptTreeSelect（CHPT 主題） - 樹狀下拉選擇

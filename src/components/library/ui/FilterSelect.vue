@@ -24,8 +24,8 @@
 
 <script setup lang="ts">
 import ChptFilter from './ChptFilter.vue'
-import { warnDeprecated } from '@/components/library/shared/warnDeprecated'
-import type { ComponentSize, SelectOption } from '@/components/library/shared/types/ui.types'
+import { warnDeprecated } from '../shared/warnDeprecated'
+import type { ComponentSize, SelectOption } from '../shared/types/ui.types'
 
 /**
  * FilterSelect（@deprecated）—— 請改用 <ChptFilter type="select" />

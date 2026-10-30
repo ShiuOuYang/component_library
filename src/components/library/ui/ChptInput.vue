@@ -61,10 +61,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { resolveSize, useConfig } from '@/components/library/shared/config'
+import { resolveSize, useConfig } from '../shared/config'
 import ChptIcon from './ChptIcon.vue'
-import { useFormField } from '@/components/library/shared/formContext'
-import type { ComponentSize, InputNativeType } from '@/components/library/shared/types/ui.types'
+import { useFormField } from '../shared/formContext'
+import type { ComponentSize, InputNativeType } from '../shared/types/ui.types'
 
 /**
  * ChptInput（CHPT 主題） - 通用輸入框元件

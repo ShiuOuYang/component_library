@@ -118,7 +118,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useModalManager } from '@/components/library/shared/useModalManager'
+import { useModalManager } from '../shared/useModalManager'
 
 /**
  * ChptModalDock（CHPT 主題） - 視窗口袋列

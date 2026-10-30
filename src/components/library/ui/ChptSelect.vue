@@ -43,9 +43,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { resolveSize, useConfig } from '@/components/library/shared/config'
-import { useFormField } from '@/components/library/shared/formContext'
-import type { ComponentSize, Recordable, SelectOption } from '@/components/library/shared/types/ui.types'
+import { resolveSize, useConfig } from '../shared/config'
+import { useFormField } from '../shared/formContext'
+import type { ComponentSize, Recordable, SelectOption } from '../shared/types/ui.types'
 
 /**
  * ChptSelect（CHPT 主題） - 通用下拉選單元件

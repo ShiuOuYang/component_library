@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useConfig } from '@/components/library/shared/config'
+import { useConfig } from '../shared/config'
 
 /**
  * ChptSkeleton（CHPT 主題） - 骨架屏 / 載入佔位元件

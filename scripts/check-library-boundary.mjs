@@ -5,17 +5,20 @@
  * src/components/library/ 必須能被整包複製到另一個專案而不需要修改。
  * 因此它只能相依：
  *   - node_modules 的套件（vue / d3 / @vueuse/core …）
- *   - library 內部（@/components/library/… 或相對路徑）
- *   - @/design（設計令牌，是組件庫的一部分）
+ *   - library 內部，而且**只能用相對路徑**（'../shared/config'）
+ *
+ * 不允許任何 `@/` 別名，包括 @/components/library 自己：
+ * 組件庫要打包成套件給其他 repo 安裝，在使用端的專案裡 `@` 指向的是
+ * 對方的 src，`@/components/library/…` 會整批解析失敗。
  *
  * 任何指向 @/composables、@/stores、@/api、@/utils、@/views、@/router 的 import
- * 都會讓組件庫綁死在這個應用上 —— 這支腳本就是為了擋住它再長回來。
+ * 則會讓組件庫綁死在這個應用上 —— 這支腳本就是為了擋住它們再長回來。
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { join, relative } from 'node:path'
 
 const LIBRARY_ROOT = 'src/components/library'
-const ALLOWED_ALIAS_PREFIXES = ['@/components/library', '@/design']
+const ALLOWED_ALIAS_PREFIXES = []
 
 /**
  * 取出模組路徑，涵蓋四種寫法：
@@ -68,7 +71,14 @@ for (const file of await collectFiles(LIBRARY_ROOT)) {
     if (ALLOWED_ALIAS_PREFIXES.some((p) => spec === p || spec.startsWith(p + '/'))) continue
 
     const line = code.slice(0, match.index).split('\n').length
-    violations.push({ file: relative('.', file), line, spec })
+    violations.push({
+      file: relative('.', file),
+      line,
+      spec,
+      reason: spec.startsWith('@/components/library')
+        ? '組件庫內部請用相對路徑（打包成套件後 @ 會指向使用端的 src）'
+        : undefined,
+    })
   }
 
   // 不得依賴應用程式全域載入的 Font Awesome（main.js 的 all.min.css）：

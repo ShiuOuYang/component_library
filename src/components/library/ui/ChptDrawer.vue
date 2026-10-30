@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { computed, useId, useTemplateRef } from 'vue'
 import ChptIcon from './ChptIcon.vue'
-import { useOverlay } from '@/components/library/shared/useOverlay'
+import { useOverlay } from '../shared/useOverlay'
 
 /**
  * ChptDrawer（CHPT 主題） - 抽屜 / 側滑面板

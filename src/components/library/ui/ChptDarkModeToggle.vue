@@ -69,7 +69,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
-import { useDarkMode, type ChptThemeMode } from '@/components/library/shared/useDarkMode'
+import { useDarkMode, type ChptThemeMode } from '../shared/useDarkMode'
 
 /**
  * ChptDarkModeToggle（CHPT 主題） - 深色模式切換元件

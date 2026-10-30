@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
 import ChptFilterBar from './ChptFilterBar.vue'
-import { warnDeprecated } from '@/components/library/shared/warnDeprecated'
+import { warnDeprecated } from '../shared/warnDeprecated'
 
 /**
  * FilterBar（@deprecated）—— 請改用 ChptFilterBar

@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ChptIcon from './ChptIcon.vue'
-import type { Direction } from '@/components/library/shared/types/ui.types'
+import type { Direction } from '../shared/types/ui.types'
 
 /**
  * ChptCheckbox（CHPT 主題） - 多選核取方塊元件

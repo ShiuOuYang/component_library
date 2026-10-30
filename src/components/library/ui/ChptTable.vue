@@ -312,7 +312,7 @@
 import { ref, computed, watch, shallowReactive, useSlots, onMounted, onBeforeUnmount, getCurrentInstance, useId } from 'vue'
 import ChptPagination from './ChptPagination.vue'
 import ChptSpinner from './ChptSpinner.vue'
-import { useConfig } from '@/components/library/shared/config'
+import { useConfig } from '../shared/config'
 
 // === 型別定義 ===
 export type DataRow = Record<string, unknown>
