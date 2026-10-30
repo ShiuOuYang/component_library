@@ -47,6 +47,9 @@ export default defineConfigWithVueTs(
       globals: {
         ...globals.browser,
         ...globals.es2021,
+        // vite.config.js 的 define：文件站顯示的版本與更新日期
+        __DOCS_VERSION__: 'readonly',
+        __DOCS_UPDATED__: 'readonly',
       },
     },
   },

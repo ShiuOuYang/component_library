@@ -154,11 +154,11 @@
           <div class="text-xs text-content-tertiary space-y-1.5">
             <div class="flex items-center justify-between">
               <span class="text-content-tertiary">版本</span>
-              <span class="font-mono font-semibold text-content-primary">v1.0.0</span>
+              <span class="font-mono font-semibold text-content-primary">{{ docsVersion }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span class="text-content-tertiary">更新日期</span>
-              <span class="font-mono text-content-secondary">2026-09-06</span>
+              <span class="font-mono text-content-secondary">{{ docsUpdated }}</span>
             </div>
           </div>
         </div>
@@ -175,6 +175,10 @@
 <script setup>
 import { ref, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+// 版本與更新日期在建置時帶入（vite.config.js 的 define）；版本號還沒啟用（0.0.0）時顯示「未發布」
+const docsVersion = __DOCS_VERSION__ === '0.0.0' ? '未發布' : `v${__DOCS_VERSION__}`;
+const docsUpdated = __DOCS_UPDATED__;
 
 const mainRef = useTemplateRef('mainRef');
 /** 跳到主要內容：焦點移進 main（之後方向鍵 / PageDown 可以捲動內容區） */

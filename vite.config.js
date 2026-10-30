@@ -1,10 +1,29 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { resolve } from "path";
+import { execSync } from "node:child_process";
+import { readFileSync } from "node:fs";
+
+/**
+ * 文件站左下角顯示的版本與更新日期，建置時自動帶入（原本寫死 v1.0.0 / 2026-09-06，一直沒人改）：
+ * 版本取 package.json，更新日期取最後一次 commit 的日期；沒有 git 時用今天
+ */
+const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8"));
+function lastCommitDate() {
+  try {
+    return execSync("git log -1 --format=%cs", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  } catch {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    __DOCS_VERSION__: JSON.stringify(pkg.version),
+    __DOCS_UPDATED__: JSON.stringify(lastCommitDate()),
+  },
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
