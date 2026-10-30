@@ -115,6 +115,9 @@ export type {
   DefaultSort as TableDefaultSort,
   ChangeEvent as TableChangeEvent,
   SortEvent as TableSortEvent,
+  ColumnAlign as TableColumnAlign,
+  CellContext as TableCellContext,
+  ColumnColor as TableColumnColor,
 } from './ChptTable.vue'
 export type { TimelineItem } from './ChptTimeline.vue'
 export type { TourStep } from './ChptTour.vue'

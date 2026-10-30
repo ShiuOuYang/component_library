@@ -36,6 +36,26 @@
         <ChptCodeBlock :code="tableSample" />
       </div>
 
+      <!-- 多層表頭 -->
+      <h3 class="mt-10 mb-2 text-lg font-semibold text-content-primary">多層表頭</h3>
+      <p class="text-sm text-content-secondary mb-3">
+        欄位加上 <code>children</code> 就成為群組欄，標題橫跨底下的欄位；可以一直往下巢狀（這裡「量測結果 → 電阻」是三層）。
+        沒有 children 的欄位（序號、判定）自動往下延伸到最後一層。排序與欄寬只在最底層的欄位上；
+        欄位設定參考 Vuetify 的 <code>v-data-table</code> headers：<code>align</code>（<code>start</code> / <code>center</code> / <code>end</code>）讓表頭與儲存格一起對齊；
+        <code>color</code> 讓整欄（表頭加儲存格）用同一個色系，設在群組上時底下的欄位一起變色 —— 這裡「量測結果」用綠色區分；
+        要更細的自訂用 <code>headerProps</code>（這一欄表頭的 class、style…）與 <code>cellProps</code>（每個儲存格的屬性，可以給函式依資料決定，「判定」為 NG 時標紅）。
+      </p>
+      <ChptTable
+        :columns="groupedColumns"
+        :data="dutRows"
+        :default-page-size="5"
+        pagination-label="多層表頭分頁"
+        pagination-position="bottom"
+      />
+      <div class="mt-4">
+        <ChptCodeBlock :code="groupedSample" />
+      </div>
+
       <!-- 進階：勾選 / 展開 / 點列 / 欄寬 -->
       <h3 class="mt-10 mb-2 text-lg font-semibold text-content-primary">勾選、展開明細、點列、拖曳欄寬</h3>
       <p class="text-sm text-content-secondary mb-3">
@@ -445,6 +465,76 @@ const tableSlots = [
   { name: 'modals', params: '—', desc: '元件最後面的額外內容（例如與表格相關的對話框）' },
 ]
 
+// 多層表頭：DutInfo 兩層、量測結果三層
+const groupedColumns = [
+  { key: 'seq', title: '序號', align: 'start', width: 72 },
+  {
+    title: 'DutInfo',
+    children: [
+      { key: 'bump', title: 'Die.Bump', align: 'end' },
+      { key: 'net', title: 'Die.NetName', align: 'end' },
+      { key: 'channel', title: 'Function Channel', align: 'end' },
+    ],
+  },
+  {
+    title: '量測結果',
+    // 整欄的顏色：表頭與底下所有欄位的儲存格一起變色
+    color: 'success',
+    children: [
+      {
+        title: '電阻（mΩ）',
+        children: [
+          { key: 'rMin', title: 'Min', align: 'end' },
+          { key: 'rMax', title: 'Max', align: 'end' },
+        ],
+      },
+      // 儲存格依資料上色（同 Vuetify 的 cellProps）
+      { key: 'judge', title: '判定', cellProps: ({ value }) => ({ class: value === 'NG' ? 'font-semibold text-danger' : '' }) },
+    ],
+  },
+]
+
+const dutRows = Array.from({ length: 12 }, (_, i) => {
+  const rMin = +(18 + ((i * 7) % 9) * 0.37).toFixed(2)
+  const rMax = +(rMin + 0.8 + ((i * 3) % 5) * 0.21).toFixed(2)
+  return {
+    id: i + 1,
+    seq: i + 1,
+    bump: `B${String(101 + i * 3).padStart(4, '0')}`,
+    net: ['VDD', 'VSS', 'CLK', 'DQ0', 'DQ1', 'ADDR3'][i % 6],
+    channel: `CH${(i % 8) + 1}`,
+    rMin,
+    rMax,
+    judge: rMax > 21.5 ? 'NG' : 'OK',
+  }
+})
+
+const groupedSample = `<ChptTable :columns="columns" :data="rows" />
+
+const columns = [
+  { key: 'seq', title: '序號', align: 'start' },
+  {
+    title: 'DutInfo',                       // 群組欄：只有標題，橫跨底下的欄位
+    children: [
+      { key: 'bump', title: 'Die.Bump', align: 'end' },
+      { key: 'net', title: 'Die.NetName', align: 'end' },
+      { key: 'channel', title: 'Function Channel', align: 'end' },
+    ],
+  },
+  {
+    title: '量測結果',
+    color: 'success',                       // 整欄（含底下所有欄位與儲存格）用綠色
+    children: [
+      { title: '電阻（mΩ）', children: [      // 可以再往下巢狀
+        { key: 'rMin', title: 'Min', align: 'end' },
+        { key: 'rMax', title: 'Max', align: 'end' },
+      ] },
+      { key: 'judge', title: '判定',          // 沒有 children：自動延伸到最後一層
+        cellProps: ({ value }) => ({ class: value === 'NG' ? 'text-danger' : '' }) },
+    ],
+  },
+]`
+
 const tableAdvancedSample = `<ChptTable
   v-model:selected-keys="selected"
   :columns="columns"
@@ -521,7 +611,7 @@ const filterBarSample = `<ChptFilterBar
 // ---- API 資料（與元件 props/emits 對齊） ----
 const tableProps = [
   { name: 'data', type: 'DataRow[]', def: '[]', desc: '資料列（每列為物件）；更新時保留目前頁碼（頁數變少時拉回最後一頁），搜尋與排序才回到第 1 頁' },
-  { name: 'columns', type: 'Column[]', def: '[]', desc: '欄位：{ key, title, sortable?, sortType? }' },
+  { name: 'columns', type: 'Column[]', def: '[]', desc: "欄位（參考 Vuetify 的 headers）：{ key, title, sortable?, sortType?, align?: 'start' | 'center' | 'end', width?, minWidth?, resizable?, children?, color?, headerProps?, cellProps? }。有 children 的是群組欄（多層表頭，可巢狀），本身不排序、不顯示資料；color（'accent' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'）讓整欄的表頭與儲存格一起變色，設在群組上時底下的欄位沿用；headerProps 綁到這一欄的 <th>（class 或 style 有顏色時取代表格預設的表頭顏色）；cellProps 綁到每個 <td>，可以是物件或 ({ item, value, column, index }) => 屬性" },
   { name: 'searchPlaceholder', type: 'string', def: "'輸入關鍵字搜尋...'", desc: '搜尋框提示' },
   { name: 'noDataText', type: 'string', def: "'無資料'", desc: '空資料文字' },
   { name: 'defaultPageSize', type: 'number', def: '5', desc: '每頁預設筆數' },
@@ -530,7 +620,7 @@ const tableProps = [
   { name: 'paginationPosition', type: "'top'|'bottom'|'both'", def: "'top'", desc: '分頁列位置' },
   { name: 'paginationLabel', type: 'string', def: "''", desc: '分頁導航的名稱；同一頁有多個表格時各給一個，螢幕閱讀器才分得出來' },
   { name: 'containerBgColor / containerRounded / containerShadow', type: 'string', def: '…', desc: '容器樣式 class' },
-  { name: 'headerBgGradient / headerTextColor', type: 'string', def: '…', desc: '表頭樣式 class' },
+  { name: 'headerBgGradient / headerTextColor / groupHeaderTextColor', type: 'string', def: "'from-accent-subtle to-accent-subtle' / 'text-content-primary' / 'text-accent'", desc: '表頭底色（漸層 class）、欄位標題文字色、群組標題文字色' },
   { name: 'evenRowBgColor / hoverRowBgColor', type: 'string', def: 'rgb(var(--t-surface-secondary)) / rgb(var(--t-accent-subtle))', desc: '偶數列／hover 列底色（CSS 色值；用主題變數才會跟著深色模式）' },
   { name: 'fontSize', type: 'string', def: "'text-xs'", desc: '字級 class' },
   { name: 'rowKey', type: "string | (row) => key", def: "'id'", desc: '每列唯一鍵；勾選、展開跨頁保留靠它（沒有時退回列序，不穩定）' },

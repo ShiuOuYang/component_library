@@ -73,7 +73,7 @@ export type {
   AnchorItem, AutocompleteSuggestion, CascaderOption, ChptDatePickerValue, DescriptionItem,
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
-  TableDefaultSort, TableChangeEvent, TableSortEvent, TimelineItem, TourStep, TransferItem,
+  TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TimelineItem, TourStep, TransferItem,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'
 export type {
