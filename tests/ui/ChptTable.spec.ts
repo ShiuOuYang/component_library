@@ -433,3 +433,232 @@ describe('ChptTable：上下都有分頁', () => {
     expect(w.findAll('nav').map((n) => n.attributes('aria-label'))).toEqual(['工單分頁（上方分頁導航）', '工單分頁（下方分頁導航）'])
   })
 })
+
+describe('ChptTable：多層表頭', () => {
+  /** 序號 | DutInfo(Bump, Net) | 量測(電阻(Min, Max), 判定) —— 三層 */
+  const grouped = [
+    { key: 'seq', title: '序號', align: 'left' as const },
+    { title: 'DutInfo', children: [{ key: 'bump', title: 'Die.Bump', align: 'right' as const }, { key: 'net', title: 'Die.NetName' }] },
+    {
+      title: '量測',
+      children: [
+        { title: '電阻', children: [{ key: 'min', title: 'Min', sortType: 'number' as const }, { key: 'max', title: 'Max' }] },
+        { key: 'judge', title: '判定' },
+      ],
+    },
+  ]
+  const data = [
+    { id: 1, seq: 1, bump: 'B2', net: 'VDD', min: 3, max: 5, judge: 'OK' },
+    { id: 2, seq: 2, bump: 'B1', net: 'VSS', min: 1, max: 9, judge: 'NG' },
+  ]
+  const headerRows = (w: VueWrapper) => w.findAll('thead tr')
+  const cellsOf = (w: VueWrapper, r: number) =>
+    headerRows(w)[r].findAll('th').map((th) => ({
+      text: th.text(),
+      colspan: th.attributes('colspan'),
+      rowspan: th.attributes('rowspan'),
+      scope: th.attributes('scope'),
+    }))
+
+  it('依 children 排出多列表頭：群組欄 colspan 是葉欄數，葉欄 rowspan 延伸到最後一層', () => {
+    const w = mountTable({ columns: grouped, data })
+    expect(headerRows(w)).toHaveLength(3)
+    expect(cellsOf(w, 0)).toEqual([
+      { text: '序號', colspan: undefined, rowspan: '3', scope: 'col' },
+      { text: 'DutInfo', colspan: '2', rowspan: undefined, scope: 'colgroup' },
+      { text: '量測', colspan: '3', rowspan: undefined, scope: 'colgroup' },
+    ])
+    expect(cellsOf(w, 1)).toEqual([
+      { text: 'Die.Bump', colspan: undefined, rowspan: '2', scope: 'col' },
+      { text: 'Die.NetName', colspan: undefined, rowspan: '2', scope: 'col' },
+      { text: '電阻', colspan: '2', rowspan: undefined, scope: 'colgroup' },
+      { text: '判定', colspan: undefined, rowspan: '2', scope: 'col' },
+    ])
+    expect(cellsOf(w, 2).map((c) => c.text)).toEqual(['Min', 'Max'])
+  })
+
+  it('資料列只畫葉欄，順序由左到右', () => {
+    const w = mountTable({ columns: grouped, data })
+    expect(bodyRows(w)[0].findAll('td').map((td) => td.text())).toEqual(['1', 'B2', 'VDD', '3', '5', 'OK'])
+  })
+
+  it('群組欄不能排序；葉欄照常排序（不論在第幾層）', async () => {
+    const w = mountTable({ columns: grouped, data })
+    const group = headerRows(w)[0].findAll('th')[1]
+    expect(group.attributes('tabindex')).toBeUndefined()
+    expect(group.attributes('aria-sort')).toBeUndefined()
+    await group.trigger('click')
+    expect(w.emitted('sort')).toBeUndefined()
+    const min = headerRows(w)[2].findAll('th')[0]
+    await min.trigger('click')
+    expect(min.attributes('aria-sort')).toBe('ascending')
+    expect(bodyRows(w)[0].findAll('td')[0].text()).toBe('2')
+    expect(min.find('.sort-indicator').classes()).toContain('is-asc')
+  })
+
+  it('align：表頭與儲存格一起對齊；沒指定的維持置中', () => {
+    const w = mountTable({ columns: grouped, data })
+    const seq = headerRows(w)[0].findAll('th')[0]
+    expect(seq.find('div').classes()).toContain('justify-start')
+    const bump = headerRows(w)[1].findAll('th')[0]
+    expect(bump.find('div').classes()).toContain('justify-end')
+    const tds = bodyRows(w)[0].findAll('td')
+    expect(tds[0].attributes('style')).toContain('text-align: left')
+    expect(tds[1].attributes('style')).toContain('text-align: right')
+    expect(tds[2].attributes('style') ?? '').not.toContain('text-align')
+    expect(headerRows(w)[1].findAll('th')[1].find('div').classes()).toContain('justify-center')
+  })
+
+  it('勾選、展開與填充欄在多層表頭時橫跨所有表頭列；空資料的 colspan 只算葉欄', () => {
+    const w = mountTable({ columns: grouped, data: [], selectable: true, resizable: true }, { expand: '<p>明細</p>' })
+    const first = headerRows(w)[0].findAll('th')
+    expect(first[0].attributes('rowspan')).toBe('3') // 展開
+    expect(first[1].attributes('rowspan')).toBe('3') // 勾選
+    expect(first.at(-1)!.classes()).toContain('filler-col')
+    expect(first.at(-1)!.attributes('rowspan')).toBe('3')
+    // 6 個葉欄 + 展開 + 勾選 + 填充欄
+    expect(w.find('tbody td').attributes('colspan')).toBe('9')
+    // 欄寬把手只在葉欄上
+    expect(w.findAll('thead [role="separator"]')).toHaveLength(6)
+  })
+
+  it('分隔線：表格最左邊那格不畫，其餘都畫（包含第二層最左邊、但不在表格左緣的格子）', () => {
+    const w = mountTable({ columns: grouped, data })
+    expect(headerRows(w)[0].findAll('th')[0].classes()).not.toContain('has-divider')
+    expect(headerRows(w)[1].findAll('th')[0].classes()).toContain('has-divider')
+    w.unmount()
+    const leftGroup = mountTable({ columns: [{ title: 'G', children: [{ key: 'a', title: 'A' }, { key: 'b', title: 'B' }] }], data: [{ a: 1, b: 2 }] })
+    expect(leftGroup.findAll('thead tr')[1].findAll('th').map((th) => th.classes().includes('has-divider'))).toEqual([false, true])
+  })
+
+  it('沒有 children 時與原本一樣只有一列表頭', () => {
+    const w = mountTable()
+    expect(headerRows(w)).toHaveLength(1)
+    expect(headerRows(w)[0].findAll('th').every((th) => th.attributes('rowspan') === undefined)).toBe(true)
+  })
+
+  it('headerProps（同 Vuetify）：綁到 <th>；有顏色 class 時取代預設的表頭顏色，沒有就沿用', () => {
+    const colored = [
+      { title: 'DutInfo', children: [{ key: 'bump', title: 'Die.Bump', headerProps: { title: '凸塊編號', class: 'text-xs' } }] },
+      {
+        title: '量測',
+        headerProps: { class: 'bg-success-subtle text-success-on-subtle', 'data-group': 'measure' },
+        children: [
+          { key: 'min', title: 'Min', headerProps: { class: ['text-danger'] } },
+          { key: 'max', title: 'Max', headerProps: { style: { backgroundColor: 'pink', color: 'black' } } },
+        ],
+      },
+    ]
+    const w = mountTable({ columns: colored, data })
+    const [dut, measure] = headerRows(w)[0].findAll('th')
+    expect(dut.classes()).toEqual(expect.arrayContaining(['text-accent', 'bg-gradient-to-b', 'from-accent-subtle']))
+    expect(measure.classes()).toEqual(expect.arrayContaining(['text-success-on-subtle', 'bg-success-subtle']))
+    expect(measure.classes()).not.toContain('bg-gradient-to-b')
+    expect(measure.classes()).not.toContain('text-accent')
+    expect(measure.attributes('data-group')).toBe('measure')
+    // 原本的 class 與屬性仍在（scope、分隔線）
+    expect(measure.attributes('scope')).toBe('colgroup')
+    expect(measure.classes()).toContain('has-divider')
+    const [bump, min, max] = headerRows(w)[1].findAll('th')
+    // text-xs 不是顏色：仍用預設的文字色與底色
+    expect(bump.classes()).toEqual(expect.arrayContaining(['text-xs', 'text-content-primary', 'bg-gradient-to-b']))
+    expect(bump.attributes('title')).toBe('凸塊編號')
+    expect(min.classes()).toContain('text-danger')
+    expect(min.classes()).not.toContain('text-content-primary')
+    expect(max.classes()).not.toContain('bg-gradient-to-b')
+    expect(max.classes()).not.toContain('text-content-primary')
+    expect(max.attributes('style')).toContain('background-color: pink')
+  })
+
+  it('headerProps 的 style 字串、class 物件也認得；aria-sort、tabindex 不會被蓋掉', async () => {
+    const cols = [
+      { key: 'a', title: 'A', headerProps: { style: 'background: red', tabindex: -1, 'aria-sort': 'other' } },
+      { key: 'b', title: 'B', headerProps: { class: { 'text-success': true, 'bg-danger': false } } },
+    ]
+    const w = mountTable({ columns: cols, data: [{ a: 1, b: 2 }] })
+    const [a, b] = headerRows(w)[0].findAll('th')
+    expect(a.classes()).not.toContain('bg-gradient-to-b')
+    expect(a.attributes('tabindex')).toBe('0')
+    expect(a.attributes('aria-sort')).toBe('none')
+    expect(b.classes()).toContain('text-success')
+    expect(b.classes()).toContain('bg-gradient-to-b')
+    // 排序中一律用強調色
+    await b.trigger('click')
+    expect(b.classes()).toContain('text-accent')
+  })
+
+  it('cellProps（同 Vuetify）：物件或依列決定的函式', () => {
+    const cols = [
+      { key: 'seq', title: '序號', cellProps: { class: 'font-mono' } },
+      { key: 'judge', title: '判定', cellProps: ({ value, index }: { value: unknown; index: number }) => ({ class: value === 'NG' ? 'text-danger' : '', 'data-i': index }) },
+    ]
+    const w = mountTable({ columns: cols, data })
+    const rows = bodyRows(w)
+    expect(rows[0].findAll('td')[0].classes()).toContain('font-mono')
+    expect(rows[1].findAll('td')[1].classes()).toContain('text-danger')
+    expect(rows[0].findAll('td')[1].classes()).not.toContain('text-danger')
+    expect(rows[1].findAll('td')[1].attributes('data-i')).toBe('1')
+  })
+
+  it('color：整欄的表頭與儲存格一起變色；群組的顏色傳給底下的欄位，子欄位可以另外指定', () => {
+    const cols = [
+      { key: 'seq', title: '序號' },
+      {
+        title: '量測',
+        color: 'success' as const,
+        children: [
+          { title: '電阻', children: [{ key: 'min', title: 'Min' }] },
+          { key: 'judge', title: '判定', color: 'danger' as const },
+        ],
+      },
+    ]
+    const w = mountTable({ columns: cols, data })
+    const [seq, measure] = headerRows(w)[0].findAll('th')
+    expect(seq.classes()).toContain('bg-gradient-to-b')
+    expect(measure.classes()).toEqual(expect.arrayContaining(['tone-bg-success', 'tone-text-success']))
+    expect(measure.classes()).not.toContain('bg-gradient-to-b')
+    expect(measure.classes()).not.toContain('text-accent')
+    const [resist, judge] = headerRows(w)[1].findAll('th')
+    expect(resist.classes()).toContain('tone-bg-success')
+    expect(judge.classes()).toEqual(expect.arrayContaining(['tone-bg-danger', 'tone-text-danger']))
+    expect(headerRows(w)[2].findAll('th')[0].classes()).toEqual(expect.arrayContaining(['tone-bg-success', 'tone-text-success']))
+    const tds = bodyRows(w)[0].findAll('td')
+    expect(tds[0].classes().some((c) => c.startsWith('tone-cell-'))).toBe(false)
+    expect(tds[1].classes()).toContain('tone-cell-success')
+    expect(tds[2].classes()).toContain('tone-cell-danger')
+  })
+
+  it('color 與 headerProps 同時有時，headerProps 的顏色優先；cellProps 的 class 與顏色並存', () => {
+    const cols = [
+      { key: 'min', title: 'Min', color: 'info' as const, headerProps: { class: 'bg-warning-subtle' }, cellProps: { class: 'font-mono' } },
+    ]
+    const w = mountTable({ columns: cols, data })
+    const th = headerRows(w)[0].findAll('th')[0]
+    expect(th.classes()).toContain('bg-warning-subtle')
+    expect(th.classes()).not.toContain('tone-bg-info')
+    // 文字色沒被 headerProps 指定：仍用 color 的
+    expect(th.classes()).toContain('tone-text-info')
+    expect(bodyRows(w)[0].find('td').classes()).toEqual(expect.arrayContaining(['font-mono', 'tone-cell-info']))
+  })
+
+  it("align 用 Vuetify 的 start / end，也接受 left / right", () => {
+    const cols = [
+      { key: 'seq', title: '序號', align: 'start' as const },
+      { key: 'judge', title: '判定', align: 'end' as const },
+      { key: 'net', title: 'Net', align: 'center' as const },
+    ]
+    const w = mountTable({ columns: cols, data })
+    const ths = headerRows(w)[0].findAll('th')
+    expect(ths.map((th) => th.find('div').classes().find((c) => c.startsWith('justify-')))).toEqual(['justify-start', 'justify-end', 'justify-center'])
+    const tds = bodyRows(w)[0].findAll('td')
+    expect(tds.map((td) => td.attributes('style'))).toEqual(['text-align: left;', 'text-align: right;', 'text-align: center;'])
+  })
+
+  it('多欄排序時標出優先順序', async () => {
+    const w = mountTable({ columns: grouped, data })
+    await headerRows(w)[1].findAll('th')[0].trigger('click')
+    await headerRows(w)[2].findAll('th')[0].trigger('click')
+    expect(headerRows(w)[2].findAll('th')[0].find('.sort-order').text()).toBe('2')
+    expect(headerRows(w)[1].findAll('th')[0].find('.sort-order').text()).toBe('1')
+  })
+})

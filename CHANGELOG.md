@@ -28,6 +28,12 @@
 
 ### 新增
 
+- **ChptTable**：多層表頭。欄位加上 `children` 就成為群組欄，標題橫跨底下的欄位，可以一直往下巢狀；
+  沒有 children 的欄位自動延伸到最後一層。排序、欄寬只在最底層的欄位上，勾選欄、展開欄跟著橫跨所有表頭列。
+  欄位設定參考 Vuetify 的 `v-data-table` headers，新增 `align`（`start` / `center` / `end`，也接受 `left` / `right`），表頭與儲存格一起對齊；
+  `color`（`accent` / `success` / `warning` / `danger` / `info` / `neutral`）讓整欄的表頭與儲存格一起變色，設在群組上時底下的欄位沿用；
+  `headerProps` 綁到這一欄的 `<th>`（class 或 style 有顏色時取代預設的表頭顏色）；
+  `cellProps` 綁到每個 `<td>`，可以給函式依資料決定。
 - **StateTimeline**（機台狀態時間軸）：每台機台一列，畫出實際發生的狀態（預設運轉、待機、保養、故障，可用 `states` 自訂）。
   紀錄可以只有開始時間（下一筆開始就是這一筆結束，最後一筆畫到 `openEndTime`）；每列依像素合併，資料再多也只畫寬度個矩形，
   一個像素裡有故障就畫故障（`priority`），短暫停機不會被蓋掉。右側統計稼動率（圖示 + 文字）、停機時間與次數，
@@ -78,6 +84,10 @@
 
 ### 變更
 
+- **ChptTable**：表頭改為淡藍底（`headerBgGradient` 預設 `from-accent-subtle to-accent-subtle`）、標題用主要文字色，
+  欄與欄之間加分隔線；群組標題用強調色（新 prop `groupHeaderTextColor`）。排序圖示從標題右緣的 ▲▼ 改成緊接在標題後面的上下箭頭，
+  排序中的方向用強調色。要維持舊的灰底，傳 `header-bg-gradient="from-surface-secondary to-surface-tertiary"`、
+  `header-text-color="text-content-secondary"`。
 - **DualAxisComboChart 滾輪縮放改成像 Allegro**：在繪圖區滾動時，以游標那一點為中心 **X 與 Y 同時縮放**
   （雙 Y 軸用同一個倍率、游標底下的資料點留在原地）；原本只縮放 X。在 X 軸或左右 Y 軸的刻度上滾仍只縮放那一軸。
   新增**按住滑鼠中鍵拖曳平移** X 與 Y（送出 `axis-drag`）。要維持只縮放 X，設 `wheel-zoom-axes="x"`。

@@ -52,116 +52,131 @@
     <!-- 表格內容 -->
     <div class="relative w-full overflow-x-auto mb-0 border-t border-b border-stroke-light">
       <table
-        class="w-full border-collapse text-xs whitespace-nowrap min-w-max"
+        class="w-full border-collapse text-xs whitespace-nowrap min-w-max text-content-primary"
         :class="{ 'table-fixed': props.resizable }"
         :aria-busy="props.loading || undefined"
       >
-        <thead>
-          <tr>
-            <th
-              v-if="expandEnabled"
-              scope="col"
-              class="lead-col bg-gradient-to-b border-b border-stroke-default sticky top-0 z-10"
-              :class="[props.headerBgGradient]"
-            ><span class="sr-only">展開</span></th>
-            <th
-              v-if="selectionEnabled"
-              scope="col"
-              class="lead-col bg-gradient-to-b border-b border-stroke-default sticky top-0 z-10"
-              :class="[props.headerBgGradient]"
-            >
-              <input
-                v-if="!singleSelect"
-                type="checkbox"
-                class="table-check"
-                :checked="pageSelectionState === 'all'"
-                :indeterminate="pageSelectionState === 'some'"
-                :disabled="selectablePageKeys.length === 0"
-                :aria-label="locale.selectPage"
-                @change="togglePageSelection"
-              />
-              <span v-else class="sr-only">{{ locale.select }}</span>
-            </th>
-            <th
-              v-for="(column, index) in displayColumns"
-              :key="index"
-              :style="[column.style, widthStyle(column)]"
-              :class="[
-                'bg-gradient-to-b font-medium py-2 px-1.5 text-center border-b border-stroke-default sticky top-0 z-10 whitespace-nowrap tracking-wide shadow-sm',
-                props.headerBgGradient,
-                props.headerTextColor,
-                {
-                  'cursor-pointer select-none relative hover:from-primary-50 hover:to-primary-100': isColumnClickable(column),
-                  'relative': props.resizable,
-                  'from-primary-50 to-primary-100': getColumnSortInfo(column.key) !== null,
-                  'text-accent': getColumnSortInfo(column.key) !== null
-                }
-              ]"
-              scope="col"
-              :aria-sort="ariaSortFor(column)"
-              :tabindex="isColumnClickable(column) ? 0 : undefined"
-              @click="handleHeaderClick(column)"
-              @keydown.enter.self.prevent="handleHeaderClick(column)"
-              @keydown.space.self.prevent="handleHeaderClick(column)"
-            >
-              <div class="relative flex items-center justify-center min-h-[28px]">
-                <span class="text-center px-4 truncate">{{ column.title }}</span>
+        <!--
+          表頭可以多層：columns 裡有 children 的是群組欄，標題橫跨底下所有欄位；
+          沒有 children 的葉欄往下延伸到最後一層（rowspan）。排序、欄寬都只在葉欄上。
+          sticky 掛在 <thead>：多列表頭時每一列不必各自算 top
+        -->
+        <thead class="sticky top-0 z-10">
+          <tr v-for="(row, level) in headerRows" :key="level">
+            <template v-if="level === 0">
+              <th
+                v-if="expandEnabled"
+                scope="col"
+                :rowspan="headerDepth > 1 ? headerDepth : undefined"
+                class="lead-col header-cell bg-gradient-to-b"
+                :class="[props.headerBgGradient]"
+              ><span class="sr-only">展開</span></th>
+              <th
+                v-if="selectionEnabled"
+                scope="col"
+                :rowspan="headerDepth > 1 ? headerDepth : undefined"
+                class="lead-col header-cell bg-gradient-to-b"
+                :class="[props.headerBgGradient, { 'has-divider': expandEnabled }]"
+              >
+                <input
+                  v-if="!singleSelect"
+                  type="checkbox"
+                  class="table-check"
+                  :checked="pageSelectionState === 'all'"
+                  :indeterminate="pageSelectionState === 'some'"
+                  :disabled="selectablePageKeys.length === 0"
+                  :aria-label="locale.selectPage"
+                  @change="togglePageSelection"
+                />
+                <span v-else class="sr-only">{{ locale.select }}</span>
+              </th>
+            </template>
 
-                <!-- 排序圖標 - 使用絕對定位，支援多欄排序顯示 -->
-                <span
-                  v-if="isColumnClickable(column)"
-                  aria-hidden="true"
-                  class="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 transition-all duration-200"
-                  :class="getColumnSortInfo(column.key) !== null ? 'opacity-100' : 'opacity-30 hover:opacity-60'"
-                >
-                  <!-- 排序優先順序編號（多欄排序時顯示） -->
+            <template v-for="cell in row" :key="cell.id">
+              <!-- 群組欄：標題置中，橫跨底下的欄位 -->
+              <th
+                v-if="cell.isGroup"
+                v-bind="cell.column.headerProps"
+                scope="colgroup"
+                :colspan="cell.colspan"
+                class="header-cell group-cell font-semibold py-1.5 px-2 text-center whitespace-nowrap"
+                :class="[headerBgClass(cell.column), headerTextClass(cell.column, props.groupHeaderTextColor), { 'has-divider': cell.divider }]"
+                :style="cell.column.style"
+              >{{ cell.column.title }}</th>
+
+              <!-- 葉欄：可排序、可調整欄寬 -->
+              <th
+                v-else
+                v-bind="cell.column.headerProps"
+                scope="col"
+                :rowspan="cell.rowspan > 1 ? cell.rowspan : undefined"
+                :style="[cell.column.style, widthStyle(cell.column)]"
+                :class="[
+                  'header-cell leaf-cell font-medium py-2 px-2 whitespace-nowrap',
+                  headerBgClass(cell.column),
+                  getColumnSortInfo(cell.column.key) !== null ? 'text-accent' : headerTextClass(cell.column, props.headerTextColor),
+                  {
+                    'is-sortable': isColumnClickable(cell.column),
+                    'is-sorted': getColumnSortInfo(cell.column.key) !== null,
+                    'relative': props.resizable,
+                    'has-divider': cell.divider,
+                  }
+                ]"
+                :aria-sort="ariaSortFor(cell.column)"
+                :tabindex="isColumnClickable(cell.column) ? 0 : undefined"
+                @click="handleHeaderClick(cell.column)"
+                @keydown.enter.self.prevent="handleHeaderClick(cell.column)"
+                @keydown.space.self.prevent="handleHeaderClick(cell.column)"
+              >
+                <div class="flex items-center gap-1 min-h-[24px]" :class="justifyClass(cell.column)">
+                  <span class="truncate">{{ cell.column.title }}</span>
+
+                  <!-- 排序圖示：上下兩個小箭頭，目前的方向亮起；多欄排序時前面標出優先順序 -->
                   <span
-                    v-if="sortColumns.length > 1 && getColumnSortInfo(column.key) !== null"
-                    class="text-[9px] leading-none text-accent font-bold min-w-[10px] text-center"
-                  >{{ getColumnSortInfo(column.key)!.index + 1 }}</span>
-                  <!-- 上下箭頭 -->
-                  <span class="flex flex-col items-center gap-0">
+                    v-if="isColumnClickable(cell.column)"
+                    aria-hidden="true"
+                    class="sort-indicator"
+                    :class="getColumnSortInfo(cell.column.key)?.direction ? `is-${getColumnSortInfo(cell.column.key)!.direction}` : ''"
+                  >
                     <span
-                      class="text-[10px] leading-none transition-all duration-200"
-                      :class="getColumnSortInfo(column.key)?.direction === 'asc'
-                        ? 'text-accent font-bold opacity-100'
-                        : 'text-content-tertiary'"
-                    >▲</span>
-                    <span
-                      class="text-[10px] leading-none transition-all duration-200"
-                      :class="getColumnSortInfo(column.key)?.direction === 'desc'
-                        ? 'text-accent font-bold opacity-100'
-                        : 'text-content-tertiary'"
-                    >▼</span>
+                      v-if="sortColumns.length > 1 && getColumnSortInfo(cell.column.key) !== null"
+                      class="sort-order"
+                    >{{ getColumnSortInfo(cell.column.key)!.index + 1 }}</span>
+                    <svg class="sort-arrows" viewBox="0 0 8 14" width="8" height="14" focusable="false">
+                      <path class="arrow-up" d="M1 5.5 4 2.5 7 5.5" />
+                      <path class="arrow-down" d="M1 8.5 4 11.5 7 8.5" />
+                    </svg>
                   </span>
-                </span>
-              </div>
+                </div>
 
-              <!-- 欄寬拖曳把手：WAI-ARIA window splitter（可聚焦、左右鍵調整） -->
-              <span
-                v-if="props.resizable && column.resizable !== false"
-                role="separator"
-                aria-orientation="vertical"
-                tabindex="0"
-                :aria-label="`調整「${column.title}」欄寬`"
-                :aria-valuenow="Math.round(currentWidthOf(column))"
-                :aria-valuemin="minWidthOf(column)"
-                class="col-resizer"
-                @click.stop
-                @pointerdown.stop.prevent="startResize($event, column)"
-                @dblclick.stop="resetWidth(column)"
-                @keydown.left.stop.prevent="nudgeWidth(column, -10)"
-                @keydown.right.stop.prevent="nudgeWidth(column, 10)"
-              ></span>
-            </th>
+                <!-- 欄寬拖曳把手：WAI-ARIA window splitter（可聚焦、左右鍵調整） -->
+                <span
+                  v-if="props.resizable && cell.column.resizable !== false"
+                  role="separator"
+                  aria-orientation="vertical"
+                  tabindex="0"
+                  :aria-label="`調整「${cell.column.title}」欄寬`"
+                  :aria-valuenow="Math.round(currentWidthOf(cell.column))"
+                  :aria-valuemin="minWidthOf(cell.column)"
+                  class="col-resizer"
+                  @click.stop
+                  @pointerdown.stop.prevent="startResize($event, cell.column)"
+                  @dblclick.stop="resetWidth(cell.column)"
+                  @keydown.left.stop.prevent="nudgeWidth(cell.column, -10)"
+                  @keydown.right.stop.prevent="nudgeWidth(cell.column, 10)"
+                ></span>
+              </th>
+            </template>
+
             <!--
               resizable 用 table-layout: fixed；表格又要撐滿容器時，多出來的寬度會被平均分給
               每一欄 —— 拖到 120px 的欄實際變 180px。最後放一個不設寬度的填充欄吃掉剩餘空間
             -->
             <th
-              v-if="props.resizable"
+              v-if="props.resizable && level === 0"
               role="presentation"
-              class="filler-col bg-gradient-to-b border-b border-stroke-default sticky top-0 z-10"
+              :rowspan="headerDepth > 1 ? headerDepth : undefined"
+              class="filler-col header-cell bg-gradient-to-b"
               :class="[props.headerBgGradient]"
             ></th>
           </tr>
@@ -225,7 +240,9 @@
                   <td
                     v-for="column in displayColumns"
                     :key="column.key ?? column.title"
-                    :style="[column.style, widthStyle(column)]"
+                    v-bind="cellPropsOf(column, item, index + startIndex)"
+                    :class="toneOf(column) ? `tone-cell-${toneOf(column)}` : undefined"
+                    :style="[column.style, widthStyle(column), alignStyle(column)]"
                   >
                     <slot
                       name="cell"
@@ -312,6 +329,38 @@ export interface Column {
   minWidth?: number
   /** resizable 開啟時，個別欄位可設 false 不給拖 */
   resizable?: boolean
+  /** 表頭與儲存格的對齊（預設置中）；同 Vuetify 用 start / end，也接受 left / right。數字欄通常靠右（end） */
+  align?: ColumnAlign
+  /**
+   * 子欄位：有 children 的是群組欄（多層表頭，同 Vuetify 的 headers.children），
+   * 標題橫跨底下所有欄位，本身不排序、不顯示資料。可以一直往下巢狀
+   */
+  children?: Column[]
+  /**
+   * 這一欄表頭 <th> 的屬性（同 Vuetify 的 headerProps）：class、style、title、data-* 都可以。
+   * class 或 style 裡有底色、文字色時，取代表格預設的表頭顏色 —— 例如 { class: 'bg-success-subtle text-success-on-subtle' }
+   */
+  headerProps?: Record<string, unknown>
+  /**
+   * 整欄的顏色：表頭用這個色系的淡底與深色字，儲存格加上同色系的半透明淡底（斑馬紋、hover 仍看得出來）。
+   * 設在群組欄時底下所有欄位一起變色（子欄位可以再指定別的顏色）；深淺主題自動切換
+   */
+  color?: ColumnColor
+  /** 這一欄每個儲存格 <td> 的屬性（同 Vuetify 的 cellProps）；給函式時依那一列決定 */
+  cellProps?: Record<string, unknown> | ((ctx: CellContext) => Record<string, unknown> | undefined)
+}
+
+export type ColumnAlign = 'start' | 'center' | 'end' | 'left' | 'right'
+
+/** 欄位顏色（語意色） */
+export type ColumnColor = 'accent' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
+
+/** cellProps 函式拿到的內容 */
+export interface CellContext {
+  item: DataRow
+  value: unknown
+  column: Column
+  index: number
 }
 
 export type RowKey = string | number
@@ -379,6 +428,8 @@ const props = withDefaults(defineProps<{
   headerBgGradient?: string
   // 表頭文字顏色
   headerTextColor?: string
+  /** 群組表頭（有 children 的欄位）的文字顏色 */
+  groupHeaderTextColor?: string
   // 偶數行背景色
   evenRowBgColor?: string
   // Hover 行背景色
@@ -428,8 +479,9 @@ const props = withDefaults(defineProps<{
   containerBgColor: 'bg-surface-primary',
   containerRounded: 'rounded-lg',
   containerShadow: 'shadow-sm',
-  headerBgGradient: 'from-surface-secondary to-surface-tertiary',
-  headerTextColor: 'text-content-secondary',
+  headerBgGradient: 'from-accent-subtle to-accent-subtle',
+  headerTextColor: 'text-content-primary',
+  groupHeaderTextColor: 'text-accent',
   // ⚠️ 原本寫死 rgb(250 250 250) / rgb(232 245 239)：深色模式下偶數列與 hover 列還是淺色，
   //    整張表變成黑白相間。check:theme 只掃 Tailwind class，抓不到這種色值，要用主題變數
   evenRowBgColor: 'rgb(var(--t-surface-secondary))',
@@ -528,10 +580,23 @@ function getColumnSortInfo(columnKey: string | undefined): { index: number; dire
 // 啟用排序的欄位集合 - 初始化時自動啟用所有有 key 的欄位
 const enabledSortColumns = ref<Set<string>>(new Set())
 
-// 如果父組件沒有傳 columns，自動從資料第一筆的 key 生成
+/** 有 children 的是群組欄 */
+const isGroup = (column: Column): boolean => !!column.children && column.children.length > 0
+
+/** 底下的葉欄（真正顯示資料的欄位），依左到右的順序 */
+function leavesOf(columns: Column[]): Column[] {
+  return columns.flatMap((c) => (isGroup(c) ? leavesOf(c.children!) : [c]))
+}
+
+/** 表頭有幾層 */
+function depthOf(columns: Column[]): number {
+  return columns.reduce((max, c) => Math.max(max, isGroup(c) ? 1 + depthOf(c.children!) : 1), 0)
+}
+
+// 如果父組件沒有傳 columns，自動從資料第一筆的 key 生成；有群組欄時只取葉欄
 const displayColumns = computed<Column[]>(() => {
   if (props.columns && props.columns.length > 0) {
-    return props.columns
+    return leavesOf(props.columns)
   }
   if (props.data && props.data.length > 0) {
     return Object.keys(props.data[0]).map(key => ({
@@ -542,6 +607,135 @@ const displayColumns = computed<Column[]>(() => {
   }
   return []
 })
+
+/** 每個欄位實際的顏色：自己有指定就用自己的，否則沿用最近的群組 */
+const colorMap = computed(() => {
+  const map = new Map<Column, ColumnColor>()
+  const walk = (columns: Column[], inherited: ColumnColor | undefined) => {
+    for (const c of columns) {
+      const color = c.color ?? inherited
+      if (color) map.set(c, color)
+      if (isGroup(c)) walk(c.children!, color)
+    }
+  }
+  walk(props.columns, undefined)
+  return map
+})
+
+const toneOf = (column: Column): ColumnColor | undefined => colorMap.value.get(column)
+
+interface HeaderCell {
+  id: string
+  column: Column
+  isGroup: boolean
+  colspan: number
+  rowspan: number
+  /** 左邊要不要畫分隔線（表格最左邊那格不用） */
+  divider: boolean
+}
+
+const headerDepth = computed(() => Math.max(1, props.columns.length ? depthOf(props.columns) : 1))
+
+/**
+ * 表頭的每一列：群組欄的 colspan 是底下的葉欄數；葉欄的 rowspan 延伸到最後一層。
+ * 沒有群組欄時只有一列，與原本的單層表頭相同
+ */
+const headerRows = computed<HeaderCell[][]>(() => {
+  const source = props.columns.length ? props.columns : displayColumns.value
+  const depth = headerDepth.value
+  const rows: HeaderCell[][] = Array.from({ length: depth }, () => [])
+  const lead = (expandEnabled.value ? 1 : 0) + (selectionEnabled.value ? 1 : 0)
+  let leafIndex = 0
+  const walk = (columns: Column[], level: number, path: string) => {
+    columns.forEach((column, i) => {
+      const id = `${path}${i}`
+      const divider = leafIndex > 0 || lead > 0
+      if (isGroup(column)) {
+        rows[level].push({ id, column, isGroup: true, colspan: leavesOf(column.children!).length, rowspan: 1, divider })
+        walk(column.children!, level + 1, `${id}-`)
+      } else {
+        rows[level].push({ id, column, isGroup: false, colspan: 1, rowspan: depth - level, divider })
+        leafIndex++
+      }
+    })
+  }
+  walk(source, 0, '')
+  return rows
+})
+
+/** 把 class 綁定（字串、陣列、物件）攤平成 class 名稱 */
+function classNames(value: unknown): string[] {
+  if (!value) return []
+  if (typeof value === 'string') return value.split(/\s+/).filter(Boolean)
+  if (Array.isArray(value)) return value.flatMap(classNames)
+  if (typeof value === 'object') return Object.entries(value as Record<string, unknown>).filter(([, on]) => on).map(([name]) => name)
+  return []
+}
+
+/** style 綁定（字串、物件、陣列）裡有哪些屬性（kebab-case） */
+function styleKeys(value: unknown): string[] {
+  if (!value) return []
+  if (typeof value === 'string') return value.split(';').map((d) => d.split(':')[0].trim().toLowerCase()).filter(Boolean)
+  if (Array.isArray(value)) return value.flatMap(styleKeys)
+  if (typeof value === 'object') return Object.keys(value).map((k) => k.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`))
+  return []
+}
+
+/** text- 開頭但不是顏色的 Tailwind class（字級、對齊、換行） */
+const NON_COLOR_TEXT = /^text-(xs|sm|base|lg|[2-9]?xl|left|center|right|justify|start|end|wrap|nowrap|balance|pretty|ellipsis|clip)$/
+
+/** headerProps 有沒有自己指定底色、文字色（有的話不套表格預設，免得兩個 class 打架） */
+function customHeaderColors(column: Column): { bg: boolean; text: boolean } {
+  const hp = column.headerProps
+  if (!hp) return { bg: false, text: false }
+  const names = classNames(hp.class)
+  const keys = styleKeys(hp.style)
+  return {
+    bg: names.some((n) => n.startsWith('bg-')) || keys.some((k) => k.startsWith('background')),
+    text: names.some((n) => n.startsWith('text-') && !NON_COLOR_TEXT.test(n)) || keys.includes('color'),
+  }
+}
+
+/** 表頭底色：headerProps 有指定就用它的，其次是欄位的 color，最後是表格的漸層 */
+function headerBgClass(column: Column): string[] {
+  if (customHeaderColors(column).bg) return []
+  const tone = toneOf(column)
+  return tone ? [`tone-bg-${tone}`] : ['bg-gradient-to-b', props.headerBgGradient]
+}
+
+/** 表頭文字色：headerProps 有指定就用它的，其次是欄位的 color */
+function headerTextClass(column: Column, fallback: string): string {
+  if (customHeaderColors(column).text) return ''
+  const tone = toneOf(column)
+  return tone ? `tone-text-${tone}` : fallback
+}
+
+/** 對齊統一成 left / center / right */
+function alignOf(column: Column): 'left' | 'center' | 'right' | undefined {
+  const a = column.align
+  if (a === 'start' || a === 'left') return 'left'
+  if (a === 'end' || a === 'right') return 'right'
+  return a === 'center' ? 'center' : undefined
+}
+
+/** 葉欄表頭內容的水平對齊 */
+function justifyClass(column: Column): string {
+  const a = alignOf(column)
+  return a === 'left' ? 'justify-start' : a === 'right' ? 'justify-end' : 'justify-center'
+}
+
+/** 儲存格的對齊（沒指定時沿用預設的置中） */
+function alignStyle(column: Column): Record<string, string> | undefined {
+  const a = alignOf(column)
+  return a ? { textAlign: a } : undefined
+}
+
+/** 儲存格的額外屬性（cellProps） */
+function cellPropsOf(column: Column, item: DataRow, index: number): Record<string, unknown> | undefined {
+  const cp = column.cellProps
+  if (!cp) return undefined
+  return typeof cp === 'function' ? cp({ item, value: column.key ? item[column.key] : undefined, column, index }) : cp
+}
 
 // 在組件掛載時自動啟用所有可排序的欄位
 onMounted(() => {
@@ -554,8 +748,8 @@ onMounted(() => {
 
 // 檢查欄位是否可以點擊排序（有 key 的欄位都可以點擊）
 function isColumnClickable(column: Column): boolean {
-  // 如果明確設定為 false，則不可點擊
-  if (column.sortable === false) {
+  // 如果明確設定為 false，或是群組欄，則不可點擊
+  if (column.sortable === false || isGroup(column)) {
     return false
   }
   
@@ -1157,7 +1351,7 @@ watch(displayColumns, (newColumns) => {
   padding: 0.375rem;
   text-align: center;
   border-bottom: 1px solid rgb(var(--t-stroke-light));
-  color: rgb(var(--t-content-primary));
+  /* 文字色由 <table> 繼承，不寫在這裡：這條規則帶 scoped 屬性選擇器，會蓋掉 cellProps 傳進來的文字色 class */
   transition: background-color 0.2s;
   max-width: 20rem;
   overflow: hidden;
@@ -1172,6 +1366,152 @@ watch(displayColumns, (newColumns) => {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
+}
+
+/* ===== 表頭 ===== */
+.header-cell {
+  border-bottom: 1px solid rgb(var(--t-stroke-light));
+}
+
+/* 欄與欄之間的分隔線（最左邊那格不畫） */
+.header-cell.has-divider {
+  border-left: 1px solid rgb(var(--t-stroke-light));
+}
+
+.leaf-cell.is-sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.leaf-cell.is-sortable:hover {
+  background-image: none;
+  background-color: rgb(var(--t-accent-subtle-hover));
+}
+
+.leaf-cell:focus-visible {
+  outline: 2px solid rgb(var(--t-stroke-focus));
+  outline-offset: -2px;
+}
+
+/* 排序圖示：沒排序時兩個箭頭都淡；排序中的方向用強調色 */
+.sort-indicator {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 1px;
+  color: rgb(var(--t-content-tertiary));
+}
+
+.sort-arrows {
+  display: block;
+}
+
+.sort-arrows path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.55;
+  transition: opacity 0.15s, color 0.15s;
+}
+
+.leaf-cell.is-sortable:hover .sort-arrows path {
+  opacity: 0.9;
+}
+
+.sort-indicator.is-asc .arrow-up,
+.sort-indicator.is-desc .arrow-down {
+  stroke: rgb(var(--t-accent));
+  stroke-width: 1.8;
+  opacity: 1;
+}
+
+.sort-indicator.is-asc .arrow-down,
+.sort-indicator.is-desc .arrow-up {
+  opacity: 0.3;
+}
+
+.sort-order {
+  min-width: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  color: rgb(var(--t-accent));
+}
+
+/* ===== 欄位顏色（color）：表頭淡底深字，儲存格半透明淡底 ===== */
+.tone-bg-accent {
+  background-color: rgb(var(--t-accent-subtle));
+}
+
+.tone-text-accent {
+  color: rgb(var(--t-accent-on-subtle));
+}
+
+.tone-cell-accent {
+  background-color: rgb(var(--t-accent-subtle) / 0.55);
+}
+
+.tone-bg-success {
+  background-color: rgb(var(--t-success-subtle));
+}
+
+.tone-text-success {
+  color: rgb(var(--t-success-on-subtle));
+}
+
+.tone-cell-success {
+  background-color: rgb(var(--t-success-subtle) / 0.55);
+}
+
+.tone-bg-warning {
+  background-color: rgb(var(--t-warning-subtle));
+}
+
+.tone-text-warning {
+  color: rgb(var(--t-warning-on-subtle));
+}
+
+.tone-cell-warning {
+  background-color: rgb(var(--t-warning-subtle) / 0.55);
+}
+
+.tone-bg-danger {
+  background-color: rgb(var(--t-danger-subtle));
+}
+
+.tone-text-danger {
+  color: rgb(var(--t-danger-on-subtle));
+}
+
+.tone-cell-danger {
+  background-color: rgb(var(--t-danger-subtle) / 0.55);
+}
+
+.tone-bg-info {
+  background-color: rgb(var(--t-info-subtle));
+}
+
+.tone-text-info {
+  color: rgb(var(--t-info-on-subtle));
+}
+
+.tone-cell-info {
+  background-color: rgb(var(--t-info-subtle) / 0.55);
+}
+
+.tone-bg-neutral {
+  background-color: rgb(var(--t-surface-tertiary));
+}
+
+.tone-text-neutral {
+  color: rgb(var(--t-content-secondary));
+}
+
+.tone-cell-neutral {
+  background-color: rgb(var(--t-surface-tertiary) / 0.5);
 }
 
 /* ===== 勾選 / 展開 / 可點列 / 欄寬把手 ===== */
