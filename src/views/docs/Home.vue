@@ -145,7 +145,7 @@ const groups = [
   { to: '/docs/components/facet-charts', icon: '🧮', title: '分面圖', badge: 'Charts', description: 'FacetedChart（同步十字線、共用圖例）/ GridFacetChart（scales: fixed / free）' },
   { to: '/docs/components/navigation', icon: '🧭', title: '導覽元件', badge: 'UI', description: 'Menu（側欄 / 頂部選單）/ Anchor（頁內目錄）/ BackTop' },
   { to: '/docs/components/layout-nav', icon: '🧱', title: '佈局與流程', badge: 'UI', description: 'Card / Collapse / Breadcrumb / Divider / TabNavigation' },
-  { to: '/docs/components/dual-axis-chart', icon: '📈', title: '圖表 Charts', badge: 'Charts', description: '雙軸組合 / 柏拉圖 / 熱力圖（D3、可縮放）' },
+  { to: '/docs/components/dual-axis-chart', icon: '📈', title: '圖表 Charts', badge: 'Charts', description: '雙軸組合 / 柏拉圖 / 熱力圖 / 甘特圖 / 水平長條 / 圓餅 / KPI 小圖 / SPC 管制圖與 Cpk / 機台狀態時間軸 / 箱型圖 / 瀑布圖（D3）' },
   { to: '/docs/components/gerber-viewer', icon: '🔬', title: '檢視器 Viewer', badge: 'Viewer', description: 'Gerber / PCB / Schematic 領域檢視器' },
   { to: '/docs/components/excel-editor', icon: '📑', title: 'Excel', badge: 'Excel', description: '線上試算表編輯器（公式、日期、跨表參照）/ 匯出 / 匯入' },
   { to: '/docs/components/whiteboard', icon: '📝', title: 'Whiteboard', badge: 'Demo', description: '多頁白板、筆刷、幾何圖形、匯出 PNG/SVG' },
