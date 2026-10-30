@@ -99,8 +99,10 @@
       <h2 class="text-2xl font-bold text-content-primary mb-2">組件庫邊界</h2>
       <p class="text-sm text-content-secondary mb-4">
         <code class="bg-surface-tertiary px-1 py-0.5 rounded">src/components/library/</code>
-        必須能整包複製到另一個專案而不需修改。
+        必須能整包複製（或打包成套件）給另一個專案用而不需修改，所以內部<strong>不得出現任何 <code>@/</code> 別名</strong>：
+        在使用端的專案裡 <code>@</code> 指向的是對方的 <code>src</code>，別名會整批解析失敗。
         <code class="bg-surface-tertiary px-1 py-0.5 rounded">npm run check:boundary</code> 會擋下違規，CI 也會跑。
+        （應用程式端 —— 文件站、views、tests —— 照樣用 <code>@/components/library</code> 匯入，不受影響。）
       </p>
 
       <ApiTable of="-" title="允許的相依" :rows="boundaryRows" />
@@ -223,9 +225,10 @@ const darkTokenRows = [
 
 const boundaryRows = [
   { name: '✅ npm 套件', type: 'vue / d3 / @vueuse/core / xlsx …', desc: '可以' },
-  { name: '✅ library 內部', type: '@/components/library/… 或相對路徑', desc: '可以' },
-  { name: '✅ 設計令牌', type: '@/design', desc: '設計令牌本身就是組件庫的一部分' },
-  { name: '❌ 應用程式模組', type: '@/composables / @/stores / @/api / @/utils / @/router / @/views', desc: '不可以；改由 props 或 emit 注入' },
+  { name: '✅ library 內部', type: "相對路徑（'../shared/config'）", desc: '只能用相對路徑' },
+  { name: '❌ library 內部用別名', type: '@/components/library/…', desc: '不可以；改用相對路徑（check:boundary 會提示）' },
+  { name: '❌ 設計令牌', type: '@/design', desc: "不可以；用 Tailwind token class、CSS 變數（rgb(var(--t-*))），圖表用 charts/chartTheme 的 chartPalette / chartTheme" },
+  { name: '❌ 應用程式模組', type: '@/composables / @/stores / @/api / @/router / @/views', desc: '不可以；改由 props 或 emit 注入' },
 ]
 
 const pitfallRows = [

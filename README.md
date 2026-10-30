@@ -343,7 +343,7 @@ const { isDark, mode, setMode, toggle } = useDarkMode()
 
 - Tailwind class：`bg-primary-500`、`text-success-600`、`border-neutral-300`…
 - Scoped CSS / SVG：`var(--color-primary-500)`、`var(--viz-axis-line)`…
-- D3：`import { viz, categoricalRange } from '@/design'`
+- D3：`import { viz, categoricalRange } from '@/design'`（應用程式端；組件庫內部不能用 `@/` 別名，圖表改用 `charts/chartTheme` 的 `chartPalette` / `chartTheme`，或讀 CSS 變數）
 
 | token | 用途 | 主值 |
 |---|---|---|

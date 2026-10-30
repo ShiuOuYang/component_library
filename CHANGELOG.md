@@ -128,6 +128,8 @@
 
 ### 文件與工具
 
+- `npm run check:boundary`：組件庫內部不再允許任何 `@/` 別名（含 `@/components/library` 與 `@/design`），一律用相對路徑 ——
+  組件庫要打包給其他 repo 安裝，別名在使用端會解析失敗。應用程式端照樣用 `@/components/library`。（#44）
 - `npm run check:doc-api`：文件 API 表列的 props / events / 插槽 / 方法必須是元件真的有的。（#23）
 - `npm run check:docs` 會擋下沒有路由連到的孤兒文件頁。（#23）
 - 對外 API 測試：子入口的元件與對外型別都必須能從正式入口取得。（#21、#22）

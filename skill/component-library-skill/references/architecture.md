@@ -25,7 +25,7 @@ src/design/tokens.js        ← 唯一手動維護（品牌色/語意色/間距/
 - 三種用法：
   1. template：`class="bg-primary-600 text-success-700 border-stroke-light"`（token utility）
   2. scoped CSS / `:deep()` SVG：`var(--viz-axis-line)`、`var(--color-primary-600)`、`var(--z-modal)`
-  3. D3：`import { viz, duration, categoricalRange, sequentialRange } from '@/design'`
+  3. D3：`import { viz, duration, categoricalRange, sequentialRange } from '@/design'`（只限應用程式端；組件庫內部不能用 `@/` 別名，圖表用 `charts/chartTheme` 的 `chartPalette` / `chartTheme`）
 - 規範細節與遷移對照見 `docs/DESIGN_SYSTEM.md`。
 
 ## API 層

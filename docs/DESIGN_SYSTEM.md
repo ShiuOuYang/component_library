@@ -100,6 +100,10 @@ import '@/styles/index.css'
 
 **3. D3 — 從 `@/design` import 真實色碼**
 
+> 這是**應用程式端**的寫法。組件庫（`src/components/library/`）內部不能用 `@/` 別名（`check:boundary` 會擋）：
+> 圖表元件改用 `charts/chartTheme` 的 `chartPalette` / `chartTheme`（`rgb(var(--t-*))`，深淺主題自動切換），
+> 需要實際色碼時用 `getComputedStyle(el).getPropertyValue('--t-…')`。
+
 ```js
 import * as d3 from 'd3'
 import { viz, duration, categoricalRange, sequentialRange } from '@/design'
