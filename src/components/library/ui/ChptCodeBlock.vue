@@ -8,7 +8,7 @@
     class="bg-neutral-900 rounded-xl p-4 overflow-x-auto focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
     tabindex="0"
     role="group"
-    :aria-label="props.language ? `${props.language} 程式碼` : '程式碼'"
+    :aria-label="props.language ? t.codeBlock.labelWithLang(props.language) : t.codeBlock.label"
   >
     <pre class="text-green-300 text-sm"><code>{{ formattedCode }}</code></pre>
 
@@ -22,7 +22,7 @@
     >
       <slot name="tip">
         <p :class="['text-xs', tipTextClass]">
-          <strong>{{ props.tipTitle }}：</strong><br />
+          <strong>{{ props.tipTitle ?? t.codeBlock.tipTitle }}{{ t.codeBlock.colon }}</strong><br />
           <span v-html="props.tip" />
         </p>
       </slot>
@@ -32,6 +32,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptCodeBlock（CHPT 主題） - 程式碼展示區塊
@@ -59,13 +60,15 @@ interface ChptCodeBlockProps {
   tipTitle?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptCodeBlockProps>(), {
   code: '',
   language: 'javascript',
   trimIndent: true,
   tip: '',
   tipType: 'info',
-  tipTitle: '重要提示',
+  tipTitle: undefined,
 })
 
 /** 格式化程式碼（移除多餘縮排） */

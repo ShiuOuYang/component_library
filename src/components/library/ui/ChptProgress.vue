@@ -6,7 +6,7 @@
       :aria-valuenow="displayPercent"
       aria-valuemin="0"
       aria-valuemax="100"
-      :aria-label="props.ariaLabel"
+      :aria-label="props.ariaLabel ?? t.progress.label"
       class="flex-1 rounded-full overflow-hidden"
       :style="{ height: `${props.strokeWidth}px`, backgroundColor: trackColorClass }"
       :class="props.trackColor"
@@ -26,6 +26,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptProgress（CHPT 主題） - 進度條元件
@@ -54,13 +55,15 @@ interface ChptProgressProps {
   ariaLabel?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptProgressProps>(), {
   modelValue: 0,
   status: 'primary',
   strokeWidth: 8,
   trackColor: '',
   showLabel: true,
-  ariaLabel: '進度',
+  ariaLabel: undefined,
 })
 
 // 註：本元件為純顯示，modelValue 是單向輸入，不會回寫。

@@ -15,7 +15,7 @@
     <button
       v-if="props.autoplay"
       type="button"
-      :aria-label="playing ? '暫停自動播放' : '開始自動播放'"
+      :aria-label="playing ? t.carousel.pause : t.carousel.play"
       class="absolute left-3 top-3 z-10 inline-flex h-control-sm min-w-control-sm items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
       @click="userPaused = !userPaused"
     >
@@ -47,7 +47,7 @@
       <button
         v-if="props.arrows"
         type="button"
-        aria-label="上一張"
+        :aria-label="t.carousel.prev"
         :disabled="!props.loop && current === 0"
         class="absolute left-3 top-1/2 z-10 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40"
         @click="prev"
@@ -57,7 +57,7 @@
       <button
         v-if="props.arrows"
         type="button"
-        aria-label="下一張"
+        :aria-label="t.carousel.next"
         :disabled="!props.loop && current === props.items.length - 1"
         class="absolute right-3 top-1/2 z-10 inline-flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-40"
         @click="next"
@@ -70,7 +70,7 @@
           v-for="(_, i) in props.items"
           :key="i"
           type="button"
-          :aria-label="`第 ${i + 1} 張`"
+          :aria-label="t.carousel.slide(i + 1)"
           :aria-current="i === current ? 'true' : undefined"
           class="h-2 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-1 focus-visible:ring-offset-black"
           :class="i === current ? 'w-5 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'"
@@ -85,6 +85,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import { prefersReducedMotion } from '../shared/scroll'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptCarousel（CHPT 主題） - 輪播
@@ -118,6 +119,8 @@ interface ChptCarouselProps {
   height?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptCarouselProps>(), {
   modelValue: undefined,
   autoplay: false,

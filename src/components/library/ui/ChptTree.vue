@@ -77,13 +77,14 @@
       </span>
     </div>
 
-    <p v-if="!rows.length" class="px-2 py-3 text-content-tertiary">{{ props.filterText ? '找不到符合的項目' : props.emptyText }}</p>
+    <p v-if="!rows.length" class="px-2 py-3 text-content-tertiary">{{ props.filterText ? t.common.noMatch : (props.emptyText ?? t.common.noData) }}</p>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptTree（CHPT 主題） - 樹狀清單
@@ -139,6 +140,8 @@ interface ChptTreeProps {
   emptyText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptTreeProps>(), {
   modelValue: null,
   selectable: true,
@@ -150,7 +153,7 @@ const props = withDefaults(defineProps<ChptTreeProps>(), {
   indent: 20,
   size: 'md',
   ariaLabel: '',
-  emptyText: '沒有資料',
+  emptyText: undefined,
 })
 
 const emit = defineEmits<{

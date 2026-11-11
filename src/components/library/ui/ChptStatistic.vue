@@ -6,7 +6,7 @@
 
     <div v-if="props.loading" class="flex flex-col gap-2 py-1" aria-busy="true" aria-live="polite">
       <span class="block h-8 w-32 rounded bg-surface-tertiary animate-pulse"></span>
-      <span class="sr-only">載入中</span>
+      <span class="sr-only">{{ t.loading }}</span>
     </div>
 
     <template v-else>
@@ -40,6 +40,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptStatistic（CHPT 主題） - 統計數值（KPI）
@@ -82,6 +83,8 @@ interface ChptStatisticProps {
   loading?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptStatisticProps>(), {
   title: '',
   value: null,
@@ -160,8 +163,9 @@ const formattedDelta = computed(() => {
 
 const trendSpoken = computed(() => {
   const d = formatNumber(Math.abs(props.delta ?? 0), props.deltaPrecision, props.groupSeparator) + props.deltaSuffix
-  const verb = { up: `上升 ${d}`, down: `下降 ${d}`, flat: '持平' }[direction.value]
-  const judge = { good: '（表現較佳）', bad: '（表現較差）', neutral: '' }[quality.value]
+  const s = t.value.statistic
+  const verb = { up: s.up(d), down: s.down(d), flat: s.flat }[direction.value]
+  const judge = { good: s.better, bad: s.worse, neutral: '' }[quality.value]
   return `${verb}${judge}`
 })
 </script>

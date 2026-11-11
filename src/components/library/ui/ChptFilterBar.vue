@@ -13,7 +13,7 @@
         class="px-3 py-1.5 text-sm border border-stroke-default rounded-lg focus:outline-none focus:ring-2 focus:ring-stroke-focus focus:border-stroke-focus bg-surface-primary transition-all shadow-sm hover:border-primary-400"
       >
         <option value="All">
-          {{ filter.allLabel || '全部' }}
+          {{ filter.allLabel || t.common.all }}
           <template v-if="filter.allCount !== undefined"> ({{ filter.allCount }})</template>
         </option>
         <option
@@ -29,13 +29,14 @@
 
     <!-- 顯示計數（可選） -->
     <div v-if="props.showCount" class="ml-auto text-sm text-content-secondary">
-      共 <span class="font-semibold text-accent">{{ props.count }}</span> 筆{{ props.countLabel }}
+      {{ t.filterBar.totalBefore }} <span class="font-semibold text-accent">{{ props.count }}</span> {{ t.filterBar.totalAfter }}{{ props.countLabel ?? t.filterBar.countLabel }}
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useId } from 'vue'
+import { useLocale } from '../shared/config'
 
 const uid = useId()
 /**
@@ -74,12 +75,14 @@ interface ChptFilterBarProps {
   countLabel?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptFilterBarProps>(), {
   filters: () => [],
   modelValue: () => ({}),
   showCount: true,
   count: 0,
-  countLabel: '項目',
+  countLabel: undefined,
 })
 
 const emit = defineEmits<{

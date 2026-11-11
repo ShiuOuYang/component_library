@@ -12,7 +12,7 @@
       v-if="status === 'error'"
       class="flex size-full flex-col items-center justify-center gap-1 p-2 text-center text-xs text-content-tertiary"
       role="img"
-      :aria-label="props.alt ? `${props.alt}（圖片無法載入）` : '圖片無法載入'"
+      :aria-label="props.alt ? t.image.failedWithAlt(props.alt) : t.image.failed"
     >
       <slot name="error">
         <ChptIcon :size="28" color="current">broken_image</ChptIcon>
@@ -26,7 +26,7 @@
         type="button"
         class="group relative block size-full focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-stroke-focus"
         :class="roundedClass"
-        :aria-label="props.alt ? `放大檢視：${props.alt}` : '放大檢視圖片'"
+        :aria-label="props.alt ? t.image.previewWithAlt(props.alt) : t.image.preview"
         @click="openPreview"
       >
         <img
@@ -71,6 +71,7 @@
 import { computed, ref, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import ChptImageViewer, { type ViewerImage } from './ChptImageViewer.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptImage（CHPT 主題） - 圖片
@@ -99,6 +100,8 @@ interface ChptImageProps {
   previewSrcList?: (string | ViewerImage)[]
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptImageProps>(), {
   width: undefined,
   height: undefined,

@@ -4,18 +4,19 @@
     <!-- 每秒都在變的數字不放 live region（會一直打斷報讀）；改用 role="timer"，並在到期時報讀一次 -->
     <span
       role="timer"
-      :aria-label="props.title ? `${props.title}：${spoken}` : spoken"
+      :aria-label="props.title ? t.countdown.titled(props.title, spoken) : spoken"
       class="font-semibold tabular-nums"
       :class="[sizeClass, urgent ? 'text-danger' : 'text-content-primary']"
     >
       <slot :parts="parts" :remaining="remaining" :text="display">{{ display }}</slot>
     </span>
-    <span class="sr-only" aria-live="polite">{{ finished ? props.finishedText : '' }}</span>
+    <span class="sr-only" aria-live="polite">{{ finished ? finishedLabel : '' }}</span>
   </span>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptCountdown（CHPT 主題） - 倒數計時
@@ -42,11 +43,13 @@ interface ChptCountdownProps {
   interval?: number
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptCountdownProps>(), {
   title: '',
   format: 'HH:mm:ss',
   warningThreshold: 0,
-  finishedText: '時間到',
+  finishedText: undefined,
   size: 'md',
   interval: 1000,
 })
@@ -84,16 +87,19 @@ const display = computed(() => {
     .replace('SSS', pad(p.millis, 3))
 })
 
+const finishedLabel = computed(() => props.finishedText ?? t.value.countdown.finished)
+
 /** 螢幕閱讀器用的完整說法（「1 小時 5 分 3 秒」），不是 01:05:03 */
 const spoken = computed(() => {
-  if (finished.value) return props.finishedText
+  if (finished.value) return finishedLabel.value
   const p = parts.value
+  const c = t.value.countdown
   const out: string[] = []
-  if (p.days) out.push(`${p.days} 天`)
-  if (p.hours) out.push(`${p.hours} 小時`)
-  if (p.minutes) out.push(`${p.minutes} 分`)
-  out.push(`${p.seconds} 秒`)
-  return `剩餘 ${out.join(' ')}`
+  if (p.days) out.push(c.days(p.days))
+  if (p.hours) out.push(c.hours(p.hours))
+  if (p.minutes) out.push(c.minutes(p.minutes))
+  out.push(c.seconds(p.seconds))
+  return c.remaining(out.join(' '))
 })
 
 const sizeClass = computed(() => ({ sm: 'text-base', md: 'text-2xl', lg: 'text-4xl' })[props.size])

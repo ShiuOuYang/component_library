@@ -52,7 +52,7 @@ const props = withDefaults(defineProps<FilterSelectProps>(), {
   modelValue: '',
   options: () => [],
   label: '',
-  placeholder: '全部',
+  placeholder: undefined,
   allValue: '',
   showAllOption: true,
   disabled: false,

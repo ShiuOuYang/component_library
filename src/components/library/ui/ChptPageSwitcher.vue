@@ -22,7 +22,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12M8 12h12M8 17h12M3 7h.01M3 12h.01M3 17h.01"/>
           </svg>
-          {{ props.title }}
+          {{ props.title ?? t.pageSwitcher.title }}
         </div>
 
         <!-- 頁面選項 -->
@@ -63,7 +63,7 @@
 
         <!-- 底部提示 -->
         <div class="px-4 py-2 bg-surface-secondary text-xs text-content-tertiary border-t border-stroke-light">
-          {{ props.footerHint }}
+          {{ props.footerHint ?? t.pageSwitcher.footerHint }}
         </div>
       </div>
     </transition>
@@ -73,6 +73,7 @@
 <script setup lang="ts">
 import { ref, computed, onBeforeUnmount, type VNode } from 'vue'
 import { useOptionalRouter } from '../shared/useOptionalRouter'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptPageSwitcher（CHPT 主題） - 側邊頁面切換器
@@ -106,10 +107,12 @@ interface ChptPageSwitcherProps {
   activePath?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptPageSwitcherProps>(), {
-  title: '頁面切換',
+  title: undefined,
   pages: () => [],
-  footerHint: '滑鼠移開自動收起',
+  footerHint: undefined,
   activePath: undefined,
 })
 

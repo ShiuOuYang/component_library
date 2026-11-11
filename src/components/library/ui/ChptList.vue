@@ -69,7 +69,7 @@
         class="inline-flex h-control-sm items-center rounded-md px-3 text-sm font-medium text-accent hover:bg-accent-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
         @click="emit('load-more')"
       >
-        {{ props.loadMoreText }}
+        {{ props.loadMoreText ?? t.list.loadMore }}
       </button>
       <div v-else ref="sentinelRef" class="h-px" aria-hidden="true"></div>
     </div>
@@ -82,7 +82,7 @@
 
 <script setup lang="ts" generic="T">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { useConfig } from '../shared/config'
+import { useConfig, useLocale } from '../shared/config'
 
 /**
  * ChptList —— 通知、待辦、最近活動這類「一筆一行」的清單
@@ -113,6 +113,8 @@ interface ChptListProps {
   grid?: number
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptListProps>(), {
   items: () => [],
   itemKey: 'id',
@@ -124,7 +126,7 @@ const props = withDefaults(defineProps<ChptListProps>(), {
   loading: false,
   hasMore: false,
   infinite: false,
-  loadMoreText: '載入更多',
+  loadMoreText: undefined,
   emptyText: undefined,
   grid: undefined,
 })

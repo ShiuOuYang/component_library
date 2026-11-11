@@ -2,25 +2,26 @@
   <span class="inline-flex">
   <button
     type="button"
-    :aria-label="props.label ? undefined : copied ? `已複製：${ariaSubject}` : `複製：${ariaSubject}`"
-    :title="copied ? props.copiedText : props.tooltip"
+    :aria-label="props.label ? undefined : copied ? t.copy.copiedSubject(ariaSubject) : t.copy.copySubject(ariaSubject)"
+    :title="copied ? copiedLabel : (props.tooltip ?? t.copy.copy)"
     :disabled="props.disabled"
     class="inline-flex items-center justify-center gap-1 rounded text-content-tertiary transition-colors hover:bg-surface-tertiary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus disabled:cursor-not-allowed disabled:opacity-50"
     :class="[props.label ? 'h-control-xs px-2 text-xs' : 'h-control-xs min-w-control-xs', copied ? '!text-success' : '']"
     @click="copy"
   >
     <ChptIcon :size="16" color="current">{{ copied ? 'check' : failed ? 'error' : 'content_copy' }}</ChptIcon>
-    <span v-if="props.label">{{ copied ? props.copiedText : props.label }}</span>
+    <span v-if="props.label">{{ copied ? copiedLabel : props.label }}</span>
   </button>
   <!-- 結果要唸出來：按鈕的文字變了但焦點沒動，螢幕閱讀器不會自己報讀。
        放在按鈕外面：放裡面會變成按鈕名稱的一部分（「已複製 已複製」） -->
-  <span class="sr-only" aria-live="polite">{{ copied ? props.copiedText : failed ? '複製失敗' : '' }}</span>
+  <span class="sr-only" aria-live="polite">{{ copied ? copiedLabel : failed ? t.copy.failed : '' }}</span>
   </span>
 </template>
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptCopyButton（CHPT 主題） - 複製到剪貼簿
@@ -45,11 +46,13 @@ interface ChptCopyButtonProps {
   disabled?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptCopyButtonProps>(), {
   label: '',
   subject: '',
-  tooltip: '複製',
-  copiedText: '已複製',
+  tooltip: undefined,
+  copiedText: undefined,
   resetAfter: 2000,
   disabled: false,
 })
@@ -61,6 +64,7 @@ const emit = defineEmits<{
 
 const copied = ref(false)
 const failed = ref(false)
+const copiedLabel = computed(() => props.copiedText ?? t.value.copy.copied)
 const ariaSubject = computed(() => props.subject || props.text)
 let timer: ReturnType<typeof setTimeout> | undefined
 onBeforeUnmount(() => clearTimeout(timer))

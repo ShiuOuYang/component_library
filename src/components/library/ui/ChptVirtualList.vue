@@ -27,16 +27,17 @@
     </div>
 
     <div v-if="props.loading" class="sticky bottom-0 flex justify-center bg-surface-primary/90 py-2 text-sm text-content-tertiary" role="status">
-      <slot name="loading">載入中…</slot>
+      <slot name="loading">{{ t.common.loadingEllipsis }}</slot>
     </div>
     <div v-else-if="!props.items.length" class="flex h-full items-center justify-center text-sm text-content-tertiary">
-      <slot name="empty">{{ props.emptyText }}</slot>
+      <slot name="empty">{{ props.emptyText ?? t.common.noData }}</slot>
     </div>
   </div>
 </template>
 
 <script setup lang="ts" generic="T">
 import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptVirtualList（CHPT 主題） - 虛擬捲動清單
@@ -67,13 +68,15 @@ interface ChptVirtualListProps {
   ariaLabel?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptVirtualListProps>(), {
   height: '24rem',
   overscan: 6,
   keyField: undefined,
   threshold: 120,
   loading: false,
-  emptyText: '沒有資料',
+  emptyText: undefined,
   ariaLabel: '',
 })
 

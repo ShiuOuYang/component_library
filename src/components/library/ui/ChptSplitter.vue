@@ -17,7 +17,7 @@
       :aria-valuemin="props.min"
       :aria-valuemax="props.max"
       :aria-controls="startId"
-      :aria-label="props.ariaLabel"
+      :aria-label="props.ariaLabel ?? t.splitter.label"
       :aria-disabled="props.disabled || undefined"
       class="group relative flex shrink-0 items-center justify-center bg-stroke-light transition-colors focus:outline-none focus-visible:bg-stroke-focus"
       :class="[
@@ -49,6 +49,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, useId, useTemplateRef } from 'vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptSplitter（CHPT 主題） - 可拖曳調整的分割面板
@@ -76,6 +77,8 @@ interface ChptSplitterProps {
   ariaLabel?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptSplitterProps>(), {
   modelValue: undefined,
   direction: 'horizontal',
@@ -83,7 +86,7 @@ const props = withDefaults(defineProps<ChptSplitterProps>(), {
   max: 90,
   step: 2,
   disabled: false,
-  ariaLabel: '調整面板大小',
+  ariaLabel: undefined,
 })
 
 const emit = defineEmits<{

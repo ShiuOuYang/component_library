@@ -28,7 +28,7 @@
             ref="panel"
             role="dialog"
             aria-modal="true"
-            :aria-label="props.title ? undefined : props.ariaLabel"
+            :aria-label="props.title ? undefined : (props.ariaLabel ?? t.drawer.label)"
             :aria-labelledby="props.title ? titleId : undefined"
             tabindex="-1"
             class="absolute bg-surface-primary shadow-2xl flex flex-col focus:outline-none"
@@ -44,7 +44,7 @@
                 v-if="props.closable"
                 type="button"
                 class="flex items-center cursor-pointer text-content-tertiary hover:text-content-primary transition-colors"
-                :aria-label="'關閉'"
+                :aria-label="t.common.close"
                 @click="handleClose"
               >
                 <ChptIcon :size="20">close</ChptIcon>
@@ -69,6 +69,7 @@
 import { computed, useId, useTemplateRef } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import { useOverlay } from '../shared/useOverlay'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptDrawer（CHPT 主題） - 抽屜 / 側滑面板
@@ -105,6 +106,8 @@ interface ChptDrawerProps {
   closeOnEscape?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptDrawerProps>(), {
   modelValue: false,
   title: '',
@@ -113,7 +116,7 @@ const props = withDefaults(defineProps<ChptDrawerProps>(), {
   closable: true,
   maskClosable: true,
   backdropOpacity: 0.4,
-  ariaLabel: '側邊面板',
+  ariaLabel: undefined,
   closeOnEscape: true,
 })
 

@@ -17,12 +17,13 @@
       :aria-controls="textId"
       class="mt-0.5 rounded text-xs text-accent hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
       @click="toggle"
-    >{{ expanded ? props.collapseText : props.expandText }}</button>
+    >{{ expanded ? (props.collapseText ?? t.ellipsis.collapse) : (props.expandText ?? t.ellipsis.expand) }}</button>
   </span>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptEllipsis（CHPT 主題） - 文字過長時截斷
@@ -47,13 +48,15 @@ interface ChptEllipsisProps {
   block?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptEllipsisProps>(), {
   text: '',
   lines: 1,
   expandable: false,
   tooltip: true,
-  expandText: '展開',
-  collapseText: '收起',
+  expandText: undefined,
+  collapseText: undefined,
   block: false,
 })
 

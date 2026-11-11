@@ -36,7 +36,7 @@
             <span v-if="hiddenCount" class="text-xs text-content-tertiary">+{{ hiddenCount }}</span>
           </template>
           <span v-else-if="!props.multiple && singleText" class="truncate" :class="props.disabled ? '' : 'text-content-primary'">{{ singleText }}</span>
-          <span v-else class="truncate text-content-tertiary">{{ props.placeholder }}</span>
+          <span v-else class="truncate text-content-tertiary">{{ props.placeholder ?? t.common.pleaseSelect }}</span>
         </span>
       </button>
       <span class="pointer-events-none absolute right-2 inline-flex text-content-tertiary" aria-hidden="true">
@@ -45,7 +45,7 @@
       <button
         v-if="showClear"
         type="button"
-        aria-label="清除"
+        :aria-label="t.clear"
         class="absolute right-1.5 inline-flex h-control-xs min-w-control-xs items-center justify-center rounded text-content-tertiary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
         @click="clear"
       >
@@ -57,7 +57,7 @@
       v-if="isOpen"
       :id="panelId"
       role="dialog"
-      :aria-label="props.label ? `選擇${props.label}` : '選擇項目'"
+      :aria-label="props.label ? t.cascader.choose(props.label) : t.cascader.chooseItem"
       class="absolute left-0 top-full z-dropdown mt-1 flex w-full min-w-[16rem] flex-col rounded-lg border border-stroke-light bg-surface-primary shadow-lg"
       @keydown.esc.stop.prevent="close(true)"
     >
@@ -68,8 +68,8 @@
             ref="search"
             v-model="query"
             type="search"
-            :placeholder="props.filterPlaceholder"
-            aria-label="搜尋"
+            :placeholder="props.filterPlaceholder ?? t.common.search"
+            :aria-label="t.common.search"
             class="h-control-sm w-full rounded-md border border-stroke-default bg-surface-primary pl-8 pr-2 text-sm text-content-primary focus:border-stroke-focus focus:outline-none focus:ring-1 focus:ring-stroke-focus"
             @keydown.down.prevent="tree?.focus()"
           />
@@ -86,7 +86,7 @@
           :filter-text="query"
           :default-expand-all="props.defaultExpandAll"
           :expanded="expanded"
-          :aria-label="props.label || '選項'"
+          :aria-label="props.label || t.treeSelect.options"
           size="sm"
           @update:expanded="expanded = $event"
           @select="onSelect"
@@ -105,6 +105,7 @@ import { onClickOutside } from '@vueuse/core'
 import ChptIcon from './ChptIcon.vue'
 import ChptTree, { type TreeNode } from './ChptTree.vue'
 import { useFormField } from '../shared/formContext'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptTreeSelect（CHPT 主題） - 樹狀下拉選擇
@@ -145,6 +146,8 @@ interface ChptTreeSelectProps {
   errorText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptTreeSelectProps>(), {
   modelValue: null,
   multiple: false,
@@ -153,11 +156,11 @@ const props = withDefaults(defineProps<ChptTreeSelectProps>(), {
   showPath: false,
   separator: ' / ',
   filterable: false,
-  filterPlaceholder: '搜尋',
+  filterPlaceholder: undefined,
   defaultExpandAll: false,
   panelHeight: '18rem',
   label: '',
-  placeholder: '請選擇',
+  placeholder: undefined,
   clearable: false,
   disabled: false,
   fullWidth: false,

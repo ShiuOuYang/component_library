@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { provideConfig, type ChptLocale, type ConfigSize } from '../shared/config'
+import { provideConfig, type ChptLocaleInput, type ConfigSize } from '../shared/config'
 
 /**
  * ChptConfigProvider —— 一個區塊內的元件統一尺寸與內建文字
@@ -25,7 +25,7 @@ interface ChptConfigProviderProps {
   /** 表單元件與按鈕的預設尺寸（元件自己有傳 size 時以元件為準） */
   size?: ConfigSize
   /** 內建文字；可以只給部分欄位 */
-  locale?: Partial<ChptLocale>
+  locale?: ChptLocaleInput
 }
 
 const props = withDefaults(defineProps<ChptConfigProviderProps>(), {

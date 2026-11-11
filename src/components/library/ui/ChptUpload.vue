@@ -37,8 +37,8 @@
     >
       <ChptIcon :size="32" :weight="300" color="current">{{ dragging ? 'file_download' : 'cloud_upload' }}</ChptIcon>
       <span class="text-sm">
-        <template v-if="dragging">放開以加入檔案</template>
-        <template v-else>拖曳檔案到這裡，或<span class="font-medium text-accent underline underline-offset-2">點擊選擇</span></template>
+        <template v-if="dragging">{{ t.upload.drop }}</template>
+        <template v-else>{{ t.upload.dragBefore }}<span class="font-medium text-accent underline underline-offset-2">{{ t.upload.clickToSelect }}</span></template>
       </span>
       <span :id="hintId" class="text-xs text-content-tertiary">{{ hintText }}</span>
     </label>
@@ -49,7 +49,7 @@
         :class="isDisabled ? 'cursor-not-allowed text-content-disabled' : 'cursor-pointer hover:bg-surface-secondary'"
       >
         <ChptIcon :size="16" color="current">upload</ChptIcon>
-        {{ props.buttonText }}
+        {{ props.buttonText ?? t.upload.button }}
       </label>
       <span :id="hintId" class="text-xs text-content-tertiary">{{ hintText }}</span>
     </div>
@@ -60,7 +60,7 @@
     </ul>
 
     <!-- 檔案清單 -->
-    <ul v-if="files.length" class="flex flex-col gap-1.5" aria-label="已選擇的檔案">
+    <ul v-if="files.length" class="flex flex-col gap-1.5" :aria-label="t.upload.fileList">
       <li
         v-for="file in files"
         :key="file.uid"
@@ -75,7 +75,7 @@
             v-if="file.status === 'error' && props.request"
             type="button"
             class="inline-flex h-control-xs min-w-control-xs items-center justify-center rounded text-content-secondary hover:bg-surface-tertiary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
-            :aria-label="`重試上傳 ${file.name}`"
+            :aria-label="t.upload.retry(file.name)"
             @click="upload(file)"
           >
             <ChptIcon :size="16" color="current">refresh</ChptIcon>
@@ -84,7 +84,7 @@
             v-if="!props.disabled"
             type="button"
             class="inline-flex h-control-xs min-w-control-xs items-center justify-center rounded text-content-secondary hover:bg-surface-tertiary hover:text-danger focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
-            :aria-label="file.status === 'uploading' ? `取消上傳 ${file.name}` : `移除 ${file.name}`"
+            :aria-label="file.status === 'uploading' ? t.upload.cancelUpload(file.name) : t.upload.remove(file.name)"
             @click="remove(file)"
           >
             <ChptIcon :size="16" color="current">close</ChptIcon>
@@ -93,7 +93,7 @@
         <div
           v-if="file.status === 'uploading'"
           role="progressbar"
-          :aria-label="`${file.name} 上傳進度`"
+          :aria-label="t.upload.progress(file.name)"
           aria-valuemin="0"
           aria-valuemax="100"
           :aria-valuenow="Math.round(file.percent ?? 0)"
@@ -110,6 +110,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptUpload（CHPT 主題） - 檔案上傳
@@ -181,6 +182,8 @@ interface ChptUploadProps {
   fullWidth?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptUploadProps>(), {
   modelValue: () => [],
   accept: '',
@@ -191,7 +194,7 @@ const props = withDefaults(defineProps<ChptUploadProps>(), {
   autoUpload: true,
   drag: true,
   label: '',
-  buttonText: '選擇檔案',
+  buttonText: undefined,
   hint: '',
   disabled: false,
   fullWidth: true,
@@ -262,10 +265,11 @@ function formatSize(bytes: number): string {
 const hintText = computed(() => {
   if (props.hint) return props.hint
   const parts: string[] = []
-  if (props.accept) parts.push(`格式：${props.accept.split(',').map((s) => s.trim()).join('、')}`)
-  if (props.maxSize) parts.push(`單檔上限 ${formatSize(props.maxSize)}`)
-  if (props.maxCount) parts.push(isFull.value ? `已達 ${props.maxCount} 個檔案上限` : `最多 ${props.maxCount} 個檔案`)
-  return parts.join('，')
+  const u = t.value.upload
+  if (props.accept) parts.push(u.accept(props.accept.split(',').map((s) => s.trim()).join(u.listSeparator)))
+  if (props.maxSize) parts.push(u.maxSize(formatSize(props.maxSize)))
+  if (props.maxCount) parts.push(isFull.value ? u.reachedMaxCount(props.maxCount) : u.maxCount(props.maxCount))
+  return parts.join(u.hintSeparator)
 })
 
 /** 檔案是否符合 accept（副檔名 .xlsx、MIME image/*、完整 MIME） */
@@ -298,9 +302,9 @@ function addFiles(list: FileList | File[]): void {
   const base = props.multiple ? current() : []
   for (const file of picked) {
     let reason = ''
-    if (!matchesAccept(file)) reason = `格式不符（允許 ${props.accept}）`
-    else if (props.maxSize !== undefined && file.size > props.maxSize) reason = `超過大小上限 ${formatSize(props.maxSize)}`
-    else if (props.maxCount !== undefined && base.length + accepted.length >= props.maxCount) reason = `超過 ${props.maxCount} 個檔案上限`
+    if (!matchesAccept(file)) reason = t.value.upload.invalidType(props.accept)
+    else if (props.maxSize !== undefined && file.size > props.maxSize) reason = t.value.upload.tooLarge(formatSize(props.maxSize))
+    else if (props.maxCount !== undefined && base.length + accepted.length >= props.maxCount) reason = t.value.upload.tooMany(props.maxCount)
     if (reason) {
       rejected.value.push({ name: file.name, reason })
       emit('reject', file, reason)
@@ -346,7 +350,7 @@ async function upload(file: UploadFile): Promise<boolean> {
     return true
   } catch (err) {
     if (controller.signal.aborted) return false
-    const message = err instanceof Error ? err.message : typeof err === 'string' ? err : '上傳失敗'
+    const message = err instanceof Error ? err.message : typeof err === 'string' ? err : t.value.upload.failed
     const failed = patch(file.uid, { status: 'error', error: message })
     if (failed) emit('error', failed, err)
     return false

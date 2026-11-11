@@ -14,7 +14,7 @@
       :disabled="props.disabled"
       :clearable="props.clearable"
       :auto-apply="props.autoApply"
-      :placeholder="props.placeholder"
+      :placeholder="props.placeholder ?? t.datePicker.placeholder"
       :state="invalid ? false : undefined"
       class="chpt-date-picker"
       :class="sizeClass"
@@ -54,6 +54,7 @@ const VueDatePicker = defineAsyncComponent({
 })
 import type { ComponentSize } from '../shared/types/ui.types'
 import { FORM_ITEM_KEY } from '../shared/formContext'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptDatePicker（CHPT 主題） - 日期選擇元件
@@ -100,10 +101,12 @@ interface ChptDatePickerProps {
   errorText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptDatePickerProps>(), {
   modelValue: null,
   label: '',
-  placeholder: '選擇日期',
+  placeholder: undefined,
   range: false,
   enableTimePicker: false,
   format: 'yyyy-MM-dd',

@@ -15,7 +15,7 @@
           :checked="side.allState === 'all'"
           :indeterminate="side.allState === 'some'"
           :disabled="props.disabled || !side.selectable.length"
-          :aria-label="`全選${side.title}`"
+          :aria-label="t.transfer.selectAll(side.title)"
           @change="toggleAll(side.key)"
         />
         <h3 :id="`${uid}-${side.key}-title`" class="flex-1 truncate text-sm font-medium text-content-primary">{{ side.title }}</h3>
@@ -30,8 +30,8 @@
           <input
             v-model="query[side.key]"
             type="search"
-            :placeholder="props.filterPlaceholder"
-            :aria-label="`搜尋${side.title}`"
+            :placeholder="props.filterPlaceholder ?? t.common.search"
+            :aria-label="t.transfer.search(side.title)"
             :disabled="props.disabled"
             class="h-control-sm w-full rounded-md border border-stroke-default bg-surface-primary pl-8 pr-2 text-sm text-content-primary focus:border-stroke-focus focus:outline-none focus:ring-1 focus:ring-stroke-focus"
           />
@@ -65,7 +65,7 @@
         </li>
         <li v-if="!side.visible.length" class="flex h-full flex-col items-center justify-center gap-1 text-sm text-content-tertiary">
           <ChptIcon :size="24">inbox</ChptIcon>
-          {{ query[side.key] ? '找不到符合的項目' : props.emptyText }}
+          {{ query[side.key] ? t.common.noMatch : (props.emptyText ?? t.common.noData) }}
         </li>
       </ul>
 
@@ -83,7 +83,7 @@
         @click="move('target')"
       >
         <ChptIcon :size="18" color="current" class="rotate-90 sm:rotate-0">chevron_right</ChptIcon>
-        <span>{{ props.buttonTexts[0] }}</span>
+        <span>{{ buttonLabels[0] }}</span>
         <span v-if="checked.source.size" class="tabular-nums">({{ checked.source.size }})</span>
       </button>
       <button
@@ -93,7 +93,7 @@
         @click="move('source')"
       >
         <ChptIcon :size="18" color="current" class="-rotate-90 sm:rotate-0">chevron_left</ChptIcon>
-        <span>{{ props.buttonTexts[1] }}</span>
+        <span>{{ buttonLabels[1] }}</span>
         <span v-if="checked.target.size" class="tabular-nums">({{ checked.target.size }})</span>
       </button>
     </div>
@@ -105,6 +105,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, useId, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptTransfer（CHPT 主題） - 穿梭框
@@ -153,20 +154,26 @@ interface ChptTransferProps {
   ariaLabel?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptTransferProps>(), {
   modelValue: () => [],
   data: () => [],
-  titles: () => ['可選項目', '已選項目'],
-  buttonTexts: () => ['加入', '移除'],
+  titles: undefined,
+  buttonTexts: undefined,
   filterable: false,
-  filterPlaceholder: '搜尋',
+  filterPlaceholder: undefined,
   filterMethod: undefined,
   targetOrder: 'original',
   listHeight: '16rem',
-  emptyText: '沒有資料',
+  emptyText: undefined,
   disabled: false,
   ariaLabel: '',
 })
+
+/** 沒傳時用語系文字（原本的預設 ['可選項目', '已選項目'] / ['加入', '移除'] 搬到 locale.transfer） */
+const titleLabels = computed<[string, string]>(() => props.titles ?? [t.value.transfer.source, t.value.transfer.target])
+const buttonLabels = computed<[string, string]>(() => props.buttonTexts ?? [t.value.transfer.add, t.value.transfer.remove])
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: Key[]): void
@@ -210,7 +217,7 @@ const sides = computed(() =>
       !checkedVisible.length ? 'none' : checkedVisible.length === selectable.length ? 'all' : 'some'
     return {
       key,
-      title: key === 'source' ? props.titles[0] : props.titles[1],
+      title: key === 'source' ? titleLabels.value[0] : titleLabels.value[1],
       items,
       visible,
       selectable,
@@ -260,8 +267,8 @@ function move(to: Side): void {
   moving.forEach((k) => checked[from].delete(k))
   emit('update:modelValue', next)
   emit('change', next, to === 'target' ? 'right' : 'left', moving)
-  const title = to === 'target' ? props.titles[1] : props.titles[0]
-  liveMessage.value = `已將 ${moving.length} 項移到${title}`
+  const title = to === 'target' ? titleLabels.value[1] : titleLabels.value[0]
+  liveMessage.value = t.value.transfer.moved(moving.length, title)
 }
 
 defineExpose({

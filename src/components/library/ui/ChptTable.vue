@@ -70,7 +70,7 @@
                 :rowspan="headerDepth > 1 ? headerDepth : undefined"
                 class="lead-col header-cell bg-gradient-to-b"
                 :class="[props.headerBgGradient]"
-              ><span class="sr-only">展開</span></th>
+              ><span class="sr-only">{{ t.table.expand }}</span></th>
               <th
                 v-if="selectionEnabled"
                 scope="col"
@@ -155,7 +155,7 @@
                   role="separator"
                   aria-orientation="vertical"
                   tabindex="0"
-                  :aria-label="`調整「${cell.column.title}」欄寬`"
+                  :aria-label="t.table.resize(cell.column.title)"
                   :aria-valuenow="Math.round(currentWidthOf(cell.column))"
                   :aria-valuemin="minWidthOf(cell.column)"
                   class="col-resizer"
@@ -232,7 +232,7 @@
                       :name="singleSelect ? `${uid}-select` : undefined"
                       :checked="selectedKeySet.has(keyOf(item, index + startIndex))"
                       :disabled="!canSelectRow(item)"
-                      :aria-label="`選取 ${rowLabelOf(item, index + startIndex)}`"
+                      :aria-label="t.table.selectRow(rowLabelOf(item, index + startIndex))"
                       @click.stop
                       @change="toggleRow(item, index + startIndex)"
                     />
@@ -312,7 +312,7 @@
 import { ref, computed, watch, shallowReactive, useSlots, onMounted, onBeforeUnmount, getCurrentInstance, useId } from 'vue'
 import ChptPagination from './ChptPagination.vue'
 import ChptSpinner from './ChptSpinner.vue'
-import { useConfig } from '../shared/config'
+import { useConfig, useLocale } from '../shared/config'
 
 // === 型別定義 ===
 export type DataRow = Record<string, unknown>
@@ -396,6 +396,8 @@ export interface SortEvent {
 }
 
 // === Props ===
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<{
   // 表格數據
   data?: DataRow[]
@@ -1050,7 +1052,7 @@ function rowLabelOf(row: DataRow, index: number): string {
   for (const col of displayColumns.value) {
     if (col.key && row[col.key] != null && row[col.key] !== '') return String(row[col.key])
   }
-  return `第 ${index + 1} 列`
+  return t.value.table.row(index + 1)
 }
 
 // ----- 勾選 -----

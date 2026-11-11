@@ -38,11 +38,13 @@ export interface ConfirmOptions {
 }
 
 /** ChptConfirmHost 內部用的佇列項目 @internal */
-export interface ConfirmRequest extends Required<Pick<ConfirmOptions, 'title' | 'type' | 'confirmText'>> {
+export interface ConfirmRequest extends Required<Pick<ConfirmOptions, 'title' | 'type'>> {
   id: number
   kind: 'confirm' | 'alert'
   message: string
-  cancelText: string
+  /** undefined = 由 ChptConfirmHost 依目前語系決定（確定 / 知道了 / 取消） */
+  confirmText?: string
+  cancelText?: string
   requireText: string
   focus: 'confirm' | 'cancel'
   resolve: (ok: boolean) => void
@@ -61,8 +63,8 @@ function enqueue(kind: ConfirmRequest['kind'], options: ConfirmOptions): Promise
       title: options.title,
       message: options.message ?? '',
       type,
-      confirmText: options.confirmText ?? (kind === 'alert' ? '知道了' : '確定'),
-      cancelText: options.cancelText ?? '取消',
+      confirmText: options.confirmText,
+      cancelText: options.cancelText,
       requireText: kind === 'confirm' ? options.requireText ?? '' : '',
       focus: options.focus ?? (type === 'danger' && kind === 'confirm' ? 'cancel' : 'confirm'),
       resolve,

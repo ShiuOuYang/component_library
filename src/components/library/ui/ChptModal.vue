@@ -32,7 +32,7 @@
             ref="dialogPanel"
             role="dialog"
             aria-modal="true"
-            :aria-label="props.title ? undefined : props.ariaLabel"
+            :aria-label="props.title ? undefined : (props.ariaLabel ?? t.modal.label)"
             :aria-labelledby="props.title ? titleId : undefined"
             tabindex="-1"
             class="relative bg-surface-primary rounded-xl shadow-2xl flex flex-col max-h-[85vh] focus:outline-none"
@@ -47,7 +47,7 @@
                 v-if="props.closable"
                 type="button"
                 class="flex items-center cursor-pointer text-content-tertiary hover:text-content-primary transition-colors"
-                :aria-label="'關閉'"
+                :aria-label="t.common.close"
                 @click="handleClose"
               >
                 <ChptIcon :size="20">close</ChptIcon>
@@ -95,7 +95,7 @@
           ref="modalRef"
           role="dialog"
           :aria-modal="props.backdropOpacity > 0 ? 'true' : 'false'"
-          :aria-label="props.title ? undefined : props.ariaLabel"
+          :aria-label="props.title ? undefined : (props.ariaLabel ?? t.modal.label)"
           :aria-labelledby="props.title ? titleId : undefined"
           tabindex="-1"
           class="relative bg-surface-primary overflow-hidden pointer-events-auto focus:outline-none"
@@ -113,7 +113,7 @@
               <div
                 v-show="props.draggable"
                 class="text-content-tertiary hover:text-content-primary transition-colors"
-                title="拖曳移動"
+                :title="t.modal.drag"
               >
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
@@ -129,7 +129,7 @@
                 v-if="showMinimizeButton"
                 @click="toggleMinimize"
                 class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-warning-subtle active:bg-warning-subtle-hover transition-all text-content-tertiary hover:text-warning"
-                :title="isMinimized ? '還原' : '縮小到口袋'"
+                :title="isMinimized ? t.modal.restore : t.modal.minimize"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                   <path stroke-linecap="round" d="M5 12h14"/>
@@ -139,7 +139,7 @@
                 v-if="showMaximizeButton"
                 @click="toggleMaximize"
                 class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-tertiary/60 active:bg-surface-muted/60 transition-all text-content-tertiary hover:text-content-primary"
-                :title="isMaximized ? '還原' : '最大化'"
+                :title="isMaximized ? t.modal.restore : t.modal.maximize"
               >
                 <svg v-if="isMaximized" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                   <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -153,7 +153,7 @@
                 v-if="showCloseButton"
                 @click="handleClose"
                 class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-danger-subtle active:bg-danger-subtle-hover transition-all text-content-tertiary hover:text-danger"
-                title="關閉"
+                :title="t.common.close"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
                   <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/>
@@ -198,6 +198,7 @@ import ChptIcon from './ChptIcon.vue'
 import { useId, useTemplateRef } from 'vue'
 import { useModalManager, generateModalId } from '../shared/useModalManager'
 import { useOverlay } from '../shared/useOverlay'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptModal（CHPT 主題） - 通用模態框 / 多視窗
@@ -276,10 +277,12 @@ interface ChptModalProps {
   footerBgColor?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptModalProps>(), {
   modelValue: false,
   mode: 'dialog',
-  ariaLabel: '對話方塊',
+  ariaLabel: undefined,
   title: '',
   id: undefined,
   width: undefined,

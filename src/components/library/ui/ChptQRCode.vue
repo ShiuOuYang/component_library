@@ -40,17 +40,17 @@
     >
       <template v-if="props.status === 'loading'">
         <span class="h-6 w-6 animate-spin rounded-full border-2 border-stroke-default border-t-accent-solid" aria-hidden="true"></span>
-        <span class="text-xs text-content-secondary" role="status">產生中</span>
+        <span class="text-xs text-content-secondary" role="status">{{ t.qrcode.generating }}</span>
       </template>
       <template v-else>
-        <span class="text-sm font-medium text-content-primary" role="status">{{ props.expiredText }}</span>
+        <span class="text-sm font-medium text-content-primary" role="status">{{ props.expiredText ?? t.qrcode.expired }}</span>
         <button
           type="button"
           class="inline-flex h-control-xs items-center gap-1 rounded-md px-2 text-xs font-medium text-accent hover:bg-accent-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
           @click="emit('refresh')"
         >
           <span class="material-symbols-outlined text-sm" aria-hidden="true">refresh</span>
-          重新產生
+          {{ t.qrcode.regenerate }}
         </button>
       </template>
     </div>
@@ -60,6 +60,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import qrcode from 'qrcode-generator'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptQRCode —— 產生 QR Code（工單、序號標籤、登入連結）
@@ -96,6 +97,8 @@ interface ChptQRCodeProps {
   title?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptQRCodeProps>(), {
   size: 160,
   level: 'M',
@@ -106,7 +109,7 @@ const props = withDefaults(defineProps<ChptQRCodeProps>(), {
   iconRatio: 0.22,
   bordered: true,
   status: 'active',
-  expiredText: 'QR Code 已過期',
+  expiredText: undefined,
   title: '',
 })
 
@@ -119,7 +122,7 @@ function toBinaryString(text: string): string {
   return out
 }
 
-const errorText = computed(() => (props.value ? '內容太長，無法產生 QR Code' : '沒有內容'))
+const errorText = computed(() => (props.value ? t.value.qrcode.tooLong : t.value.qrcode.empty))
 
 const matrix = computed<boolean[][] | null>(() => {
   if (!props.value) return null
@@ -158,7 +161,7 @@ const iconBox = computed(() => {
   return { x, y: x, size }
 })
 
-const accessibleName = computed(() => props.title || `QR Code：${props.value}`)
+const accessibleName = computed(() => props.title || t.value.qrcode.label(props.value))
 
 /**
  * 輸出 PNG（data URL）。scale = 每個模組幾個像素。

@@ -49,7 +49,7 @@
         v-if="props.clearable && props.modelValue && !props.disabled"
         type="button"
         tabindex="-1"
-        aria-label="清除"
+        :aria-label="t.clear"
         class="absolute right-2 inline-flex text-content-tertiary hover:text-content-primary"
         @mousedown.prevent
         @click="clear"
@@ -61,7 +61,7 @@
       <ul
         :id="listId"
         role="listbox"
-        :aria-label="props.label || props.placeholder || '建議'"
+        :aria-label="props.label || props.placeholder || t.autocomplete.label"
         :aria-busy="loading || undefined"
         class="absolute left-0 top-full z-dropdown mt-1 max-h-64 w-full min-w-[12rem] overflow-auto rounded-lg border border-stroke-light bg-surface-primary py-1 shadow-lg"
         :class="isOpen ? '' : 'hidden'"
@@ -95,12 +95,12 @@
             <span v-if="item.description" class="truncate text-xs text-content-tertiary">{{ item.description }}</span>
           </slot>
         </li>
-        <li v-if="loading" role="presentation" class="px-3 py-1.5 text-sm text-content-tertiary">{{ props.loadingText }}</li>
+        <li v-if="loading" role="presentation" class="px-3 py-1.5 text-sm text-content-tertiary">{{ props.loadingText ?? t.common.loadingEllipsis }}</li>
         <li
           v-else-if="!suggestions.length && props.modelValue"
           role="presentation"
           class="px-3 py-1.5 text-sm text-content-tertiary"
-        >{{ props.emptyText }}</li>
+        >{{ props.emptyText ?? t.autocomplete.empty }}</li>
       </ul>
     </div>
 
@@ -116,6 +116,7 @@ import { computed, onBeforeUnmount, ref, shallowRef, useId, useTemplateRef } fro
 import ChptIcon from './ChptIcon.vue'
 import { useFormField } from '../shared/formContext'
 import type { ComponentSize } from '../shared/types/ui.types'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptAutocomplete（CHPT 主題） - 自動完成輸入框
@@ -175,6 +176,8 @@ interface ChptAutocompleteProps {
   loadingText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptAutocompleteProps>(), {
   modelValue: '',
   options: () => [],
@@ -192,8 +195,8 @@ const props = withDefaults(defineProps<ChptAutocompleteProps>(), {
   clearable: false,
   fullWidth: false,
   errorText: '',
-  emptyText: '沒有符合的建議',
-  loadingText: '載入中…',
+  emptyText: undefined,
+  loadingText: undefined,
 })
 
 const emit = defineEmits<{
@@ -232,7 +235,7 @@ const suggestions = computed<NormalizedSuggestion[]>(() => {
 
 const liveMessage = computed(() => {
   if (!isOpen.value || loading.value) return ''
-  return suggestions.value.length ? `有 ${suggestions.value.length} 個建議，用上下鍵選擇` : ''
+  return suggestions.value.length ? t.value.autocomplete.count(suggestions.value.length) : ''
 })
 
 // ---- 非同步查詢：debounce + 只採用最後一次 ----

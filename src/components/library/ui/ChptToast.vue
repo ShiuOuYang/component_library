@@ -3,7 +3,7 @@
     <div
       class="fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2 pointer-events-none"
       role="region"
-      aria-label="通知訊息"
+      :aria-label="t.toast.label"
     >
       <TransitionGroup
         enter-active-class="transition-all duration-300 ease-out"
@@ -31,7 +31,7 @@
           <button
             type="button"
             class="flex items-center text-content-tertiary hover:text-content-primary transition-colors"
-            aria-label="關閉提示"
+            :aria-label="t.toast.close"
             @click="remove(toast.id)"
           >
             <ChptIcon :size="16" aria-hidden="true">close</ChptIcon>
@@ -46,6 +46,7 @@
 import ChptIcon from './ChptIcon.vue'
 import { useToast } from '../shared/useToast'
 import type { ChptToastItem } from '../shared/useToast'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptToast（CHPT 主題） - 全域輕提示容器
@@ -61,6 +62,8 @@ import type { ChptToastItem } from '../shared/useToast'
  * ```
  */
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const { toasts, remove } = useToast()
 
 function iconName(type: ChptToastItem['type']): string {

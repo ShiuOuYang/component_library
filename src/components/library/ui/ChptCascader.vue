@@ -30,7 +30,7 @@
         @keydown="onTriggerKeydown"
       >
         <span :id="valueId" class="flex-1 truncate" :class="displayText ? (props.disabled ? '' : 'text-content-primary') : 'text-content-tertiary'">
-          {{ displayText || props.placeholder }}
+          {{ displayText || (props.placeholder ?? t.common.pleaseSelect) }}
         </span>
         <ChptIcon
           :size="16"
@@ -43,7 +43,7 @@
       <button
         v-if="showClear"
         type="button"
-        aria-label="清除"
+        :aria-label="t.clear"
         class="absolute right-2 inline-flex text-content-tertiary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus rounded"
         @click="clear"
       >
@@ -55,7 +55,7 @@
       v-if="isOpen"
       :id="panelId"
       role="dialog"
-      :aria-label="props.label ? `選擇${props.label}` : '選擇項目'"
+      :aria-label="props.label ? t.cascader.choose(props.label) : t.cascader.chooseItem"
       class="absolute left-0 top-full z-dropdown mt-1 flex max-w-[calc(100vw-2rem)] overflow-x-auto rounded-lg border border-stroke-light bg-surface-primary shadow-lg"
       @keydown="onPanelKeydown"
     >
@@ -63,7 +63,7 @@
         v-for="(column, level) in columns"
         :key="level"
         role="listbox"
-        :aria-label="level === 0 ? props.label || '第 1 層' : columnLabel(level)"
+        :aria-label="level === 0 ? props.label || t.cascader.level(1) : columnLabel(level)"
         class="max-h-64 w-44 shrink-0 overflow-auto border-r border-stroke-light py-1 last:border-r-0"
       >
         <li
@@ -96,11 +96,11 @@
           >progress_activity</ChptIcon>
           <template v-else-if="!isLeaf(node, level)">
             <ChptIcon :size="16" color="current">chevron_right</ChptIcon>
-            <span class="sr-only">（有下一層）</span>
+            <span class="sr-only">{{ t.cascader.hasChildren }}</span>
           </template>
         </li>
         <li v-if="!column.nodes.length" role="presentation" class="px-3 py-1.5 text-sm text-content-tertiary">
-          {{ props.emptyText }}
+          {{ props.emptyText ?? t.common.noData }}
         </li>
       </ul>
     </div>
@@ -115,6 +115,7 @@ import { onClickOutside } from '@vueuse/core'
 import ChptIcon from './ChptIcon.vue'
 import { useFormField } from '../shared/formContext'
 import type { ComponentSize } from '../shared/types/ui.types'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptCascader（CHPT 主題） - 級聯選擇
@@ -168,11 +169,13 @@ interface ChptCascaderProps {
   emptyText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptCascaderProps>(), {
   modelValue: null,
   options: () => [],
   label: '',
-  placeholder: '請選擇',
+  placeholder: undefined,
   separator: ' / ',
   showAllLevels: true,
   changeOnSelect: false,
@@ -183,7 +186,7 @@ const props = withDefaults(defineProps<ChptCascaderProps>(), {
   size: 'sm',
   fullWidth: false,
   errorText: '',
-  emptyText: '沒有資料',
+  emptyText: undefined,
 })
 
 const emit = defineEmits<{
@@ -256,7 +259,7 @@ const columns = computed(() => {
 })
 
 function columnLabel(level: number): string {
-  return resolve(activePath.value)[level - 1]?.label ?? `第 ${level + 1} 層`
+  return resolve(activePath.value)[level - 1]?.label ?? t.value.cascader.level(level + 1)
 }
 
 const selectedNodes = computed(() => resolve(props.modelValue ?? []))

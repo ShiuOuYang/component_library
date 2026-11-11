@@ -1,7 +1,7 @@
 <template>
   <nav
     ref="root"
-    :aria-label="props.ariaLabel"
+    :aria-label="props.ariaLabel ?? t.menu.label"
     class="chpt-menu bg-surface-primary"
     :class="
       horizontal
@@ -28,6 +28,7 @@ import { onClickOutside } from '@vueuse/core'
 import ChptMenuNode from './ChptMenuNode.vue'
 import { MENU_KEY, type MenuItem, type MenuKey } from './chptMenuContext'
 import { useOptionalRouter } from '../shared/useOptionalRouter'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptMenu（CHPT 主題） - 導覽選單
@@ -68,6 +69,8 @@ interface ChptMenuProps {
   ariaLabel?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptMenuProps>(), {
   modelValue: undefined,
   openKeys: undefined,
@@ -76,7 +79,7 @@ const props = withDefaults(defineProps<ChptMenuProps>(), {
   accordion: false,
   indent: 16,
   width: '',
-  ariaLabel: '主選單',
+  ariaLabel: undefined,
 })
 
 const emit = defineEmits<{

@@ -70,6 +70,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useDarkMode, type ChptThemeMode } from '../shared/useDarkMode'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptDarkModeToggle（CHPT 主題） - 深色模式切換元件
@@ -102,6 +103,8 @@ interface ChptDarkModeProps {
   darkMode?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptDarkModeProps>(), {
   variant: 'fancy',
   initialDarkMode: false,
@@ -120,8 +123,8 @@ const { isDark, mode, setMode, toggle } = useDarkMode()
 /** 對外維持原本的 isDarkMode 名稱 */
 const isDarkMode = computed(() => isDark.value)
 
-const toggleLabel = computed(() => (isDark.value ? '切換為淺色模式' : '切換為深色模式'))
-const followSystemLabel = '跟隨系統'
+const toggleLabel = computed(() => (isDark.value ? t.value.darkMode.toLight : t.value.darkMode.toDark))
+const followSystemLabel = computed(() => t.value.darkMode.followSystem)
 
 /** 受控模式：外部傳入 darkMode 時以它為準 */
 watch(

@@ -26,7 +26,7 @@
         v-if="props.closable"
         type="button"
         class="flex items-center justify-center cursor-pointer rounded h-6 w-6 -m-0.5 hover:bg-surface-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus transition-colors"
-        :aria-label="'關閉提示'"
+        :aria-label="t.alert.close"
         @click="handleClose"
       >
         <!-- 跟著提示條的文字色；原本 ChptIcon 預設灰色再加 opacity-60，淡到對比只剩 2.2 -->
@@ -39,6 +39,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptAlert（CHPT 主題） - 提示條 / 警告元件
@@ -68,6 +69,8 @@ interface ChptAlertProps {
   fullWidth?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptAlertProps>(), {
   show: true,
   type: 'info',

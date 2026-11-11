@@ -52,7 +52,7 @@
             
             <!-- 固定模式提示 -->
             <div v-if="persistent && clickToClose" class="mt-2 pt-2 border-t" :class="borderClass">
-              <div class="text-xs text-center opacity-60" :class="extraClass">點擊關閉</div>
+              <div class="text-xs text-center opacity-60" :class="extraClass">{{ t.dataTooltip.clickToClose }}</div>
             </div>
           </div>
         </div>
@@ -80,6 +80,7 @@
  */
 
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
+import { useLocale } from '../shared/config'
 
 /** tooltip 主題 */
 type DataTooltipTheme = 'dark' | 'light' | 'info' | 'warning' | 'error'
@@ -164,6 +165,8 @@ interface ChptDataTooltipProps {
   clickToClose?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptDataTooltipProps>(), {
   visible: false,
   position: () => ({ x: 0, y: 0 }),

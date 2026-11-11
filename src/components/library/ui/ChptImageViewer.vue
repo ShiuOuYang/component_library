@@ -39,8 +39,8 @@
             <button
               ref="closeButton"
               type="button"
-              aria-label="關閉"
-              title="關閉（Esc）"
+              :aria-label="t.common.close"
+              :title="t.imageViewer.closeHint"
               class="inline-flex h-control-md min-w-control-md items-center justify-center rounded-md text-white/90 hover:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
               @click="close"
             >
@@ -69,7 +69,7 @@
           <button
             v-if="images.length > 1"
             type="button"
-            aria-label="上一張"
+            :aria-label="t.common.prev"
             class="absolute left-3 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             @click="go(-1)"
           >
@@ -78,7 +78,7 @@
           <button
             v-if="images.length > 1"
             type="button"
-            aria-label="下一張"
+            :aria-label="t.common.next"
             class="absolute right-3 top-1/2 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
             @click="go(1)"
           >
@@ -87,12 +87,12 @@
         </div>
 
         <!-- 縮圖列 -->
-        <div v-if="images.length > 1 && props.thumbnails" class="flex justify-center gap-2 overflow-x-auto p-3" role="group" aria-label="縮圖">
+        <div v-if="images.length > 1 && props.thumbnails" class="flex justify-center gap-2 overflow-x-auto p-3" role="group" :aria-label="t.imageViewer.thumbnails">
           <button
             v-for="(img, i) in images"
             :key="`${img.src}-${i}`"
             type="button"
-            :aria-label="`第 ${i + 1} 張${img.alt ? `：${img.alt}` : ''}`"
+            :aria-label="t.imageViewer.item(i + 1, img.alt ?? '')"
             :aria-current="i === index ? 'true' : undefined"
             class="size-14 shrink-0 overflow-hidden rounded-md ring-2 transition focus:outline-none focus-visible:ring-white"
             :class="i === index ? 'ring-white' : 'ring-transparent opacity-60 hover:opacity-100'"
@@ -110,6 +110,7 @@
 import { computed, reactive, ref, useTemplateRef, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import { useOverlay } from '../shared/useOverlay'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptImageViewer（CHPT 主題） - 全螢幕圖片檢視
@@ -144,6 +145,8 @@ interface ChptImageViewerProps {
   maxScale?: number
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptImageViewerProps>(), {
   open: false,
   index: 0,
@@ -170,7 +173,7 @@ watch(
 )
 const current = computed(() => images.value[Math.min(index.value, images.value.length - 1)] ?? { src: '' })
 const currentAlt = computed(() => current.value.alt ?? '')
-const dialogLabel = computed(() => (currentAlt.value ? `圖片檢視：${currentAlt.value}` : '圖片檢視'))
+const dialogLabel = computed(() => (currentAlt.value ? t.value.imageViewer.labelWithAlt(currentAlt.value) : t.value.imageViewer.label))
 
 // ---- 縮放 / 旋轉 / 平移 ----
 
@@ -243,10 +246,10 @@ function close(): void {
 }
 
 const tools = computed(() => [
-  { label: '縮小', icon: 'zoom_out', key: '−', action: () => zoom(1 / 1.25), disabled: scale.value <= props.minScale },
-  { label: '放大', icon: 'zoom_in', key: '+', action: () => zoom(1.25), disabled: scale.value >= props.maxScale },
-  { label: '重設', icon: 'fit_screen', key: '0', action: reset, disabled: false },
-  { label: '旋轉', icon: 'rotate_right', key: 'R', action: rotate, disabled: false },
+  { label: t.value.imageViewer.zoomOut, icon: 'zoom_out', key: '−', action: () => zoom(1 / 1.25), disabled: scale.value <= props.minScale },
+  { label: t.value.imageViewer.zoomIn, icon: 'zoom_in', key: '+', action: () => zoom(1.25), disabled: scale.value >= props.maxScale },
+  { label: t.value.imageViewer.reset, icon: 'fit_screen', key: '0', action: reset, disabled: false },
+  { label: t.value.imageViewer.rotate, icon: 'rotate_right', key: 'R', action: rotate, disabled: false },
 ])
 
 function onKeydown(event: KeyboardEvent): void {
