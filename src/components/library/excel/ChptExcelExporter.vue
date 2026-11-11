@@ -5,7 +5,7 @@
       @click="handleExport"
       :disabled="isExporting || !hasData"
       :class="buttonClasses"
-      :title="!hasData ? '沒有資料可匯出' : '匯出 Excel 檔案'"
+      :title="!hasData ? i18n.excelExporter.noData : i18n.excelExporter.exportFile"
     >
       <!-- 載入動畫 -->
       <svg
@@ -31,13 +31,13 @@
         <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20M12.9,14.5L15.8,19H14L12,15.6L10,19H8.2L11.1,14.5L8.2,10H10L12,13.4L14,10H15.8L12.9,14.5Z" />
       </svg>
 
-      <span>{{ isExporting ? '匯出中...' : props.buttonLabel }}</span>
+      <span>{{ isExporting ? i18n.excelExporter.exporting : (props.buttonLabel ?? i18n.excelExporter.button) }}</span>
     </button>
 
     <!-- 使用 ChptModal（window 模式） -->
     <ChptModal
       v-model="showOptionsModal"
-      title="Excel 匯出設定"
+      :title="i18n.excelExporter.settings"
       :width="500"
       :height="600"
       mode="window"
@@ -47,7 +47,7 @@
       <template #title>
         <div class="flex items-center">
           <span class="material-symbols-outlined align-middle text-[1.1em] text-success mr-2" aria-hidden="true">table_view</span>
-          Excel 匯出設定
+          {{ i18n.excelExporter.settings }}
         </div>
       </template>
 
@@ -55,13 +55,13 @@
       <div class="mb-4">
         <label class="block text-sm font-medium text-content-primary mb-2">
           <span class="material-symbols-outlined align-middle text-[1.1em] text-content-tertiary mr-1" aria-hidden="true">badge</span>
-          檔案名稱
+          {{ i18n.excelExporter.filename }}
         </label>
         <input
           v-model="exportOptions.filename"
           type="text"
           class="w-full px-3 py-2 border border-stroke-default rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-success focus:border-success transition-all duration-200"
-          placeholder="輸入檔案名稱..."
+          :placeholder="i18n.excelExporter.filenamePlaceholder"
         />
       </div>
 
@@ -69,13 +69,13 @@
       <div class="mb-4">
         <label class="block text-sm font-medium text-content-primary mb-2">
           <span class="material-symbols-outlined align-middle text-[1.1em] text-content-tertiary mr-1" aria-hidden="true">tab</span>
-          工作表名稱
+          {{ i18n.excelExporter.sheetName }}
         </label>
         <input
           v-model="exportOptions.sheetName"
           type="text"
           class="w-full px-3 py-2 border border-stroke-default rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-success focus:border-success transition-all duration-200"
-          placeholder="輸入工作表名稱..."
+          :placeholder="i18n.excelExporter.sheetNamePlaceholder"
         />
       </div>
 
@@ -83,7 +83,7 @@
       <div class="mb-6">
         <label class="block text-sm font-medium text-content-primary mb-2">
           <span class="material-symbols-outlined align-middle text-[1.1em] text-content-tertiary mr-1" aria-hidden="true">view_column</span>
-          匯出欄位
+          {{ i18n.excelExporter.columns }}
         </label>
         <div class="space-y-2 max-h-40 overflow-y-auto border border-stroke-light rounded-lg p-3 bg-surface-secondary">
           <div class="flex items-center justify-between mb-2 pb-2 border-b border-stroke-light">
@@ -92,10 +92,10 @@
               class="text-xs text-success hover:text-success font-medium transition-colors duration-200"
             >
               <span class="material-symbols-outlined mr-1 align-middle text-[1.1em]" aria-hidden="true">{{ allColumnsSelected ? 'check_box' : 'check_box_outline_blank' }}</span>
-              {{ allColumnsSelected ? '取消全選' : '全選' }}
+              {{ allColumnsSelected ? i18n.excelExporter.deselectAll : i18n.common.selectAll }}
             </button>
             <span class="text-xs text-content-tertiary">
-              已選 {{ exportOptions.selectedColumns.length }} / {{ availableColumns.length }}
+              {{ i18n.excelExporter.selected(exportOptions.selectedColumns.length, availableColumns.length) }}
             </span>
           </div>
           <label
@@ -120,14 +120,14 @@
             @click="showOptionsModal = false"
             class="inline-flex items-center h-control-sm px-4 text-sm font-medium text-content-primary bg-surface-primary border border-stroke-default rounded-lg hover:bg-surface-secondary hover:border-stroke-medium transition-all duration-200 shadow-sm"
           >
-            取消
+            {{ i18n.common.cancel }}
           </button>
           <button type="button"
             @click="confirmExport"
             :disabled="exportOptions.selectedColumns.length === 0"
             class="inline-flex items-center h-control-sm px-4 text-sm font-medium bg-success-solid hover:bg-success-solid text-white rounded-lg transition-all duration-200 shadow-sm hover:shadow disabled:bg-surface-muted disabled:text-content-tertiary disabled:cursor-not-allowed disabled:border-stroke-default border border-transparent"
           >
-            確認匯出
+            {{ i18n.excelExporter.confirm }}
           </button>
         </div>
       </template>
@@ -139,6 +139,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import type * as XLSXTypes from 'xlsx-js-style'
 import ChptModal from '../ui/ChptModal.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptExcelExporter（CHPT 主題）- 匯出 Excel
@@ -186,6 +187,8 @@ interface ChptExcelExporterProps {
   cellStyles?: ExporterCellStyle[]
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<ChptExcelExporterProps>(), {
   data: () => [],
   columns: () => [],
@@ -194,7 +197,7 @@ const props = withDefaults(defineProps<ChptExcelExporterProps>(), {
   showOptions: false,
   size: 'sm',
   variant: 'green',
-  buttonLabel: '匯出 Excel',
+  buttonLabel: undefined,
   buttonClass: '',
   cellStyles: () => [],
 })

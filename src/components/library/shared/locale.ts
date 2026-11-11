@@ -488,6 +488,68 @@ export interface ChptLocale {
     gerberBehaviors: { region: string; draw: string; flash: string; drill: string; slot: string; move: string }
     pcbTypes: { outline: string; trace: string; pad: string; via: string; region: string; silk: string; component: string }
   }
+  excelExporter: {
+    button: string
+    noData: string
+    exportFile: string
+    exporting: string
+    settings: string
+    filename: string
+    filenamePlaceholder: string
+    sheetName: string
+    sheetNamePlaceholder: string
+    columns: string
+    deselectAll: string
+    selected: (n: number, total: number) => string
+    confirm: string
+  }
+  excelUploader: {
+    button: string
+    uploading: string
+    notExcel: string
+    noSheets: string
+    readFailed: string
+  }
+  excelEditor: {
+    functions: Record<string, string>
+    title: string
+    undo: string
+    redo: string
+    cut: string
+    copy: string
+    paste: string
+    bold: string
+    italic: string
+    underline: string
+    alignLeft: string
+    alignCenter: string
+    alignRight: string
+    insertRow: string
+    insertRowShort: string
+    insertColumn: string
+    insertColumnShort: string
+    deleteRow: string
+    deleteRowShort: string
+    deleteColumn: string
+    deleteColumnShort: string
+    merge: string
+    sortAsc: string
+    sortDesc: string
+    clear: string
+    freeze: string
+    freezeShort: string
+    unfreeze: string
+    unfreezeShort: string
+    applyFormat: string
+    numberFormat: string
+    activeCell: string
+    insertFunction: string
+    formulaPlaceholder: string
+    chooseFunction: string
+    addSheet: string
+    removeSheet: string
+    formats: { general: string; integer: string; decimal2: string; thousands: string; thousandsDecimal: string; percent: string; percentDecimal: string; date: string; dateTime: string; time: string }
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -935,6 +997,136 @@ export const zhTW: ChptLocale = {
     gerberBehaviors: { region: 'Region (G36/G37)', draw: '線條 (D01)', flash: '焊盤 (D03)', drill: '鑽孔', slot: '槽孔 (G85)', move: '移動軌跡 (D02)' },
     pcbTypes: { outline: '板框 (Outline)', trace: '走線 (Trace)', pad: '焊盤 (Pad)', via: '過孔 (Via)', region: '銅箔區域 (Region)', silk: '絲印 (Silk)', component: '元件外框 (Component)' },
   },
+  excelExporter: {
+    button: '匯出 Excel',
+    noData: '沒有資料可匯出',
+    exportFile: '匯出 Excel 檔案',
+    exporting: '匯出中...',
+    settings: 'Excel 匯出設定',
+    filename: '檔案名稱',
+    filenamePlaceholder: '輸入檔案名稱...',
+    sheetName: '工作表名稱',
+    sheetNamePlaceholder: '輸入工作表名稱...',
+    columns: '匯出欄位',
+    deselectAll: '取消全選',
+    selected: (n, t) => `已選 ${n} / ${t}`,
+    confirm: '確認匯出',
+  },
+  excelUploader: {
+    button: '匯入 Excel',
+    uploading: '上傳中...',
+    notExcel: '檔案格式不是 Excel（僅支援 .xlsx 與 .xls）',
+    noSheets: '這個 Excel 檔沒有任何工作表',
+    readFailed: '讀取檔案失敗',
+  },
+  excelEditor: {
+    functions: {
+      SUM: '加總',
+      AVERAGE: '平均',
+      MIN: '最小值',
+      MAX: '最大值',
+      COUNT: '數字個數',
+      COUNTA: '非空白個數',
+      IF: '條件判斷',
+      IFS: '多重條件',
+      IFERROR: '錯誤時改用',
+      AND: '全部成立',
+      OR: '任一成立',
+      NOT: '反轉',
+      SUMIF: '條件加總',
+      SUMIFS: '多條件加總',
+      COUNTIF: '條件計數',
+      COUNTIFS: '多條件計數',
+      AVERAGEIF: '條件平均',
+      AVERAGEIFS: '多條件平均',
+      VLOOKUP: '垂直查閱',
+      HLOOKUP: '水平查閱',
+      XLOOKUP: '查閱',
+      INDEX: '依位置取值',
+      MATCH: '找出位置',
+      ROUND: '四捨五入',
+      ROUNDUP: '無條件進位',
+      ROUNDDOWN: '無條件捨去',
+      INT: '取整數',
+      ABS: '絕對值',
+      MOD: '餘數',
+      SUMPRODUCT: '乘積加總',
+      MEDIAN: '中位數',
+      LARGE: '第 k 大',
+      SMALL: '第 k 小',
+      RANK: '排名',
+      LEN: '字元數',
+      LEFT: '左邊字元',
+      RIGHT: '右邊字元',
+      MID: '中間字元',
+      TRIM: '去除多餘空白',
+      UPPER: '轉大寫',
+      LOWER: '轉小寫',
+      CONCAT: '串接文字',
+      TEXTJOIN: '以分隔符號串接',
+      SUBSTITUTE: '取代文字',
+      FIND: '尋找（分大小寫）',
+      SEARCH: '尋找（不分大小寫）',
+      TEXT: '數字轉格式文字',
+      VALUE: '文字轉數字',
+      ISBLANK: '是否空白',
+      ISNUMBER: '是否為數字',
+      ISERROR: '是否為錯誤',
+      TODAY: '今天的日期',
+      NOW: '現在的日期與時間',
+      DATE: '年月日組成日期',
+      TIME: '時分秒組成時間',
+      YEAR: '取出年',
+      MONTH: '取出月',
+      DAY: '取出日',
+      WEEKDAY: '星期幾',
+      WEEKNUM: '一年中的第幾週',
+      EDATE: '幾個月後的同一天',
+      EOMONTH: '幾個月後的月底',
+      DATEDIF: '兩個日期相差（年 / 月 / 日）',
+      DAYS: '相差天數',
+      NETWORKDAYS: '工作天數（排除週末與假日）',
+      WORKDAY: '幾個工作天後的日期',
+      DATEVALUE: '日期文字轉日期',
+    },
+    title: 'Excel 編輯器',
+    undo: '復原 (Ctrl+Z)',
+    redo: '重做 (Ctrl+Y)',
+    cut: '剪下 (Ctrl+X)',
+    copy: '複製 (Ctrl+C)',
+    paste: '貼上 (Ctrl+V)',
+    bold: '粗體 (Ctrl+B)',
+    italic: '斜體 (Ctrl+I)',
+    underline: '底線 (Ctrl+U)',
+    alignLeft: '靠左',
+    alignCenter: '置中',
+    alignRight: '靠右',
+    insertRow: '上方插入列',
+    insertRowShort: '↑列',
+    insertColumn: '左側插入欄',
+    insertColumnShort: '+欄',
+    deleteRow: '刪除列',
+    deleteRowShort: '−列',
+    deleteColumn: '刪除欄',
+    deleteColumnShort: '−欄',
+    merge: '合併儲存格',
+    sortAsc: '依選取範圍升冪排序',
+    sortDesc: '依選取範圍降冪排序',
+    clear: '清除選取內容 (Delete)',
+    freeze: '凍結到目前儲存格左上方',
+    freezeShort: '凍結',
+    unfreeze: '取消凍結',
+    unfreezeShort: '解凍',
+    applyFormat: '套用數字格式',
+    numberFormat: '數字格式',
+    activeCell: '目前儲存格',
+    insertFunction: '插入函式',
+    formulaPlaceholder: '輸入數值或公式，如 =SUM(A1:A3)',
+    chooseFunction: '選擇函式',
+    addSheet: '新增工作表',
+    removeSheet: '刪除工作表',
+    formats: { general: '一般格式', integer: '整數', decimal2: '小數 2 位', thousands: '千分位整數', thousandsDecimal: '千分位小數', percent: '百分比整數', percentDecimal: '百分比小數', date: '日期', dateTime: '日期時間', time: '時間' },
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1381,6 +1573,136 @@ export const enUS: ChptLocale = {
     zeroSize: 'Container has zero size; make sure the parent has a height',
     gerberBehaviors: { region: 'Region (G36/G37)', draw: 'Draw (D01)', flash: 'Flash (D03)', drill: 'Drill', slot: 'Slot (G85)', move: 'Move path (D02)' },
     pcbTypes: { outline: 'Outline', trace: 'Trace', pad: 'Pad', via: 'Via', region: 'Region', silk: 'Silkscreen', component: 'Component outline' },
+  },
+  excelExporter: {
+    button: 'Export Excel',
+    noData: 'No data to export',
+    exportFile: 'Export to an Excel file',
+    exporting: 'Exporting…',
+    settings: 'Excel export settings',
+    filename: 'File name',
+    filenamePlaceholder: 'Enter a file name…',
+    sheetName: 'Sheet name',
+    sheetNamePlaceholder: 'Enter a sheet name…',
+    columns: 'Columns to export',
+    deselectAll: 'Deselect all',
+    selected: (n, t) => `${n} of ${t} selected`,
+    confirm: 'Export',
+  },
+  excelUploader: {
+    button: 'Import Excel',
+    uploading: 'Uploading…',
+    notExcel: 'Not an Excel file (only .xlsx and .xls are supported)',
+    noSheets: 'This Excel file has no sheets',
+    readFailed: 'Failed to read the file',
+  },
+  excelEditor: {
+    functions: {
+      SUM: 'Add numbers',
+      AVERAGE: 'Average',
+      MIN: 'Smallest value',
+      MAX: 'Largest value',
+      COUNT: 'Count numbers',
+      COUNTA: 'Count non-empty cells',
+      IF: 'Conditional value',
+      IFS: 'Multiple conditions',
+      IFERROR: 'Fallback on error',
+      AND: 'All conditions true',
+      OR: 'Any condition true',
+      NOT: 'Negate',
+      SUMIF: 'Sum with a condition',
+      SUMIFS: 'Sum with multiple conditions',
+      COUNTIF: 'Count with a condition',
+      COUNTIFS: 'Count with multiple conditions',
+      AVERAGEIF: 'Average with a condition',
+      AVERAGEIFS: 'Average with multiple conditions',
+      VLOOKUP: 'Vertical lookup',
+      HLOOKUP: 'Horizontal lookup',
+      XLOOKUP: 'Lookup',
+      INDEX: 'Value at a position',
+      MATCH: 'Position of a value',
+      ROUND: 'Round',
+      ROUNDUP: 'Round up',
+      ROUNDDOWN: 'Round down',
+      INT: 'Integer part',
+      ABS: 'Absolute value',
+      MOD: 'Remainder',
+      SUMPRODUCT: 'Sum of products',
+      MEDIAN: 'Median',
+      LARGE: 'k-th largest',
+      SMALL: 'k-th smallest',
+      RANK: 'Rank',
+      LEN: 'Text length',
+      LEFT: 'Leftmost characters',
+      RIGHT: 'Rightmost characters',
+      MID: 'Characters from the middle',
+      TRIM: 'Remove extra spaces',
+      UPPER: 'To upper case',
+      LOWER: 'To lower case',
+      CONCAT: 'Join text',
+      TEXTJOIN: 'Join text with a delimiter',
+      SUBSTITUTE: 'Replace text',
+      FIND: 'Find (case-sensitive)',
+      SEARCH: 'Find (case-insensitive)',
+      TEXT: 'Format a number as text',
+      VALUE: 'Text to number',
+      ISBLANK: 'Is blank',
+      ISNUMBER: 'Is a number',
+      ISERROR: 'Is an error',
+      TODAY: "Today's date",
+      NOW: 'Current date and time',
+      DATE: 'Date from year, month, day',
+      TIME: 'Time from hour, minute, second',
+      YEAR: 'Year of a date',
+      MONTH: 'Month of a date',
+      DAY: 'Day of a date',
+      WEEKDAY: 'Day of the week',
+      WEEKNUM: 'Week number of the year',
+      EDATE: 'Same day N months later',
+      EOMONTH: 'Month end N months later',
+      DATEDIF: 'Difference between dates (Y / M / D)',
+      DAYS: 'Days between dates',
+      NETWORKDAYS: 'Working days (excluding weekends and holidays)',
+      WORKDAY: 'Date N working days later',
+      DATEVALUE: 'Text to date',
+    },
+    title: 'Excel editor',
+    undo: 'Undo (Ctrl+Z)',
+    redo: 'Redo (Ctrl+Y)',
+    cut: 'Cut (Ctrl+X)',
+    copy: 'Copy (Ctrl+C)',
+    paste: 'Paste (Ctrl+V)',
+    bold: 'Bold (Ctrl+B)',
+    italic: 'Italic (Ctrl+I)',
+    underline: 'Underline (Ctrl+U)',
+    alignLeft: 'Align left',
+    alignCenter: 'Center',
+    alignRight: 'Align right',
+    insertRow: 'Insert row above',
+    insertRowShort: '↑Row',
+    insertColumn: 'Insert column to the left',
+    insertColumnShort: '+Col',
+    deleteRow: 'Delete row',
+    deleteRowShort: '−Row',
+    deleteColumn: 'Delete column',
+    deleteColumnShort: '−Col',
+    merge: 'Merge cells',
+    sortAsc: 'Sort selection ascending',
+    sortDesc: 'Sort selection descending',
+    clear: 'Clear selection (Delete)',
+    freeze: 'Freeze panes above and left of the active cell',
+    freezeShort: 'Freeze',
+    unfreeze: 'Unfreeze panes',
+    unfreezeShort: 'Unfreeze',
+    applyFormat: 'Apply number format',
+    numberFormat: 'Number format',
+    activeCell: 'Active cell',
+    insertFunction: 'Insert function',
+    formulaPlaceholder: 'Enter a value or formula, e.g. =SUM(A1:A3)',
+    chooseFunction: 'Choose a function',
+    addSheet: 'Add sheet',
+    removeSheet: 'Delete sheet',
+    formats: { general: 'General', integer: 'Integer', decimal2: '2 decimals', thousands: 'Thousands separator', thousandsDecimal: 'Thousands separator, 2 decimals', percent: 'Percent', percentDecimal: 'Percent, 2 decimals', date: 'Date', dateTime: 'Date and time', time: 'Time' },
   },
 }
 

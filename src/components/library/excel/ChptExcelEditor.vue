@@ -14,54 +14,54 @@
     <!-- ===== 主工具列 ===== -->
     <div v-if="showToolbar" class="border-b border-stroke-light bg-surface-secondary">
       <div class="flex flex-wrap items-center gap-1 px-2 py-1.5 border-b border-stroke-light">
-        <span class="px-2 text-xs font-semibold text-content-secondary">Excel 編輯器</span>
+        <span class="px-2 text-xs font-semibold text-content-secondary">{{ i18n.excelEditor.title }}</span>
 
         <!-- 復原 / 重做 -->
-        <button type="button" class="tb-btn" :disabled="!canUndo" @mousedown.prevent="undo" title="復原 (Ctrl+Z)">↩</button>
-        <button type="button" class="tb-btn" :disabled="!canRedo" @mousedown.prevent="redo" title="重做 (Ctrl+Y)">↪</button>
+        <button type="button" class="tb-btn" :disabled="!canUndo" @mousedown.prevent="undo" :title="i18n.excelEditor.undo">↩</button>
+        <button type="button" class="tb-btn" :disabled="!canRedo" @mousedown.prevent="redo" :title="i18n.excelEditor.redo">↪</button>
 
         <span class="tb-sep"></span>
 
         <!-- 剪下 / 複製 / 貼上 -->
-        <button type="button" class="tb-btn" @mousedown.prevent="cutSelection" title="剪下 (Ctrl+X)">✂</button>
-        <button type="button" class="tb-btn" @mousedown.prevent="copySelection" title="複製 (Ctrl+C)">⧉</button>
-        <button type="button" class="tb-btn" @mousedown.prevent="pasteSelection" title="貼上 (Ctrl+V)">📋</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="cutSelection" :title="i18n.excelEditor.cut">✂</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="copySelection" :title="i18n.excelEditor.copy">⧉</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="pasteSelection" :title="i18n.excelEditor.paste">📋</button>
 
         <span class="tb-sep"></span>
 
         <!-- 字型樣式 -->
-        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.bold }" @mousedown.prevent="toggleStyle('bold')" title="粗體 (Ctrl+B)"><b>B</b></button>
-        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.italic }" @mousedown.prevent="toggleStyle('italic')" title="斜體 (Ctrl+I)"><i>I</i></button>
-        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.underline }" @mousedown.prevent="toggleStyle('underline')" title="底線 (Ctrl+U)"><u>U</u></button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.bold }" @mousedown.prevent="toggleStyle('bold')" :title="i18n.excelEditor.bold"><b>B</b></button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.italic }" @mousedown.prevent="toggleStyle('italic')" :title="i18n.excelEditor.italic"><i>I</i></button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.underline }" @mousedown.prevent="toggleStyle('underline')" :title="i18n.excelEditor.underline"><u>U</u></button>
 
         <span class="tb-sep"></span>
 
         <!-- 對齊 -->
-        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.align === 'left' }" @mousedown.prevent="setAlign('left')" title="靠左">⇤</button>
-        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.align === 'center' }" @mousedown.prevent="setAlign('center')" title="置中">⇔</button>
-        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.align === 'right' }" @mousedown.prevent="setAlign('right')" title="靠右">⇥</button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.align === 'left' }" @mousedown.prevent="setAlign('left')" :title="i18n.excelEditor.alignLeft">⇤</button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.align === 'center' }" @mousedown.prevent="setAlign('center')" :title="i18n.excelEditor.alignCenter">⇔</button>
+        <button type="button" class="tb-btn" :class="{ active: activeCellStyle.align === 'right' }" @mousedown.prevent="setAlign('right')" :title="i18n.excelEditor.alignRight">⇥</button>
 
         <span class="tb-sep"></span>
 
         <!-- 插入列 / 欄 -->
-        <button type="button" class="tb-btn" @mousedown.prevent="insertRow" title="上方插入列">↑列</button>
-        <button type="button" class="tb-btn" @mousedown.prevent="insertColumn" title="左側插入欄">+欄</button>
-        <button type="button" class="tb-btn" @mousedown.prevent="deleteRow" title="刪除列">−列</button>
-        <button type="button" class="tb-btn" @mousedown.prevent="deleteColumn" title="刪除欄">−欄</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="insertRow" :title="i18n.excelEditor.insertRow">{{ i18n.excelEditor.insertRowShort }}</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="insertColumn" :title="i18n.excelEditor.insertColumn">{{ i18n.excelEditor.insertColumnShort }}</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="deleteRow" :title="i18n.excelEditor.deleteRow">{{ i18n.excelEditor.deleteRowShort }}</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="deleteColumn" :title="i18n.excelEditor.deleteColumn">{{ i18n.excelEditor.deleteColumnShort }}</button>
 
         <span class="tb-sep"></span>
 
         <!-- 合併 / 排序 -->
-        <button type="button" class="tb-btn" @mousedown.prevent="toggleMerge" title="合併儲存格">⊞</button>
-        <button type="button" class="tb-btn" @mousedown.prevent="sortRange('asc')" title="依選取範圍升冪排序">A↑</button>
-        <button type="button" class="tb-btn" @mousedown.prevent="sortRange('desc')" title="依選取範圍降冪排序">A↓</button>
-        <button type="button" class="tb-btn" @mousedown.prevent="clearSelection" title="清除選取內容 (Delete)">🗑</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="toggleMerge" :title="i18n.excelEditor.merge">⊞</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="sortRange('asc')" :title="i18n.excelEditor.sortAsc">A↑</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="sortRange('desc')" :title="i18n.excelEditor.sortDesc">A↓</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="clearSelection" :title="i18n.excelEditor.clear">🗑</button>
 
         <span class="tb-sep"></span>
 
         <!-- 凍結窗格 -->
-        <button type="button" class="tb-btn" @mousedown.prevent="freezeToActive" title="凍結到目前儲存格左上方">凍結</button>
-        <button type="button" class="tb-btn" @mousedown.prevent="unfreezePanes" title="取消凍結">解凍</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="freezeToActive" :title="i18n.excelEditor.freeze">{{ i18n.excelEditor.freezeShort }}</button>
+        <button type="button" class="tb-btn" @mousedown.prevent="unfreezePanes" :title="i18n.excelEditor.unfreeze">{{ i18n.excelEditor.unfreezeShort }}</button>
 
         <span class="tb-sep"></span>
 
@@ -70,19 +70,19 @@
           class="h-7 px-2 text-xs text-content-primary bg-surface-primary border border-stroke-light rounded focus:outline-none focus:ring-1 focus:ring-success"
           :value="activeNumFmt"
           @change="setNumFmt(($event.target as HTMLSelectElement).value)"
-          title="套用數字格式"
-          aria-label="數字格式"
+          :title="i18n.excelEditor.applyFormat"
+          :aria-label="i18n.excelEditor.numberFormat"
         >
-          <option value="">一般格式</option>
-          <option value="0">整數</option>
-          <option value="0.00">小數 2 位</option>
-          <option value="#,##0">千分位整數</option>
-          <option value="#,##0.00">千分位小數</option>
-          <option value="0%">百分比整數</option>
-          <option value="0.00%">百分比小數</option>
-          <option value="yyyy-mm-dd">日期</option>
-          <option value="yyyy-mm-dd hh:mm">日期時間</option>
-          <option value="hh:mm">時間</option>
+          <option value="">{{ i18n.excelEditor.formats.general }}</option>
+          <option value="0">{{ i18n.excelEditor.formats.integer }}</option>
+          <option value="0.00">{{ i18n.excelEditor.formats.decimal2 }}</option>
+          <option value="#,##0">{{ i18n.excelEditor.formats.thousands }}</option>
+          <option value="#,##0.00">{{ i18n.excelEditor.formats.thousandsDecimal }}</option>
+          <option value="0%">{{ i18n.excelEditor.formats.percent }}</option>
+          <option value="0.00%">{{ i18n.excelEditor.formats.percentDecimal }}</option>
+          <option value="yyyy-mm-dd">{{ i18n.excelEditor.formats.date }}</option>
+          <option value="yyyy-mm-dd hh:mm">{{ i18n.excelEditor.formats.dateTime }}</option>
+          <option value="hh:mm">{{ i18n.excelEditor.formats.time }}</option>
         </select>
       </div>
 
@@ -91,14 +91,14 @@
         <input
           class="w-24 px-2 py-1 text-xs font-mono text-content-primary bg-surface-secondary border border-stroke-default rounded focus:outline-none focus:ring-1 focus:ring-success text-center"
           :value="activeCellRef"
-          aria-label="目前儲存格"
+          :aria-label="i18n.excelEditor.activeCell"
           readonly
         />
         <span class="text-content-disabled">|</span>
         <button type="button"
           class="tb-btn !w-7"
           @click.stop="toggleFxPanel"
-          title="插入函式"
+          :title="i18n.excelEditor.insertFunction"
         >
           fx
         </button>
@@ -106,7 +106,7 @@
           v-model="formulaBarValue"
           ref="formulaInputRef"
           class="formula-input flex-1 px-2 py-1 text-sm text-content-primary border border-stroke-default rounded focus:outline-none focus:ring-1 focus:ring-success"
-          placeholder="輸入數值或公式，如 =SUM(A1:A3)"
+          :placeholder="i18n.excelEditor.formulaPlaceholder"
           @input="onFormulaInput"
           @keydown.enter.prevent="commitFormulaBar"
           @blur.exact="commitFormulaBar"
@@ -131,7 +131,7 @@
             @mousedown.prevent="applySuggestion(fn)"
           >
             <span class="font-mono font-semibold text-success">{{ fn.name }}</span>
-            <span class="text-xs text-content-tertiary ml-2">{{ fn.description }}</span>
+            <span class="text-xs text-content-tertiary ml-2">{{ describeFn(fn.name) }}</span>
           </div>
         </div>
 
@@ -142,7 +142,7 @@
           style="top: 100%"
         >
           <span class="font-mono font-semibold text-info-on-subtle">{{ formulaHint.name }}({{ formulaHint.args }})</span>
-          <span class="text-xs text-accent">{{ formulaHint.description }}</span>
+          <span class="text-xs text-accent">{{ describeFn(formulaHint.name) }}</span>
         </div>
       </div>
     </div>
@@ -153,7 +153,7 @@
       class="border-b border-stroke-light bg-surface-secondary px-3 py-2 relative z-40"
     >
       <div class="flex items-center justify-between mb-2">
-        <span class="text-xs font-semibold text-content-secondary">選擇函式</span>
+        <span class="text-xs font-semibold text-content-secondary">{{ i18n.excelEditor.chooseFunction }}</span>
         <button type="button" class="text-xs text-content-tertiary hover:text-content-primary" @click="showFxPanel = false">✕</button>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-3 gap-1.5 max-h-40 overflow-auto">
@@ -164,7 +164,7 @@
           @click="insertFunction(fn.name)"
         >
           <span class="font-mono font-semibold text-success">{{ fn.name }}</span>
-          <span class="block text-[10px] text-content-tertiary">{{ fn.description }}</span>
+          <span class="block text-[10px] text-content-tertiary">{{ describeFn(fn.name) }}</span>
         </button>
       </div>
     </div>
@@ -174,7 +174,7 @@
       <table class="grid-table">
         <thead>
           <tr>
-            <th class="grid-corner" @mousedown.prevent="selectAll"><span class="sr-only">全選</span></th>
+            <th class="grid-corner" @mousedown.prevent="selectAll"><span class="sr-only">{{ i18n.common.selectAll }}</span></th>
             <th
               v-for="c in colCount"
               :key="'c' + c"
@@ -252,7 +252,7 @@
 
     <!-- ===== 工作表頁籤 ===== -->
     <div v-if="showSheetTabs" class="flex items-center gap-1 px-2 py-1.5 border-t border-stroke-light bg-surface-secondary overflow-x-auto">
-      <button type="button" class="sheet-add" @click="addSheet" title="新增工作表">＋</button>
+      <button type="button" class="sheet-add" @click="addSheet" :title="i18n.excelEditor.addSheet">＋</button>
       <div
         v-for="(sheet, idx) in sheets"
         :key="idx"
@@ -273,7 +273,7 @@
           @blur="confirmRenameSheet(idx)"
         />
         <span v-else class="px-2 py-0.5 rounded">{{ sheet.name }}</span>
-        <button type="button" v-if="sheets.length > 1" class="sheet-close" @mousedown.stop @click.stop="removeSheet(idx)" title="刪除工作表">×</button>
+        <button type="button" v-if="sheets.length > 1" class="sheet-close" @mousedown.stop @click.stop="removeSheet(idx)" :title="i18n.excelEditor.removeSheet">×</button>
       </div>
     </div>
   </div>
@@ -296,6 +296,7 @@ import { buildWorkbook } from './xlsxExport'
 import { extendSeries } from './autofill'
 import { formatValue, generalAlign, impliedFormat, sortCompare, type CellAlign } from './values'
 import { shiftFormula } from './formula/refRewrite'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptExcelEditor（CHPT 主題）- 仿原生 Excel 試算表元件
@@ -369,6 +370,8 @@ interface ExcelEditorProps {
   defaultSheetName?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<ExcelEditorProps>(), {
   modelValue: () => [],
   showToolbar: true,
@@ -1512,79 +1515,83 @@ function resetFormulaBar() {
 // ===== 公式插入 / 自動完成 =====
 interface FunctionDef {
   name: string
-  description: string
   args: string
 }
 
+/** 函式說明（語系 excelEditor.functions） */
+function describeFn(name: string): string {
+  return i18n.value.excelEditor.functions[name] ?? ''
+}
+
 const FUNCTION_LIST: FunctionDef[] = [
-  { name: 'SUM', description: '加總', args: 'number1, [number2], ...' },
-  { name: 'AVERAGE', description: '平均', args: 'number1, [number2], ...' },
-  { name: 'MIN', description: '最小值', args: 'number1, [number2], ...' },
-  { name: 'MAX', description: '最大值', args: 'number1, [number2], ...' },
-  { name: 'COUNT', description: '數字個數', args: 'value1, [value2], ...' },
-  { name: 'COUNTA', description: '非空白個數', args: 'value1, [value2], ...' },
-  { name: 'IF', description: '條件判斷', args: 'logical_test, [value_if_true], [value_if_false]' },
-  { name: 'IFS', description: '多重條件', args: 'test1, value1, [test2, value2], ...' },
-  { name: 'IFERROR', description: '錯誤時改用', args: 'value, value_if_error' },
-  { name: 'AND', description: '全部成立', args: 'logical1, [logical2], ...' },
-  { name: 'OR', description: '任一成立', args: 'logical1, [logical2], ...' },
-  { name: 'NOT', description: '反轉', args: 'logical' },
-  { name: 'SUMIF', description: '條件加總', args: 'range, criteria, [sum_range]' },
-  { name: 'SUMIFS', description: '多條件加總', args: 'sum_range, criteria_range1, criteria1, ...' },
-  { name: 'COUNTIF', description: '條件計數', args: 'range, criteria' },
-  { name: 'COUNTIFS', description: '多條件計數', args: 'criteria_range1, criteria1, ...' },
-  { name: 'AVERAGEIF', description: '條件平均', args: 'range, criteria, [average_range]' },
-  { name: 'AVERAGEIFS', description: '多條件平均', args: 'average_range, criteria_range1, criteria1, ...' },
-  { name: 'VLOOKUP', description: '垂直查閱', args: 'lookup_value, table_array, col_index_num, [range_lookup]' },
-  { name: 'HLOOKUP', description: '水平查閱', args: 'lookup_value, table_array, row_index_num, [range_lookup]' },
-  { name: 'XLOOKUP', description: '查閱', args: 'lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode]' },
-  { name: 'INDEX', description: '依位置取值', args: 'array, row_num, [column_num]' },
-  { name: 'MATCH', description: '找出位置', args: 'lookup_value, lookup_array, [match_type]' },
-  { name: 'ROUND', description: '四捨五入', args: 'number, num_digits' },
-  { name: 'ROUNDUP', description: '無條件進位', args: 'number, num_digits' },
-  { name: 'ROUNDDOWN', description: '無條件捨去', args: 'number, num_digits' },
-  { name: 'INT', description: '取整數', args: 'number' },
-  { name: 'ABS', description: '絕對值', args: 'number' },
-  { name: 'MOD', description: '餘數', args: 'number, divisor' },
-  { name: 'SUMPRODUCT', description: '乘積加總', args: 'array1, [array2], ...' },
-  { name: 'MEDIAN', description: '中位數', args: 'number1, [number2], ...' },
-  { name: 'LARGE', description: '第 k 大', args: 'array, k' },
-  { name: 'SMALL', description: '第 k 小', args: 'array, k' },
-  { name: 'RANK', description: '排名', args: 'number, ref, [order]' },
-  { name: 'LEN', description: '字元數', args: 'text' },
-  { name: 'LEFT', description: '左邊字元', args: 'text, [num_chars]' },
-  { name: 'RIGHT', description: '右邊字元', args: 'text, [num_chars]' },
-  { name: 'MID', description: '中間字元', args: 'text, start_num, num_chars' },
-  { name: 'TRIM', description: '去除多餘空白', args: 'text' },
-  { name: 'UPPER', description: '轉大寫', args: 'text' },
-  { name: 'LOWER', description: '轉小寫', args: 'text' },
-  { name: 'CONCAT', description: '串接文字', args: 'text1, [text2], ...' },
-  { name: 'TEXTJOIN', description: '以分隔符號串接', args: 'delimiter, ignore_empty, text1, ...' },
-  { name: 'SUBSTITUTE', description: '取代文字', args: 'text, old_text, new_text, [instance_num]' },
-  { name: 'FIND', description: '尋找（分大小寫）', args: 'find_text, within_text, [start_num]' },
-  { name: 'SEARCH', description: '尋找（不分大小寫）', args: 'find_text, within_text, [start_num]' },
-  { name: 'TEXT', description: '數字轉格式文字', args: 'value, format_text' },
-  { name: 'VALUE', description: '文字轉數字', args: 'text' },
-  { name: 'ISBLANK', description: '是否空白', args: 'value' },
-  { name: 'ISNUMBER', description: '是否為數字', args: 'value' },
-  { name: 'ISERROR', description: '是否為錯誤', args: 'value' },
+  { name: 'SUM', args: 'number1, [number2], ...' },
+  { name: 'AVERAGE', args: 'number1, [number2], ...' },
+  { name: 'MIN', args: 'number1, [number2], ...' },
+  { name: 'MAX', args: 'number1, [number2], ...' },
+  { name: 'COUNT', args: 'value1, [value2], ...' },
+  { name: 'COUNTA', args: 'value1, [value2], ...' },
+  { name: 'IF', args: 'logical_test, [value_if_true], [value_if_false]' },
+  { name: 'IFS', args: 'test1, value1, [test2, value2], ...' },
+  { name: 'IFERROR', args: 'value, value_if_error' },
+  { name: 'AND', args: 'logical1, [logical2], ...' },
+  { name: 'OR', args: 'logical1, [logical2], ...' },
+  { name: 'NOT', args: 'logical' },
+  { name: 'SUMIF', args: 'range, criteria, [sum_range]' },
+  { name: 'SUMIFS', args: 'sum_range, criteria_range1, criteria1, ...' },
+  { name: 'COUNTIF', args: 'range, criteria' },
+  { name: 'COUNTIFS', args: 'criteria_range1, criteria1, ...' },
+  { name: 'AVERAGEIF', args: 'range, criteria, [average_range]' },
+  { name: 'AVERAGEIFS', args: 'average_range, criteria_range1, criteria1, ...' },
+  { name: 'VLOOKUP', args: 'lookup_value, table_array, col_index_num, [range_lookup]' },
+  { name: 'HLOOKUP', args: 'lookup_value, table_array, row_index_num, [range_lookup]' },
+  { name: 'XLOOKUP', args: 'lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode]' },
+  { name: 'INDEX', args: 'array, row_num, [column_num]' },
+  { name: 'MATCH', args: 'lookup_value, lookup_array, [match_type]' },
+  { name: 'ROUND', args: 'number, num_digits' },
+  { name: 'ROUNDUP', args: 'number, num_digits' },
+  { name: 'ROUNDDOWN', args: 'number, num_digits' },
+  { name: 'INT', args: 'number' },
+  { name: 'ABS', args: 'number' },
+  { name: 'MOD', args: 'number, divisor' },
+  { name: 'SUMPRODUCT', args: 'array1, [array2], ...' },
+  { name: 'MEDIAN', args: 'number1, [number2], ...' },
+  { name: 'LARGE', args: 'array, k' },
+  { name: 'SMALL', args: 'array, k' },
+  { name: 'RANK', args: 'number, ref, [order]' },
+  { name: 'LEN', args: 'text' },
+  { name: 'LEFT', args: 'text, [num_chars]' },
+  { name: 'RIGHT', args: 'text, [num_chars]' },
+  { name: 'MID', args: 'text, start_num, num_chars' },
+  { name: 'TRIM', args: 'text' },
+  { name: 'UPPER', args: 'text' },
+  { name: 'LOWER', args: 'text' },
+  { name: 'CONCAT', args: 'text1, [text2], ...' },
+  { name: 'TEXTJOIN', args: 'delimiter, ignore_empty, text1, ...' },
+  { name: 'SUBSTITUTE', args: 'text, old_text, new_text, [instance_num]' },
+  { name: 'FIND', args: 'find_text, within_text, [start_num]' },
+  { name: 'SEARCH', args: 'find_text, within_text, [start_num]' },
+  { name: 'TEXT', args: 'value, format_text' },
+  { name: 'VALUE', args: 'text' },
+  { name: 'ISBLANK', args: 'value' },
+  { name: 'ISNUMBER', args: 'value' },
+  { name: 'ISERROR', args: 'value' },
   // 日期與時間（值是 Excel 日期序號；=TODAY() 這類儲存格自動顯示成日期）
-  { name: 'TODAY', description: '今天的日期', args: '' },
-  { name: 'NOW', description: '現在的日期與時間', args: '' },
-  { name: 'DATE', description: '年月日組成日期', args: 'year, month, day' },
-  { name: 'TIME', description: '時分秒組成時間', args: 'hour, minute, second' },
-  { name: 'YEAR', description: '取出年', args: 'date' },
-  { name: 'MONTH', description: '取出月', args: 'date' },
-  { name: 'DAY', description: '取出日', args: 'date' },
-  { name: 'WEEKDAY', description: '星期幾', args: 'date, [return_type]' },
-  { name: 'WEEKNUM', description: '一年中的第幾週', args: 'date, [return_type]' },
-  { name: 'EDATE', description: '幾個月後的同一天', args: 'start_date, months' },
-  { name: 'EOMONTH', description: '幾個月後的月底', args: 'start_date, months' },
-  { name: 'DATEDIF', description: '兩個日期相差（年 / 月 / 日）', args: 'start_date, end_date, "Y"|"M"|"D"|"YM"|"MD"|"YD"' },
-  { name: 'DAYS', description: '相差天數', args: 'end_date, start_date' },
-  { name: 'NETWORKDAYS', description: '工作天數（排除週末與假日）', args: 'start_date, end_date, [holidays]' },
-  { name: 'WORKDAY', description: '幾個工作天後的日期', args: 'start_date, days, [holidays]' },
-  { name: 'DATEVALUE', description: '日期文字轉日期', args: 'date_text' },
+  { name: 'TODAY', args: '' },
+  { name: 'NOW', args: '' },
+  { name: 'DATE', args: 'year, month, day' },
+  { name: 'TIME', args: 'hour, minute, second' },
+  { name: 'YEAR', args: 'date' },
+  { name: 'MONTH', args: 'date' },
+  { name: 'DAY', args: 'date' },
+  { name: 'WEEKDAY', args: 'date, [return_type]' },
+  { name: 'WEEKNUM', args: 'date, [return_type]' },
+  { name: 'EDATE', args: 'start_date, months' },
+  { name: 'EOMONTH', args: 'start_date, months' },
+  { name: 'DATEDIF', args: 'start_date, end_date, "Y"|"M"|"D"|"YM"|"MD"|"YD"' },
+  { name: 'DAYS', args: 'end_date, start_date' },
+  { name: 'NETWORKDAYS', args: 'start_date, end_date, [holidays]' },
+  { name: 'WORKDAY', args: 'start_date, days, [holidays]' },
+  { name: 'DATEVALUE', args: 'date_text' },
 ]
 
 const showFxPanel = ref(false)

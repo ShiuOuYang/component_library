@@ -14,6 +14,7 @@
  * 不算違規：
  *   - 註解（AST 本來就不包含）
  *   - console.* 與 warnDeprecated(...) 的參數：給開發者看的訊息，不會出現在畫面上
+ *   - new FormulaSyntaxError(...) 的訊息：公式引擎內部用，最後一律顯示成 #NAME?
  *   - 同一行或上一行標了 `i18n-ignore` 的字串：資料本身就是中文的情況，
  *     例如 Excel 公式的中文函式別名、解析使用者檔案時比對的中文欄名
  *
@@ -30,6 +31,9 @@ const ROOT = 'src/components/library'
 const LOCALE_FILES = new Set(['src/components/library/shared/locale.ts'])
 
 const HAN = /\p{Script=Han}/u
+
+/** 訊息不會出現在畫面上的錯誤類別：公式語法錯誤在 formulaEngine 裡一律轉成 #NAME? */
+const INTERNAL_ERRORS = new Set(['FormulaSyntaxError'])
 
 /** Vue AST 節點型別（compiler-core 的 NodeTypes） */
 const ELEMENT = 1
@@ -64,6 +68,8 @@ function scanCode(code, lineOffset, sourceLines) {
         const callee = p.expression.getText(sf)
         if (/^console\.\w+$/.test(callee) || callee === 'warnDeprecated') return true
       }
+      // 只在內部流轉、不會顯示的錯誤（公式語法錯誤最後一律變成 #NAME?）
+      if (ts.isNewExpression(p) && INTERNAL_ERRORS.has(p.expression.getText(sf))) return true
       // 型別位置的字串（字面值型別）不會出現在畫面上
       if (ts.isLiteralTypeNode(p)) return true
     }

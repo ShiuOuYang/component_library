@@ -26,9 +26,13 @@ const BUILTIN_LISTS: string[][] = [
   ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
   ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
   ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+  // i18n-ignore：以下是用來辨識使用者輸入的資料（中文清單），不是介面文字
   ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
+  // i18n-ignore
   ['週日', '週一', '週二', '週三', '週四', '週五', '週六'],
+  // i18n-ignore
   ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+  // i18n-ignore
   ['第一季', '第二季', '第三季', '第四季'],
 ]
 

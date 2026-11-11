@@ -62,7 +62,7 @@ export { useOverlay } from './shared/useOverlay'
 export type { UseOverlayOptions } from './shared/useOverlay'
 export { warnDeprecated } from './shared/warnDeprecated'
 export { validateValue, checkRule } from './shared/formValidation'
-export type { FormRule, FormRules } from './shared/formValidation'
+export type { FormRule, FormRules, ValidationMessages } from './shared/formValidation'
 export type {
   ComponentSize, ColorVariant, RadiusSize, SelectOption, Recordable, DividerDirection,
   Placement, Direction, ButtonNativeType, InputNativeType,
