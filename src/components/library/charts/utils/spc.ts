@@ -5,6 +5,7 @@
  * - 計量值：先估計製程標準差 σ̂（移動全距、全距或標準差），界限 = 中心線 ± 3σ̂ / √n
  * - 計數值：p 圖 σ = √(p̄(1−p̄)/n)、u 圖 σ = √(ū/n)；樣本數不同時界限逐點不同
  */
+import { zhTW } from '../../shared/locale'
 
 // === 管制常數 ===
 
@@ -319,16 +320,8 @@ export function buildSamples(type: ControlChartType, rows: Record<string, unknow
 // === Nelson 判異規則 ===
 
 /** 規則說明（編號依 Nelson） */
-export const NELSON_RULES: Record<number, string> = {
-  1: '1 點超出管制界限（±3σ）',
-  2: '連續 9 點在中心線同一側',
-  3: '連續 6 點持續上升或下降',
-  4: '連續 14 點上下交錯',
-  5: '連續 3 點中有 2 點在同一側的 2σ 之外',
-  6: '連續 5 點中有 4 點在同一側的 1σ 之外',
-  7: '連續 15 點都在 1σ 之內（變異太小、可能分層）',
-  8: '連續 8 點都在 1σ 之外（兩側都有，可能混合）',
-}
+/** 規則說明（編號依 Nelson）；文字在語系檔 controlChart.rules，這裡保留繁中版本給既有的 import */
+export const NELSON_RULES: Record<number, string> = zhTW.controlChart.rules
 
 export interface Violation {
   index: number

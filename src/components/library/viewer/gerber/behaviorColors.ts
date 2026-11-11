@@ -5,6 +5,7 @@
  * 填充區域、走線、焊盤要能一眼分辨，這對 EDA 除錯比「每檔一色」有用。
  */
 import type { GerberBehavior } from './gerber.types'
+import { zhTW } from '../../shared/locale'
 
 export const BEHAVIOR_COLORS: Record<GerberBehavior, string> = {
   region: '#00ff88', // G36/G37 填充區域（絲印字元、銅箔多邊形）
@@ -15,14 +16,8 @@ export const BEHAVIOR_COLORS: Record<GerberBehavior, string> = {
   move: '#ff4444', // D02 移動軌跡（EDA 工具路徑分析）
 }
 
-export const BEHAVIOR_LABELS: Record<GerberBehavior, string> = {
-  region: 'Region (G36/G37)',
-  draw: '線條 (D01)',
-  flash: '焊盤 (D03)',
-  drill: '鑽孔',
-  slot: '槽孔 (G85)',
-  move: '移動軌跡 (D02)',
-}
+/** 繁中名稱；元件裡依語系取 locale.viewer.gerberBehaviors，這裡保留給既有的 import */
+export const BEHAVIOR_LABELS: Record<GerberBehavior, string> = zhTW.viewer.gerberBehaviors
 
 /** 圖例用的扁平陣列；型別比在樣板裡遍歷物件好處理 */
 export const BEHAVIOR_LEGEND: Array<{

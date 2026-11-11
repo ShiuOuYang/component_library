@@ -3,7 +3,7 @@
     <div v-if="title || showLegend" class="stl-head">
       <p v-if="title" class="stl-title text-sm font-semibold text-content-primary">{{ title }}</p>
       <!-- 圖例：顏色一定配文字 -->
-      <ul v-if="showLegend" class="stl-legend" aria-label="狀態圖例">
+      <ul v-if="showLegend" class="stl-legend" :aria-label="i18n.chart.statusLegend">
         <li v-for="s in legendItems" :key="s.value">
           <span class="stl-swatch" :style="{ background: s.color }" aria-hidden="true"></span>{{ s.label }}
         </li>
@@ -14,7 +14,7 @@
         class="ml-auto rounded-md border border-stroke-light bg-surface-primary/80 px-2.5 py-1 text-xs text-content-secondary shadow-sm hover:bg-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
         @click="resetZoom"
       >
-        重設縮放
+        {{ i18n.chart.resetZoom }}
       </button>
     </div>
 
@@ -48,8 +48,8 @@
 
       <!-- 統計欄標題 -->
       <g v-if="showSummary" class="stl-summary-head" aria-hidden="true">
-        <text :x="summaryLeft + 8" :y="AXIS_H - 8">稼動率</text>
-        <text :x="effectiveWidth - margin.right" :y="AXIS_H - 8" text-anchor="end">停機</text>
+        <text :x="summaryLeft + 8" :y="AXIS_H - 8">{{ i18n.stateTimeline.utilization }}</text>
+        <text :x="effectiveWidth - margin.right" :y="AXIS_H - 8" text-anchor="end">{{ i18n.stateTimeline.downtime }}</text>
       </g>
 
       <g v-for="row in rowViews" :key="row.key" class="stl-row" :class="{ 'is-hovered': hover?.row === row.index }">
@@ -101,7 +101,7 @@
       />
     </svg>
 
-    <p v-if="!rowViews.length" class="stl-empty text-sm text-content-tertiary">{{ emptyText }}</p>
+    <p v-if="!rowViews.length" class="stl-empty text-sm text-content-tertiary">{{ emptyText ?? i18n.chart.noData }}</p>
     <p class="sr-only" aria-live="polite">{{ liveText }}</p>
 
     <slot name="tooltip" :tooltip-data="tooltipData" :tooltip-visible="tooltipVisible">
@@ -143,6 +143,7 @@ import {
   type StateSummary,
 } from './utils/stateTimeline'
 import { tooltipPlacement } from './utils/tooltipPlacement'
+import { useLocale } from '../shared/config'
 
 /**
  * StateTimeline —— 機台狀態時間軸
@@ -260,6 +261,8 @@ interface StateTimelineProps {
   }
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<StateTimelineProps>(), {
   width: 800,
   height: 320,
@@ -271,12 +274,8 @@ const props = withDefaults(defineProps<StateTimelineProps>(), {
   startField: 'start',
   endField: 'end',
   rows: () => [],
-  states: () => [
-    { value: 'run', label: '運轉', color: chartPalette.good, priority: 0 },
-    { value: 'idle', label: '待機', color: chartPalette.warning, priority: 1 },
-    { value: 'maintenance', label: '保養', color: 'rgb(var(--t-info-solid))', priority: 2 },
-    { value: 'down', label: '故障', color: chartPalette.critical, priority: 3 },
-  ],
+  // 不給時用預設四種狀態（stateDefs）；名稱取語系 stateTimeline.states
+  states: undefined,
   unknownStateColor: chartPalette.other,
   timeDomain: null,
   openEndTime: null,
@@ -295,12 +294,24 @@ const props = withDefaults(defineProps<StateTimelineProps>(), {
   summaryWidth: 240,
   title: '',
   showLegend: true,
-  emptyText: '沒有資料',
+  emptyText: undefined,
   enableTooltip: true,
   enableZoom: true,
   wheelZoomModifier: 'ctrl',
   minVisibleSpan: 10 * 60_000,
   customRenderers: () => ({}),
+})
+
+/** 狀態定義：沒傳 states 時用預設四種；名稱取語系 */
+const stateDefs = computed<StateDef[]>(() => {
+  if (props.states) return props.states
+  const s = i18n.value.stateTimeline.states
+  return [
+    { value: 'run', label: s.run, color: chartPalette.good, priority: 0 },
+    { value: 'idle', label: s.idle, color: chartPalette.warning, priority: 1 },
+    { value: 'maintenance', label: s.maintenance, color: 'rgb(var(--t-info-solid))', priority: 2 },
+    { value: 'down', label: s.down, color: chartPalette.critical, priority: 3 },
+  ]
 })
 
 const emit = defineEmits<{
@@ -322,9 +333,9 @@ const { effectiveWidth } = useAutoResize(containerRef, props, (size) => emit('ch
 
 // === 狀態定義 ===
 
-const stateMap = computed(() => new Map(props.states.map((s) => [s.value, s])))
+const stateMap = computed(() => new Map(stateDefs.value.map((s) => [s.value, s])))
 const colorOf = (state: string) => stateMap.value.get(state)?.color ?? props.unknownStateColor
-const labelOf = (state: string) => stateMap.value.get(state)?.label ?? (state || '（未知）')
+const labelOf = (state: string) => stateMap.value.get(state)?.label ?? (state || i18n.value.stateTimeline.unknown)
 const priorityOf = (state: string) => stateMap.value.get(state)?.priority ?? 0
 
 // === 資料 ===
@@ -551,7 +562,7 @@ const lowerTicks = computed(() => {
   const ticks = xs.ticks(Math.max(2, Math.floor(w / 70)))
   const [d0, d1] = domain.value
   const step = ticks.length >= 2 ? ticks[1].getTime() - ticks[0].getTime() : d1 - d0
-  const fmt = props.timeFormat ?? timeTiers(step).lowerFormat
+  const fmt = props.timeFormat ?? timeTiers(step, i18n.value).lowerFormat
   return ticks.map((t, i) => {
     const x = xs(t)
     const label = fmt(t)
@@ -565,7 +576,7 @@ const upperTicks = computed(() => {
   if (plotWidth.value <= 0) return []
   const ticks = lowerTicks.value
   const step = ticks.length >= 2 ? ticks[1].value - ticks[0].value : domain.value[1] - domain.value[0]
-  return upperSegments(domain.value, timeTiers(step)).map((seg) => {
+  return upperSegments(domain.value, timeTiers(step, i18n.value)).map((seg) => {
     const x = xs(new Date(seg.start))
     const x2 = xs(new Date(seg.end))
     const labelX = Math.max(x, 0) + 4
@@ -611,15 +622,15 @@ const fmtPercent = d3.format('.1%')
 
 /** 統計欄的停機時間：一小時以上用小數的小時（欄寬固定，「11 小時 40 分」太長） */
 function compactDuration(ms: number): string {
-  return ms >= 3_600_000 ? `${(ms / 3_600_000).toFixed(1)} 小時` : formatDuration(ms)
+  return ms >= 3_600_000 ? i18n.value.chart.hoursDecimal((ms / 3_600_000).toFixed(1)) : formatDuration(ms, i18n.value)
 }
 
 function statusOf(u: number | null): { level: 'good' | 'warning' | 'critical'; icon: string; label: string } | null {
   if (u === null) return null
   const [ok, good] = props.utilizationThresholds
-  if (u >= good) return { level: 'good', icon: '✓', label: '達標' }
-  if (u >= ok) return { level: 'warning', icon: '!', label: '尚可' }
-  return { level: 'critical', icon: '✕', label: '偏低' }
+  if (u >= good) return { level: 'good', icon: '✓', label: i18n.value.stateTimeline.good }
+  if (u >= ok) return { level: 'warning', icon: '!', label: i18n.value.stateTimeline.warning }
+  return { level: 'critical', icon: '✕', label: i18n.value.stateTimeline.critical }
 }
 
 /** 列的顯示順序（索引） */
@@ -671,7 +682,7 @@ const rowViews = computed<RowView[]>(() => {
       summary,
       status: statusOf(summary.utilization),
       utilText: summary.utilization === null ? '—' : fmtPercent(summary.utilization),
-      downText: summary.downCount ? `${compactDuration(summary.downTime)}（${summary.downCount} 次）` : '—',
+      downText: summary.downCount ? i18n.value.stateTimeline.downCount(compactDuration(summary.downTime), summary.downCount) : '—',
     }
   })
 })
@@ -679,18 +690,19 @@ const rowViews = computed<RowView[]>(() => {
 const legendItems = computed(() => {
   const seen = new Set<string>()
   for (const list of normalized.value.byRow) for (const s of list) seen.add(s.state)
-  const defined = props.states.map((s) => ({ value: s.value, label: s.label ?? s.value, color: s.color }))
+  const defined = stateDefs.value.map((s) => ({ value: s.value, label: s.label ?? s.value, color: s.color }))
   const extra = [...seen].filter((v) => !stateMap.value.has(v)).map((v) => ({ value: v, label: labelOf(v), color: props.unknownStateColor }))
   return [...defined, ...extra]
 })
 
 const ariaSummary = computed(() => {
-  const name = props.title || '機台狀態時間軸'
+  const l = i18n.value
+  const name = props.title || l.stateTimeline.title
   const n = normalized.value.rows.length
-  if (!n) return `${name}：沒有資料`
+  if (!n) return l.chart.empty(name)
   const worst = [...summaries.value].filter((s) => s.utilization !== null).sort((a, b) => a.utilization! - b.utilization!)[0]
-  const tail = worst ? `，稼動率最低的是 ${rowLabelOf(worst.row)}（${fmtPercent(worst.utilization!)}）` : ''
-  return `${name}：${n} 台機台${tail}。可用上下鍵切換機台、左右鍵逐段查看`
+  const tail = worst ? l.stateTimeline.worst(rowLabelOf(worst.row), fmtPercent(worst.utilization!)) : ''
+  return l.chart.titled(name, l.stateTimeline.summary(n, tail))
 })
 
 // === 提示框 ===
@@ -727,7 +739,7 @@ const tooltipLines = computed(() => {
   const t = tooltipData.value
   if (!t) return []
   if (props.customRenderers.tooltip) return props.customRenderers.tooltip(t)
-  return t.openEnded && t.end.getTime() >= openEnd.value ? ['（仍在進行中）'] : []
+  return t.openEnded && t.end.getTime() >= openEnd.value ? [i18n.value.stateTimeline.ongoing] : []
 })
 
 const tooltipStyle = computed(() => {
@@ -762,7 +774,7 @@ function show(row: number, segment: StateSegment, x: number, y: number): void {
   tooltipData.value = {
     ...ev,
     color: colorOf(segment.state),
-    durationText: formatDuration(ev.duration),
+    durationText: formatDuration(ev.duration, i18n.value),
     rangeText: rangeText(segment.start, segment.end),
     position: { containerX: x, containerY: y },
   }
@@ -880,7 +892,7 @@ function onKeydown(event: KeyboardEvent): void {
   const y = svgTop - boxTop + AXIS_H + pos * props.rowHeight + props.rowHeight / 2
   show(row, segment, x, y)
   const ev = eventOf(row, segment)
-  liveText.value = `${ev.rowLabel}，${ev.stateLabel}，${rangeText(segment.start, segment.end)}，共 ${formatDuration(ev.duration)}`
+  liveText.value = i18n.value.stateTimeline.segment(ev.rowLabel, ev.stateLabel, rangeText(segment.start, segment.end), formatDuration(ev.duration, i18n.value))
 }
 
 // === 對外方法 ===

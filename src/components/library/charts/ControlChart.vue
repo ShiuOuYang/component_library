@@ -83,7 +83,7 @@
       </g>
     </svg>
 
-    <p v-if="!samples.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">{{ emptyText }}</p>
+    <p v-if="!samples.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">{{ emptyText ?? i18n.chart.noData }}</p>
 
     <!-- 讀螢幕：方向鍵移動時唸出目前的點 -->
     <p class="sr-only" aria-live="polite">{{ liveText }}</p>
@@ -102,7 +102,7 @@
         <div v-for="line in tooltipLines" :key="line" class="text-content-secondary">{{ line }}</div>
         <div v-for="r in tooltipData.violations" :key="r" class="mt-0.5 flex items-start gap-1 text-content-primary">
           <span class="cc-tip-icon" aria-hidden="true">!</span>
-          <span>規則 {{ r }}：{{ ruleText(r) }}</span>
+          <span>{{ i18n.controlChart.rule(r, ruleText(r)) }}</span>
         </div>
       </div>
     </slot>
@@ -115,7 +115,6 @@ import * as d3 from 'd3'
 import { chartPalette } from './chartTheme'
 import { useAutoResize } from './composables/useAutoResize'
 import {
-  NELSON_RULES,
   buildSamples,
   checkRules,
   computeLimits,
@@ -127,6 +126,7 @@ import {
   type Violation,
 } from './utils/spc'
 import { tooltipPlacement } from './utils/tooltipPlacement'
+import { useLocale } from '../shared/config'
 
 /**
  * ControlChart —— SPC 管制圖
@@ -244,6 +244,8 @@ interface ControlChartProps {
   }
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<ControlChartProps>(), {
   width: 800,
   height: 440,
@@ -268,7 +270,7 @@ const props = withDefaults(defineProps<ControlChartProps>(), {
   showSecondary: true,
   secondaryRatio: 0.32,
   showPoints: null,
-  emptyText: '沒有資料',
+  emptyText: undefined,
   enableTooltip: true,
   customRenderers: () => ({}),
 })
@@ -348,13 +350,8 @@ watch(analysisPayload, (p) => emit('analysis-change', p))
 
 // === 格式 ===
 
-const TYPE_LABELS: Record<ControlChartType, [string, string]> = {
-  imr: ['個別值（I）', '移動全距（MR）'],
-  'xbar-r': ['平均（X̄）', '全距（R）'],
-  'xbar-s': ['平均（X̄）', '標準差（S）'],
-  p: ['不良率（p）', ''],
-  u: ['單位缺點數（u）', ''],
-}
+/** 主圖 / 副圖的名稱（語系 controlChart.types） */
+const typeLabels = computed<[string, string]>(() => i18n.value.controlChart.types[props.type] ?? ['', ''])
 
 const percent = d3.format('.2%')
 const decimal = d3.format(',.4~f')
@@ -364,7 +361,7 @@ function fmt(v: number): string {
 }
 
 function ruleText(rule: number): string {
-  return NELSON_RULES[rule] ?? ''
+  return i18n.value.controlChart.rules[rule] ?? ''
 }
 
 // === 版面 ===
@@ -508,14 +505,14 @@ function buildPanel(
 const panels = computed<PanelView[]>(() => {
   if (!samples.value.length || plotWidth.value <= 0 || plotHeight.value <= 0) return []
   const a = analysis.value
-  const [mainLabel, secLabel] = TYPE_LABELS[props.type]
+  const [mainLabel, secLabel] = typeLabels.value
   const total = plotHeight.value
   const secH = hasSecondary.value ? Math.max(40, (total - PANEL_GAP) * Math.min(0.6, Math.max(0.15, props.secondaryRatio))) : 0
   const mainH = hasSecondary.value ? total - PANEL_GAP - secH : total
   const spec = props.specLimits
   const specs = [
     { kind: 'usl', value: spec?.usl, text: 'USL' },
-    { kind: 'target', value: spec?.target, text: '目標' },
+    { kind: 'target', value: spec?.target, text: i18n.value.chart.target },
     { kind: 'lsl', value: spec?.lsl, text: 'LSL' },
   ].filter((s): s is { kind: string; value: number; text: string } => typeof s.value === 'number' && Number.isFinite(s.value))
   const out = [
@@ -557,10 +554,11 @@ const xTicks = computed(() => {
 
 const ariaSummary = computed(() => {
   const p = analysisPayload.value
-  const name = props.title || `管制圖（${TYPE_LABELS[props.type][0]}）`
-  if (!samples.value.length) return `${name}：沒有資料`
+  const l = i18n.value
+  const name = props.title || l.controlChart.title(typeLabels.value[0])
+  if (!samples.value.length) return l.chart.empty(name)
   const outCount = violations.value.length + secondaryViolations.value.length
-  return `${name}：${samples.value.length} 點，CL ${fmt(p.limits.cl)}、UCL ${fmt(p.limits.ucl)}、LCL ${fmt(p.limits.lcl)}；${outCount ? `${outCount} 點異常` : '沒有異常點'}。可用方向鍵逐點查看`
+  return l.chart.titled(name, l.controlChart.summary(samples.value.length, fmt(p.limits.cl), fmt(p.limits.ucl), fmt(p.limits.lcl), outCount))
 })
 
 // === 互動 ===
@@ -592,9 +590,10 @@ const tooltipLines = computed(() => {
   if (!t) return []
   if (props.customRenderers.tooltip) return props.customRenderers.tooltip(t)
   const lines: string[] = []
-  const secLabel = TYPE_LABELS[props.type][1]
-  if (t.secondary !== null && secLabel) lines.push(`${secLabel}：${fmt(t.secondary)}`)
-  if (props.type !== 'imr') lines.push(props.type === 'p' || props.type === 'u' ? `樣本數：${t.n}` : `子組大小：${t.n}`)
+  const secLabel = typeLabels.value[1]
+  const l = i18n.value
+  if (t.secondary !== null && secLabel) lines.push(l.chart.titled(secLabel, fmt(t.secondary)))
+  if (props.type !== 'imr') lines.push(props.type === 'p' || props.type === 'u' ? l.controlChart.sampleSize(t.n) : l.controlChart.subgroupSize(t.n))
   lines.push(`UCL ${fmt(t.ucl)} · CL ${fmt(t.cl)} · LCL ${fmt(t.lcl)}`)
   return lines
 })
@@ -615,7 +614,7 @@ function show(i: number, x: number, y: number): void {
   if (changed) {
     emit('point-hover', p)
     emit('tooltip-show', tooltipData.value)
-    liveText.value = `${p.label}：${tooltipData.value.valueText}${p.violations.length ? `，異常（規則 ${p.violations.join('、')}）` : ''}`
+    liveText.value = i18n.value.chart.titled(p.label, tooltipData.value.valueText) + (p.violations.length ? i18n.value.controlChart.violations(p.violations) : '')
   }
 }
 

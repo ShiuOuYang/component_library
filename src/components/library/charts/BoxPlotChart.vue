@@ -93,7 +93,7 @@
       </g>
     </svg>
 
-    <p v-if="!groupViews.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">{{ emptyText }}</p>
+    <p v-if="!groupViews.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">{{ emptyText ?? i18n.chart.noData }}</p>
     <p class="sr-only" aria-live="polite">{{ liveText }}</p>
 
     <slot name="tooltip" :tooltip-data="tooltipData" :tooltip-visible="tooltipVisible">
@@ -105,7 +105,7 @@
       >
         <template v-if="tooltipData.point">
           <div class="text-sm font-semibold text-content-primary">{{ fmt(tooltipData.point.value) }}</div>
-          <div class="text-content-secondary">{{ tooltipData.label }}{{ tooltipData.point.outlier ? '・離群值' : '' }}</div>
+          <div class="text-content-secondary">{{ tooltipData.label }}{{ tooltipData.point.outlier ? i18n.boxPlot.outlierMark : '' }}</div>
           <div v-if="tooltipData.point.name" class="text-content-tertiary">{{ tooltipData.point.name }}</div>
         </template>
         <template v-else>
@@ -139,6 +139,7 @@ import {
   type QuartileMethod,
 } from './utils/boxPlot'
 import { tooltipPlacement } from './utils/tooltipPlacement'
+import { useLocale } from '../shared/config'
 
 /**
  * BoxPlotChart —— 箱型圖（可加小提琴圖）
@@ -245,6 +246,8 @@ interface BoxPlotChartProps {
   }
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<BoxPlotChartProps>(), {
   width: 640,
   height: 360,
@@ -269,7 +272,7 @@ const props = withDefaults(defineProps<BoxPlotChartProps>(), {
   title: '',
   color: null,
   highlightKey: null,
-  emptyText: '沒有資料',
+  emptyText: undefined,
   enableTooltip: true,
   customRenderers: () => ({}),
 })
@@ -482,11 +485,12 @@ const referenceViews = computed(() =>
 )
 
 const ariaSummary = computed(() => {
-  const name = props.title || '箱型圖'
+  const l = i18n.value
+  const name = props.title || l.boxPlot.title
   const list = groups.value.filter((g) => g.stats)
-  if (!list.length) return `${name}：沒有資料`
+  if (!list.length) return l.chart.empty(name)
   const widest = [...list].sort((a, b) => b.stats!.iqr - a.stats!.iqr)[0]
-  return `${name}：${groups.value.length} 組，四分位距最大的是 ${widest.label}（${fmt(widest.stats!.iqr)}）。可用左右鍵逐組查看`
+  return l.chart.titled(name, l.boxPlot.summary(groups.value.length, widest.label, fmt(widest.stats!.iqr)))
 })
 
 // === 提示框 ===
@@ -502,19 +506,20 @@ const tooltipRows = computed<[string, string][]>(() => {
   if (!t) return []
   if (props.customRenderers.tooltip) return props.customRenderers.tooltip(t)
   const s = t.stats
-  if (!s) return [['筆數', '0']]
+  const b = i18n.value.boxPlot
+  if (!s) return [[b.n, '0']]
   const rows: [string, string][] = [
-    ['筆數', String(s.n)],
-    ['最大', fmt(s.max)],
+    [b.n, String(s.n)],
+    [b.max, fmt(s.max)],
     ['Q3', fmt(s.q3)],
-    ['中位數', fmt(s.median)],
+    [b.median, fmt(s.median)],
     ['Q1', fmt(s.q1)],
-    ['最小', fmt(s.min)],
-    ['平均', fmt(s.mean)],
-    ['標準差', fmt(s.sd)],
-    ['四分位距', fmt(s.iqr)],
+    [b.min, fmt(s.min)],
+    [i18n.value.chart.mean, fmt(s.mean)],
+    [b.sd, fmt(s.sd)],
+    [b.iqr, fmt(s.iqr)],
   ]
-  if (s.outliers.length) rows.push(['離群值', `${s.outliers.length} 個`])
+  if (s.outliers.length) rows.push([b.outliers, b.outlierCount(s.outliers.length)])
   return rows
 })
 
@@ -618,8 +623,8 @@ function onKeydown(event: KeyboardEvent): void {
   showGroup(next, plotLeft.value + g.cx + g.boxW, svgTop + props.margin.top + (g.box?.median ?? plotHeight.value / 2))
   const s = g.stats
   liveText.value = s
-    ? `${g.label}：${s.n} 筆，中位數 ${fmt(s.median)}，Q1 ${fmt(s.q1)}，Q3 ${fmt(s.q3)}${s.outliers.length ? `，離群值 ${s.outliers.length} 個` : ''}`
-    : `${g.label}：沒有資料`
+    ? i18n.value.chart.titled(g.label, i18n.value.boxPlot.group(s.n, fmt(s.median), fmt(s.q1), fmt(s.q3), s.outliers.length))
+    : i18n.value.chart.empty(g.label)
 }
 
 // === 對外方法 ===

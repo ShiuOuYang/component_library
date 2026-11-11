@@ -8,7 +8,7 @@
     >
       <div class="px-2 py-1.5 text-xs text-gray-500 font-mono border-b border-gray-700 flex items-center gap-1.5">
         <span>⬛</span>
-        <span>圖層 ({{ internalLayers.length }})</span>
+        <span>{{ i18n.viewer.layers(internalLayers.length) }}</span>
       </div>
       <div class="flex-1 overflow-y-auto">
         <div
@@ -39,9 +39,9 @@
         v-if="showInfo && boardInfo"
         class="absolute top-3 left-3 bg-black/70 text-green-400 text-xs font-mono rounded px-3 py-2 pointer-events-none select-none leading-relaxed z-10"
       >
-        <div>{{ boardInfo.units }} | {{ boardInfo.elementCount }} 個圖形</div>
+        <div>{{ boardInfo.units }} | {{ i18n.viewer.shapes(boardInfo.elementCount) }}</div>
         <div>{{ boardInfo.sizeText }}</div>
-        <div v-if="currentZoom !== 1">縮放: {{ (currentZoom * 100).toFixed(0) }}%</div>
+        <div v-if="currentZoom !== 1">{{ i18n.viewer.zoom((currentZoom * 100).toFixed(0)) }}</div>
         <!-- 圖形類別圖例 -->
         <div class="mt-1.5 pt-1.5 border-t border-green-800/60 space-y-0.5">
           <div v-for="(entry, idx) in legendEntries" :key="idx" class="flex items-center gap-1.5">
@@ -53,9 +53,9 @@
 
       <!-- 縮放控制 -->
       <div v-if="showControls" class="absolute bottom-3 right-3 flex gap-1.5 z-10">
-        <button type="button" @click="zoomIn" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors" title="放大">+</button>
-        <button type="button" @click="zoomOut" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors" title="縮小">−</button>
-        <button type="button" @click="resetView" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-sm transition-colors" title="重置視角">⟳</button>
+        <button type="button" @click="zoomIn" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors" :title="i18n.viewer.zoomIn">+</button>
+        <button type="button" @click="zoomOut" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors" :title="i18n.viewer.zoomOut">−</button>
+        <button type="button" @click="resetView" class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-sm transition-colors" :title="i18n.viewer.resetView">⟳</button>
       </div>
 
       <!-- SVG 畫布 -->
@@ -88,11 +88,11 @@ import {
 import {
   RENDER_ORDER,
   TYPE_COLORS,
-  TYPE_LABELS,
   defaultLayerColor,
   isKnownType,
 } from './pcb/typeColors'
 import { fitToViewport } from './shared/viewportFit'
+import { useLocale } from '../shared/config'
 
 // ===== Props =====
 interface PcbLayoutProps {
@@ -128,6 +128,8 @@ interface PcbLayoutProps {
   showRefDes?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<PcbLayoutProps>(), {
   backgroundColor: '#1a1a2e',
   colorMap: () => ({}),
@@ -213,7 +215,7 @@ const legendEntries = computed(() => {
   const types = [...new Set(cachedElements.value.map((e) => e.type))]
   return types
     .filter(isKnownType)
-    .map((t) => ({ label: TYPE_LABELS[t], color: getColor(t) }))
+    .map((t) => ({ label: i18n.value.viewer.pcbTypes[t], color: getColor(t) }))
 })
 
 // ===== 建立內部圖層 =====
@@ -231,7 +233,7 @@ function buildLayers(): void {
     const grouped = d3.group(props.data.elements, (d) => d.type)
     internalLayers.value = Array.from(grouped, ([type, elements]) => ({
       id: `layer-${type}`,
-      name: isKnownType(type) ? TYPE_LABELS[type] : type,
+      name: isKnownType(type) ? i18n.value.viewer.pcbTypes[type] : type,
       color: getColor(type),
       visible: true,
       elements,

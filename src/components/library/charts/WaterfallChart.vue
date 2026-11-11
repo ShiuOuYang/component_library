@@ -3,7 +3,7 @@
     <div v-if="title || showLegend" class="wfc-head">
       <p v-if="title" class="wfc-title text-sm font-semibold text-content-primary">{{ title }}</p>
       <!-- 圖例：增減的顏色配上 ▲▼ 與文字，不只靠顏色 -->
-      <ul v-if="showLegend" class="wfc-legend" aria-label="圖例">
+      <ul v-if="showLegend" class="wfc-legend" :aria-label="i18n.chart.legend">
         <li v-for="l in legendItems" :key="l.kind">
           <span class="wfc-swatch" :style="{ background: l.color }" aria-hidden="true"></span>{{ l.icon }} {{ l.label }}
         </li>
@@ -72,7 +72,7 @@
       </g>
     </svg>
 
-    <p v-if="!barViews.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">{{ emptyText }}</p>
+    <p v-if="!barViews.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">{{ emptyText ?? i18n.chart.noData }}</p>
     <p class="sr-only" aria-live="polite">{{ liveText }}</p>
 
     <slot name="tooltip" :tooltip-data="tooltipData" :tooltip-visible="tooltipVisible">
@@ -102,6 +102,7 @@ import { estimateTextWidth } from './utils/chartText'
 import { truncateText } from './utils/horizontalBar'
 import { tooltipPlacement } from './utils/tooltipPlacement'
 import { buildWaterfall, shareOfStart, waterfallExtent, type WaterfallItem, type WaterfallKind } from './utils/waterfall'
+import { useLocale } from '../shared/config'
 
 /**
  * WaterfallChart —— 瀑布圖
@@ -189,6 +190,8 @@ interface WaterfallChartProps {
   }
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<WaterfallChartProps>(), {
   width: 640,
   height: 360,
@@ -211,7 +214,7 @@ const props = withDefaults(defineProps<WaterfallChartProps>(), {
   showLegend: true,
   valueFormat: null,
   title: '',
-  emptyText: '沒有資料',
+  emptyText: undefined,
   enableTooltip: true,
   customRenderers: () => ({}),
 })
@@ -289,9 +292,9 @@ function valueTextOf(index: number): string {
 const legendItems = computed(() => {
   const kinds = new Set<string>(items.value.map((it) => (isTotalKind(it.kind) ? 'total' : it.value < 0 ? 'decrease' : 'increase')))
   return [
-    { kind: 'increase', icon: '▲', label: '增加', color: colors.value.increase },
-    { kind: 'decrease', icon: '▼', label: '減少', color: colors.value.decrease },
-    { kind: 'total', icon: '■', label: '起點／合計', color: colors.value.total },
+    { kind: 'increase', icon: '▲', label: i18n.value.waterfall.increase, color: colors.value.increase },
+    { kind: 'decrease', icon: '▼', label: i18n.value.waterfall.decrease, color: colors.value.decrease },
+    { kind: 'total', icon: '■', label: i18n.value.waterfall.startTotal, color: colors.value.total },
   ].filter((l) => kinds.has(l.kind))
 })
 
@@ -430,14 +433,15 @@ const connectors = computed(() => {
 })
 
 const ariaSummary = computed(() => {
-  const name = props.title || '瀑布圖'
+  const l = i18n.value
+  const name = props.title || l.waterfall.title
   const list = items.value
-  if (!list.length) return `${name}：沒有資料`
+  if (!list.length) return l.chart.empty(name)
   const deltas = list.map((it, i) => ({ it, i })).filter(({ it }) => it.kind === 'delta')
   const biggest = [...deltas].sort((a, b) => Math.abs(b.it.value) - Math.abs(a.it.value))[0]
   const last = list[list.length - 1]
-  const tail = biggest ? `，變化最大的是 ${biggest.it.label}（${signed(biggest.it.value)}）` : ''
-  return `${name}：從 ${fmt(list[0].kind === 'delta' ? list[0].from : list[0].to)} 到 ${fmt(last.to)}${tail}。可用左右鍵逐項查看`
+  const tail = biggest ? l.waterfall.biggest(biggest.it.label, signed(biggest.it.value)) : ''
+  return l.chart.titled(name, l.waterfall.summary(fmt(list[0].kind === 'delta' ? list[0].from : list[0].to), fmt(last.to), tail))
 })
 
 // === 提示框 ===
@@ -453,8 +457,8 @@ const tooltipLines = computed(() => {
   if (props.customRenderers.tooltip) return props.customRenderers.tooltip(t)
   const lines: string[] = []
   if (t.kind === 'delta') lines.push(`${fmt(t.from)} → ${fmt(t.to)}`)
-  else if (t.kind !== 'start') lines.push(t.kind === 'total' ? '總計' : '小計')
-  if (t.shareOfStart !== null && t.kind !== 'start') lines.push(`佔起點 ${fmtPercent(t.kind === 'delta' ? Math.abs(t.shareOfStart) : t.shareOfStart)}`)
+  else if (t.kind !== 'start') lines.push(t.kind === 'total' ? i18n.value.chart.total : i18n.value.waterfall.subtotal)
+  if (t.shareOfStart !== null && t.kind !== 'start') lines.push(i18n.value.waterfall.shareOfStart(fmtPercent(t.kind === 'delta' ? Math.abs(t.shareOfStart) : t.shareOfStart)))
   return lines
 })
 
@@ -534,7 +538,7 @@ function onKeydown(event: KeyboardEvent): void {
   const headH = props.title || props.showLegend ? HEAD_H : 0
   show(next, plotLeft.value + b.cx + 12, headH + props.margin.top + b.valueY)
   const ev = eventOf(next)
-  liveText.value = `${ev.label}：${valueTextOf(next)}${ev.kind === 'delta' ? `，${fmt(ev.from)} 到 ${fmt(ev.to)}` : ''}`
+  liveText.value = i18n.value.chart.titled(ev.label, valueTextOf(next)) + (ev.kind === 'delta' ? i18n.value.waterfall.change(fmt(ev.from), fmt(ev.to)) : '')
 }
 
 onMounted(() => {

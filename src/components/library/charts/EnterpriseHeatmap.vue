@@ -60,7 +60,7 @@
       class="absolute right-2 top-2 z-20 rounded-md border border-stroke-light bg-surface-primary/80 px-2.5 py-1 text-xs text-content-secondary shadow-sm backdrop-blur hover:bg-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
       @click="handleResetZoom"
     >
-      重設縮放
+      {{ i18n.chart.resetZoom }}
     </button>
 
     <!-- Vue 插槽：允許外部注入自定義 Tooltip -->
@@ -73,6 +73,7 @@
 </template>
 
 <script setup lang="ts">
+import { useLocale } from '../shared/config'
 import { chartTheme } from './chartTheme';
 import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue';
 import * as d3 from 'd3';
@@ -200,6 +201,8 @@ interface EnterpriseHeatmapProps {
   customRenderers?: HeatmapCustomRenderers
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<EnterpriseHeatmapProps>(), {
   width: 800,
   height: 600,

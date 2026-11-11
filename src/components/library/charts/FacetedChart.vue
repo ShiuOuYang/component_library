@@ -5,7 +5,7 @@
     :class="{ 'auto-resize': autoResize }"
     :style="containerStyle"
     role="group"
-    :aria-label="title || '分面圖'"
+    :aria-label="title || i18n.chart.faceted"
     @mousemove="onMouseMove"
     @mouseleave="crosshairX = null"
   >
@@ -19,7 +19,7 @@
       v-if="sharedLegend && legendEntries.length"
       class="shared-legend"
       role="group"
-      aria-label="圖例（點選可隱藏或顯示系列）"
+      :aria-label="i18n.chart.legendToggle"
       :style="{ left: `${margin.left}px` }"
     >
       <button
@@ -48,7 +48,7 @@
       :class="{ 'is-last': index === facets.length - 1 }"
       :style="getFacetStyle(index)"
       role="group"
-      :aria-label="facet.title || `分面 ${index + 1}`"
+      :aria-label="facet.title || i18n.chart.facet(index + 1)"
     >
       <!-- 分面標題：左側旋轉（寬度 = 分面高度，長標題不會被擠成好幾行）或上方 -->
       <div
@@ -68,7 +68,7 @@
         :height="facetHeights[index]"
         :auto-resize="false"
         :margin="getFacetMargin(index)"
-        :layers="applySharedLegend(facet.layers, hiddenSeries, sharedLegend)"
+        :layers="applySharedLegend(facet.layers, hiddenSeries, sharedLegend, i18n)"
         :x-scale-type="xScaleType"
         :x-domain="syncBrush ? currentXDomain : facet.xDomain"
         :x-axis-format="xAxisFormat"
@@ -109,7 +109,7 @@
             >
               <div class="tooltip-title">{{ facet.title }}</div>
               <template v-for="(info, i) in [tooltipInfo(tooltipData, facet)]" :key="i">
-                <div v-if="info.xRaw !== null" class="tooltip-x">{{ formatXValue(info.xRaw, xAxisFormat) }}</div>
+                <div v-if="info.xRaw !== null" class="tooltip-x">{{ formatXValue(info.xRaw, xAxisFormat, i18n) }}</div>
                 <div v-for="row in info.rows" :key="row.label" class="tooltip-row">
                   <span class="tooltip-swatch" :style="{ backgroundColor: row.color }" aria-hidden="true"></span>
                   <span class="tooltip-label">{{ row.label }}</span>
@@ -140,12 +140,13 @@
       @click="handleResetZoom"
     >
       <span class="material-symbols-outlined" aria-hidden="true">zoom_out_map</span>
-      重設縮放
+      {{ i18n.chart.resetZoom }}
     </button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { useLocale } from '../shared/config'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import type { CSSProperties } from 'vue';
 import DualAxisComboChart from './DualAxisComboChart.vue';
@@ -233,6 +234,8 @@ interface FacetedChartProps {
   facetLabelPosition?: 'left' | 'top'
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<FacetedChartProps>(), {
   title: '',
   width: 1200,
@@ -389,12 +392,12 @@ function getFacetMargin(index: number): ChartMargin {
 // ===== 預設 tooltip =====
 
 const tooltipInfo = (payload: TooltipPayload, facet: VerticalFacet) =>
-  tooltipRows(payload, { yLeft: facet.yLeftAxisFormat, yRight: facet.yRightAxisFormat });
+  tooltipRows(payload, { yLeft: facet.yLeftAxisFormat, yRight: facet.yRightAxisFormat }, i18n.value);
 
 // ===== 共用圖例 =====
 
 const hiddenSeries = ref<Set<string>>(new Set());
-const legendEntries = computed(() => collectLegend(props.facets.map((f) => f.layers)));
+const legendEntries = computed(() => collectLegend(props.facets.map((f) => f.layers), i18n.value));
 
 function toggleSeries(label: string): void {
   const next = new Set(hiddenSeries.value);
@@ -463,7 +466,7 @@ const crosshairLabel = computed(() => {
   const ratio = (crosshairX.value - plotLeft.value) / Math.max(1, plotRight.value - plotLeft.value);
   const raw = domain[0] + ratio * (domain[1] - domain[0]);
   const value = props.xScaleType === 'time' ? new Date(raw) : raw;
-  return formatXValue(value, props.xAxisFormat);
+  return formatXValue(value, props.xAxisFormat, i18n.value);
 });
 
 // ===== Event Handlers =====

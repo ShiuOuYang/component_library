@@ -72,7 +72,7 @@
     </svg>
 
     <p v-if="!items.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">
-      {{ emptyText }}
+      {{ emptyText ?? i18n.chart.noData }}
     </p>
 
     <!-- Tooltip：數值在前（主角），名稱在後 -->
@@ -102,6 +102,7 @@ import { useAutoResize } from './composables/useAutoResize'
 import { estimateTextWidth } from './utils/chartText'
 import { barPath, prepareRanking, truncateText, type RankItem } from './utils/horizontalBar'
 import { tooltipPlacement } from './utils/tooltipPlacement'
+import { useLocale } from '../shared/config'
 
 /**
  * HorizontalBarChart —— 水平長條圖（排行榜）
@@ -223,6 +224,8 @@ interface HorizontalBarChartProps {
   }
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<HorizontalBarChartProps>(), {
   width: 560,
   height: 320,
@@ -237,7 +240,7 @@ const props = withDefaults(defineProps<HorizontalBarChartProps>(), {
   sort: 'desc',
   topN: null,
   showOthers: false,
-  othersLabel: '其他',
+  othersLabel: undefined,
   valueDomain: null,
   valueFormat: null,
   showAxis: false,
@@ -251,7 +254,7 @@ const props = withDefaults(defineProps<HorizontalBarChartProps>(), {
   showPercent: false,
   showRank: false,
   referenceLines: () => [],
-  emptyText: '沒有資料',
+  emptyText: undefined,
   enableTooltip: true,
   highlightKey: null,
   customRenderers: () => ({}),
@@ -281,7 +284,8 @@ const prepared = computed(() =>
     sort: props.sort,
     topN: props.topN,
     showOthers: props.showOthers,
-    othersLabel: props.othersLabel,
+    othersLabel: props.othersLabel ?? i18n.value.chart.others,
+    othersCountLabel: i18n.value.chart.othersCount,
   })
 )
 const items = computed<RankItem[]>(() => prepared.value.items)
@@ -469,9 +473,10 @@ const referenceViews = computed(() =>
 )
 
 const ariaSummary = computed(() => {
-  const name = props.title || '水平長條圖'
+  const l = i18n.value
+  const name = props.title || l.horizontalBar.title
   const first = items.value[0]
-  return first ? `${name}：共 ${items.value.length} 項，第一名 ${first.label} ${fmt(first.value)}` : `${name}：沒有資料`
+  return first ? l.chart.titled(name, l.horizontalBar.summary(items.value.length, first.label, fmt(first.value))) : l.chart.empty(name)
 })
 
 // === 提示框 ===
@@ -485,9 +490,10 @@ const tooltipLines = computed(() => {
   if (!t) return []
   if (props.customRenderers.tooltip) return props.customRenderers.tooltip(t.datum, t)
   const lines: string[] = []
-  if (t.rank !== null) lines.push(`第 ${t.rank} 名`)
-  if (t.share !== null) lines.push(`佔總數 ${fmtPercent(t.share)}`)
-  if (t.isOthers) lines.push(`合計 ${t.members.length} 項`)
+  const l = i18n.value
+  if (t.rank !== null) lines.push(l.horizontalBar.rank(t.rank))
+  if (t.share !== null) lines.push(l.horizontalBar.share(fmtPercent(t.share)))
+  if (t.isOthers) lines.push(l.chart.membersTotal(t.members.length))
   return lines
 })
 

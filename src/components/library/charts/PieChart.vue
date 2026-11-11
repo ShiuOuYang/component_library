@@ -46,7 +46,7 @@
         </div>
 
         <p v-if="!visibleSlices.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">
-          {{ emptyText }}
+          {{ emptyText ?? i18n.chart.noData }}
         </p>
       </div>
 
@@ -56,7 +56,7 @@
         class="pie-legend"
         :class="legendPosition === 'bottom' ? 'is-bottom' : 'is-right'"
         :style="legendPosition === 'right' ? { width: `${legendWidth}px` } : undefined"
-        aria-label="圖例"
+        :aria-label="i18n.chart.legend"
       >
         <li v-for="item in legendItems" :key="item.key">
           <button
@@ -64,7 +64,7 @@
             class="pie-legend-item focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
             :class="{ 'is-hidden': item.hidden, 'is-active': activeKey === item.key }"
             :aria-pressed="!item.hidden"
-            :title="item.hidden ? `顯示 ${item.label}` : `隱藏 ${item.label}`"
+            :title="item.hidden ? i18n.chart.show(item.label) : i18n.chart.hide(item.label)"
             @click="toggleSlice(item.key)"
             @mouseenter="legendHover = item.key"
             @mouseleave="legendHover = null"
@@ -108,6 +108,7 @@ import { estimateTextWidth, readableTextColor } from './utils/chartText'
 import { resolveCanvasColor } from './utils/largeData'
 import { preparePie, type PieSlice } from './utils/pie'
 import { tooltipPlacement } from './utils/tooltipPlacement'
+import { useLocale } from '../shared/config'
 
 /**
  * PieChart —— 圓餅圖／環圈圖（佔比）
@@ -210,6 +211,8 @@ interface PieChartProps {
   }
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<PieChartProps>(), {
   width: 480,
   height: 280,
@@ -221,7 +224,7 @@ const props = withDefaults(defineProps<PieChartProps>(), {
   keyField: 'id',
   keyFn: null,
   maxSlices: 6,
-  othersLabel: '其他',
+  othersLabel: undefined,
   sort: 'desc',
   colors: null,
   colorMap: null,
@@ -233,9 +236,9 @@ const props = withDefaults(defineProps<PieChartProps>(), {
   legendWidth: 200,
   showLegendValues: true,
   showCenter: true,
-  centerLabel: '總計',
+  centerLabel: undefined,
   valueFormat: null,
-  emptyText: '沒有資料',
+  emptyText: undefined,
   enableTooltip: true,
   hiddenKeys: () => [],
   highlightKey: null,
@@ -265,7 +268,7 @@ const prepared = computed(() =>
     keyField: props.keyField,
     keyFn: props.keyFn,
     maxSlices: props.maxSlices,
-    othersLabel: props.othersLabel,
+    othersLabel: props.othersLabel ?? i18n.value.chart.others,
     sort: props.sort,
   })
 )
@@ -458,13 +461,14 @@ const activeEvent = computed<PieSliceEvent | null>(() => {
 
 const centerValue = computed(() => (activeEvent.value ? fmt(activeEvent.value.value) : fmt(visibleTotal.value)))
 const centerText = computed(() =>
-  activeEvent.value ? `${activeEvent.value.label} · ${fmtPercent(activeEvent.value.share)}` : props.centerLabel
+  activeEvent.value ? `${activeEvent.value.label} · ${fmtPercent(activeEvent.value.share)}` : (props.centerLabel ?? i18n.value.chart.total)
 )
 
 const ariaSummary = computed(() => {
-  const name = props.title || '圓餅圖'
+  const l = i18n.value
+  const name = props.title || l.pie.title
   const parts = visibleSlices.value.map((s) => `${s.label} ${fmtPercent(eventOf(s).share)}`)
-  return parts.length ? `${name}：${parts.join('、')}` : `${name}：沒有資料`
+  return parts.length ? l.chart.titled(name, parts.join(l.chart.listSeparator)) : l.chart.empty(name)
 })
 
 // === 提示框 ===
@@ -476,7 +480,7 @@ const tooltipLines = computed(() => {
   const t = tooltipData.value
   if (!t) return []
   if (props.customRenderers.tooltip) return props.customRenderers.tooltip(t.datum, t)
-  return t.isOthers ? [`合計 ${t.members.length} 項`] : []
+  return t.isOthers ? [i18n.value.chart.membersTotal(t.members.length)] : []
 })
 
 const tooltipStyle = computed(() => {

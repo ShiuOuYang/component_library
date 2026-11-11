@@ -8,7 +8,7 @@
     >
       <div class="px-2 py-1.5 text-xs text-gray-500 font-mono border-b border-gray-700 flex items-center gap-1.5">
         <span>⬛</span>
-        <span>圖層 ({{ activeLayers.length }})</span>
+        <span>{{ i18n.viewer.layers(activeLayers.length) }}</span>
       </div>
       <div class="flex-1 overflow-y-auto">
         <div
@@ -27,7 +27,7 @@
                 :key="t"
                 class="w-2 h-3 rounded-sm"
                 :style="{ backgroundColor: BEHAVIOR_COLORS[t] }"
-                :title="BEHAVIOR_LABELS[t]"
+                :title="i18n.viewer.gerberBehaviors[t]"
               ></div>
             </template>
             <template v-else>
@@ -70,7 +70,7 @@
           <button type="button"
             @click="reload"
             class="mt-3 inline-flex items-center h-control-sm px-4 bg-red-600 hover:bg-red-500 text-white text-sm rounded transition-colors"
-          >重試</button>
+          >{{ i18n.viewer.retry }}</button>
         </div>
       </div>
 
@@ -82,15 +82,15 @@
         v-if="showInfo && imageInfo"
         class="absolute top-3 left-3 bg-black/70 text-green-400 text-xs font-mono rounded px-3 py-2 pointer-events-none select-none leading-relaxed"
       >
-        <div>{{ imageInfo.units === 'mm' ? '公厘' : '英寸' }} | {{ imageInfo.shapeCount }} 個圖形</div>
+        <div>{{ imageInfo.units === 'mm' ? i18n.viewer.mm : i18n.viewer.inch }} | {{ i18n.viewer.shapes(imageInfo.shapeCount) }}</div>
         <div>{{ imageInfo.sizeText }}</div>
-        <div v-if="currentZoom !== 1">縮放: {{ (currentZoom * 100).toFixed(0) }}%</div>
+        <div v-if="currentZoom !== 1">{{ i18n.viewer.zoom((currentZoom * 100).toFixed(0)) }}</div>
         <!-- 行為類型圖例 -->
         <template v-if="hasManualParsedLayers">
           <div class="mt-1.5 pt-1.5 border-t border-green-800/60 space-y-0.5">
             <div v-for="item in BEHAVIOR_LEGEND" :key="item.type" class="flex items-center gap-1.5">
               <div class="w-2 h-2 rounded-full flex-shrink-0" :style="{ backgroundColor: item.color }"></div>
-              <span>{{ item.label }}</span>
+              <span>{{ i18n.viewer.gerberBehaviors[item.type] }}</span>
             </div>
           </div>
         </template>
@@ -106,22 +106,22 @@
           :class="showMovePathState
             ? 'bg-red-600/80 hover:bg-red-500 text-white'
             : 'bg-black/60 hover:bg-black/80 text-gray-400'"
-          title="切換 D02 移動軌跡顯示"
+          :title="i18n.viewer.toggleMoves"
         >D02</button>
         <button type="button"
           @click="zoomIn"
           class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors"
-          title="放大"
+          :title="i18n.viewer.zoomIn"
         >+</button>
         <button type="button"
           @click="zoomOut"
           class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-lg transition-colors"
-          title="縮小"
+          :title="i18n.viewer.zoomOut"
         >−</button>
         <button type="button"
           @click="resetView"
           class="w-8 h-8 bg-black/60 hover:bg-black/80 text-white rounded flex items-center justify-center text-sm transition-colors"
-          title="重置視角"
+          :title="i18n.viewer.resetView"
         >⟳</button>
       </div>
 
@@ -153,10 +153,10 @@ import { isExcellon, parseExcellon } from './gerber/parseExcellon'
 import { computeBounds, fitToViewport, segmentsToPath } from './gerber/gerberGeometry'
 import {
   BEHAVIOR_COLORS,
-  BEHAVIOR_LABELS,
   BEHAVIOR_LEGEND,
   defaultLayerColor,
 } from './gerber/behaviorColors'
+import { useLocale } from '../shared/config'
 
 // ===== Props =====
 
@@ -198,6 +198,8 @@ interface GerberViewerProps {
   showMovePath?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<GerberViewerProps>(), {
   src: '',
   gerberText: '',
@@ -258,7 +260,7 @@ const svgRef = ref<SVGSVGElement | null>(null)
 
 // ===== 狀態 =====
 const globalLoading = ref(false)
-const loadingMessage = ref('載入中...')
+const loadingMessage = ref(i18n.value.viewer.loading)
 const fatalError = ref<string | null>(null)
 const currentZoom = ref(1)
 const imageInfo = ref<GerberImageInfo | null>(null)
@@ -340,7 +342,7 @@ function layerNameFromSrc(src: string): string {
 function layerAppearance(i: number): Pick<ViewerLayer, 'name' | 'color' | 'visible'> {
   const input = props.layers[i]
   if (input) {
-    return { name: input.name || `圖層 ${i + 1}`, color: input.color || defaultLayerColor(i), visible: input.visible !== false }
+    return { name: input.name || i18n.value.viewer.layer(i + 1), color: input.color || defaultLayerColor(i), visible: input.visible !== false }
   }
   return { name: props.src ? layerNameFromSrc(props.src) : 'Gerber', color: props.fillColor, visible: true }
 }
@@ -428,7 +430,7 @@ async function loadLayer(layer: ViewerLayer, signal: AbortSignal): Promise<void>
       // 已被更新的載入取代：不必再花時間解析
       if (signal.aborted) return
     } else {
-      throw new Error('缺少 src 或 gerberText')
+      throw new Error(i18n.value.viewer.missingSource)
     }
 
     layer.source = text
@@ -471,7 +473,7 @@ function renderAllLayers(width: number, height: number): void {
     includeMovePaths: showMovePathState.value,
   })
   if (!bounds) {
-    fatalError.value = '無有效 Gerber 座標資料'
+    fatalError.value = i18n.value.viewer.noCoordinates
     return
   }
 
@@ -849,23 +851,23 @@ async function loadAndRender(): Promise<void> {
     const layers = activeLayers.value
 
     if (layers.length === 0) {
-      throw new Error('請提供 src、gerberText 或 layers 屬性')
+      throw new Error(i18n.value.viewer.noInput)
     }
 
-    loadingMessage.value = `載入 ${layers.length} 個圖層...`
+    loadingMessage.value = i18n.value.viewer.loadingLayers(layers.length)
     await Promise.all(layers.map((layer) => loadLayer(layer, abort.signal)))
     if (isStale()) return
 
     const successCount = layers.filter((l) => l.imageTree || l.parsed).length
-    if (successCount === 0) throw new Error('所有圖層均載入失敗')
+    if (successCount === 0) throw new Error(i18n.value.viewer.allFailed)
 
-    loadingMessage.value = '渲染圖形...'
+    loadingMessage.value = i18n.value.viewer.rendering
     await nextTick()
     if (isStale()) return
 
-    if (!containerRef.value || !svgRef.value) throw new Error('容器尚未掛載')
+    if (!containerRef.value || !svgRef.value) throw new Error(i18n.value.viewer.notMounted)
     const { width, height } = containerRef.value.getBoundingClientRect()
-    if (width <= 0 || height <= 0) throw new Error('容器尺寸為 0，請確認父元素有設定高度')
+    if (width <= 0 || height <= 0) throw new Error(i18n.value.viewer.zeroSize)
 
     svgSelection = d3.select(svgRef.value).attr('width', width).attr('height', height)
     renderAllLayers(width, height)

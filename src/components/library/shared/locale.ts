@@ -318,6 +318,176 @@ export interface ChptLocale {
   treeSelect: {
     options: string
   }
+  chart: {
+    noData: string
+    resetZoom: string
+    legend: string
+    legendToggle: string
+    statusLegend: string
+    others: string
+    target: string
+    mean: string
+    total: string
+    show: (label: string) => string
+    hide: (label: string) => string
+    titled: (name: string, text: string) => string
+    empty: (name: string) => string
+    records: (n: number) => string
+    items: (n: number) => string
+    othersCount: (label: string, n: number) => string
+    membersTotal: (n: number) => string
+    listSeparator: string
+    clauseSeparator: string
+    range: (from: string, to: string) => string
+    outOfSpec: string
+    days: (n: number) => string
+    hours: (n: number) => string
+    minutes: (n: number) => string
+    hoursDecimal: (n: string) => string
+    timeFormat: { monthOfYear: string; month: string; year: string }
+    layerTypes: Record<string, string>
+    faceted: string
+    gridFaceted: string
+    facet: (n: number) => string
+  }
+  boxPlot: {
+    title: string
+    summary: (groups: number, widest: string, iqr: string) => string
+    n: string
+    max: string
+    median: string
+    min: string
+    sd: string
+    iqr: string
+    outliers: string
+    outlierCount: (n: number) => string
+    outlierMark: string
+    group: (n: number, median: string, q1: string, q3: string, outliers: number) => string
+  }
+  capability: {
+    title: string
+    good: string
+    warning: string
+    critical: string
+    n: string
+    sigmaOverall: string
+    sigmaWithin: string
+    ppmObserved: string
+    ppmExpected: string
+    summary: (n: number, mean: string, cpk: string, status: string, ppk: string) => string
+    bin: (from: string, to: string, count: number, outOfSpec: boolean) => string
+  }
+  controlChart: {
+    title: (type: string) => string
+    types: Record<string, [string, string]>
+    rule: (n: number, text: string) => string
+    rules: Record<number, string>
+    summary: (n: number, cl: string, ucl: string, lcl: string, outCount: number) => string
+    sampleSize: (n: number) => string
+    subgroupSize: (n: number) => string
+    violations: (rules: number[]) => string
+  }
+  pareto: {
+    loading: string
+    empty: string
+    statistics: string
+    totalCount: string
+    types: string
+    max: string
+    count: string
+    cumulative: string
+    cumulativeAxis: string
+    threshold: string
+    thresholdSetting: string
+    top3: string
+  }
+  horizontalBar: {
+    title: string
+    summary: (n: number, first: string, value: string) => string
+    rank: (n: number) => string
+    share: (pct: string) => string
+  }
+  pie: {
+    title: string
+  }
+  sparkline: {
+    title: string
+    summary: (n: number, first: string, last: string, max: string, min: string) => string
+  }
+  gauge: {
+    title: string
+  }
+  gantt: {
+    title: string
+    empty: string
+    today: string
+    help: string
+    helpRows: string
+    helpEnd: string
+    statuses: { planned: string; running: string; done: string; delayed: string }
+    summary: (rows: number, tasks: number) => string
+    span: (start: string, end: string) => string
+    row: string
+    status: string
+    time: string
+    start: string
+    end: string
+    duration: string
+    progress: string
+  }
+  stateTimeline: {
+    title: string
+    states: { run: string; idle: string; maintenance: string; down: string }
+    unknown: string
+    utilization: string
+    downtime: string
+    good: string
+    warning: string
+    critical: string
+    downCount: (duration: string, n: number) => string
+    summary: (machines: number, worst: string) => string
+    worst: (row: string, pct: string) => string
+    ongoing: string
+    segment: (row: string, state: string, range: string, duration: string) => string
+  }
+  statusScatter: {
+    title: string
+  }
+  waterfall: {
+    title: string
+    increase: string
+    decrease: string
+    startTotal: string
+    subtotal: string
+    summary: (from: string, to: string, biggest: string) => string
+    biggest: (label: string, value: string) => string
+    shareOfStart: (pct: string) => string
+    change: (from: string, to: string) => string
+  }
+  viewer: {
+    layers: (n: number) => string
+    layer: (n: number) => string
+    shapes: (n: number) => string
+    zoom: (pct: string) => string
+    mm: string
+    inch: string
+    zoomIn: string
+    zoomOut: string
+    resetView: string
+    toggleMoves: string
+    retry: string
+    loading: string
+    loadingLayers: (n: number) => string
+    rendering: string
+    missingSource: string
+    noCoordinates: string
+    noInput: string
+    allFailed: string
+    notMounted: string
+    zeroSize: string
+    gerberBehaviors: { region: string; draw: string; flash: string; drill: string; slot: string; move: string }
+    pcbTypes: { outline: string; trace: string; pad: string; via: string; region: string; silk: string; component: string }
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -580,6 +750,191 @@ export const zhTW: ChptLocale = {
   treeSelect: {
     options: '選項',
   },
+  chart: {
+    noData: '沒有資料',
+    resetZoom: '重設縮放',
+    legend: '圖例',
+    legendToggle: '圖例（點選可隱藏或顯示系列）',
+    statusLegend: '狀態圖例',
+    others: '其他',
+    target: '目標',
+    mean: '平均',
+    total: '總計',
+    show: (l) => `顯示 ${l}`,
+    hide: (l) => `隱藏 ${l}`,
+    titled: (name, text) => `${name}：${text}`,
+    empty: (name) => `${name}：沒有資料`,
+    records: (n) => `${n} 筆`,
+    items: (n) => `${n} 項`,
+    othersCount: (label, n) => `${label}（${n} 項）`,
+    membersTotal: (n) => `合計 ${n} 項`,
+    listSeparator: '、',
+    clauseSeparator: '，',
+    range: (a, b) => `${a} 到 ${b}`,
+    outOfSpec: '超出規格',
+    days: (n) => `${n} 天`,
+    hours: (n) => `${n} 小時`,
+    minutes: (n) => `${n} 分`,
+    hoursDecimal: (n) => `${n} 小時`,
+    timeFormat: { monthOfYear: '%Y 年 %-m 月', month: '%-m 月', year: '%Y 年' },
+    layerTypes: { bar: '長條', 'stacked-bar': '堆疊長條', line: '折線', area: '面積', scatter: '散點', 'trigger-line': '參考線' },
+    faceted: '分面圖',
+    gridFaceted: '網格分面圖',
+    facet: (n) => `分面 ${n}`,
+  },
+  boxPlot: {
+    title: '箱型圖',
+    summary: (n, w, iqr) => `${n} 組，四分位距最大的是 ${w}（${iqr}）。可用左右鍵逐組查看`,
+    n: '筆數',
+    max: '最大',
+    median: '中位數',
+    min: '最小',
+    sd: '標準差',
+    iqr: '四分位距',
+    outliers: '離群值',
+    outlierCount: (n) => `${n} 個`,
+    outlierMark: '・離群值',
+    group: (n, m, q1, q3, o) => `${n} 筆，中位數 ${m}，Q1 ${q1}，Q3 ${q3}${o ? `，離群值 ${o} 個` : ''}`,
+  },
+  capability: {
+    title: '製程能力直方圖',
+    good: '達標',
+    warning: '尚可',
+    critical: '不足',
+    n: '樣本數',
+    sigmaOverall: '標準差（整體）',
+    sigmaWithin: '標準差（組內）',
+    ppmObserved: '規格外 PPM（實際）',
+    ppmExpected: '規格外 PPM（預估）',
+    summary: (n, mean, cpk, status, ppk) => `${n} 筆，平均 ${mean}，Cpk ${cpk}${status ? `（${status}）` : ''}，Ppk ${ppk}。可用方向鍵逐組查看`,
+    bin: (a, b, n, out) => `${a} 到 ${b}：${n} 筆${out ? '，超出規格' : ''}`,
+  },
+  controlChart: {
+    title: (type) => `管制圖（${type}）`,
+    types: {
+      imr: ['個別值（I）', '移動全距（MR）'],
+      'xbar-r': ['平均（X̄）', '全距（R）'],
+      'xbar-s': ['平均（X̄）', '標準差（S）'],
+      p: ['不良率（p）', ''],
+      u: ['單位缺點數（u）', ''],
+    },
+    rule: (n, text) => `規則 ${n}：${text}`,
+    rules: {
+      1: '1 點超出管制界限（±3σ）',
+      2: '連續 9 點在中心線同一側',
+      3: '連續 6 點持續上升或下降',
+      4: '連續 14 點上下交錯',
+      5: '連續 3 點中有 2 點在同一側的 2σ 之外',
+      6: '連續 5 點中有 4 點在同一側的 1σ 之外',
+      7: '連續 15 點都在 1σ 之內（變異太小、可能分層）',
+      8: '連續 8 點都在 1σ 之外（兩側都有，可能混合）',
+    },
+    summary: (n, cl, ucl, lcl, out) => `${n} 點，CL ${cl}、UCL ${ucl}、LCL ${lcl}；${out ? `${out} 點異常` : '沒有異常點'}。可用方向鍵逐點查看`,
+    sampleSize: (n) => `樣本數：${n}`,
+    subgroupSize: (n) => `子組大小：${n}`,
+    violations: (rules) => `，異常（規則 ${rules.join('、')}）`,
+  },
+  pareto: {
+    loading: '載入 Pareto 數據...',
+    empty: '暫無數據',
+    statistics: '統計資訊',
+    totalCount: '總數量',
+    types: '類型數',
+    max: '最大項',
+    count: '數量',
+    cumulative: '累積百分比',
+    cumulativeAxis: '累積百分比 (%)',
+    threshold: '閾值',
+    thresholdSetting: '閾值設定',
+    top3: 'Top3佔比',
+  },
+  horizontalBar: {
+    title: '水平長條圖',
+    summary: (n, first, v) => `共 ${n} 項，第一名 ${first} ${v}`,
+    rank: (n) => `第 ${n} 名`,
+    share: (p) => `佔總數 ${p}`,
+  },
+  pie: {
+    title: '圓餅圖',
+  },
+  sparkline: {
+    title: '趨勢',
+    summary: (n, a, b, max, min) => `${n} 筆，從 ${a} 到 ${b}，最高 ${max}，最低 ${min}`,
+  },
+  gauge: {
+    title: '儀表',
+  },
+  gantt: {
+    title: '甘特圖',
+    empty: '沒有任務',
+    today: '今天',
+    help: '拖曳或用方向鍵移動任務；Shift + 方向鍵調整結束時間，Alt + 方向鍵調整開始時間',
+    helpRows: '；上下鍵換到別的列',
+    helpEnd: '。',
+    statuses: { planned: '計畫', running: '進行中', done: '完成', delayed: '延遲' },
+    summary: (r, n) => `${r} 列、${n} 筆任務`,
+    span: (a, b) => `${a} 至 ${b}`,
+    row: '列',
+    status: '狀態',
+    time: '時間',
+    start: '開始',
+    end: '結束',
+    duration: '工期',
+    progress: '進度',
+  },
+  stateTimeline: {
+    title: '機台狀態時間軸',
+    states: { run: '運轉', idle: '待機', maintenance: '保養', down: '故障' },
+    unknown: '（未知）',
+    utilization: '稼動率',
+    downtime: '停機',
+    good: '達標',
+    warning: '尚可',
+    critical: '偏低',
+    downCount: (d, n) => `${d}（${n} 次）`,
+    summary: (n, worst) => `${n} 台機台${worst}。可用上下鍵切換機台、左右鍵逐段查看`,
+    worst: (row, pct) => `，稼動率最低的是 ${row}（${pct}）`,
+    ongoing: '（仍在進行中）',
+    segment: (row, state, range, d) => `${row}，${state}，${range}，共 ${d}`,
+  },
+  statusScatter: {
+    title: '狀態散佈圖',
+  },
+  waterfall: {
+    title: '瀑布圖',
+    increase: '增加',
+    decrease: '減少',
+    startTotal: '起點／合計',
+    subtotal: '小計',
+    summary: (a, b, big) => `從 ${a} 到 ${b}${big}。可用左右鍵逐項查看`,
+    biggest: (l, v) => `，變化最大的是 ${l}（${v}）`,
+    shareOfStart: (p) => `佔起點 ${p}`,
+    change: (a, b) => `，${a} 到 ${b}`,
+  },
+  viewer: {
+    layers: (n) => `圖層 (${n})`,
+    layer: (n) => `圖層 ${n}`,
+    shapes: (n) => `${n} 個圖形`,
+    zoom: (p) => `縮放: ${p}%`,
+    mm: '公厘',
+    inch: '英寸',
+    zoomIn: '放大',
+    zoomOut: '縮小',
+    resetView: '重置視角',
+    toggleMoves: '切換 D02 移動軌跡顯示',
+    retry: '重試',
+    loading: '載入中...',
+    loadingLayers: (n) => `載入 ${n} 個圖層...`,
+    rendering: '渲染圖形...',
+    missingSource: '缺少 src 或 gerberText',
+    noCoordinates: '無有效 Gerber 座標資料',
+    noInput: '請提供 src、gerberText 或 layers 屬性',
+    allFailed: '所有圖層均載入失敗',
+    notMounted: '容器尚未掛載',
+    zeroSize: '容器尺寸為 0，請確認父元素有設定高度',
+    gerberBehaviors: { region: 'Region (G36/G37)', draw: '線條 (D01)', flash: '焊盤 (D03)', drill: '鑽孔', slot: '槽孔 (G85)', move: '移動軌跡 (D02)' },
+    pcbTypes: { outline: '板框 (Outline)', trace: '走線 (Trace)', pad: '焊盤 (Pad)', via: '過孔 (Via)', region: '銅箔區域 (Region)', silk: '絲印 (Silk)', component: '元件外框 (Component)' },
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -841,6 +1196,191 @@ export const enUS: ChptLocale = {
   },
   treeSelect: {
     options: 'Options',
+  },
+  chart: {
+    noData: 'No data',
+    resetZoom: 'Reset zoom',
+    legend: 'Legend',
+    legendToggle: 'Legend (click to show or hide a series)',
+    statusLegend: 'Status legend',
+    others: 'Other',
+    target: 'Target',
+    mean: 'Mean',
+    total: 'Total',
+    show: (l) => `Show ${l}`,
+    hide: (l) => `Hide ${l}`,
+    titled: (name, text) => `${name}: ${text}`,
+    empty: (name) => `${name}: no data`,
+    records: (n) => `${n} ${n === 1 ? 'record' : 'records'}`,
+    items: (n) => `${n} ${n === 1 ? 'item' : 'items'}`,
+    othersCount: (label, n) => `${label} (${n})`,
+    membersTotal: (n) => `${n} items combined`,
+    listSeparator: ', ',
+    clauseSeparator: ', ',
+    range: (a, b) => `${a} to ${b}`,
+    outOfSpec: 'Out of spec',
+    days: (n) => `${n}d`,
+    hours: (n) => `${n}h`,
+    minutes: (n) => `${n}m`,
+    hoursDecimal: (n) => `${n}h`,
+    timeFormat: { monthOfYear: '%B %Y', month: '%b', year: '%Y' },
+    layerTypes: { bar: 'Bar', 'stacked-bar': 'Stacked bar', line: 'Line', area: 'Area', scatter: 'Scatter', 'trigger-line': 'Reference line' },
+    faceted: 'Faceted chart',
+    gridFaceted: 'Grid faceted chart',
+    facet: (n) => `Facet ${n}`,
+  },
+  boxPlot: {
+    title: 'Box plot',
+    summary: (n, w, iqr) => `${n} groups, widest IQR is ${w} (${iqr}). Use left and right arrows to step through groups`,
+    n: 'Count',
+    max: 'Max',
+    median: 'Median',
+    min: 'Min',
+    sd: 'Std dev',
+    iqr: 'IQR',
+    outliers: 'Outliers',
+    outlierCount: (n) => `${n}`,
+    outlierMark: ' · outlier',
+    group: (n, m, q1, q3, o) => `${n} records, median ${m}, Q1 ${q1}, Q3 ${q3}${o ? `, ${o} outliers` : ''}`,
+  },
+  capability: {
+    title: 'Process capability histogram',
+    good: 'Capable',
+    warning: 'Marginal',
+    critical: 'Not capable',
+    n: 'Samples',
+    sigmaOverall: 'Std dev (overall)',
+    sigmaWithin: 'Std dev (within)',
+    ppmObserved: 'PPM out of spec (observed)',
+    ppmExpected: 'PPM out of spec (expected)',
+    summary: (n, mean, cpk, status, ppk) => `${n} records, mean ${mean}, Cpk ${cpk}${status ? ` (${status})` : ''}, Ppk ${ppk}. Use arrow keys to step through bins`,
+    bin: (a, b, n, out) => `${a} to ${b}: ${n} records${out ? ', out of spec' : ''}`,
+  },
+  controlChart: {
+    title: (type) => `Control chart (${type})`,
+    types: {
+      imr: ['Individual (I)', 'Moving range (MR)'],
+      'xbar-r': ['Mean (X̄)', 'Range (R)'],
+      'xbar-s': ['Mean (X̄)', 'Std dev (S)'],
+      p: ['Proportion defective (p)', ''],
+      u: ['Defects per unit (u)', ''],
+    },
+    rule: (n, text) => `Rule ${n}: ${text}`,
+    rules: {
+      1: '1 point beyond the control limits (±3σ)',
+      2: '9 points in a row on the same side of the center line',
+      3: '6 points in a row steadily increasing or decreasing',
+      4: '14 points in a row alternating up and down',
+      5: '2 of 3 points in a row beyond 2σ on the same side',
+      6: '4 of 5 points in a row beyond 1σ on the same side',
+      7: '15 points in a row within 1σ (too little variation, possible stratification)',
+      8: '8 points in a row beyond 1σ on both sides (possible mixture)',
+    },
+    summary: (n, cl, ucl, lcl, out) => `${n} points, CL ${cl}, UCL ${ucl}, LCL ${lcl}; ${out ? `${out} out of control` : 'no out-of-control points'}. Use arrow keys to step through points`,
+    sampleSize: (n) => `Sample size: ${n}`,
+    subgroupSize: (n) => `Subgroup size: ${n}`,
+    violations: (rules) => `, out of control (rules ${rules.join(', ')})`,
+  },
+  pareto: {
+    loading: 'Loading Pareto data…',
+    empty: 'No data',
+    statistics: 'Statistics',
+    totalCount: 'Total',
+    types: 'Categories',
+    max: 'Largest',
+    count: 'Count',
+    cumulative: 'Cumulative %',
+    cumulativeAxis: 'Cumulative (%)',
+    threshold: 'threshold',
+    thresholdSetting: 'Threshold',
+    top3: 'Top 3 share',
+  },
+  horizontalBar: {
+    title: 'Horizontal bar chart',
+    summary: (n, first, v) => `${n} items, first is ${first} ${v}`,
+    rank: (n) => `Rank ${n}`,
+    share: (p) => `${p} of total`,
+  },
+  pie: {
+    title: 'Pie chart',
+  },
+  sparkline: {
+    title: 'Trend',
+    summary: (n, a, b, max, min) => `${n} values, from ${a} to ${b}, high ${max}, low ${min}`,
+  },
+  gauge: {
+    title: 'Gauge',
+  },
+  gantt: {
+    title: 'Gantt chart',
+    empty: 'No tasks',
+    today: 'Today',
+    help: 'Drag or use arrow keys to move a task; Shift + arrows changes the end, Alt + arrows changes the start',
+    helpRows: '; up and down arrows move it to another row',
+    helpEnd: '.',
+    statuses: { planned: 'Planned', running: 'In progress', done: 'Done', delayed: 'Delayed' },
+    summary: (r, n) => `${r} rows, ${n} tasks`,
+    span: (a, b) => `${a} to ${b}`,
+    row: 'Row',
+    status: 'Status',
+    time: 'Time',
+    start: 'Start',
+    end: 'End',
+    duration: 'Duration',
+    progress: 'Progress',
+  },
+  stateTimeline: {
+    title: 'Machine state timeline',
+    states: { run: 'Running', idle: 'Idle', maintenance: 'Maintenance', down: 'Down' },
+    unknown: '(unknown)',
+    utilization: 'Utilization',
+    downtime: 'Downtime',
+    good: 'On target',
+    warning: 'Fair',
+    critical: 'Low',
+    downCount: (d, n) => `${d} (${n}×)`,
+    summary: (n, worst) => `${n} machines${worst}. Use up and down arrows to switch machines, left and right to step through segments`,
+    worst: (row, pct) => `, lowest utilization is ${row} (${pct})`,
+    ongoing: '(ongoing)',
+    segment: (row, state, range, d) => `${row}, ${state}, ${range}, ${d} total`,
+  },
+  statusScatter: {
+    title: 'Status scatter map',
+  },
+  waterfall: {
+    title: 'Waterfall chart',
+    increase: 'Increase',
+    decrease: 'Decrease',
+    startTotal: 'Start / total',
+    subtotal: 'Subtotal',
+    summary: (a, b, big) => `from ${a} to ${b}${big}. Use left and right arrows to step through items`,
+    biggest: (l, v) => `, largest change is ${l} (${v})`,
+    shareOfStart: (p) => `${p} of start`,
+    change: (a, b) => `, ${a} to ${b}`,
+  },
+  viewer: {
+    layers: (n) => `Layers (${n})`,
+    layer: (n) => `Layer ${n}`,
+    shapes: (n) => `${n} shapes`,
+    zoom: (p) => `Zoom: ${p}%`,
+    mm: 'mm',
+    inch: 'in',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    resetView: 'Reset view',
+    toggleMoves: 'Toggle D02 move paths',
+    retry: 'Retry',
+    loading: 'Loading…',
+    loadingLayers: (n) => `Loading ${n} layers…`,
+    rendering: 'Rendering…',
+    missingSource: 'Missing src or gerberText',
+    noCoordinates: 'No valid Gerber coordinates',
+    noInput: 'Provide src, gerberText or layers',
+    allFailed: 'All layers failed to load',
+    notMounted: 'Container is not mounted yet',
+    zeroSize: 'Container has zero size; make sure the parent has a height',
+    gerberBehaviors: { region: 'Region (G36/G37)', draw: 'Draw (D01)', flash: 'Flash (D03)', drill: 'Drill', slot: 'Slot (G85)', move: 'Move path (D02)' },
+    pcbTypes: { outline: 'Outline', trace: 'Trace', pad: 'Pad', via: 'Via', region: 'Region', silk: 'Silkscreen', component: 'Component outline' },
   },
 }
 

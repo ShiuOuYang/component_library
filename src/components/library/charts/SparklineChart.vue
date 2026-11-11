@@ -72,6 +72,7 @@ import { computed, onMounted, ref, toRaw } from 'vue'
 import * as d3 from 'd3'
 import { chartPalette } from './chartTheme'
 import { useAutoResize } from './composables/useAutoResize'
+import { useLocale } from '../shared/config'
 
 /**
  * SparklineChart —— 迷你趨勢線（放在 KPI 數字旁邊）
@@ -140,6 +141,8 @@ interface SparklineChartProps {
   enableTooltip?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<SparklineChartProps>(), {
   width: 120,
   height: 32,
@@ -302,12 +305,13 @@ const defaultFormat = d3.format(',~f')
 const fmt = (v: number) => (props.valueFormat ?? defaultFormat)(v)
 
 const ariaSummary = computed(() => {
-  const name = props.title || '趨勢'
+  const l = i18n.value
+  const name = props.title || l.sparkline.title
   const vs = values.value
-  if (!vs.length) return `${name}：沒有資料`
+  if (!vs.length) return l.chart.empty(name)
   const first = vs[0]
   const last = vs[vs.length - 1]
-  return `${name}：${vs.length} 筆，從 ${fmt(first)} 到 ${fmt(last)}，最高 ${fmt(Math.max(...vs))}，最低 ${fmt(Math.min(...vs))}`
+  return l.chart.titled(name, l.sparkline.summary(vs.length, fmt(first), fmt(last), fmt(Math.max(...vs)), fmt(Math.min(...vs))))
 })
 
 // === 滑鼠 ===

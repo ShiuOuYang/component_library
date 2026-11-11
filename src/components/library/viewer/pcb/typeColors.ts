@@ -4,6 +4,7 @@
  * 依「圖形類型」上色：板框、走線、焊盤、過孔要能一眼分辨。
  */
 import type { PcbElementType } from './pcb.types'
+import { zhTW } from '../../shared/locale'
 
 export const TYPE_COLORS: Record<PcbElementType, string> = {
   outline: '#16a34a',
@@ -15,15 +16,8 @@ export const TYPE_COLORS: Record<PcbElementType, string> = {
   component: '#c0a0ff',
 }
 
-export const TYPE_LABELS: Record<PcbElementType, string> = {
-  outline: '板框 (Outline)',
-  trace: '走線 (Trace)',
-  pad: '焊盤 (Pad)',
-  via: '過孔 (Via)',
-  region: '銅箔區域 (Region)',
-  silk: '絲印 (Silk)',
-  component: '元件外框 (Component)',
-}
+/** 繁中名稱；元件裡依語系取 locale.viewer.pcbTypes，這裡保留給既有的 import（isKnownType 也靠它判斷） */
+export const TYPE_LABELS: Record<PcbElementType, string> = zhTW.viewer.pcbTypes
 
 /** 自動分層時的預設顏色（依索引輪替） */
 const LAYER_PALETTE = [

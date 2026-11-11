@@ -1,13 +1,16 @@
 import type { ChartDatum, ChartLayer, TooltipPayload } from '../../types/chart.types'
+import { zhTW, type ChptLocale } from '../../../shared/locale'
 
 /**
  * 分面圖（FacetedChart / GridFacetChart）共用的小工具：
  * 共用圖例、預設 tooltip 的內容、X 值的讀數格式。
+ *
+ * 最後一個參數 locale 是元件目前的語系（useLocale().value），不傳時為繁中。
  */
 
 /** 圖層在圖例 / tooltip 上的名稱 */
-export function layerLabel(layer: ChartLayer): string {
-  return layer.legend?.label || layer.name || ({ bar: '長條', 'stacked-bar': '堆疊長條', line: '折線', area: '面積', scatter: '散點', 'trigger-line': '參考線' } as Record<string, string>)[layer.type] || layer.type
+export function layerLabel(layer: ChartLayer, locale: ChptLocale = zhTW): string {
+  return layer.legend?.label || layer.name || locale.chart.layerTypes[layer.type] || layer.type
 }
 
 /** 圖層的代表色（圖例色塊用） */
@@ -25,7 +28,7 @@ export interface LegendEntry {
  * 所有分面的圖層合成一份圖例（同名只列一次）。
  * 堆疊長條以 stackKeys 各段為單位（顏色取 colorScale）。
  */
-export function collectLegend(layerGroups: (ChartLayer[] | undefined)[]): LegendEntry[] {
+export function collectLegend(layerGroups: (ChartLayer[] | undefined)[], locale: ChptLocale = zhTW): LegendEntry[] {
   const seen = new Map<string, LegendEntry>()
   for (const layers of layerGroups) {
     for (const layer of layers ?? []) {
@@ -36,7 +39,7 @@ export function collectLegend(layerGroups: (ChartLayer[] | undefined)[]): Legend
         }
         continue
       }
-      const label = layerLabel(layer)
+      const label = layerLabel(layer, locale)
       if (!seen.has(label)) seen.set(label, { label, color: layerColor(layer), type: layer.type })
     }
   }
@@ -48,16 +51,21 @@ export function collectLegend(layerGroups: (ChartLayer[] | undefined)[]): Legend
  *   - 被隱藏的圖層拿掉
  *   - 各分面自己的圖例關掉（已經有共用圖例，不必每一格都畫一份）
  */
-export function applySharedLegend(layers: ChartLayer[] | undefined, hidden: Set<string>, sharedLegend: boolean): ChartLayer[] {
+export function applySharedLegend(
+  layers: ChartLayer[] | undefined,
+  hidden: Set<string>,
+  sharedLegend: boolean,
+  locale: ChptLocale = zhTW
+): ChartLayer[] {
   if (!layers) return []
   if (!sharedLegend) return layers
   return layers
-    .filter((layer) => layer.type === 'trigger-line' || !hidden.has(layerLabel(layer)))
+    .filter((layer) => layer.type === 'trigger-line' || !hidden.has(layerLabel(layer, locale)))
     .map((layer) => ({ ...layer, legend: { ...layer.legend, show: false } }))
 }
 
 /** X 值的讀數：有 formatter 用 formatter，日期用本地格式，其餘轉字串 */
-export function formatXValue(value: unknown, format?: ((value: never) => string) | null): string {
+export function formatXValue(value: unknown, format?: ((value: never) => string) | null, locale: ChptLocale = zhTW): string {
   if (value === null || value === undefined) return ''
   if (format) {
     try {
@@ -69,8 +77,8 @@ export function formatXValue(value: unknown, format?: ((value: never) => string)
   if (value instanceof Date) {
     const hasTime = value.getHours() || value.getMinutes() || value.getSeconds()
     return hasTime
-      ? value.toLocaleString('zh-TW', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
-      : value.toLocaleDateString('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' })
+      ? value.toLocaleString(locale.code, { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+      : value.toLocaleDateString(locale.code, { year: 'numeric', month: '2-digit', day: '2-digit' })
   }
   if (typeof value === 'number') return Number.isInteger(value) ? String(value) : value.toFixed(2)
   return String(value)
@@ -90,7 +98,8 @@ export interface TooltipRow {
  */
 export function tooltipRows(
   payload: TooltipPayload,
-  formats: { yLeft?: (v: number) => string; yRight?: (v: number) => string }
+  formats: { yLeft?: (v: number) => string; yRight?: (v: number) => string },
+  locale: ChptLocale = zhTW
 ): { x: string | null; rows: TooltipRow[]; xRaw: unknown } {
   const { data, layer, seriesKey } = payload
   const datum = data as ChartDatum
@@ -99,7 +108,7 @@ export function tooltipRows(
   const show = (v: unknown) => {
     const n = Number(v)
     if (!Number.isFinite(n)) return String(v ?? '')
-    return fmt ? fmt(n) : Number.isInteger(n) ? n.toLocaleString('zh-TW') : n.toLocaleString('zh-TW', { maximumFractionDigits: 2 })
+    return fmt ? fmt(n) : Number.isInteger(n) ? n.toLocaleString(locale.code) : n.toLocaleString(locale.code, { maximumFractionDigits: 2 })
   }
 
   const rows: TooltipRow[] = []
@@ -109,7 +118,7 @@ export function tooltipRows(
       rows.push({ label: key, value: show(datum[key]), color: layer.colorScale?.(key) ?? layerColor(layer) })
     }
   } else if (layer?.yValue) {
-    rows.push({ label: layerLabel(layer), value: show(layer.yValue(datum)), color: layerColor(layer) })
+    rows.push({ label: layerLabel(layer, locale), value: show(layer.yValue(datum)), color: layerColor(layer) })
   }
   return { x: xRaw === null ? null : String(xRaw), rows, xRaw }
 }

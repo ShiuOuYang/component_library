@@ -5,13 +5,13 @@
     :class="{ 'auto-resize': autoResize }"
     :style="containerStyle"
     role="group"
-    :aria-label="title || '網格分面圖'"
+    :aria-label="title || i18n.chart.gridFaceted"
   >
     <!-- 標題列：標題（左）+ 共用圖例（右）
          ⚠️ 原本標題的模板整段被註解掉，title prop 傳了也不會顯示 -->
     <div v-if="titleBarHeight" class="title-bar" :style="{ height: `${titleBarHeight}px` }">
       <span class="title-text">{{ title }}</span>
-      <div v-if="sharedLegend && legendEntries.length" class="shared-legend" role="group" aria-label="圖例（點選可隱藏或顯示系列）">
+      <div v-if="sharedLegend && legendEntries.length" class="shared-legend" role="group" :aria-label="i18n.chart.legendToggle">
         <button
           v-for="entry in legendEntries"
           :key="entry.label"
@@ -68,7 +68,7 @@
         :height="cellHeight"
         :auto-resize="false"
         :margin="getCellMargin(facetData.row, facetData.col)"
-        :layers="applySharedLegend(facetData.layers, hiddenSeries, sharedLegend)"
+        :layers="applySharedLegend(facetData.layers, hiddenSeries, sharedLegend, i18n)"
         :x-scale-type="xScaleType"
         :x-domain="getFacetXDomain(facetData)"
         :x-axis-format="xAxisFormat || undefined"
@@ -110,7 +110,7 @@
                 {{ headerText(xFacetLabel, facetData.xValue) }} · {{ headerText(yFacetLabel, facetData.yValue) }}
               </div>
               <template v-for="(info, i) in [tooltipInfo(tooltipData, facetData)]" :key="i">
-                <div v-if="info.xRaw !== null" class="tooltip-x">{{ formatXValue(info.xRaw, xAxisFormat) }}</div>
+                <div v-if="info.xRaw !== null" class="tooltip-x">{{ formatXValue(info.xRaw, xAxisFormat, i18n) }}</div>
                 <div v-for="row in info.rows" :key="row.label" class="tooltip-row">
                   <span class="tooltip-swatch" :style="{ backgroundColor: row.color }" aria-hidden="true"></span>
                   <span class="tooltip-label">{{ row.label }}</span>
@@ -132,7 +132,7 @@
       @click="handleResetZoom"
     >
       <span class="material-symbols-outlined" aria-hidden="true">zoom_out_map</span>
-      重設縮放
+      {{ i18n.chart.resetZoom }}
     </button>
   </div>
 </template>
@@ -157,6 +157,7 @@ import type {
   XScaleType,
   YDomain,
 } from './types/chart.types'
+import { useLocale } from '../shared/config'
 import { useFacetBrush } from './composables/faceChart/useFacetBrush';
 import {
   applySharedLegend,
@@ -227,6 +228,8 @@ interface GridFacetChartProps {
   showResetButton?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<GridFacetChartProps>(), {
   xFacetLabel: '',
   yFacetLabel: '',
@@ -331,7 +334,7 @@ const getFacetYRightDomain = (facet: GridFacet) => {
 // ===== 共用圖例 =====
 
 const hiddenSeries = ref<Set<string>>(new Set())
-const legendEntries = computed(() => collectLegend(props.data.map((d) => d.layers)))
+const legendEntries = computed(() => collectLegend(props.data.map((d) => d.layers), i18n.value))
 
 function toggleSeries(label: string): void {
   const next = new Set(hiddenSeries.value)
@@ -363,7 +366,7 @@ const handleResetZoom = (): void => {
 
 // ===== 預設 tooltip =====
 const tooltipInfo = (payload: TooltipPayload, facet: GridFacet) =>
-  tooltipRows(payload, { yLeft: facet.yLeftAxisFormat, yRight: facet.yRightAxisFormat })
+  tooltipRows(payload, { yLeft: facet.yLeftAxisFormat, yRight: facet.yRightAxisFormat }, i18n.value)
 
 // 容器元素對外開放，方便呼叫端量測尺寸或截圖
 defineExpose({ containerRef })

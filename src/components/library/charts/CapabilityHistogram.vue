@@ -71,7 +71,7 @@
       </dl>
     </div>
 
-    <p v-if="!values.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">{{ emptyText }}</p>
+    <p v-if="!values.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">{{ emptyText ?? i18n.chart.noData }}</p>
     <p class="sr-only" aria-live="polite">{{ liveText }}</p>
 
     <slot name="tooltip" :tooltip-data="tooltipData" :tooltip-visible="tooltipVisible">
@@ -82,7 +82,7 @@
         :style="tooltipStyle"
       >
         <div class="flex items-baseline gap-1.5">
-          <span class="text-sm font-semibold text-content-primary">{{ tooltipData.count }} 筆</span>
+          <span class="text-sm font-semibold text-content-primary">{{ i18n.chart.records(tooltipData.count) }}</span>
           <span class="text-content-secondary">{{ (tooltipData.share * 100).toFixed(1) }}%</span>
         </div>
         <div class="text-content-secondary">{{ fmt(tooltipData.x0) }} ～ {{ fmt(tooltipData.x1) }}</div>
@@ -100,6 +100,7 @@ import { useAutoResize } from './composables/useAutoResize'
 import { estimateTextWidth } from './utils/chartText'
 import { computeCapability, normalPdf, type CapabilityResult } from './utils/spc'
 import { tooltipPlacement } from './utils/tooltipPlacement'
+import { useLocale } from '../shared/config'
 
 /**
  * CapabilityHistogram —— 直方圖 + 製程能力（Cp、Cpk、Pp、Ppk）
@@ -184,6 +185,8 @@ interface CapabilityHistogramProps {
   }
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<CapabilityHistogramProps>(), {
   width: 760,
   height: 340,
@@ -204,7 +207,7 @@ const props = withDefaults(defineProps<CapabilityHistogramProps>(), {
   showStats: true,
   statsPosition: 'right',
   statsWidth: 210,
-  emptyText: '沒有資料',
+  emptyText: undefined,
   enableTooltip: true,
   customRenderers: () => ({}),
 })
@@ -252,25 +255,26 @@ const cpkStatus = computed(() => {
   const k = capability.value.cpk
   if (k === null) return null
   const [ok, good] = props.cpkThresholds
-  if (k >= good) return { level: 'good', label: '達標', icon: '✓' }
-  if (k >= ok) return { level: 'warning', label: '尚可', icon: '!' }
-  return { level: 'critical', label: '不足', icon: '✕' }
+  if (k >= good) return { level: 'good', label: i18n.value.capability.good, icon: '✓' }
+  if (k >= ok) return { level: 'warning', label: i18n.value.capability.warning, icon: '!' }
+  return { level: 'critical', label: i18n.value.capability.critical, icon: '✕' }
 })
 
 const statRows = computed(() => {
   const c = capability.value
   const n = c.n
+  const l = i18n.value.capability
   return [
-    { key: 'n', label: '樣本數', value: n.toLocaleString() },
-    { key: 'mean', label: '平均', value: n ? fmt(c.mean) : '—' },
-    { key: 'sOverall', label: '標準差（整體）', value: Number.isFinite(c.sigmaOverall) ? fmt(c.sigmaOverall) : '—' },
-    { key: 'sWithin', label: '標準差（組內）', value: Number.isFinite(c.sigmaWithin) ? fmt(c.sigmaWithin) : '—' },
+    { key: 'n', label: l.n, value: n.toLocaleString() },
+    { key: 'mean', label: i18n.value.chart.mean, value: n ? fmt(c.mean) : '—' },
+    { key: 'sOverall', label: l.sigmaOverall, value: Number.isFinite(c.sigmaOverall) ? fmt(c.sigmaOverall) : '—' },
+    { key: 'sWithin', label: l.sigmaWithin, value: Number.isFinite(c.sigmaWithin) ? fmt(c.sigmaWithin) : '—' },
     { key: 'cp', label: 'Cp', value: fmtIndex(c.cp) },
     { key: 'cpk', label: 'Cpk', value: fmtIndex(c.cpk) },
     { key: 'pp', label: 'Pp', value: fmtIndex(c.pp) },
     { key: 'ppk', label: 'Ppk', value: fmtIndex(c.ppk) },
-    { key: 'ppmObs', label: '規格外 PPM（實際）', value: fmtPpm(c.ppmObserved.total) },
-    { key: 'ppmExp', label: '規格外 PPM（預估）', value: fmtPpm(c.ppmExpected.total) },
+    { key: 'ppmObs', label: l.ppmObserved, value: fmtPpm(c.ppmObserved.total) },
+    { key: 'ppmExp', label: l.ppmExpected, value: fmtPpm(c.ppmExpected.total) },
   ]
 })
 
@@ -416,8 +420,8 @@ const markerViews = computed(() => {
   const items = [
     { key: 'lsl', kind: 'is-spec', value: spec(props.lsl), text: 'LSL' },
     { key: 'usl', kind: 'is-spec', value: spec(props.usl), text: 'USL' },
-    { key: 'target', kind: 'is-target', value: spec(props.target), text: '目標' },
-    { key: 'mean', kind: 'is-mean', value: c.n ? c.mean : null, text: '平均' },
+    { key: 'target', kind: 'is-target', value: spec(props.target), text: i18n.value.chart.target },
+    { key: 'mean', kind: 'is-mean', value: c.n ? c.mean : null, text: i18n.value.chart.mean },
   ]
     .filter((m): m is { key: string; kind: string; value: number; text: string } => m.value !== null && Number.isFinite(m.value))
     .map((m) => {
@@ -437,10 +441,10 @@ const markerViews = computed(() => {
 
 const ariaSummary = computed(() => {
   const c = capability.value
-  const name = props.title || '製程能力直方圖'
-  if (!c.n) return `${name}：沒有資料`
-  const status = cpkStatus.value ? `（${cpkStatus.value.label}）` : ''
-  return `${name}：${c.n} 筆，平均 ${fmt(c.mean)}，Cpk ${fmtIndex(c.cpk)}${status}，Ppk ${fmtIndex(c.ppk)}。可用方向鍵逐組查看`
+  const l = i18n.value
+  const name = props.title || l.capability.title
+  if (!c.n) return l.chart.empty(name)
+  return l.chart.titled(name, l.capability.summary(c.n, fmt(c.mean), fmtIndex(c.cpk), cpkStatus.value?.label ?? '', fmtIndex(c.ppk)))
 })
 
 // === 互動 ===
@@ -454,7 +458,7 @@ const tooltipLines = computed(() => {
   const t = tooltipData.value
   if (!t) return []
   if (props.customRenderers.tooltip) return props.customRenderers.tooltip(t)
-  return t.outOfSpec ? ['超出規格'] : []
+  return t.outOfSpec ? [i18n.value.chart.outOfSpec] : []
 })
 
 const tooltipStyle = computed(() => {
@@ -473,7 +477,7 @@ function show(i: number, x: number, y: number): void {
   if (changed) {
     emit('bin-hover', b)
     emit('tooltip-show', tooltipData.value)
-    liveText.value = `${fmt(b.x0)} 到 ${fmt(b.x1)}：${b.count} 筆${b.outOfSpec ? '，超出規格' : ''}`
+    liveText.value = i18n.value.capability.bin(fmt(b.x0), fmt(b.x1), b.count, b.outOfSpec)
   }
 }
 
