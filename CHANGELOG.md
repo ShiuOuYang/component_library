@@ -10,6 +10,14 @@
 
 ### ⚠️ 破壞性變更
 
+- **內建文字的 prop 預設值改為 `undefined`**（多語系）：原本寫死中文預設值的 prop —— 例如 ChptPopconfirm 的
+  `message` / `confirmText` / `cancelText`、ChptTransfer 的 `titles` / `buttonTexts`、ChptUpload 的 `buttonText`、
+  各圖表的 `emptyText`、GanttChart 的 `statuses`、StateTimeline 的 `states`、ParetoChart 的各種 label ——
+  預設改為不傳，沒傳時取語系。**畫面上的繁中文字不變**；只有「讀 props 預設值」的程式會看到差異
+  （例如測試裡斷言 `wrapper.props('confirmText') === '確定'`）。
+- **`useConfirm()` 佇列項目**：`ConfirmRequest` 的 `confirmText` / `cancelText` 沒傳時是 `undefined`，
+  由 ChptConfirmHost 依語系決定。只有自己實作 Host 的專案需要調整。
+
 - **移除沒有作用的 props**：ChptExcelExporter 的 `rawData`、EnterprisePareto 的 `highlightMode` 與
   `customRenderers`，連同型別 `ParetoHighlightMode`、`ParetoCustomRenderers`。這三個 props 從來沒被元件使用，
   傳了也不會有任何效果。請從呼叫端拿掉 —— 不拿掉不會報錯，但值會被當成一般 HTML 屬性掛在元件最外層
@@ -27,6 +35,15 @@
   原本只在工作表是空的時候才載入。（#25）
 
 ### 新增
+
+- **多語系涵蓋整個組件庫**：`ChptConfigProvider :locale="enUS"` 現在會切換所有元件的內建文字 ——
+  ui 元件、圖表（螢幕閱讀器摘要、tooltip、即時播報）、PCB / Gerber 檢視器、Excel 編輯 / 匯入 / 匯出。
+  原本只有分頁、空狀態、表格等十幾個字串有接語系，其餘 600 多處寫死中文。
+  - 語系檔搬到 `shared/locale.ts`，`ChptLocale` 依元件分群；帶參數的句子寫成函式，語序交給各語系
+  - `locale` 可巢狀部分覆寫（`{ modal: { close: '關閉視窗' } }`），群組逐層合併
+  - 新增 `useLocale()`、`mergeLocale()`、型別 `ChptLocaleInput`、`ValidationMessages`
+  - 純函式加上可選的語系參數（不傳為繁中）：`checkRule` / `validateValue`（`messages`）、`formatDuration`、
+    `timeTiers`、`layerLabel` 等；分面圖的數字與日期格式改用語系代碼，不再寫死 `zh-TW`
 
 - **ChptTable**：多層表頭。欄位加上 `children` 就成為群組欄，標題橫跨底下的欄位，可以一直往下巢狀；
   沒有 children 的欄位自動延伸到最後一層。排序、欄寬只在最底層的欄位上，勾選欄、展開欄跟著橫跨所有表頭列。
@@ -127,6 +144,10 @@
   FilterBar、FilterDropdown、FilterSelect 示範頁。對應元件以現行文件頁為準。（#23、#25）
 
 ### 文件與工具
+
+- `npm run check:i18n`：用 Vue 與 TypeScript 的 AST 掃描組件庫裡寫死的中文介面文字（含 template 運算式），
+  已加入 `verify` 與 CI。確定是資料（例如 Excel 自動填滿要辨識的「星期一」）時以 `i18n-ignore` 註解標註。
+- 測試：zhTW / enUS 的欄位與函式參數必須一致、enUS 不得含中文、切換 enUS 後元件文字正確。
 
 - `npm run check:boundary`：組件庫內部不再允許任何 `@/` 別名（含 `@/components/library` 與 `@/design`），一律用相對路徑 ——
   組件庫要打包給其他 repo 安裝，別名在使用端會解析失敗。應用程式端照樣用 `@/components/library`。（#44）
