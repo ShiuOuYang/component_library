@@ -7,7 +7,15 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# ⚠️ 這個分支（vendor/node-modules-win32）刻意把 Windows x64 版的 node_modules 放進版控，
+#    給無法直接從 npm 安裝套件的環境使用。下面的 dist、*.log 等規則也會比對到套件裡的檔案，
+#    所以更新套件後要用 `git add -f node_modules` 強制加入，不能只用 git add。
+#    .bin 是平台相依的捷徑；electron.exe（250 MB）超過 GitHub 單檔 100 MB 上限，
+#    改以 vendor/electron/ 的三個分割檔保存。clone 後執行 setup-offline.bat 一次還原這兩者。
+node_modules/.bin
+node_modules/electron/dist/electron.exe
+node_modules/.cache
+node_modules/.vite
 dist
 dist-ssr
 *.local

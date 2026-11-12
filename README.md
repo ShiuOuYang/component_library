@@ -18,6 +18,18 @@ npm ci             # 使用 lockfile 安裝（不要用 npm install，會改寫 
 npm run dev        # 開發 / 文件站
 ```
 
+> **`vendor/node-modules-win32` 分支：不能從 npm 安裝套件時使用**
+>
+> 這個分支已把 Windows x64 版的 `node_modules`（含 Electron 45.3.1）放進版控，不需要 `npm ci`。
+> clone 後雙擊 **`setup-offline.bat`** 一次（不需要網路，只需要 Node.js），它會：
+>
+> 1. 把 `vendor/electron/` 的三個分割檔合併回 `node_modules/electron/dist/electron.exe`
+>    （250 MB 超過 GitHub 單檔上限，因此分割保存），並驗證 SHA-256；
+> 2. 執行 `npm rebuild --ignore-scripts --offline` 重新產生 `node_modules\.bin`。
+>
+> 之後照常 `npm run dev` / `npm run build`。⚠️ 只適用 Windows x64；**不要**在這個分支執行
+> `npm ci` 或 `npm install`，那會刪掉或改寫已提交的套件。更新套件後要用 `git add -f node_modules`。
+
 遇到 `net::ERR_ABORTED 504 (Outdated Optimize Dep)`（常見於新增／升級依賴、或 `npm ci` 之後
 還開著舊分頁，例如 `qrcode-generator.js?v=...`）：
 
