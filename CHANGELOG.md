@@ -42,6 +42,11 @@
 - **ChptFormItem 萬用字元規則**：ChptForm 的 rules 找不到完全相同的路徑時，會把數字索引換成 `*` 再找
   （`'measures.*.value'` 套用到每一列）
 
+- **ChptTable 欄位設定與記憶**：`columnSettings` 在右上角加「欄位」按鈕，使用者勾選要顯示的欄位
+  （多層表頭標上群組名稱；至少留一欄；群組底下全部隱藏時群組表頭也拿掉）；`v-model:hidden-columns`。
+  `persistKey` 把隱藏的欄位與拖曳過的欄寬記在 localStorage，重新整理後還在（讀寫失敗時不影響表格）；
+  ref 方法 `resetColumnSettings()`
+
 - **ChptTable 樹狀資料**：`tree` 開啟後，`childrenKey`（預設 children）裡的子列縮排顯示在父列下方，第一欄有展開 / 收合鈕
   （`aria-expanded`、列帶 `aria-level`）。
   - 排序在同一層的兄弟之間進行，不打亂父子關係；搜尋保留符合的列與它的上層並自動展開（清除後恢復原本的展開狀態）

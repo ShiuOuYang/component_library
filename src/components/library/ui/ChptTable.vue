@@ -47,6 +47,45 @@
           @update:items-per-page="handlePageSizeChange"
         />
 
+        <!-- 欄位設定：勾選要顯示的欄位（persistKey 時記在瀏覽器） -->
+        <ChptPopover v-if="props.columnSettings" placement="bottom-end" :title="t.table.columnSettings" width="16rem">
+          <!-- 點擊由 ChptPopover 外層處理（這裡再綁 toggle 會開了又關） -->
+          <template #default="{ attrs }">
+            <button
+              type="button"
+              v-bind="attrs"
+              class="inline-flex h-7 items-center gap-1 rounded border border-stroke-default bg-surface-primary px-2 text-xs text-content-primary hover:bg-surface-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
+            >
+              <span class="material-symbols-outlined text-base" aria-hidden="true">view_column</span>
+              {{ t.table.columns }}
+              <span v-if="hiddenSet.size" class="rounded bg-accent-subtle px-1 text-[10px] text-accent-on-subtle">{{ settingLeaves.length - hiddenSet.size }}/{{ settingLeaves.length }}</span>
+            </button>
+          </template>
+          <template #content>
+            <ul class="max-h-64 overflow-y-auto text-sm" role="list">
+              <li v-for="leaf in settingLeaves" :key="leaf.id">
+                <label class="flex cursor-pointer items-center gap-2 rounded px-1 py-1 hover:bg-surface-secondary">
+                  <input
+                    type="checkbox"
+                    class="table-check"
+                    :checked="!hiddenSet.has(leaf.id)"
+                    :disabled="!hiddenSet.has(leaf.id) && hiddenSet.size >= settingLeaves.length - 1"
+                    @change="toggleColumnVisible(leaf.id)"
+                  />
+                  <span class="truncate text-content-primary">{{ leaf.label }}</span>
+                </label>
+              </li>
+            </ul>
+            <div class="mt-2 flex justify-end border-t border-stroke-light pt-2">
+              <button
+                type="button"
+                class="rounded px-2 py-0.5 text-xs text-accent hover:bg-accent-subtle focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
+                @click="resetColumnSettings"
+              >{{ t.table.resetColumns }}</button>
+            </div>
+          </template>
+        </ChptPopover>
+
         <slot name="right-controls"></slot>
       </div>
     </div>
@@ -394,6 +433,7 @@
 import { ref, computed, watch, shallowReactive, useSlots, onMounted, onBeforeUnmount, getCurrentInstance, useId, nextTick } from 'vue'
 import ChptPagination from './ChptPagination.vue'
 import ChptSpinner from './ChptSpinner.vue'
+import ChptPopover from './ChptPopover.vue'
 import { useConfig, useLocale } from '../shared/config'
 
 // === 型別定義 ===
@@ -579,6 +619,17 @@ const props = withDefaults(defineProps<{
   /** virtual 時距離底部多少 px 送出 reach-bottom（無限捲動載入下一批） */
   reachBottomThreshold?: number
 
+  // ===== 欄位設定 =====
+  /** 右上角顯示「欄位」按鈕，讓使用者勾選要顯示的欄位 */
+  columnSettings?: boolean
+  /** 隱藏的欄位（欄位的 key，沒有 key 時用 title；v-model:hidden-columns） */
+  hiddenColumns?: string[]
+  /**
+   * 把隱藏的欄位與拖曳過的欄寬記在瀏覽器（localStorage，鍵為 chpt-table:{persistKey}），
+   * 重新整理後還在。同一個系統裡每張表格給不同的值
+   */
+  persistKey?: string
+
   // ===== 樹狀資料 =====
   /**
    * 樹狀資料（例如 BOM 階層）：childrenKey 裡的子列縮排顯示在父列下方，第一欄有展開 / 收合鈕。
@@ -643,6 +694,9 @@ const props = withDefaults(defineProps<{
   reachBottomThreshold: 120,
   summaryLabel: undefined,
   summaryScope: 'all',
+  columnSettings: false,
+  hiddenColumns: undefined,
+  persistKey: undefined,
   tree: false,
   childrenKey: 'children',
   treeExpandedKeys: undefined,
@@ -681,6 +735,8 @@ const emit = defineEmits<{
   'reach-bottom': []
   /** 樹節點展開 / 收合 */
   'update:treeExpandedKeys': [keys: RowKey[]]
+  /** 使用者在欄位設定裡顯示 / 隱藏欄位 */
+  'update:hiddenColumns': [keys: string[]]
 }>()
 
 // 獲取插槽信息
@@ -762,10 +818,72 @@ function depthOf(columns: Column[]): number {
   return columns.reduce((max, c) => Math.max(max, isGroup(c) ? 1 + depthOf(c.children!) : 1), 0)
 }
 
+// ===== 欄位設定與記憶 =====
+interface PersistedSettings { hidden?: string[]; widths?: Record<string, number> }
+const storageKey = computed(() => (props.persistKey ? `chpt-table:${props.persistKey}` : ''))
+
+/** 讀記住的設定；私密瀏覽、儲存空間被停用時 localStorage 會丟錯 —— 讀不到就當沒有 */
+function readPersisted(): PersistedSettings {
+  if (!storageKey.value || typeof localStorage === 'undefined') return {}
+  try {
+    const parsed = JSON.parse(localStorage.getItem(storageKey.value) ?? '{}')
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch {
+    return {}
+  }
+}
+const persisted = readPersisted()
+
+const innerHidden = ref<string[]>(props.hiddenColumns ?? (Array.isArray(persisted.hidden) ? persisted.hidden : []))
+watch(() => props.hiddenColumns, (keys) => { if (keys) innerHidden.value = [...keys] })
+const hiddenSet = computed(() => new Set(innerHidden.value))
+
+/** 欄位設定清單：所有葉欄（多層表頭時標上群組名稱） */
+const settingLeaves = computed(() => {
+  const out: { id: string; label: string }[] = []
+  const walk = (cols: Column[], prefix: string) => {
+    for (const c of cols) {
+      if (isGroup(c)) walk(c.children!, `${prefix}${c.title} / `)
+      else out.push({ id: colId(c), label: `${prefix}${c.title}` })
+    }
+  }
+  walk(orderedColumns.value, '')
+  return out
+})
+
+function setHidden(keys: string[]): void {
+  innerHidden.value = keys
+  emit('update:hiddenColumns', [...keys])
+}
+
+function toggleColumnVisible(id: string): void {
+  if (hiddenSet.value.has(id)) setHidden(innerHidden.value.filter((k) => k !== id))
+  // 至少留一欄（全部隱藏的表格沒有意義，也拿不回欄位設定以外的東西）
+  else if (hiddenSet.value.size < settingLeaves.value.length - 1) setHidden([...innerHidden.value, id])
+}
+
+function resetColumnSettings(): void {
+  setHidden([])
+  colWidths.value = {}
+}
+
+/** 去掉隱藏的葉欄；群組底下都隱藏時整個群組拿掉（群組是複製的，葉欄仍是原本的物件） */
+function pruneHidden(cols: Column[]): Column[] {
+  if (!hiddenSet.value.size) return cols
+  return cols.flatMap((c) => {
+    if (isGroup(c)) {
+      const kids = pruneHidden(c.children!)
+      return kids.length ? [{ ...c, children: kids }] : []
+    }
+    return hiddenSet.value.has(colId(c)) ? [] : [c]
+  })
+}
+const visibleColumns = computed(() => pruneHidden(orderedColumns.value))
+
 // 如果父組件沒有傳 columns，自動從資料第一筆的 key 生成；有群組欄時只取葉欄
 const displayColumns = computed<Column[]>(() => {
   if (props.columns && props.columns.length > 0) {
-    return leavesOf(orderedColumns.value)
+    return leavesOf(visibleColumns.value)
   }
   if (props.data && props.data.length > 0) {
     return Object.keys(props.data[0]).map(key => ({
@@ -787,7 +905,7 @@ const colorMap = computed(() => {
       if (isGroup(c)) walk(c.children!, color)
     }
   }
-  walk(orderedColumns.value, undefined)
+  walk(visibleColumns.value, undefined)
   return map
 })
 
@@ -803,14 +921,14 @@ interface HeaderCell {
   divider: boolean
 }
 
-const headerDepth = computed(() => Math.max(1, props.columns.length ? depthOf(props.columns) : 1))
+const headerDepth = computed(() => Math.max(1, visibleColumns.value.length ? depthOf(visibleColumns.value) : 1))
 
 /**
  * 表頭的每一列：群組欄的 colspan 是底下的葉欄數；葉欄的 rowspan 延伸到最後一層。
  * 沒有群組欄時只有一列，與原本的單層表頭相同
  */
 const headerRows = computed<HeaderCell[][]>(() => {
-  const source = props.columns.length ? orderedColumns.value : displayColumns.value
+  const source = props.columns.length ? visibleColumns.value : displayColumns.value
   const depth = headerDepth.value
   const rows: HeaderCell[][] = Array.from({ length: depth }, () => [])
   const lead = (expandEnabled.value ? 1 : 0) + (selectionEnabled.value ? 1 : 0)
@@ -1447,7 +1565,19 @@ function onRowClick(row: DataRow, index: number, event: MouseEvent | KeyboardEve
 
 // ----- 欄寬 -----
 const DEFAULT_MIN_WIDTH = 48
-const colWidths = ref<Record<string, number>>({})
+const colWidths = ref<Record<string, number>>(
+  persisted.widths && typeof persisted.widths === 'object' ? { ...persisted.widths } : {}
+)
+
+// 記住欄位設定：只存隱藏的欄位與欄寬（寫不進去時 —— 私密瀏覽、空間滿 —— 不影響表格）
+watch([innerHidden, colWidths], () => {
+  if (!storageKey.value || typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(storageKey.value, JSON.stringify({ hidden: innerHidden.value, widths: colWidths.value }))
+  } catch {
+    /* 忽略 */
+  }
+}, { deep: true })
 
 function colId(column: Column): string {
   return column.key ?? column.title
@@ -1870,6 +2000,8 @@ defineExpose({
     innerTreeExpanded.value = allParentKeys(props.data)
     emit('update:treeExpandedKeys', [...innerTreeExpanded.value])
   },
+  /** 欄位設定：還原成全部顯示、預設欄寬 */
+  resetColumnSettings,
   collapseAllTree: () => {
     innerTreeExpanded.value = []
     emit('update:treeExpandedKeys', [])
