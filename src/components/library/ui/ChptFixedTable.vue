@@ -5,7 +5,7 @@
         <input
           type="text"
           v-model="internalSearchText"
-          placeholder="Search..."
+          :placeholder="t.common.searchEllipsis"
           class="mb-4 text-sm p-2 border rounded outline-none"
         />
       </div>

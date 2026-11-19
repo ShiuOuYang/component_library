@@ -119,6 +119,8 @@ export type {
   ColumnAlign as TableColumnAlign,
   CellContext as TableCellContext,
   ColumnColor as TableColumnColor,
+  ColumnFixed as TableColumnFixed,
+  SummaryType as TableSummaryType,
 } from './ChptTable.vue'
 export type { TimelineItem } from './ChptTimeline.vue'
 export type { TourStep } from './ChptTour.vue'

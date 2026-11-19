@@ -77,7 +77,7 @@ export type {
   AnchorItem, AutocompleteSuggestion, CascaderOption, ChptDatePickerValue, DescriptionItem,
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
-  TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TimelineItem, TourStep, TransferItem,
+  TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
   ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'

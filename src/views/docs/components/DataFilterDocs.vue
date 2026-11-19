@@ -124,6 +124,24 @@
         <ChptCodeBlock :code="tableRemoteSample" />
       </div>
 
+      <!-- 進階：固定欄與合計列 -->
+      <h3 class="mt-10 mb-2 text-lg font-semibold text-content-primary">固定欄與合計列</h3>
+      <p class="text-sm text-content-secondary mb-3">
+        欄位設 <code>fixed: 'start'</code>（或 <code>'end'</code>）就會在橫向捲動時固定在左（右）側，勾選欄、展開欄跟著固定在最左；
+        捲動時固定區邊緣有陰影，看得出後面還有內容。欄位設 <code>summary</code>（<code>'sum'</code>、<code>'avg'</code>、<code>'min'</code>、<code>'max'</code>、<code>'count'</code> 或函式）
+        就會出現合計列 —— 預設對<strong>篩選後的全部資料</strong>計算（不只這一頁），搜尋時跟著變。
+      </p>
+      <ChptTable
+        :columns="lineReportColumns"
+        :data="lineReport"
+        :default-page-size="8"
+        selectable
+        pagination-label="各線日報分頁"
+      />
+      <div class="mt-4">
+        <ChptCodeBlock :code="tableFixedSample" />
+      </div>
+
       <!-- 進階：虛擬捲動 -->
       <h3 class="mt-10 mb-2 text-lg font-semibold text-content-primary">虛擬捲動（大量資料）</h3>
       <p class="text-sm text-content-secondary mb-3">
@@ -383,6 +401,43 @@ const selectedOrders = ref([])
 const lastOpened = ref('')
 const lastBatch = ref('')
 
+// ===== ChptTable 進階：固定欄與合計列 =====
+const hours = Array.from({ length: 12 }, (_, i) => `${String(8 + i).padStart(2, '0')}:00`)
+const lineReportColumns = [
+  { key: 'line', title: '產線', fixed: 'start', width: 90, summary: 'count', summaryFormat: (n) => `${n} 條線` },
+  { key: 'part', title: '料號', fixed: 'start', width: 120 },
+  {
+    title: '每小時產出（pcs）',
+    children: hours.map((h) => ({ key: h, title: h, align: 'end', sortable: true, sortType: 'number', summary: 'sum' })),
+  },
+  { key: 'total', title: '合計', align: 'end', color: 'accent', sortable: true, sortType: 'number', summary: 'sum' },
+  { key: 'yield', title: '良率 %', align: 'end', summary: 'avg', summaryFormat: (v) => (v == null ? '—' : `${v.toFixed(2)}（平均）`) },
+  { key: 'status', title: '狀態', fixed: 'end', width: 80 },
+]
+const lineReport = Array.from({ length: 18 }, (_, i) => {
+  const row = { id: i + 1, line: `L${String(i + 1).padStart(2, '0')}`, part: `PN-${7300 + i * 7}` }
+  let total = 0
+  hours.forEach((h, k) => {
+    const v = 80 + ((i * 37 + k * 53) % 70)
+    row[h] = v
+    total += v
+  })
+  row.total = total
+  row.yield = 95 + ((i * 13) % 50) / 10
+  row.status = i % 7 === 3 ? '停機' : i % 5 === 0 ? '換線' : '生產中'
+  return row
+})
+const tableFixedSample = `const columns = [
+  { key: 'line', title: '產線', fixed: 'start', summary: 'count', summaryFormat: (n) => \`\${n} 條線\` },
+  { key: 'part', title: '料號', fixed: 'start' },
+  { title: '每小時產出', children: hours.map((h) => ({ key: h, title: h, align: 'end', summary: 'sum' })) },
+  { key: 'yield', title: '良率 %', summary: 'avg' },
+  { key: 'status', title: '狀態', fixed: 'end' },
+]
+
+<ChptTable :columns="columns" :data="rows" selectable />
+<!-- 只算這一頁：summary-scope="page"；自訂某格：#summary-cell="{ column, value, rows }" -->`
+
 // ===== ChptTable 進階：虛擬捲動 =====
 const virtualTable = ref(null)
 const virtualColumns = [
@@ -513,6 +568,7 @@ const tableMethods = [
 
 const tableSlots = [
   { name: 'cell', params: '{ item, column, value }', desc: '自訂單一格內容（其他格照 columns 預設顯示）' },
+  { name: 'summary-cell', params: '{ column, value, rows }', desc: '自訂合計列某一格（有設定 summary 的欄位）' },
   { name: 'expand', params: '{ item, index }', desc: '展開明細；提供時自動多一個展開欄' },
   { name: 'selection-actions', params: '{ keys, rows, clear }', desc: '有勾選時出現在「已選 N 筆」旁的批次動作' },
   { name: 'table-row', params: '{ item, index }', desc: '整列自訂（需自行輸出 <tr>）；不提供時依 columns 畫出每一格。用它時勾選、展開、row-click 要自己處理' },
@@ -668,7 +724,7 @@ const filterBarSample = `<ChptFilterBar
 // ---- API 資料（與元件 props/emits 對齊） ----
 const tableProps = [
   { name: 'data', type: 'DataRow[]', def: '[]', desc: '資料列（每列為物件）；更新時保留目前頁碼（頁數變少時拉回最後一頁），搜尋與排序才回到第 1 頁' },
-  { name: 'columns', type: 'Column[]', def: '[]', desc: "欄位（參考 Vuetify 的 headers）：{ key, title, sortable?, sortType?, align?: 'start' | 'center' | 'end', width?, minWidth?, resizable?, children?, color?, headerProps?, cellProps? }。有 children 的是群組欄（多層表頭，可巢狀），本身不排序、不顯示資料；color（'accent' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'）讓整欄的表頭與儲存格一起變色，設在群組上時底下的欄位沿用；headerProps 綁到這一欄的 <th>（class 或 style 有顏色時取代表格預設的表頭顏色）；cellProps 綁到每個 <td>，可以是物件或 ({ item, value, column, index }) => 屬性" },
+  { name: 'columns', type: 'Column[]', def: '[]', desc: "欄位（參考 Vuetify 的 headers）：{ key, title, sortable?, sortType?, align?: 'start' | 'center' | 'end', width?, minWidth?, resizable?, children?, color?, headerProps?, cellProps?, fixed?: 'start' | 'end', summary?, summaryFormat? }。有 children 的是群組欄（多層表頭，可巢狀），本身不排序、不顯示資料；color（'accent' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'）讓整欄的表頭與儲存格一起變色，設在群組上時底下的欄位沿用；headerProps 綁到這一欄的 <th>（class 或 style 有顏色時取代表格預設的表頭顏色）；cellProps 綁到每個 <td>，可以是物件或 ({ item, value, column, index }) => 屬性；fixed 讓欄位在橫向捲動時固定在左（start）或右（end），設在最上層欄位，左固定排到最前、右固定排到最後；summary 為合計列的彙總方式（'sum' | 'avg' | 'min' | 'max' | 'count' 或 (values, rows) => 值），summaryFormat 為顯示格式" },
   { name: 'searchPlaceholder', type: 'string', def: "'輸入關鍵字搜尋...'", desc: '搜尋框提示' },
   { name: 'noDataText', type: 'string', def: "'無資料'", desc: '空資料文字' },
   { name: 'defaultPageSize', type: 'number', def: '5', desc: '每頁預設筆數' },
@@ -689,6 +745,7 @@ const tableProps = [
   { name: 'loading / loadingText', type: 'boolean / string', def: "false / '載入中'", desc: '半透明遮罩＋Spinner，table 設 aria-busy' },
   { name: 'resizable', type: 'boolean', def: 'false', desc: '可拖曳欄寬（欄位可設 width / minWidth / resizable:false）' },
   { name: 'rowClass', type: 'string | (row, index) => class', def: '—', desc: '每列額外的 class（例如內建的 warning-row）' },
+  { name: 'summaryLabel / summaryScope', type: "string / 'all' | 'page'", def: "語系（繁中「合計」）/ 'all'", desc: "合計列的標籤；合計範圍（篩選後的全部資料或這一頁）。欄位設 summary（'sum' | 'avg' | 'min' | 'max' | 'count' | (values, rows) => 值）與 summaryFormat 時出現合計列" },
   { name: 'virtual', type: 'boolean', def: 'false', desc: '虛擬捲動：不分頁，表身固定高度上下捲，只畫看得到的列；全選是全部資料' },
   { name: 'height', type: 'string', def: "'28rem'", desc: 'virtual 時表格（含表頭）的高度（CSS 值）' },
   { name: 'rowHeight', type: 'number', def: '32', desc: 'virtual 時每列的高度（px）。儲存格內容比它高會撐高列、捲動位置偏移，請配合內容設定' },

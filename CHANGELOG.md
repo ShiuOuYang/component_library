@@ -36,6 +36,14 @@
 
 ### 新增
 
+- **ChptTable 固定欄與合計列**
+  - 欄位 `fixed: 'start' | 'end'`（也接受 left / right / true）：橫向捲動時固定在左 / 右側，勾選欄、展開欄跟著固定在最左；
+    設在最上層欄位（含群組），左固定自動排到最前、右固定排到最後；依實際欄寬計算位置（不必給 width）；
+    固定格的底色跟著斑馬紋、hover、勾選、警告列與欄位顏色；捲動時固定區邊緣有陰影
+  - 欄位 `summary`（sum / avg / min / max / count 或 `(values, rows) => 值`）與 `summaryFormat`：表格底部出現合計列；
+    預設對篩選後的全部資料計算（`summaryScope: 'page'` 只算這一頁）；`summaryLabel`、`#summary-cell` 插槽；
+    虛擬捲動時合計列固定在底部
+
 - **ChptDatePicker 快捷選項**：`presets` 在日曆旁加一排快捷按鈕（今天、昨天、本週、近 7 天、本月、上月；
   另有上週、近 30 天、本季、今年，以及班別的「本班 / 上一班」）。也可自訂 `{ label, value }`。
   - 區間在點下去那一刻才計算；以日為單位的區間含結束當天（到 23:59:59.999）
@@ -155,6 +163,8 @@
   「重設縮放」回到設定的範圍。（#17、#18）
 
 ### 修正
+
+- **ChptFixedTable**：搜尋框寫死英文「Search...」，改為依語系。
 
 - **ChptDatePicker 日曆語系**：原本沒有把語系傳給底層的 vue-datepicker，月份、星期、「Select / Cancel」一直是英文；
   現在跟著 ChptConfigProvider（繁中為「週一…週日」「取消 / 確定」）。

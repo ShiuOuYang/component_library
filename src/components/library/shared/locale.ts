@@ -254,6 +254,7 @@ export interface ChptLocale {
     row: (n: number) => string
     resize: (title: string) => string
     selectRow: (label: string) => string
+    summary: string
   }
   timePicker: {
     now: string
@@ -790,7 +791,7 @@ export const zhTW: ChptLocale = {
     worse: '（表現較差）',
   },
   steps: { done: '已完成', process: '進行中', pending: '尚未開始', error: '發生錯誤' },
-  table: { expand: '展開', row: (n) => `第 ${n} 列`, resize: (title) => `調整「${title}」欄寬`, selectRow: (label) => `選取 ${label}` },
+  table: { expand: '展開', row: (n) => `第 ${n} 列`, resize: (title) => `調整「${title}」欄寬`, selectRow: (label) => `選取 ${label}`, summary: '合計' },
   timePicker: { now: '現在', hour: '時', minute: '分', second: '秒', choose: (label) => `選擇${label}`, chooseTime: '選擇時間' },
   toast: { label: '通知訊息', close: '關閉提示' },
   tour: {
@@ -1401,7 +1402,7 @@ export const enUS: ChptLocale = {
     worse: ' (worse)',
   },
   steps: { done: 'Completed', process: 'In progress', pending: 'Not started', error: 'Error' },
-  table: { expand: 'Expand', row: (n) => `Row ${n}`, resize: (title) => `Resize column "${title}"`, selectRow: (label) => `Select ${label}` },
+  table: { expand: 'Expand', row: (n) => `Row ${n}`, resize: (title) => `Resize column "${title}"`, selectRow: (label) => `Select ${label}`, summary: 'Total' },
   timePicker: { now: 'Now', hour: 'Hour', minute: 'Minute', second: 'Second', choose: (label) => `Choose ${label}`, chooseTime: 'Choose time' },
   toast: { label: 'Notifications', close: 'Dismiss' },
   tour: {
