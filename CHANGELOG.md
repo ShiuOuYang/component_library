@@ -36,6 +36,13 @@
 
 ### 新增
 
+- **ChptTable 虛擬捲動**：`virtual` 開啟後不分頁，表身固定高度（`height`）上下捲，只畫看得到的列，
+  5 萬筆也能順暢捲動。每列固定 `rowHeight`（預設 32px）以便直接算出捲動位置；展開的明細列高度自動量測。
+  - 排序、搜尋（回到最上面）、勾選（全選是全部資料）、展開、多層表頭、拖曳欄寬照常可用；表頭固定在頂端
+  - 斑馬紋依絕對列序，捲動時不閃動；`aria-rowcount` / `aria-rowindex` 讓螢幕閱讀器讀到實際位置
+  - `remote` 時監聽 `reach-bottom` 做無限捲動；ref 方法 `scrollToIndex(i)`、`scrollToKey(key)`
+  - 新 props：`virtual`、`height`、`rowHeight`、`overscan`、`reachBottomThreshold`
+
 - **ChptChartFrame 圖表外框與匯出**：任何一張圖放進外框，就有一致的標題 / 說明、載入中（半透明遮罩，舊的圖留在底下）、
   沒有資料、錯誤（附重試）。原本 17 張圖只有 1 張有載入狀態，空資料的處理也各自不同。
   - 匯出 PNG / SVG / CSV：圖片是「看到什麼畫什麼」—— 圖表 SVG 連同計算後的樣式、Canvas 圖層（大量資料模式）、
