@@ -36,6 +36,22 @@
 
 ### 新增
 
+- **ChptTable 虛擬捲動**：`virtual` 開啟後不分頁，表身固定高度（`height`）上下捲，只畫看得到的列，
+  5 萬筆也能順暢捲動。每列固定 `rowHeight`（預設 32px）以便直接算出捲動位置；展開的明細列高度自動量測。
+  - 排序、搜尋（回到最上面）、勾選（全選是全部資料）、展開、多層表頭、拖曳欄寬照常可用；表頭固定在頂端
+  - 斑馬紋依絕對列序，捲動時不閃動；`aria-rowcount` / `aria-rowindex` 讓螢幕閱讀器讀到實際位置
+  - `remote` 時監聽 `reach-bottom` 做無限捲動；ref 方法 `scrollToIndex(i)`、`scrollToKey(key)`
+  - 新 props：`virtual`、`height`、`rowHeight`、`overscan`、`reachBottomThreshold`
+
+- **ChptChartFrame 圖表外框與匯出**：任何一張圖放進外框，就有一致的標題 / 說明、載入中（半透明遮罩，舊的圖留在底下）、
+  沒有資料、錯誤（附重試）。原本 17 張圖只有 1 張有載入狀態，空資料的處理也各自不同。
+  - 匯出 PNG / SVG / CSV：圖片是「看到什麼畫什麼」—— 圖表 SVG 連同計算後的樣式、Canvas 圖層（大量資料模式）、
+    HTML 圖例與標題都會畫進去；SVG 是純 SVG（不用 foreignObject），PowerPoint、Illustrator 打得開；深色模式匯出深底
+  - CSV 帶 BOM（Excel 不會亂碼），以 `= + - @` 開頭的文字加上單引號，避免被試算表當成公式執行
+  - `autoDownload: false` 時只送 `export` 事件（可上傳到伺服器）；ref 方法 `exportAs(format)`、`download(format)`
+  - 匯出工具也可單獨使用：`exportChart`、`elementToSvg`、`svgToPng`、`toCsv`、`csvBlob`、`downloadBlob`；
+    不想出現在匯出圖片裡的元素加上 `data-export-ignore`（各圖表的重設縮放鈕已加上）
+
 - **ChptKpiCard KPI 卡片**：數字、與前期比較、趨勢線、是否達標，一個元件做完（組合 ChptStatistic 與 SparklineChart）。
   - `previous` 自動算出變化（`deltaMode`：相對 % 或差值）；前期為 0 時不顯示百分比
   - `target` / `thresholds`（[接近, 達標]）判定達標 / 接近 / 未達標：左側色條、圖示與文字一起表示，目標畫成趨勢線上的參考線；
@@ -124,6 +140,9 @@
   「重設縮放」回到設定的範圍。（#17、#18）
 
 ### 修正
+
+- **StatusScatterMap**：繪圖區還沒有尺寸時（容器剛掛載、尚未排版，例如放進外框或分頁），
+  `createImageData(0, h)` 丟出 IndexSizeError。現在沒有尺寸時跳過繪製，等尺寸量到再畫。
 
 - **DualAxisComboChart**：拖曳、平移、滾輪縮放更順。
   - 沒縮放就直接用中鍵平移時，原本每次移動都跑 750ms 動畫，畫面一路落後游標、放開後還在滑，也沒有「重設縮放」。

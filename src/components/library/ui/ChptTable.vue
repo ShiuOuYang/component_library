@@ -33,8 +33,10 @@
 
       <div class="flex items-center gap-2.5">
         <!-- 分頁控制區 (top 或 both 時顯示) -->
+        <!-- 虛擬捲動不分頁：只顯示總筆數 -->
+        <span v-if="props.virtual" class="text-xs text-content-secondary" aria-live="polite">{{ locale.pagination.total(totalItems) }}</span>
         <ChptPagination
-          v-if="paginationPosition === 'top' || paginationPosition === 'both'"
+          v-else-if="paginationPosition === 'top' || paginationPosition === 'both'"
           variant="compact"
           :aria-label="topNavLabel"
           :current-page="currentPage"
@@ -49,20 +51,28 @@
       </div>
     </div>
 
-    <!-- 表格內容 -->
-    <div class="relative w-full overflow-x-auto mb-0 border-t border-b border-stroke-light">
+    <!-- 表格內容：外層放載入遮罩，內層是捲動容器（虛擬捲動時固定高度、可上下捲） -->
+    <div class="relative w-full mb-0 border-t border-b border-stroke-light">
+    <div
+      ref="scroller"
+      class="w-full overflow-x-auto"
+      :class="{ 'overflow-y-auto': props.virtual }"
+      :style="props.virtual ? { height: props.height } : undefined"
+      @scroll.passive="onScroll"
+    >
       <table
         class="w-full border-collapse text-xs whitespace-nowrap min-w-max text-content-primary"
         :class="{ 'table-fixed': props.resizable }"
         :aria-busy="props.loading || undefined"
+        :aria-rowcount="ariaRowCount"
       >
         <!--
           表頭可以多層：columns 裡有 children 的是群組欄，標題橫跨底下所有欄位；
           沒有 children 的葉欄往下延伸到最後一層（rowspan）。排序、欄寬都只在葉欄上。
           sticky 掛在 <thead>：多列表頭時每一列不必各自算 top
         -->
-        <thead class="sticky top-0 z-10">
-          <tr v-for="(row, level) in headerRows" :key="level">
+        <thead ref="thead" class="sticky top-0 z-10">
+          <tr v-for="(row, level) in headerRows" :key="level" :aria-rowindex="ariaRowCount ? level + 1 : undefined">
             <template v-if="level === 0">
               <th
                 v-if="expandEnabled"
@@ -85,7 +95,7 @@
                   :checked="pageSelectionState === 'all'"
                   :indeterminate="pageSelectionState === 'some'"
                   :disabled="selectablePageKeys.length === 0"
-                  :aria-label="locale.selectPage"
+                  :aria-label="props.virtual ? t.common.selectAll : locale.selectPage"
                   @change="togglePageSelection"
                 />
                 <span v-else class="sr-only">{{ locale.select }}</span>
@@ -192,35 +202,45 @@
                （用 table-row 整列自訂時，勾選欄、展開欄、row-click 都要自己處理）
           -->
           <template v-else>
-            <template v-for="(item, index) in paginatedData" :key="keyOf(item, index + startIndex)">
-              <slot name="table-row" :item="item" :index="index + startIndex">
+            <!--
+              虛擬捲動：可視範圍外的列不畫，用撐高度的空白列代替，捲軸長度仍是完整資料的長度。
+              parity 空白列讓資料列在 DOM 裡的奇偶跟絕對列序一致，斑馬紋才不會隨捲動閃動
+            -->
+            <template v-if="props.virtual">
+              <tr class="virtual-spacer" aria-hidden="true"><td :colspan="totalColumnCount" :style="{ height: `${windowRange.padTop}px` }"></td></tr>
+              <tr v-if="windowRange.start % 2 === 0" class="virtual-spacer" aria-hidden="true"><td :colspan="totalColumnCount"></td></tr>
+            </template>
+            <template v-for="(item, index) in renderedData" :key="keyOf(item, index + renderStart)">
+              <slot name="table-row" :item="item" :index="index + renderStart">
                 <tr
                   class="data-row"
                   :class="[
-                    rowClassOf(item, index + startIndex),
+                    rowClassOf(item, index + renderStart),
                     {
-                      'is-selected': selectedKeySet.has(keyOf(item, index + startIndex)),
+                      'is-selected': selectedKeySet.has(keyOf(item, index + renderStart)),
                       'is-clickable': hasRowClickListener,
                     },
                   ]"
-                  :aria-selected="selectionEnabled ? selectedKeySet.has(keyOf(item, index + startIndex)) : undefined"
+                  :aria-selected="selectionEnabled ? selectedKeySet.has(keyOf(item, index + renderStart)) : undefined"
+                  :aria-rowindex="ariaRowCount ? headerDepth + index + renderStart + 1 : undefined"
+                  :style="props.virtual ? { height: `${rowHeightPx}px` } : undefined"
                   :tabindex="hasRowClickListener ? 0 : undefined"
-                  @click="onRowClick(item, index + startIndex, $event)"
-                  @keydown.enter.self="onRowClick(item, index + startIndex, $event)"
+                  @click="onRowClick(item, index + renderStart, $event)"
+                  @keydown.enter.self="onRowClick(item, index + renderStart, $event)"
                 >
                   <td v-if="expandEnabled" class="lead-col">
                     <button
                       v-if="canExpandRow(item)"
                       type="button"
                       class="expand-toggle"
-                      :aria-expanded="expandedKeySet.has(keyOf(item, index + startIndex))"
-                      :aria-controls="expandIdOf(item, index + startIndex)"
-                      :aria-label="expandedKeySet.has(keyOf(item, index + startIndex)) ? locale.collapseRow : locale.expandRow"
-                      @click.stop="toggleExpand(item, index + startIndex)"
+                      :aria-expanded="expandedKeySet.has(keyOf(item, index + renderStart))"
+                      :aria-controls="expandIdOf(item, index + renderStart)"
+                      :aria-label="expandedKeySet.has(keyOf(item, index + renderStart)) ? locale.collapseRow : locale.expandRow"
+                      @click.stop="toggleExpand(item, index + renderStart)"
                     >
                       <span
                         class="material-symbols-outlined text-base transition-transform duration-150"
-                        :class="{ 'rotate-90': expandedKeySet.has(keyOf(item, index + startIndex)) }"
+                        :class="{ 'rotate-90': expandedKeySet.has(keyOf(item, index + renderStart)) }"
                         aria-hidden="true"
                       >chevron_right</span>
                     </button>
@@ -230,17 +250,17 @@
                       :type="singleSelect ? 'radio' : 'checkbox'"
                       class="table-check"
                       :name="singleSelect ? `${uid}-select` : undefined"
-                      :checked="selectedKeySet.has(keyOf(item, index + startIndex))"
+                      :checked="selectedKeySet.has(keyOf(item, index + renderStart))"
                       :disabled="!canSelectRow(item)"
-                      :aria-label="t.table.selectRow(rowLabelOf(item, index + startIndex))"
+                      :aria-label="t.table.selectRow(rowLabelOf(item, index + renderStart))"
                       @click.stop
-                      @change="toggleRow(item, index + startIndex)"
+                      @change="toggleRow(item, index + renderStart)"
                     />
                   </td>
                   <td
                     v-for="column in displayColumns"
                     :key="column.key ?? column.title"
-                    v-bind="cellPropsOf(column, item, index + startIndex)"
+                    v-bind="cellPropsOf(column, item, index + renderStart)"
                     :class="toneOf(column) ? `tone-cell-${toneOf(column)}` : undefined"
                     :style="[column.style, widthStyle(column), alignStyle(column)]"
                   >
@@ -254,16 +274,18 @@
                   <td v-if="props.resizable" role="presentation" class="filler-col"></td>
                 </tr>
                 <tr
-                  v-if="expandEnabled && expandedKeySet.has(keyOf(item, index + startIndex))"
-                  :id="expandIdOf(item, index + startIndex)"
+                  v-if="expandEnabled && expandedKeySet.has(keyOf(item, index + renderStart))"
+                  :id="expandIdOf(item, index + renderStart)"
+                  :ref="(el) => observeExpandRow(el as Element | null, keyOf(item, index + renderStart))"
                   class="expand-row"
                 >
                   <td :colspan="totalColumnCount">
-                    <slot name="expand" :item="item" :index="index + startIndex"></slot>
+                    <slot name="expand" :item="item" :index="index + renderStart"></slot>
                   </td>
                 </tr>
               </slot>
             </template>
+            <tr v-if="props.virtual && windowRange.padBottom > 0" class="virtual-spacer" aria-hidden="true"><td :colspan="totalColumnCount" :style="{ height: `${windowRange.padBottom}px` }"></td></tr>
           </template>
         </tbody>
         <!-- 表格底部 -->
@@ -271,6 +293,7 @@
           <slot name="footer"></slot>
         </tfoot>
       </table>
+    </div>
 
       <!-- 載入中：保留舊資料在底下（半透明遮罩），避免整張表閃成空白 -->
       <div
@@ -289,6 +312,7 @@
 
       <div class="flex items-center gap-2.5">
         <ChptPagination
+          v-if="!props.virtual"
           variant="compact"
           :aria-label="bottomNavLabel"
           :current-page="currentPage"
@@ -467,6 +491,21 @@ const props = withDefaults(defineProps<{
   resizable?: boolean
   /** 每列額外的 class（例如依狀態上色） */
   rowClass?: string | ((row: DataRow, index: number) => string | Record<string, boolean> | undefined)
+
+  // ===== 虛擬捲動 =====
+  /**
+   * 虛擬捲動：不分頁，表身固定高度可上下捲，只畫看得到的列（上萬筆也順）。
+   * 每一列固定 rowHeight 高 —— 這是能直接算出捲動位置的前提；展開的明細列高度會自動量測
+   */
+  virtual?: boolean
+  /** virtual 時表格（含表頭）的高度（CSS 值） */
+  height?: string
+  /** virtual 時每一列的高度（px）。儲存格內容比這個高時會撐高列、捲動位置會偏移，請配合內容設定 */
+  rowHeight?: number
+  /** virtual 時可視範圍上下各多畫幾列（捲快時不會看到空白） */
+  overscan?: number
+  /** virtual 時距離底部多少 px 送出 reach-bottom（無限捲動載入下一批） */
+  reachBottomThreshold?: number
 }>(), {
   data: () => [],
   columns: () => [],
@@ -503,6 +542,11 @@ const props = withDefaults(defineProps<{
   loadingText: undefined,
   resizable: false,
   rowClass: undefined,
+  virtual: false,
+  height: '28rem',
+  rowHeight: 32,
+  overscan: 8,
+  reachBottomThreshold: 120,
 })
 
 const config = useConfig()
@@ -532,6 +576,8 @@ const emit = defineEmits<{
   'update:expandedKeys': [keys: RowKey[]]
   'row-click': [row: DataRow, index: number, event: MouseEvent | KeyboardEvent]
   'column-resize': [info: { key: string; width: number }]
+  /** virtual 時捲到接近底部（loading 時不送；新資料進來前只送一次） */
+  'reach-bottom': []
 }>()
 
 // 獲取插槽信息
@@ -958,11 +1004,13 @@ const totalPages = computed(() => {
 })
 
 // 分頁後的數據
-const startIndex = computed(() => (currentPage.value - 1) * pageSize.value)
+const startIndex = computed(() => (props.virtual ? 0 : (currentPage.value - 1) * pageSize.value))
 const endIndex = computed(() => startIndex.value + pageSize.value)
 
 const paginatedData = computed(() => {
   if (props.remote) return props.data
+  // 虛擬捲動不分頁：「本頁」就是篩選、排序後的全部資料（全選、勾選狀態都以此為準）
+  if (props.virtual) return sortedAndFilteredData.value
   return sortedAndFilteredData.value.slice(startIndex.value, endIndex.value)
 })
 
@@ -1263,9 +1311,198 @@ function resetWidth(column: Column): void {
 
 onBeforeUnmount(() => stopResize?.())
 
+// ===================================================================
+// 虛擬捲動
+// ===================================================================
+const scroller = ref<HTMLElement | null>(null)
+const thead = ref<HTMLElement | null>(null)
+const scrollTop = ref(0)
+const viewportHeight = ref(0)
+const headHeight = ref(0)
+
+/** 實際使用的列高：0、負數或 NaN 會讓索引算成 NaN、整張表空白，退回 1px */
+const rowHeightPx = computed(() => (props.rowHeight > 0 ? props.rowHeight : 1))
+
+/** 展開明細列量到的高度（依列鍵）；還沒量到時用估計值 */
+const expandHeights = shallowReactive(new Map<RowKey, number>())
+const EXPAND_ESTIMATE = 120
+
+/**
+ * 每一列頂端的位置（前綴和，長度 n + 1）。
+ * 沒有展開的列時每列等高，直接用乘法，不必建陣列。
+ */
+const rowOffsets = computed<Float64Array | null>(() => {
+  if (!props.virtual || !expandEnabled.value || expandedKeySet.value.size === 0) return null
+  const rows = paginatedData.value
+  const h = rowHeightPx.value
+  const out = new Float64Array(rows.length + 1)
+  for (let i = 0; i < rows.length; i++) {
+    const key = keyOf(rows[i], i)
+    const extra = expandedKeySet.value.has(key) ? (expandHeights.get(key) ?? EXPAND_ESTIMATE) : 0
+    out[i + 1] = out[i] + h + extra
+  }
+  return out
+})
+
+const offsetOf = (i: number): number => rowOffsets.value?.[i] ?? i * rowHeightPx.value
+const totalBodyHeight = computed(() => offsetOf(paginatedData.value.length))
+
+/** 第一個底部超過 y 的列（offsets 已排序，用二分搜尋） */
+function indexAt(y: number): number {
+  const n = paginatedData.value.length
+  const off = rowOffsets.value
+  if (!off) return Math.min(n, Math.max(0, Math.floor(y / rowHeightPx.value)))
+  let lo = 0
+  let hi = n
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1
+    if (off[mid + 1] <= y) lo = mid + 1
+    else hi = mid
+  }
+  return lo
+}
+
+/**
+ * 要畫的範圍 [start, end) 與上下空白列的高度。
+ * 表頭是 sticky、在表身之前：表身座標 y 的內容在可視範圍內 ⇔ scrollTop ≤ y ≤ scrollTop + 視窗高 − 表頭高
+ */
+const windowRange = computed(() => {
+  const n = paginatedData.value.length
+  if (!props.virtual) return { start: 0, end: n, padTop: 0, padBottom: 0 }
+  const top = scrollTop.value
+  const bottom = top + Math.max(0, viewportHeight.value - headHeight.value)
+  const start = Math.max(0, indexAt(top) - props.overscan)
+  const end = Math.min(n, indexAt(bottom) + 1 + props.overscan)
+  return { start, end, padTop: offsetOf(start), padBottom: totalBodyHeight.value - offsetOf(end) }
+})
+
+/** 實際畫出來的列與第一列的絕對索引 */
+const renderedData = computed(() =>
+  props.virtual ? paginatedData.value.slice(windowRange.value.start, windowRange.value.end) : paginatedData.value
+)
+const renderStart = computed(() => (props.virtual ? windowRange.value.start : startIndex.value))
+
+/**
+ * 只畫部分列時告訴螢幕閱讀器總列數，每列帶 aria-rowindex：讀到「第 1,234 列，共 10,001 列」。
+ * 有展開明細時列數不好對應（明細列不是資料列），就不宣告
+ */
+const ariaRowCount = computed(() =>
+  props.virtual && !expandEnabled.value ? headerDepth.value + paginatedData.value.length : undefined
+)
+
+function measure(): void {
+  const el = scroller.value
+  if (!el) return
+  viewportHeight.value = el.clientHeight
+  headHeight.value = thead.value?.offsetHeight ?? 0
+  scrollTop.value = el.scrollTop
+}
+
+let reachArmed = true
+function onScroll(): void {
+  const el = scroller.value
+  if (!props.virtual || !el) return
+  scrollTop.value = el.scrollTop
+  const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - props.reachBottomThreshold
+  // 到底只送一次；離開底部區域或資料變多後才重新啟用（避免捲動事件連發 → 重複載入同一批）
+  if (nearBottom && reachArmed && !props.loading && paginatedData.value.length) {
+    reachArmed = false
+    emit('reach-bottom')
+  } else if (!nearBottom) {
+    reachArmed = true
+  }
+}
+watch(() => paginatedData.value.length, () => (reachArmed = true))
+
+/** 捲到第 index 列（篩選、排序後的順序）；index 超出範圍時夾到兩端 */
+function scrollToIndex(index: number): void {
+  const el = scroller.value
+  if (!props.virtual || !el) return
+  const n = paginatedData.value.length
+  const i = Math.min(Math.max(0, Math.floor(index)), Math.max(0, n - 1))
+  el.scrollTop = offsetOf(i)
+  scrollTop.value = el.scrollTop
+}
+
+/** 捲到某個列鍵；找不到時回傳 false */
+function scrollToKey(key: RowKey): boolean {
+  const i = paginatedData.value.findIndex((row, idx) => keyOf(row, idx) === key)
+  if (i < 0) return false
+  scrollToIndex(i)
+  return true
+}
+
+// 搜尋、排序後從頭看（同分頁模式回第 1 頁）
+watch([searchQuery, sortColumns], () => {
+  if (props.virtual && scroller.value) {
+    scroller.value.scrollTop = 0
+    scrollTop.value = 0
+  }
+}, { deep: true })
+
+/**
+ * 資料變少（篩選）或列高改變時，把捲動位置拉回範圍內。
+ * 不校正的話：捲到第 8,000 筆後篩到剩 20 筆，第一個可畫的索引大於資料長度 → 表身空白，
+ * 要等瀏覽器自己夾回 scrollTop、送出 scroll 事件才恢復
+ */
+watch(totalBodyHeight, () => {
+  const el = scroller.value
+  if (!props.virtual || !el) return
+  const max = Math.max(0, totalBodyHeight.value + headHeight.value - viewportHeight.value)
+  if (scrollTop.value > max) {
+    el.scrollTop = max
+    scrollTop.value = max
+  }
+})
+
+// 展開明細列的高度量測
+const expandObserved = new Map<Element, RowKey>()
+let expandObserver: ResizeObserver | null = null
+function recordExpandHeight(el: Element): void {
+  const key = expandObserved.get(el)
+  if (key === undefined) return
+  const h = (el as HTMLElement).offsetHeight
+  if (h > 0 && expandHeights.get(key) !== h) expandHeights.set(key, h)
+}
+function observeExpandRow(el: Element | null, key: RowKey): void {
+  if (!props.virtual || !el || expandObserved.has(el)) return
+  expandObserved.set(el, key)
+  recordExpandHeight(el)
+  expandObserver?.observe(el)
+}
+// 收合後的列從 DOM 移除，順手清掉觀察對象
+watch(renderedData, () => {
+  for (const el of [...expandObserved.keys()]) {
+    if (!el.isConnected) {
+      expandObserver?.unobserve(el)
+      expandObserved.delete(el)
+    }
+  }
+}, { flush: 'post' })
+
+let viewportObserver: ResizeObserver | null = null
+onMounted(() => {
+  if (!props.virtual) return
+  measure()
+  if (typeof ResizeObserver === 'undefined') return
+  viewportObserver = new ResizeObserver(() => measure())
+  if (scroller.value) viewportObserver.observe(scroller.value)
+  if (thead.value) viewportObserver.observe(thead.value)
+  expandObserver = new ResizeObserver((entries) => entries.forEach((e) => recordExpandHeight(e.target)))
+  expandObserved.forEach((_, el) => expandObserver?.observe(el))
+})
+onBeforeUnmount(() => {
+  viewportObserver?.disconnect()
+  expandObserver?.disconnect()
+})
+
 // defineExpose - 暴露組件方法和狀態
 defineExpose({
   clearSelection,
+  /** virtual 時捲到第 index 列（篩選、排序後的順序） */
+  scrollToIndex,
+  /** virtual 時捲到某個列鍵；找不到回傳 false */
+  scrollToKey,
   selectedRows,
   refresh: performSearch,
   resetPage: () => { currentPage.value = 1 },
@@ -1332,6 +1569,18 @@ watch(displayColumns, (newColumns) => {
  *    深色模式下儲存格文字是深灰配深底、列與列之間是一條條白線。
  *    check:theme 只檢查 Tailwind class，看不到 <style> 裡的色值，所以一直沒被發現。
  */
+
+/* 虛擬捲動的空白列：不吃斑馬紋、hover，也不要儲存格的內距與格線（高度要剛好） */
+:deep(tbody tr.virtual-spacer),
+:deep(tbody tr.virtual-spacer:hover) {
+  background-color: transparent;
+}
+
+:deep(tbody tr.virtual-spacer > td) {
+  padding: 0;
+  border: 0;
+  height: 0;
+}
 
 /* 警告行樣式 */
 :deep(.warning-row) {

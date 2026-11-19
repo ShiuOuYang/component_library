@@ -9,6 +9,7 @@
         </li>
       </ul>
       <button
+      data-export-ignore
         v-if="isZoomed"
         type="button"
         class="ml-auto rounded-md border border-stroke-light bg-surface-primary/80 px-2.5 py-1 text-xs text-content-secondary shadow-sm hover:bg-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"

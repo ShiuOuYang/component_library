@@ -18,7 +18,11 @@ export { default as CapabilityHistogram } from './CapabilityHistogram.vue'
 export { default as StateTimeline } from './StateTimeline.vue'
 export { default as BoxPlotChart } from './BoxPlotChart.vue'
 export { default as WaterfallChart } from './WaterfallChart.vue'
+export { default as ChptChartFrame } from './ChptChartFrame.vue'
 export { default as ChptKpiCard } from './ChptKpiCard.vue'
+
+// ===== 匯出工具（ChptChartFrame 內部也用這些；自己做匯出按鈕時可直接呼叫） =====
+export { exportChart, elementToSvg, svgToPng, toCsv, csvBlob, downloadBlob } from './utils/chartExport'
 
 // ===== 型別（props 的資料形狀與事件 payload） =====
 export type {
@@ -58,4 +62,6 @@ export type {
 export type { BoxStats, QuartileMethod } from './utils/boxPlot'
 export type { WaterfallEvent, WaterfallTooltip } from './WaterfallChart.vue'
 export type { WaterfallKind } from './utils/waterfall'
+export type { ChartFrameExportFormat, ChptChartFrameProps } from './ChptChartFrame.vue'
+export type { ChartExportFormat, ChartExportOptions, CsvColumn } from './utils/chartExport'
 export type { KpiStatus, ChptKpiCardProps } from './ChptKpiCard.vue'

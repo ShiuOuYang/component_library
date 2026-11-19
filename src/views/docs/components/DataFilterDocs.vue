@@ -124,6 +124,30 @@
         <ChptCodeBlock :code="tableRemoteSample" />
       </div>
 
+      <!-- 進階：虛擬捲動 -->
+      <h3 class="mt-10 mb-2 text-lg font-semibold text-content-primary">虛擬捲動（大量資料）</h3>
+      <p class="text-sm text-content-secondary mb-3">
+        <code>virtual</code> 開啟後不分頁，表身固定高度（<code>height</code>）上下捲，只畫看得到的列 ——
+        下面是 {{ virtualRows.length.toLocaleString() }} 筆，捲起來一樣順。每列固定 <code>rowHeight</code> 高（預設 32px），
+        這是能直接算出捲動位置的前提；展開的明細列高度會自動量測。排序、搜尋、勾選（全選是全部資料）、展開都照常可用；
+        搭配 <code>remote</code> 時監聽 <code>reach-bottom</code> 做無限捲動。
+      </p>
+      <div class="mb-2 flex flex-wrap items-center gap-2 text-sm">
+        <ChptButton size="sm" @click="virtualTable?.scrollToIndex(25_000)">捲到第 25,001 列</ChptButton>
+        <ChptButton size="sm" is-outline @click="virtualTable?.scrollToIndex(0)">回到最上面</ChptButton>
+      </div>
+      <ChptTable
+        ref="virtualTable"
+        virtual
+        height="24rem"
+        :columns="virtualColumns"
+        :data="virtualRows"
+        selectable
+      />
+      <div class="mt-4">
+        <ChptCodeBlock :code="tableVirtualSample" />
+      </div>
+
       <ApiTable of="ChptTable" title="Props" :rows="tableProps" />
       <ApiTable of="ChptTable" title="Events" :rows="tableEvents" />
       <ApiTable of="ChptTable" title="Slots" :rows="tableSlots" />
@@ -359,6 +383,37 @@ const selectedOrders = ref([])
 const lastOpened = ref('')
 const lastBatch = ref('')
 
+// ===== ChptTable 進階：虛擬捲動 =====
+const virtualTable = ref(null)
+const virtualColumns = [
+  { key: 'id', title: '#', sortable: true, sortType: 'number', align: 'end', width: 80 },
+  { key: 'sn', title: '序號', sortable: true },
+  { key: 'station', title: '站別', sortable: true },
+  { key: 'result', title: '結果' },
+  { key: 'ct', title: 'CT (s)', sortable: true, sortType: 'number', align: 'end' },
+]
+const virtualRows = Array.from({ length: 50_000 }, (_, i) => ({
+  id: i + 1,
+  sn: `SN-${String(1_000_000 + i * 13)}`,
+  station: ['ICT', 'FCT', 'AOI', 'Burn-in'][i % 4],
+  result: i % 23 === 0 ? 'NG' : 'PASS',
+  ct: (30 + ((i * 53) % 400) / 10).toFixed(1),
+}))
+const tableVirtualSample = `<ChptTable
+  ref="table"
+  virtual
+  height="24rem"
+  :row-height="32"
+  :columns="columns"
+  :data="rows"
+  selectable
+/>
+
+<!-- 無限捲動：remote + reach-bottom，載入時設 loading -->
+<ChptTable virtual remote :data="rows" :total="total" :loading="loading" @reach-bottom="loadMore" />
+
+table.value.scrollToIndex(25000)`
+
 // ===== ChptTable 進階：伺服器端（以 setTimeout 模擬 API） =====
 const remoteColumns = [
   { key: 'sn', title: '序號' },
@@ -452,6 +507,8 @@ const tableMethods = [
   { name: 'resetPage()', type: '() => void', desc: '回到第 1 頁；父層換了一批不相干的資料、要從頭看時呼叫' },
   { name: 'clearSelection()', type: '() => void', desc: '清除勾選' },
   { name: 'selectedRows', type: 'DataRow[]', desc: '目前勾選的列（含 remote 模式其他頁勾選的列）' },
+  { name: 'scrollToIndex(index)', type: '(index: number) => void', desc: 'virtual 時捲到第 index 列（篩選、排序後的順序；超出範圍夾到兩端）' },
+  { name: 'scrollToKey(key)', type: '(key) => boolean', desc: 'virtual 時捲到某個列鍵；找不到回傳 false' },
 ]
 
 const tableSlots = [
@@ -632,6 +689,11 @@ const tableProps = [
   { name: 'loading / loadingText', type: 'boolean / string', def: "false / '載入中'", desc: '半透明遮罩＋Spinner，table 設 aria-busy' },
   { name: 'resizable', type: 'boolean', def: 'false', desc: '可拖曳欄寬（欄位可設 width / minWidth / resizable:false）' },
   { name: 'rowClass', type: 'string | (row, index) => class', def: '—', desc: '每列額外的 class（例如內建的 warning-row）' },
+  { name: 'virtual', type: 'boolean', def: 'false', desc: '虛擬捲動：不分頁，表身固定高度上下捲，只畫看得到的列；全選是全部資料' },
+  { name: 'height', type: 'string', def: "'28rem'", desc: 'virtual 時表格（含表頭）的高度（CSS 值）' },
+  { name: 'rowHeight', type: 'number', def: '32', desc: 'virtual 時每列的高度（px）。儲存格內容比它高會撐高列、捲動位置偏移，請配合內容設定' },
+  { name: 'overscan', type: 'number', def: '8', desc: 'virtual 時可視範圍上下各多畫幾列' },
+  { name: 'reachBottomThreshold', type: 'number', def: '120', desc: 'virtual 時距離底部多少 px 送出 reach-bottom' },
   { name: 'controlBgColor / bottomControlBgColor', type: 'string', def: "'bg-surface-primary' / 'bg-surface-secondary'", desc: '上方／下方控制列的背景 class' },
 ]
 const tableEvents = [
@@ -644,6 +706,7 @@ const tableEvents = [
   { name: 'update:expandedKeys', params: '(keys)', desc: '展開變更' },
   { name: 'row-click', params: '(row, index, event)', desc: '點列或列聚焦時按 Enter；點列內按鈕 / 核取方塊不算。有監聽時列才可聚焦' },
   { name: 'column-resize', params: '({ key, width })', desc: '欄寬調整完成（可存到使用者偏好）' },
+  { name: 'reach-bottom', params: '—', desc: 'virtual 時捲到接近底部（無限捲動載入下一批；loading 時不送，資料變多前只送一次）' },
 ]
 
 const fixedTableProps = [

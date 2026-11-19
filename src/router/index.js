@@ -110,6 +110,14 @@ const routes = [
         },
       },
       {
+        path: "components/chart-frame",
+        name: "ChartFrameDoc",
+        component: () => import("../views/docs/ChartFrameDoc.vue"),
+        meta: {
+          title: "圖表外框與匯出",
+        },
+      },
+      {
         path: "components/kpi-charts",
         name: "KpiChartsDoc",
         component: () => import("../views/docs/KpiChartsDoc.vue"),

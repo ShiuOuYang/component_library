@@ -134,6 +134,7 @@
 
     <!-- 重置按鈕（全域） -->
     <button
+      data-export-ignore
       v-if="showResetButton && hasAnyZoom"
       type="button"
       class="reset-button"
