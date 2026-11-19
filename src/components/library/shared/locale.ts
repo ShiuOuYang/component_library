@@ -641,6 +641,14 @@ export interface ChptLocale {
     run: string
     close: string
   }
+  dashboardGrid: {
+    label: string
+    drag: (title: string) => string
+    resize: (title: string) => string
+    moved: (title: string, x: number, y: number) => string
+    resized: (title: string, w: number, h: number) => string
+    untitled: string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1305,6 +1313,14 @@ export const zhTW: ChptLocale = {
     run: '執行',
     close: '關閉',
   },
+  dashboardGrid: {
+    label: '儀表板',
+    drag: (title) => `移動或調整「${title}」：方向鍵移動、Shift + 方向鍵調整大小`,
+    resize: (title) => `調整「${title}」的大小`,
+    moved: (title, x, y) => `「${title}」移到第 ${x} 欄、第 ${y} 列`,
+    resized: (title, w, h) => `「${title}」大小 ${w} × ${h}`,
+    untitled: '區塊',
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1968,6 +1984,14 @@ export const enUS: ChptLocale = {
     navigate: 'navigate',
     run: 'run',
     close: 'close',
+  },
+  dashboardGrid: {
+    label: 'Dashboard',
+    drag: (title) => `Move or resize "${title}": arrow keys to move, Shift + arrow keys to resize`,
+    resize: (title) => `Resize "${title}"`,
+    moved: (title, x, y) => `"${title}" moved to column ${x}, row ${y}`,
+    resized: (title, w, h) => `"${title}" resized to ${w} × ${h}`,
+    untitled: 'Widget',
   },
 }
 

@@ -393,6 +393,7 @@ const navSections = [
           { label: 'ChptBreadcrumb', id: 'chpt-breadcrumb' },
           { label: 'ChptSteps', id: 'chpt-steps' },
           { label: 'ChptDivider', id: 'chpt-divider' },
+          { label: 'ChptDashboardGrid', id: 'chpt-dashboard-grid' },
         ],
       },
       {

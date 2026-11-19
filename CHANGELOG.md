@@ -36,6 +36,10 @@
 
 ### 新增
 
+- **ChptDashboardGrid 儀表板格線**：可拖曳移動、調整大小的區塊版面（v-model）。被擋到的區塊往下推、放開後往上靠攏，
+  `static` 區塊固定不動；鍵盤 Tab 到把手後方向鍵移動、Shift + 方向鍵調整大小，以 aria-live 念出結果；Escape 取消拖曳。
+  寬度小於 `stackBelow` 時改成一欄；`persistKey` 把版面記在 localStorage。版面計算的純函式（`moveItem`、`compact`、`collides`、
+  `findSpace`…）在 `shared/gridLayout.ts` 並匯出。新增語系群組 `dashboardGrid`。
 - **ChptCommandPalette 指令面板**：按 Ctrl / ⌘ + K（`hotkey` 可換或關閉）打幾個字就跳到頁面或執行動作。
   模糊搜尋標籤、keywords（英文代號、拼音）、群組與說明；方向鍵選擇（跳過停用的）、Enter 執行、Esc 關閉，關閉後焦點歸還。
   指令給 `to`（有 vue-router 時切換頁面）或 `perform`；`recentKey` 記住最近使用的指令。
