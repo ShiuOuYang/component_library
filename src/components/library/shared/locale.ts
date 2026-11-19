@@ -600,6 +600,11 @@ export interface ChptLocale {
     moved: (from: number, to: number) => string
     max: (n: number) => string
   }
+  schemaForm: {
+    submit: string
+    reset: string
+    requiredSelect: (label: string) => string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1223,6 +1228,11 @@ export const zhTW: ChptLocale = {
     moved: (a, b) => `第 ${a} 筆已移到第 ${b} 筆`,
     max: (n) => `最多 ${n} 筆`,
   },
+  schemaForm: {
+    submit: '送出',
+    reset: '重設',
+    requiredSelect: (label) => `請選擇${label}`,
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1845,6 +1855,11 @@ export const enUS: ChptLocale = {
     removed: (n) => `Removed row ${n}`,
     moved: (a, b) => `Moved row ${a} to ${b}`,
     max: (n) => `Up to ${n} rows`,
+  },
+  schemaForm: {
+    submit: 'Submit',
+    reset: 'Reset',
+    requiredSelect: (label) => `Please select ${label}`,
   },
 }
 
