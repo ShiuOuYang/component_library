@@ -39,7 +39,11 @@ function fakeContext() {
     fill: () => {},
     globalAlpha: 1,
     fillStyle: '',
-    createImageData: (w: number, h: number) => ({ width: w, height: h, data: new Uint8ClampedArray(w * h * 4) }) as ImageData,
+    createImageData: (w: number, h: number) => {
+      // 與瀏覽器一致：寬或高為 0 時丟出 IndexSizeError
+      if (!w || !h) throw new DOMException('The source width is zero or not a number.', 'IndexSizeError')
+      return { width: w, height: h, data: new Uint8ClampedArray(w * h * 4) } as ImageData
+    },
     putImageData: (img: ImageData) => {
       putCalls++
       lastImage = img
@@ -104,6 +108,20 @@ describe('StatusScatterMap', () => {
       expect(xs[0]).toBe('−15,718.5')
       expect(xs.at(-1)).toBe('15,643.0')
       expect(xs).toContain('0')
+    })
+
+    it('繪圖區還沒有尺寸（寬度小於邊距）時不畫、不丟錯', async () => {
+      const errors: unknown[] = []
+      const w = mount(StatusScatterMap, {
+        props: { data: POINTS, width: 10, height: 10, xDomain: [0, 100], yDomain: [0, 100] },
+        attachTo: document.body,
+        global: { config: { errorHandler: (e) => errors.push(e) } },
+      })
+      wrapper = w
+      await nextTick()
+      await nextTick()
+      expect(errors).toEqual([])
+      expect(putCalls).toBe(0)
     })
 
     it('點畫在 Canvas 上：重疊時後畫的狀態（FAIL）在上層', async () => {

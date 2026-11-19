@@ -50,6 +50,7 @@
 
     <!-- 重設縮放：與 StatusScatterMap、分面圖同一個文字與樣式 -->
     <button
+      data-export-ignore
       v-if="resetBtnShow && showResetButton && (enableBrush || enableWheelZoom || enableAxisDrag)"
       type="button"
       class="absolute right-2 top-2 z-20 rounded-md border border-stroke-light bg-surface-primary/80 px-2.5 py-1 text-xs text-content-secondary shadow-sm backdrop-blur hover:bg-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
