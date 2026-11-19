@@ -15,6 +15,11 @@
       :clearable="props.clearable"
       :auto-apply="props.autoApply"
       :placeholder="props.placeholder ?? t.datePicker.placeholder"
+      :locale="t.code"
+      :week-start="props.weekStart"
+      :select-text="t.common.confirm"
+      :cancel-text="t.common.cancel"
+      :preset-dates="presetDates"
       :state="invalid ? false : undefined"
       class="chpt-date-picker"
       :class="sizeClass"
@@ -55,6 +60,13 @@ const VueDatePicker = defineAsyncComponent({
 import type { ComponentSize } from '../shared/types/ui.types'
 import { FORM_ITEM_KEY } from '../shared/formContext'
 import { useLocale } from '../shared/config'
+import {
+  DEFAULT_DATE_PRESETS,
+  resolvePresetValue,
+  shiftRange,
+  type DatePreset,
+  type ShiftDef,
+} from '../shared/datePresets'
 
 /**
  * ChptDatePicker（CHPT 主題） - 日期選擇元件
@@ -99,6 +111,16 @@ interface ChptDatePickerProps {
   fullWidth?: boolean
   /** 錯誤訊息 */
   errorText?: string
+  /**
+   * 快捷選項（日曆旁的按鈕）：true 為預設的今天、昨天、本週、近 7 天、本月、上月；
+   * 也可以指定內建的 key（含 'currentShift' / 'previousShift'）或自訂 { label, value }。
+   * 單日模式時取區間的開始日
+   */
+  presets?: boolean | DatePreset[]
+  /** 一週的第一天（0 = 週日、1 = 週一）；影響日曆與「本週 / 上週」 */
+  weekStart?: 0 | 1 | 2 | 3 | 4 | 5 | 6
+  /** 班別（'currentShift' / 'previousShift' 用）；不給時為早班 08:00、晚班 20:00 */
+  shifts?: ShiftDef[]
 }
 
 /** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
@@ -118,6 +140,43 @@ const props = withDefaults(defineProps<ChptDatePickerProps>(), {
   autoApply: false,
   fullWidth: false,
   errorText: '',
+  presets: false,
+  weekStart: 1,
+  shifts: undefined,
+})
+
+/** 班別：沒給時用兩班制，名稱取語系 */
+const shiftDefs = computed<ShiftDef[]>(
+  () =>
+    props.shifts ?? [
+      { name: t.value.datePicker.dayShift, start: '08:00' },
+      { name: t.value.datePicker.nightShift, start: '20:00' },
+    ]
+)
+
+/**
+ * 給 vue-datepicker 的 preset-dates。
+ * value 用 getter：「今天」要在點下去的那一刻才算（頁面開著過了午夜也正確）
+ */
+const presetDates = computed(() => {
+  if (!props.presets) return []
+  const list: DatePreset[] = props.presets === true ? DEFAULT_DATE_PRESETS : props.presets
+  const options = { weekStart: props.weekStart, shifts: shiftDefs.value }
+  const labels = t.value.datePicker
+  return list.map((preset) => {
+    let label: string
+    if (typeof preset !== 'string') label = preset.label
+    else if (preset === 'currentShift') label = labels.currentShift(shiftRange(new Date(), shiftDefs.value, 0).shift.name)
+    else if (preset === 'previousShift') label = labels.previousShift(shiftRange(new Date(), shiftDefs.value, -1).shift.name)
+    else label = labels.presets[preset]
+    return {
+      label,
+      value: () => {
+        const range = resolvePresetValue(preset, new Date(), options)
+        return props.range ? range : range[0]
+      },
+    }
+  })
 })
 
 /**

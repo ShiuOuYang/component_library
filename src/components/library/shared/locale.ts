@@ -153,7 +153,7 @@ export interface ChptLocale {
     followSystem: string
   }
   dataTooltip: { clickToClose: string }
-  datePicker: { placeholder: string }
+  datePicker: { placeholder: string; presets: { today: string; yesterday: string; thisWeek: string; lastWeek: string; last7Days: string; last30Days: string; thisMonth: string; lastMonth: string; thisQuarter: string; thisYear: string }; currentShift: (name: string) => string; previousShift: (name: string) => string; dayShift: string; nightShift: string }
   drawer: { label: string }
   ellipsis: { expand: string; collapse: string }
   filter: {
@@ -707,7 +707,7 @@ export const zhTW: ChptLocale = {
     followSystem: '跟隨系統',
   },
   dataTooltip: { clickToClose: '點擊關閉' },
-  datePicker: { placeholder: '選擇日期' },
+  datePicker: { placeholder: '選擇日期', presets: { today: '今天', yesterday: '昨天', thisWeek: '本週', lastWeek: '上週', last7Days: '近 7 天', last30Days: '近 30 天', thisMonth: '本月', lastMonth: '上月', thisQuarter: '本季', thisYear: '今年' }, currentShift: (name) => `本班（${name}）`, previousShift: (name) => `上一班（${name}）`, dayShift: '早班', nightShift: '晚班' },
   drawer: { label: '側邊面板' },
   ellipsis: { expand: '展開', collapse: '收起' },
   filter: {
@@ -1318,7 +1318,7 @@ export const enUS: ChptLocale = {
     followSystem: 'Use system setting',
   },
   dataTooltip: { clickToClose: 'Click to close' },
-  datePicker: { placeholder: 'Select date' },
+  datePicker: { placeholder: 'Select date', presets: { today: 'Today', yesterday: 'Yesterday', thisWeek: 'This week', lastWeek: 'Last week', last7Days: 'Last 7 days', last30Days: 'Last 30 days', thisMonth: 'This month', lastMonth: 'Last month', thisQuarter: 'This quarter', thisYear: 'This year' }, currentShift: (name) => `Current shift (${name})`, previousShift: (name) => `Previous shift (${name})`, dayShift: 'Day', nightShift: 'Night' },
   drawer: { label: 'Side panel' },
   ellipsis: { expand: 'More', collapse: 'Less' },
   filter: {
