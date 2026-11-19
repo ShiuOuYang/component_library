@@ -240,6 +240,14 @@ const routes = [
               },
             },
             {
+              path: "components/scan-input",
+              name: "ScanInputDoc",
+              component: () => import("../views/docs/components/ScanInputDocs.vue"),
+              meta: {
+                title: "條碼掃描輸入",
+              },
+            },
+            {
               path: "components/form",
               name: "FormDoc",
               component: () => import("../views/docs/components/FormDocs.vue"),

@@ -567,6 +567,23 @@ export interface ChptLocale {
     target: (value: string) => string
     trend: (title: string, label: string) => string
   }
+  scanInput: {
+    placeholder: string
+    submit: string
+    ok: (value: string) => string
+    duplicateWarn: (value: string) => string
+    duplicate: (value: string) => string
+    invalid: (value: string) => string
+    tooShort: (n: number) => string
+    manualNotAllowed: string
+    imeHint: string
+    history: string
+    historyCount: (n: number) => string
+    clearHistory: string
+    scanner: string
+    manual: string
+    status: { ok: string; duplicate: string; rejected: string }
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1161,6 +1178,23 @@ export const zhTW: ChptLocale = {
     target: (v) => `目標 ${v}`,
     trend: (title, label) => `${title}趨勢${label ? `（${label}）` : ''}`,
   },
+  scanInput: {
+    placeholder: '掃描或輸入條碼',
+    submit: '送出',
+    ok: (v) => `已掃描 ${v}`,
+    duplicateWarn: (v) => `${v} 已經掃過（仍已加入）`,
+    duplicate: (v) => `重複：${v} 已經掃過`,
+    invalid: (v) => `格式不符：${v}`,
+    tooShort: (n) => `條碼至少 ${n} 碼`,
+    manualNotAllowed: '請使用掃描器，不接受手動輸入',
+    imeHint: '偵測到中文輸入法：掃描前請切換為英數輸入，否則條碼會被輸入法吃掉',
+    history: '掃描紀錄',
+    historyCount: (n) => `掃描紀錄（${n}）`,
+    clearHistory: '清除紀錄',
+    scanner: '掃描',
+    manual: '手動',
+    status: { ok: '已接受', duplicate: '重複（已接受）', rejected: '已拒絕' },
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1754,6 +1788,23 @@ export const enUS: ChptLocale = {
     critical: 'Off target',
     target: (v) => `Target ${v}`,
     trend: (title, label) => `${title} trend${label ? ` (${label})` : ''}`,
+  },
+  scanInput: {
+    placeholder: 'Scan or type a barcode',
+    submit: 'Submit',
+    ok: (v) => `Scanned ${v}`,
+    duplicateWarn: (v) => `${v} was already scanned (added anyway)`,
+    duplicate: (v) => `Duplicate: ${v} was already scanned`,
+    invalid: (v) => `Invalid format: ${v}`,
+    tooShort: (n) => `Barcode must be at least ${n} characters`,
+    manualNotAllowed: 'Please use the scanner; manual entry is not accepted',
+    imeHint: 'An input method editor is active: switch to direct (English) input before scanning, or the barcode will be swallowed',
+    history: 'Scan history',
+    historyCount: (n) => `Scan history (${n})`,
+    clearHistory: 'Clear history',
+    scanner: 'Scan',
+    manual: 'Manual',
+    status: { ok: 'Accepted', duplicate: 'Duplicate (accepted)', rejected: 'Rejected' },
   },
 }
 

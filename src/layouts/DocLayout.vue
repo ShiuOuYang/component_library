@@ -269,6 +269,15 @@ const navSections = [
         ],
       },
       {
+        to: '/docs/components/scan-input', icon: '📷', label: '條碼掃描輸入',
+        anchors: [
+          { label: '掃描站', id: 'station' },
+          { label: '全頁接收', id: 'global' },
+          { label: '常見問題', id: 'tips' },
+          { label: 'API', id: 'api' },
+        ],
+      },
+      {
         to: '/docs/components/data-filter', icon: '📊', label: '資料呈現與過濾',
         anchors: [
           { label: 'ChptTable', id: 'chpt-table' },
@@ -472,6 +481,7 @@ const collapsedShortcuts = [
   { to: '/docs/components/form-atoms', icon: '🧩', title: '基礎表單' },
   { to: '/docs/components/pickers', icon: '🎯', title: '進階選擇元件' },
   { to: '/docs/components/form', icon: '📝', title: '表單驗證與上傳' },
+  { to: '/docs/components/scan-input', icon: '📷', title: '條碼掃描輸入' },
   { to: '/docs/components/data-filter', icon: '📊', title: '資料呈現與過濾' },
   { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示' },
   { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件' },
