@@ -36,6 +36,13 @@
 
 ### 新增
 
+- **ChptTable 虛擬捲動**：`virtual` 開啟後不分頁，表身固定高度（`height`）上下捲，只畫看得到的列，
+  5 萬筆也能順暢捲動。每列固定 `rowHeight`（預設 32px）以便直接算出捲動位置；展開的明細列高度自動量測。
+  - 排序、搜尋（回到最上面）、勾選（全選是全部資料）、展開、多層表頭、拖曳欄寬照常可用；表頭固定在頂端
+  - 斑馬紋依絕對列序，捲動時不閃動；`aria-rowcount` / `aria-rowindex` 讓螢幕閱讀器讀到實際位置
+  - `remote` 時監聽 `reach-bottom` 做無限捲動；ref 方法 `scrollToIndex(i)`、`scrollToKey(key)`
+  - 新 props：`virtual`、`height`、`rowHeight`、`overscan`、`reachBottomThreshold`
+
 - **多語系涵蓋整個組件庫**：`ChptConfigProvider :locale="enUS"` 現在會切換所有元件的內建文字 ——
   ui 元件、圖表（螢幕閱讀器摘要、tooltip、即時播報）、PCB / Gerber 檢視器、Excel 編輯 / 匯入 / 匯出。
   原本只有分頁、空狀態、表格等十幾個字串有接語系，其餘 600 多處寫死中文。
