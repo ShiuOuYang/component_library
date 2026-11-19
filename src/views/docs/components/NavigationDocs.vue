@@ -99,14 +99,91 @@
       </p>
     </section>
 
+    <section id="chpt-command-palette" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptCommandPalette 指令面板</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>系統頁面一多，選單要點好幾層才找得到。按 <kbd class="rounded border border-stroke-default px-1 text-xs">Ctrl</kbd> /
+        <kbd class="rounded border border-stroke-default px-1 text-xs">⌘</kbd> + <kbd class="rounded border border-stroke-default px-1 text-xs">K</kbd>
+        打幾個字就跳到頁面或執行動作。這個文件站本身就有一個 —— 現在按按看，側欄的每一頁、每個元件都搜得到。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptCommandPalette } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light flex flex-wrap items-center gap-3">
+        <ChptButton @click="mesPaletteOpen = true">開啟 MES 指令面板</ChptButton>
+        <span class="text-sm text-content-secondary" aria-live="polite">{{ mesPaletteResult || '試著搜尋「gd」「spc」「停機」或「急件」' }}</span>
+        <ChptCommandPalette v-model="mesPaletteOpen" :commands="mesCommands" :hotkey="false" recent-key="docs-mes" @select="(c) => (mesPaletteResult = `已執行：${c.label}`)" />
+      </div>
+      <div class="mt-6">
+        <ChptCodeBlock :code="paletteSample" />
+      </div>
+      <ApiTable of="ChptCommandPalette" title="Props" :rows="paletteProps" />
+      <ApiTable of="-" title="CommandItem（commands 的每一筆）" :rows="commandItemRows" />
+      <ApiTable of="ChptCommandPalette" title="Events" :rows="paletteEvents" />
+      <ApiTable of="ChptCommandPalette" title="Slots" :rows="paletteSlots" />
+      <ApiTable of="ChptCommandPalette" title="方法（ref）" :rows="paletteMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>搜尋規則：</strong>不分大小寫的模糊比對；整段相符 &gt; 開頭相符 &gt; 從詞首開始相符 &gt; 縮寫（dm → dark mode）&gt; 中間相符。
+        標籤最重要，其次是 keywords（放英文代號、拼音、舊名稱）、群組與說明；以空白分開的多個詞要全部找到。
+        <strong>無障礙：</strong>搜尋框是 combobox，結果以 aria-activedescendant 指向，結果數以 aria-live 念出；關閉後焦點回到開啟前的位置。
+      </p>
+    </section>
+
     <ChptBackTop :visibility-height="300" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import { ChptMenu, ChptAnchor, ChptBackTop, ChptSwitch, ChptCodeBlock } from '@/components/library'
+import { ChptMenu, ChptAnchor, ChptBackTop, ChptSwitch, ChptCodeBlock, ChptButton, ChptCommandPalette } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+
+// ---- CommandPalette ----
+const mesPaletteOpen = ref(false)
+const mesPaletteResult = ref('')
+const mesCommands = [
+  { id: 'wo', label: '工單查詢', group: '生產', icon: 'assignment', keywords: ['gongdan', 'work order', 'WO'] },
+  { id: 'report', label: '報工', group: '生產', icon: 'edit_note', keywords: ['baogong'], shortcut: 'mod+r' },
+  { id: 'downtime', label: '停機登錄', group: '生產', icon: 'pause_circle', keywords: ['tingji', 'downtime'] },
+  { id: 'rush', label: '急件看板', group: '生產', icon: 'priority_high', description: '交期 3 天內的工單' },
+  { id: 'spc', label: 'SPC 管制圖', group: '品質', icon: 'monitoring', keywords: ['control chart'] },
+  { id: 'iqc', label: '進料檢驗', group: '品質', icon: 'inventory', keywords: ['IQC'] },
+  { id: 'yield', label: '良率分析', group: '品質', icon: 'analytics', keywords: ['yield', 'liangly'] },
+  { id: 'export', label: '匯出今日報表', group: '動作', icon: 'download', shortcut: 'mod+shift+e' },
+  { id: 'logout', label: '登出', group: '動作', icon: 'logout', disabled: true, description: '示範：停用的指令' },
+]
+const paletteSample = `<ChptCommandPalette v-model="open" :commands="commands" recent-key="mes" />
+
+const commands = [
+  // to：有 vue-router 時切換頁面
+  { id: 'wo', label: '工單查詢', group: '生產', icon: 'assignment', to: '/wo', keywords: ['gongdan', 'WO'] },
+  { id: 'spc', label: 'SPC 管制圖', group: '品質', icon: 'monitoring', to: '/spc' },
+  // perform：執行動作；shortcut 只是顯示（要自己綁）
+  { id: 'export', label: '匯出今日報表', group: '動作', shortcut: 'mod+shift+e', perform: exportToday },
+]
+// 預設綁 Ctrl / ⌘ + K；hotkey="ctrl+shift+p" 換鍵、:hotkey="false" 不綁`
+const paletteProps = [
+  { name: 'modelValue', type: 'boolean', def: 'false', desc: '是否開啟（v-model）' },
+  { name: 'commands', type: 'CommandItem[]', def: '—', desc: '指令清單（見下表）' },
+  { name: 'hotkey', type: 'string | false', def: "'mod+k'", desc: '全域快捷鍵（mod = Mac 的 ⌘、其他平台的 Ctrl）；false 為不綁' },
+  { name: 'placeholder / emptyText / title', type: 'string', def: '語系', desc: '搜尋框提示、沒有結果時的文字、對話框名稱' },
+  { name: 'recentKey', type: 'string', def: '—', desc: '記住最近使用的指令（localStorage 鍵 chpt-command:{recentKey}），沒輸入時列在最上面' },
+  { name: 'maxRecent / maxResults', type: 'number', def: '5 / 50', desc: '最近使用、搜尋結果最多列幾個' },
+]
+const commandItemRows = [
+  { name: 'id / label', type: 'string', def: '—', desc: '唯一鍵；顯示的名稱（搜尋最重要的欄位）' },
+  { name: 'group / description', type: 'string', def: '—', desc: '分組（沒輸入時依此分組，搜尋時顯示在右側）；第二行說明' },
+  { name: 'keywords', type: 'string[]', def: '—', desc: '額外的搜尋字：英文代號、拼音、舊名稱…' },
+  { name: 'icon / shortcut', type: 'string', def: '—', desc: 'Material Symbols 圖示；顯示用的快捷鍵（例如 mod+s，只顯示不綁定）' },
+  { name: 'to / perform', type: 'string / () => void | Promise', def: '—', desc: '切換到路由（需要 vue-router）；執行的動作' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '停用（方向鍵跳過、點了沒反應）' },
+]
+const paletteEvents = [
+  { name: 'update:modelValue', params: '(open: boolean)', desc: '開關' },
+  { name: 'select', params: '(item: CommandItem)', desc: '執行了一個指令（在 perform / 切換頁面之前送出）' },
+]
+const paletteSlots = [{ name: 'empty', params: '{ query }', desc: '沒有結果時的內容' }]
+const paletteMethods = [{ name: 'open() / close() / toggle()', type: '() => void', desc: '以程式開關' }]
 
 // ---- Menu ----
 const active = ref('orders')

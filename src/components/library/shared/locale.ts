@@ -631,6 +631,16 @@ export interface ChptLocale {
     worst: string
     empty: string
   }
+  commandPalette: {
+    title: string
+    placeholder: string
+    empty: string
+    recent: string
+    results: (n: number) => string
+    navigate: string
+    run: string
+    close: string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1285,6 +1295,16 @@ export const zhTW: ChptLocale = {
     worst: '最大損失',
     empty: '沒有資料',
   },
+  commandPalette: {
+    title: '指令面板',
+    placeholder: '搜尋指令或頁面…',
+    empty: '找不到符合的指令',
+    recent: '最近使用',
+    results: (n) => `${n} 個結果`,
+    navigate: '選擇',
+    run: '執行',
+    close: '關閉',
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1938,6 +1958,16 @@ export const enUS: ChptLocale = {
     loss: (n) => `${n} lost`,
     worst: 'Largest loss',
     empty: 'No data',
+  },
+  commandPalette: {
+    title: 'Command palette',
+    placeholder: 'Search commands or pages…',
+    empty: 'No matching commands',
+    recent: 'Recent',
+    results: (n) => `${n} result${n === 1 ? '' : 's'}`,
+    navigate: 'navigate',
+    run: 'run',
+    close: 'close',
   },
 }
 

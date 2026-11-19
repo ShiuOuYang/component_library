@@ -36,6 +36,11 @@
 
 ### 新增
 
+- **ChptCommandPalette 指令面板**：按 Ctrl / ⌘ + K（`hotkey` 可換或關閉）打幾個字就跳到頁面或執行動作。
+  模糊搜尋標籤、keywords（英文代號、拼音）、群組與說明；方向鍵選擇（跳過停用的）、Enter 執行、Esc 關閉，關閉後焦點歸還。
+  指令給 `to`（有 vue-router 時切換頁面）或 `perform`；`recentKey` 記住最近使用的指令。
+  搜尋與快捷鍵的純函式（`fuzzyMatch`、`scoreCommand`、`matchHotkey`、`formatHotkey`…）也一併匯出。新增語系群組 `commandPalette`。
+  文件站本身加上了指令面板（側欄的每一頁、每個元件錨點都搜得到）。
 - **多張圖同步 `useChartSync()`**：同一條時間軸的好幾張 DualAxisComboChart 上下排在一起時，`v-bind="sync.bind()"` 就能同步
   X 縮放（框選、滾輪、拖曳 X 軸）、十字線與高亮（同一個 key）。各圖自己的重設鈕收起來，改用整組的 `sync.reset()`；
   `sync.xDomain` / `crosshairValue` / `highlightKey` 可讀可寫（例如接外部的時間區間選擇器）。

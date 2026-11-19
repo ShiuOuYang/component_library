@@ -26,7 +26,7 @@ export {
   ChptAffix, ChptCarousel, ChptNotificationHost, ChptSplitter, ChptVirtualList,
   ChptCopyButton, ChptCountdown, ChptEllipsis, ChptWatermark,
   ChptConfigProvider, ChptInputTag, ChptList, ChptQRCode, ChptSpace, ChptTour,
-  ChptScanInput, ChptFormList, ChptSchemaForm,
+  ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -54,6 +54,8 @@ export { useConfirm } from './shared/useConfirm'
 export { useNotification } from './shared/useNotification'
 export { resolveDatePreset, resolvePresetValue, shiftRange, DEFAULT_DATE_PRESETS } from './shared/datePresets'
 export type { DatePresetKey, DatePreset, CustomDatePreset, ShiftDef, DatePresetOptions } from './shared/datePresets'
+export { fuzzyMatch, scoreCommand, highlightParts, matchHotkey, formatHotkey, parseHotkey } from './shared/commandSearch'
+export type { CommandMatch, SearchableCommand } from './shared/commandSearch'
 export { useConfig, useLocale, provideConfig, zhTW, enUS, mergeLocale } from './shared/config'
 export type { ChptConfig, ChptConfigInput, ChptLocale, ChptLocaleInput, ConfigSize } from './shared/config'
 export type { NotificationOptions, NotificationAction, NotificationType } from './shared/useNotification'
@@ -80,7 +82,7 @@ export type {
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
   ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps,
-  SchemaFormField, SchemaFieldType, SchemaFieldOption,
+  SchemaFormField, SchemaFieldType, SchemaFieldOption, CommandItem,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'
 export type {
