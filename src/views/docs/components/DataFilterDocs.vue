@@ -142,6 +142,32 @@
         <ChptCodeBlock :code="tableFixedSample" />
       </div>
 
+      <!-- 進階：樹狀資料 -->
+      <h3 class="mt-10 mb-2 text-lg font-semibold text-content-primary">樹狀資料（BOM）</h3>
+      <p class="text-sm text-content-secondary mb-3">
+        <code>tree</code> 開啟後，<code>children</code>（<code>child-key</code> 可改）裡的子列縮排顯示在父列下方，第一欄有展開 / 收合鈕。
+        排序在同一層的兄弟之間進行、不打亂父子關係；搜尋保留符合的列與它的上層並自動展開；分頁以最上層計算。
+        展開狀態可用 <code>v-model:tree-expanded-keys</code> 綁定，請給 <code>row-key</code>。
+      </p>
+      <div class="mb-2 flex flex-wrap gap-2">
+        <ChptButton size="sm" is-outline @click="bomTable?.expandAllTree()">全部展開</ChptButton>
+        <ChptButton size="sm" is-outline @click="bomTable?.collapseAllTree()">全部收合</ChptButton>
+      </div>
+      <ChptTable
+        ref="bomTable"
+        v-model:tree-expanded-keys="bomExpanded"
+        tree
+        row-key="part"
+        :columns="bomColumns"
+        :data="bomRows"
+        selectable
+        pagination-label="BOM 分頁"
+      />
+      <p class="mt-2 text-xs text-content-tertiary">已展開：<span class="font-mono">{{ bomExpanded.join(', ') || '—' }}</span></p>
+      <div class="mt-4">
+        <ChptCodeBlock :code="tableTreeSample" />
+      </div>
+
       <!-- 進階：虛擬捲動 -->
       <h3 class="mt-10 mb-2 text-lg font-semibold text-content-primary">虛擬捲動（大量資料）</h3>
       <p class="text-sm text-content-secondary mb-3">
@@ -438,6 +464,44 @@ const tableFixedSample = `const columns = [
 <ChptTable :columns="columns" :data="rows" selectable />
 <!-- 只算這一頁：summary-scope="page"；自訂某格：#summary-cell="{ column, value, rows }" -->`
 
+// ===== ChptTable 進階：樹狀資料（BOM） =====
+const bomTable = ref(null)
+const bomExpanded = ref(['MB-100'])
+const bomColumns = [
+  { key: 'part', title: '料號', align: 'start', sortable: true },
+  { key: 'name', title: '品名', align: 'start' },
+  { key: 'qty', title: '用量', align: 'end', sortable: true, sortType: 'number' },
+  { key: 'unit', title: '單位' },
+]
+const bomRows = [
+  {
+    part: 'MB-100', name: '主機板組', qty: 1, unit: 'PCS',
+    children: [
+      { part: 'PCB-100', name: '六層板', qty: 1, unit: 'PCS' },
+      {
+        part: 'PWR-210', name: '電源模組', qty: 2, unit: 'PCS',
+        children: [
+          { part: 'C-0402-10U', name: '積層電容 10µF', qty: 8, unit: 'PCS' },
+          { part: 'L-2520-1U', name: '功率電感 1µH', qty: 3, unit: 'PCS' },
+        ],
+      },
+      { part: 'CN-USB-C', name: 'USB-C 連接器', qty: 2, unit: 'PCS' },
+    ],
+  },
+  { part: 'CS-300', name: '機殼', qty: 1, unit: 'SET', children: [{ part: 'SC-M3', name: 'M3 螺絲', qty: 12, unit: 'PCS' }] },
+  { part: 'DOC-01', name: '說明書', qty: 1, unit: 'PCS' },
+]
+const tableTreeSample = `<!-- bom = [{ part, name, qty, children: [...] }] -->
+<ChptTable
+  v-model:tree-expanded-keys="expanded"
+  tree
+  row-key="part"
+  :columns="columns"
+  :data="bom"
+/>
+
+table.value.expandAllTree()   // 全部展開；collapseAllTree() 全部收合`
+
 // ===== ChptTable 進階：虛擬捲動 =====
 const virtualTable = ref(null)
 const virtualColumns = [
@@ -562,6 +626,7 @@ const tableMethods = [
   { name: 'resetPage()', type: '() => void', desc: '回到第 1 頁；父層換了一批不相干的資料、要從頭看時呼叫' },
   { name: 'clearSelection()', type: '() => void', desc: '清除勾選' },
   { name: 'selectedRows', type: 'DataRow[]', desc: '目前勾選的列（含 remote 模式其他頁勾選的列）' },
+  { name: 'expandAllTree() / collapseAllTree()', type: '() => void', desc: '樹狀：全部展開 / 全部收合' },
   { name: 'scrollToIndex(index)', type: '(index: number) => void', desc: 'virtual 時捲到第 index 列（篩選、排序後的順序；超出範圍夾到兩端）' },
   { name: 'scrollToKey(key)', type: '(key) => boolean', desc: 'virtual 時捲到某個列鍵；找不到回傳 false' },
 ]
@@ -746,6 +811,8 @@ const tableProps = [
   { name: 'resizable', type: 'boolean', def: 'false', desc: '可拖曳欄寬（欄位可設 width / minWidth / resizable:false）' },
   { name: 'rowClass', type: 'string | (row, index) => class', def: '—', desc: '每列額外的 class（例如內建的 warning-row）' },
   { name: 'summaryLabel / summaryScope', type: "string / 'all' | 'page'", def: "語系（繁中「合計」）/ 'all'", desc: "合計列的標籤；合計範圍（篩選後的全部資料或這一頁）。欄位設 summary（'sum' | 'avg' | 'min' | 'max' | 'count' | (values, rows) => 值）與 summaryFormat 時出現合計列" },
+  { name: 'tree / childrenKey', type: 'boolean / string', def: "false / 'children'", desc: '樹狀資料：子列縮排顯示在父列下方；排序在兄弟之間、搜尋保留上層並自動展開、分頁以最上層計算。請給 rowKey' },
+  { name: 'treeExpandedKeys / defaultExpandAll / treeIndent', type: 'key[] / boolean / number', def: '— / false / 16', desc: '已展開的節點（v-model:tree-expanded-keys）、一開始全部展開、每層縮排（px）' },
   { name: 'virtual', type: 'boolean', def: 'false', desc: '虛擬捲動：不分頁，表身固定高度上下捲，只畫看得到的列；全選是全部資料' },
   { name: 'height', type: 'string', def: "'28rem'", desc: 'virtual 時表格（含表頭）的高度（CSS 值）' },
   { name: 'rowHeight', type: 'number', def: '32', desc: 'virtual 時每列的高度（px）。儲存格內容比它高會撐高列、捲動位置偏移，請配合內容設定' },
@@ -763,6 +830,7 @@ const tableEvents = [
   { name: 'update:expandedKeys', params: '(keys)', desc: '展開變更' },
   { name: 'row-click', params: '(row, index, event)', desc: '點列或列聚焦時按 Enter；點列內按鈕 / 核取方塊不算。有監聽時列才可聚焦' },
   { name: 'column-resize', params: '({ key, width })', desc: '欄寬調整完成（可存到使用者偏好）' },
+  { name: 'update:treeExpandedKeys', params: '(keys)', desc: '樹節點展開 / 收合' },
   { name: 'reach-bottom', params: '—', desc: 'virtual 時捲到接近底部（無限捲動載入下一批；loading 時不送，資料變多前只送一次）' },
 ]
 

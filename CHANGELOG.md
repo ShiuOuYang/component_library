@@ -36,6 +36,12 @@
 
 ### 新增
 
+- **ChptTable 樹狀資料**：`tree` 開啟後，`childrenKey`（預設 children）裡的子列縮排顯示在父列下方，第一欄有展開 / 收合鈕
+  （`aria-expanded`、列帶 `aria-level`）。
+  - 排序在同一層的兄弟之間進行，不打亂父子關係；搜尋保留符合的列與它的上層並自動展開（清除後恢復原本的展開狀態）
+  - 分頁以最上層計算，子列跟著父列；搭配虛擬捲動、勾選（全選本頁含展開的子列）、固定欄可用
+  - `v-model:tree-expanded-keys`、`defaultExpandAll`、`treeIndent`；ref 方法 `expandAllTree()`、`collapseAllTree()`
+
 - **ChptTable 固定欄與合計列**
   - 欄位 `fixed: 'start' | 'end'`（也接受 left / right / true）：橫向捲動時固定在左 / 右側，勾選欄、展開欄跟著固定在最左；
     設在最上層欄位（含群組），左固定自動排到最前、右固定排到最後；依實際欄寬計算位置（不必給 width）；
