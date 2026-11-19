@@ -36,6 +36,11 @@
 
 ### 新增
 
+- **ChptKanban 看板**：卡片是一個扁平陣列（v-model），`columnField` 記錄所在欄、同一欄的順序就是陣列順序。
+  滑鼠拖曳換欄與排序（即時預覽、Escape 取消）；鍵盤空白鍵拿起 → 方向鍵移動 → 空白鍵放下，每一步以 aria-live 念出；Enter 開啟卡片。
+  欄的 `limit` 是在製上限（超過時標紅；`enforceLimit` 時不能放進已滿的欄）；`canMove(card, from, to)` 自訂流程規則
+  （不允許的欄顯示禁止、鍵盤移動時跳過）；`isLocked` 鎖住卡片。資料計算的純函式（`moveCard`、`groupCards`…）在
+  `shared/kanban.ts` 並匯出。新增語系群組 `kanban`。
 - **ChptDashboardGrid 儀表板格線**：可拖曳移動、調整大小的區塊版面（v-model）。被擋到的區塊往下推、放開後往上靠攏，
   `static` 區塊固定不動；鍵盤 Tab 到把手後方向鍵移動、Shift + 方向鍵調整大小，以 aria-live 念出結果；Escape 取消拖曳。
   寬度小於 `stackBelow` 時改成一欄；`persistKey` 把版面記在 localStorage。版面計算的純函式（`moveItem`、`compact`、`collides`、

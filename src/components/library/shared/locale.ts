@@ -649,6 +649,18 @@ export interface ChptLocale {
     resized: (title: string, w: number, h: number) => string
     untitled: string
   }
+  kanban: {
+    label: string
+    empty: string
+    overLimit: (limit: number) => string
+    help: string
+    grabbed: (title: string, column: string, pos: number, total: number) => string
+    moved: (title: string, column: string, pos: number, total: number) => string
+    dropped: (title: string, column: string, pos: number) => string
+    cancelled: (title: string) => string
+    blocked: (title: string, column: string) => string
+    card: string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1321,6 +1333,18 @@ export const zhTW: ChptLocale = {
     resized: (title, w, h) => `「${title}」大小 ${w} × ${h}`,
     untitled: '區塊',
   },
+  kanban: {
+    label: '看板',
+    empty: '沒有卡片',
+    overLimit: (limit) => `超過在製上限 ${limit}`,
+    help: '空白鍵拿起卡片，方向鍵移動，再按空白鍵放下；Escape 取消；Enter 開啟',
+    grabbed: (title, column, pos, total) => `已拿起「${title}」：「${column}」第 ${pos} 張，共 ${total} 張`,
+    moved: (title, column, pos, total) => `「${title}」：「${column}」第 ${pos} 張，共 ${total} 張`,
+    dropped: (title, column, pos) => `「${title}」已放到「${column}」第 ${pos} 張`,
+    cancelled: (title) => `取消移動「${title}」`,
+    blocked: (title, column) => `「${title}」不能移到「${column}」`,
+    card: '卡片',
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1992,6 +2016,18 @@ export const enUS: ChptLocale = {
     moved: (title, x, y) => `"${title}" moved to column ${x}, row ${y}`,
     resized: (title, w, h) => `"${title}" resized to ${w} × ${h}`,
     untitled: 'Widget',
+  },
+  kanban: {
+    label: 'Board',
+    empty: 'No cards',
+    overLimit: (limit) => `Over WIP limit of ${limit}`,
+    help: 'Press Space to pick up, arrow keys to move, Space again to drop, Escape to cancel, Enter to open',
+    grabbed: (title, column, pos, total) => `Picked up ${title}: ${column}, position ${pos} of ${total}`,
+    moved: (title, column, pos, total) => `${title}: ${column}, position ${pos} of ${total}`,
+    dropped: (title, column, pos) => `${title} dropped in ${column}, position ${pos}`,
+    cancelled: (title) => `Move of ${title} cancelled`,
+    blocked: (title, column) => `${title} can't be moved to ${column}`,
+    card: 'Card',
   },
 }
 

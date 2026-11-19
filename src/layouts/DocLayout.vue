@@ -342,6 +342,7 @@ const navSections = [
           { label: 'ChptAlert', id: 'chpt-alert' },
           { label: 'ChptAvatar', id: 'chpt-avatar' },
           { label: 'ChptTooltip', id: 'chpt-tooltip' },
+          { label: 'ChptKanban', id: 'chpt-kanban' },
         ],
       },
       {
