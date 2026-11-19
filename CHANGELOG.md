@@ -36,6 +36,11 @@
 
 ### 新增
 
+- **BulletChart 子彈圖**：一列一個指標 —— 區間底色、實際值細長條、目標直線、前期值淡色細線；區間格式與 GaugeChart 相同，
+  有 label 時右側顯示狀態（圖示 + 文字）。共用 `bands` / `max` 讓多列刻度一致；每一列是 role="meter"；綁 `@item-click` 時每一列是按鈕。
+- **YieldFunnel 良率漏斗**：依製程順序列出各站剩下的數量，兩站之間標出站良率與損失，標題列為直通率（RTY）；
+  損失最多的站以紅字與「最大損失」標出。`align="center"` 為漏斗外觀；綁 `@step-click` 時每一站是按鈕。
+  計算在 `charts/utils/bullet.ts`（`computeFunnel`）。新增語系群組 `bullet`、`funnel`。
 - **WaferMap 晶圓圖／面板圖**：每筆資料是一顆晶粒的行列座標加上 bin 或量測值。bin 模式在標題列顯示良率、圖例顯示各 bin 顆數，
   點圖例淡化該 bin（`v-model:hidden-bins`）；給 `valueField` 是數值模式（預設 viridis 色階，可用 `valueColors` / `valueDomain` 自訂）。
   `rings` 分圈算分區良率（看邊緣良率損失）、`shape="panel"` 矩形面板、`notch` 定位缺口、`flipY`、`dieAspect`、固定 `grid` 讓多片並排大小一致。

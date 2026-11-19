@@ -108,9 +108,40 @@
         <ChptCodeBlock class="mt-4" :code="gaugeCode" />
       </section>
 
+      <section id="bullet" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">BulletChart 子彈圖</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          一列一個指標：底色是區間（差 / 普通 / 好）、中間細長條是實際值、直線是目標、淡色細線是前期值。
+          比儀表省空間，好幾個指標上下排在一起就能比較。區間格式與 GaugeChart 相同；有 <code>label</code> 時右側顯示狀態（圖示 + 文字）。
+          綁 <code>@item-click</code> 後每一列可以點（也能用 Tab + Enter）。
+        </p>
+        <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
+          <BulletChart :items="lineOee" :bands="oeeBands" :max="100" title="各線 OEE（今日）" auto-resize @item-click="(i) => (pickedLine = i.label)" />
+          <p class="mt-2 text-xs text-content-tertiary" aria-live="polite">{{ pickedLine ? `已選取：${pickedLine}` : '點一列查看明細' }}</p>
+        </div>
+        <ChptCodeBlock class="mt-4" :code="bulletCode" />
+      </section>
+
+      <section id="funnel" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">YieldFunnel 良率漏斗</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          依製程順序列出每一站通過後的數量：兩站之間標出站良率與損失，標題列是直通率（RTY = 最後一站 / 投入）。
+          損失最多的那一站以紅字與「最大損失」標出 —— 改善先從那一站下手。<code>align="center"</code> 是漏斗外觀。
+        </p>
+        <div class="grid gap-4 lg:grid-cols-2">
+          <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
+            <YieldFunnel :steps="pcbaSteps" unit="pcs" title="PCBA 工單 WO-2611-0042" auto-resize />
+          </div>
+          <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
+            <YieldFunnel :steps="pcbaSteps" align="center" title="漏斗外觀" :label-width="64" auto-resize />
+          </div>
+        </div>
+        <ChptCodeBlock class="mt-4" :code="funnelCode" />
+      </section>
+
       <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
-        <h3 class="text-lg font-semibold text-content-primary mt-4">SparklineChart</h3>
+        <h3 class="text-lg font-semibold text-content-primary mt-4">ChptKpiCard</h3>
         <ApiTable of="ChptKpiCard" title="ChptKpiCard Props / Events" :rows="kpiCardProps" />
         <ApiTable of="ChptKpiCard" title="ChptKpiCard Slots" :rows="kpiCardSlots" />
         <ApiTable of="ChptKpiCard" title="ChptKpiCard 方法（ref）" :rows="kpiCardExpose" />
@@ -121,6 +152,13 @@
         <h3 class="text-lg font-semibold text-content-primary mt-6">GaugeChart</h3>
         <ApiTable of="GaugeChart" title="Props" :rows="gaugeProps" />
         <ApiTable of="GaugeChart" title="Events" :rows="gaugeEvents" />
+        <h3 class="text-lg font-semibold text-content-primary mt-6">BulletChart</h3>
+        <ApiTable of="BulletChart" title="Props" :rows="bulletProps" />
+        <ApiTable of="-" title="BulletItem（items 的每一筆）" :rows="bulletItemRows" />
+        <ApiTable of="BulletChart" title="Events" :rows="bulletEvents" />
+        <h3 class="text-lg font-semibold text-content-primary mt-6">YieldFunnel</h3>
+        <ApiTable of="YieldFunnel" title="Props" :rows="funnelProps" />
+        <ApiTable of="YieldFunnel" title="Events" :rows="funnelEvents" />
       </section>
     </div>
   </div>
@@ -128,7 +166,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { ChptButton, ChptCodeBlock, ChptKpiCard, GaugeChart, SparklineChart } from '@/components/library'
+import { BulletChart, ChptButton, ChptCodeBlock, ChptKpiCard, GaugeChart, SparklineChart, YieldFunnel } from '@/components/library'
 import ApiTable from './components/_ApiTable.vue'
 
 const kpis = [
@@ -368,4 +406,74 @@ const kpiCardExpose = [
 ]
 
 const gaugeEvents = [{ name: 'chart-ready', type: '{ width, height }', desc: '掛載完成' }]
+
+// ---- BulletChart ----
+const pickedLine = ref('')
+const lineOee = [
+  { key: 'smt1', label: 'SMT-1', value: 91.2, target: 85, previous: 88.4, unit: '%' },
+  { key: 'smt2', label: 'SMT-2', value: 83.5, target: 85, previous: 86.1, unit: '%' },
+  { key: 'smt3', label: 'SMT-3', sublabel: '換線中', value: 52.8, target: 85, previous: 79.0, unit: '%' },
+  { key: 'dip', label: 'DIP', value: 87.9, target: 85, previous: 84.2, unit: '%' },
+  { key: 'assy', label: '組裝', value: 94.6, target: 90, previous: 93.8, unit: '%' },
+]
+const bulletCode = `<BulletChart :items="lines" :bands="bands" :max="100" title="各線 OEE（今日）" @item-click="open" />
+
+const bands = [
+  { to: 60, label: '未達標', status: 'critical' },
+  { to: 85, label: '注意', status: 'warning' },
+  { to: 100, label: '達標', status: 'good' },
+]
+const lines = [
+  { label: 'SMT-1', value: 91.2, target: 85, previous: 88.4, unit: '%' },
+  { label: 'SMT-3', sublabel: '換線中', value: 52.8, target: 85, unit: '%' },
+]`
+const bulletProps = [
+  { name: 'items', type: 'BulletItem[]', def: '—', desc: '一列一個指標（見下表）' },
+  { name: 'bands', type: 'GaugeBand[] | null', def: 'null', desc: '所有列共用的區間（各列的 bands 優先）；格式同 GaugeChart' },
+  { name: 'max', type: 'number | null', def: 'null', desc: '所有列共用的上限（各列的 max 優先）；不給時依數值、目標與區間自動取整' },
+  { name: 'width / autoResize', type: 'number / boolean', def: '480 / false', desc: '寬度；autoResize 時跟著容器' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'labelWidth / barHeight / rowGap', type: 'number', def: '112 / 22 / 12', desc: '左側名稱欄寬、長條高度、列距（px）' },
+  { name: 'valueFormat', type: '(v: number) => string', def: '千分位', desc: '數值格式' },
+]
+const bulletItemRows = [
+  { name: 'label / sublabel', type: 'string', def: '—', desc: '名稱；第二行小字' },
+  { name: 'value', type: 'number | null', def: '—', desc: '實際值' },
+  { name: 'target / previous', type: 'number | null', def: '—', desc: '目標（直線）；前期值（淡色細線）' },
+  { name: 'min / max', type: 'number', def: '0 / 自動', desc: '軌道範圍' },
+  { name: 'bands / unit / key', type: 'GaugeBand[] / string / string | number', def: '—', desc: '這一列的區間；單位；鍵' },
+]
+const bulletEvents = [{ name: 'item-click', params: '(item: BulletItem)', desc: '點擊一列（有綁才會變成按鈕）' }]
+
+// ---- YieldFunnel ----
+const pcbaSteps = [
+  { label: '投入', count: 1200 },
+  { label: 'SMT', count: 1184 },
+  { label: 'AOI', count: 1151 },
+  { label: 'ICT', count: 1142 },
+  { label: 'FCT', count: 1097 },
+  { label: '包裝', count: 1095 },
+]
+const funnelCode = `<YieldFunnel :steps="steps" unit="pcs" title="PCBA 工單 WO-2611-0042" @step-click="openDefects" />
+
+// 依製程順序；第一站的 count 是投入數，之後是通過該站的數量
+const steps = [
+  { label: '投入', count: 1200 },
+  { label: 'SMT', count: 1184 },
+  { label: 'AOI', count: 1151 },
+  { label: 'FCT', count: 1097 },
+]`
+const funnelProps = [
+  { name: 'steps', type: 'FunnelStep[]', def: '—', desc: '{ label, count, key? }；依製程順序，第一站是投入數' },
+  { name: 'title / unit', type: 'string', def: "''", desc: '標題；數量單位' },
+  { name: 'align', type: "'left' | 'center'", def: "'left'", desc: '長條靠左（好比較長度）或置中（漏斗外觀）' },
+  { name: 'highlightWorst', type: 'boolean', def: 'true', desc: '標出損失最多的站（同數量時取良率較低的）' },
+  { name: 'color', type: 'string', def: '主色', desc: '長條顏色' },
+  { name: 'width / autoResize', type: 'number / boolean', def: '520 / false', desc: '寬度；autoResize 時跟著容器' },
+  { name: 'labelWidth / barHeight', type: 'number', def: '96 / 24', desc: '名稱欄寬、長條高度（px）' },
+  { name: 'percentDigits', type: 'number', def: '1', desc: '百分比小數位數' },
+  { name: 'valueFormat', type: '(v: number) => string', def: '千分位', desc: '數量格式' },
+  { name: 'emptyText', type: 'string', def: '語系（繁中「沒有資料」）', desc: '沒有資料時的文字' },
+]
+const funnelEvents = [{ name: 'step-click', params: '(step: FunnelStep, row: FunnelRow)', desc: '點擊一站（有綁才會變成按鈕）；row 帶 stepYield、cumulative、loss' }]
 </script>

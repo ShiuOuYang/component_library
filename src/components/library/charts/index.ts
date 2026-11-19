@@ -9,6 +9,8 @@ export { default as FacetedChart } from './FacetedChart.vue'
 export { default as GridFacetChart } from './GridFacetChart.vue'
 export { default as StatusScatterMap } from './StatusScatterMap.vue'
 export { default as WaferMap } from './WaferMap.vue'
+export { default as BulletChart } from './BulletChart.vue'
+export { default as YieldFunnel } from './YieldFunnel.vue'
 export { default as GanttChart } from './GanttChart.vue'
 export { default as HorizontalBarChart } from './HorizontalBarChart.vue'
 export { default as PieChart } from './PieChart.vue'
@@ -58,6 +60,8 @@ export type {
 export type { StateTimelineEvent, StateTimelineTooltip, StateTimelineRowInput } from './StateTimeline.vue'
 export type { StateDef, StateSummary } from './utils/stateTimeline'
 export type { WaferBin, WaferDieInfo } from './WaferMap.vue'
+export type { BulletItem } from './BulletChart.vue'
+export type { FunnelStep, FunnelRow, FunnelResult } from './utils/bullet'
 export type { WaferGrid, WaferShape, WaferNotch, YieldSummary, RingYield } from './utils/waferMap'
 export type {
   BoxPlotGroupEvent, BoxPlotPointEvent, BoxPlotTooltip, BoxPlotReferenceLine, BoxPlotGroupInput,

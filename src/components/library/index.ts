@@ -35,6 +35,7 @@ export {
   FacetedChart, GridFacetChart, StatusScatterMap, GanttChart,
   HorizontalBarChart, PieChart, SparklineChart, GaugeChart, ControlChart, CapabilityHistogram,
   StateTimeline, BoxPlotChart, WaterfallChart, ChptChartFrame, ChptKpiCard, WaferMap,
+  BulletChart, YieldFunnel,
   exportChart, elementToSvg, svgToPng, toCsv, csvBlob, downloadBlob,
 } from './charts/index.js'
 
@@ -99,6 +100,7 @@ export type {
   ControlChartType, ControlChartLimits, ControlChartViolation, CapabilityResult,
   StateTimelineEvent, StateTimelineTooltip, StateTimelineRowInput, StateDef, StateSummary,
   WaferBin, WaferDieInfo, WaferGrid, WaferShape, WaferNotch, YieldSummary, RingYield,
+  BulletItem, FunnelStep, FunnelRow, FunnelResult,
   BoxPlotGroupEvent, BoxPlotPointEvent, BoxPlotTooltip, BoxPlotReferenceLine, BoxPlotGroupInput, BoxStats, QuartileMethod,
   WaterfallEvent, WaterfallTooltip, WaterfallKind,
   ChartFrameExportFormat, ChptChartFrameProps, ChartExportFormat, ChartExportOptions, CsvColumn, KpiStatus, ChptKpiCardProps,
