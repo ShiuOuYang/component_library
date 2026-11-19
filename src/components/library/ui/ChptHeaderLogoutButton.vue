@@ -10,7 +10,7 @@
       variantClasses[props.variant],
       props.customClass
     ]"
-    :title="props.title"
+    :title="props.title ?? t.logout.title"
   >
     <!-- 載入動畫 -->
     <svg
@@ -37,12 +37,13 @@
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
     </svg>
 
-    <span>{{ isLoggingOut ? props.loadingLabel : props.label }}</span>
+    <span>{{ isLoggingOut ? (props.loadingLabel ?? t.logout.loading) : (props.label ?? t.logout.label) }}</span>
   </button>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptHeaderLogoutButton（CHPT 主題） - 登出按鈕
@@ -97,16 +98,18 @@ interface ChptHeaderLogoutButtonProps {
   confirmMessage?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptHeaderLogoutButtonProps>(), {
   size: 'md',
   variant: 'soft-red',
-  label: '登出',
-  loadingLabel: '登出…',
-  title: '登出系統',
+  label: undefined,
+  loadingLabel: undefined,
+  title: undefined,
   customClass: '',
   onLogout: undefined,
   confirm: true,
-  confirmMessage: '確定要登出嗎？',
+  confirmMessage: undefined,
 })
 
 const emit = defineEmits<{
@@ -147,7 +150,7 @@ const variantClasses: Record<LogoutButtonVariant, string> = {
 async function handleLogout(): Promise<void> {
   if (isLoggingOut.value) return
 
-  if (props.confirm && !window.confirm(props.confirmMessage)) return
+  if (props.confirm && !window.confirm(props.confirmMessage ?? t.value.logout.confirmMessage)) return
 
   emit('logout')
   if (!props.onLogout) return

@@ -45,7 +45,7 @@
       <button
         v-if="props.clearable && props.modelValue && !props.disabled"
         type="button"
-        aria-label="清除"
+        :aria-label="t.clear"
         class="absolute right-2 text-content-tertiary hover:text-content-primary"
         @click="handleClear"
       >
@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { resolveSize, useConfig } from '../shared/config'
+import { resolveSize, useConfig, useLocale } from '../shared/config'
 import ChptIcon from './ChptIcon.vue'
 import { useFormField } from '../shared/formContext'
 import type { ComponentSize, InputNativeType } from '../shared/types/ui.types'
@@ -103,6 +103,8 @@ interface ChptInputProps {
   errorText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptInputProps>(), {
   modelValue: '',
   type: 'text',

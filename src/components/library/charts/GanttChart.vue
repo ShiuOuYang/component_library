@@ -3,14 +3,14 @@
     <!-- 標題與圖例（HTML：圖例要能用鍵盤切換） -->
     <div v-if="title || legendVisible" class="flex flex-none flex-col items-center gap-1 pb-2">
       <p v-if="title" class="text-sm font-semibold text-content-primary">{{ title }}</p>
-      <div v-if="legendVisible" class="flex flex-wrap justify-center gap-x-4 gap-y-1" role="group" aria-label="狀態圖例">
+      <div v-if="legendVisible" class="flex flex-wrap justify-center gap-x-4 gap-y-1" role="group" :aria-label="i18n.chart.statusLegend">
         <button
           v-for="item in legendItems"
           :key="item.value"
           type="button"
           class="inline-flex items-center gap-1.5 rounded px-1 text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
           :aria-pressed="!item.hidden"
-          :title="item.hidden ? `顯示 ${item.label}` : `隱藏 ${item.label}`"
+          :title="item.hidden ? i18n.chart.show(item.label) : i18n.chart.hide(item.label)"
           @click="toggleStatus(item.value)"
         >
           <span class="h-3 w-6 shrink-0 rounded-sm" :style="{ background: item.color, opacity: item.hidden ? 0.35 : 1 }" aria-hidden="true"></span>
@@ -62,7 +62,7 @@
         </g>
         <g v-if="todayX !== null" class="gantt-today-marker">
           <rect :x="todayX - 16" :y="AXIS_HEIGHT - 18" width="32" height="16" rx="3" />
-          <text :x="todayX" :y="AXIS_HEIGHT - 6" text-anchor="middle">今天</text>
+          <text :x="todayX" :y="AXIS_HEIGHT - 6" text-anchor="middle">{{ i18n.gantt.today }}</text>
         </g>
       </svg>
     </div>
@@ -228,12 +228,12 @@
       </div>
 
       <p v-if="!tasks.length" class="absolute inset-0 flex items-center justify-center text-sm text-content-tertiary">
-        {{ emptyText }}
+        {{ emptyText ?? i18n.gantt.empty }}
       </p>
     </div>
 
     <p v-if="editable" :id="helpId" class="sr-only">
-      拖曳或用方向鍵移動任務；Shift + 方向鍵調整結束時間，Alt + 方向鍵調整開始時間{{ allowRowChange ? '；上下鍵換到別的列' : '' }}。
+      {{ i18n.gantt.help }}{{ allowRowChange ? i18n.gantt.helpRows : '' }}{{ i18n.gantt.helpEnd }}
     </p>
 
     <button
@@ -242,7 +242,7 @@
       class="absolute right-2 top-2 z-20 rounded-md border border-stroke-light bg-surface-primary/80 px-2.5 py-1 text-xs text-content-secondary shadow-sm backdrop-blur hover:bg-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
       @click="resetZoom"
     >
-      重設縮放
+      {{ i18n.chart.resetZoom }}
     </button>
 
     <!-- Tooltip：插槽可完全自訂；沒給插槽時用預設樣式 -->
@@ -291,6 +291,7 @@ import {
   type GanttSnap,
   type GanttTask,
 } from './utils/gantt'
+import { useLocale } from '../shared/config'
 
 /**
  * GanttChart —— 甘特圖
@@ -502,6 +503,8 @@ interface GanttChartProps {
   }
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<GanttChartProps>(), {
   width: 960,
   height: 420,
@@ -520,13 +523,8 @@ const props = withDefaults(defineProps<GanttChartProps>(), {
   statusField: 'status',
   milestoneField: 'milestone',
   dependencyField: 'dependsOn',
-  // 預設四種狀態；顏色挑過，白字在上面的對比都在 4.5:1 以上
-  statuses: () => [
-    { value: 'planned', label: '計畫', color: '#64748b' },
-    { value: 'running', label: '進行中', color: '#2563eb' },
-    { value: 'done', label: '完成', color: '#047857' },
-    { value: 'delayed', label: '延遲', color: '#dc2626' },
-  ],
+  // 不給時用預設四種狀態（statusDefs）；名稱取語系 gantt.statuses
+  statuses: undefined,
   otherColor: '#6b7280',
   hiddenStatuses: () => [],
   timeDomain: null,
@@ -548,7 +546,7 @@ const props = withDefaults(defineProps<GanttChartProps>(), {
   today: null,
   showBarLabels: true,
   showProgress: true,
-  emptyText: '沒有任務',
+  emptyText: undefined,
   showDependencies: true,
   dependencies: null,
   enableTooltip: true,
@@ -561,6 +559,18 @@ const props = withDefaults(defineProps<GanttChartProps>(), {
   allowRowChange: false,
   snap: 'auto',
   customRenderers: () => ({}),
+})
+
+/** 狀態定義：沒傳 statuses 時用預設四種（顏色挑過，白字在上面的對比都在 4.5:1 以上） */
+const statusDefs = computed<GanttStatusDef[]>(() => {
+  if (props.statuses) return props.statuses
+  const s = i18n.value.gantt.statuses
+  return [
+    { value: 'planned', label: s.planned, color: '#64748b' },
+    { value: 'running', label: s.running, color: '#2563eb' },
+    { value: 'done', label: s.done, color: '#047857' },
+    { value: 'delayed', label: s.delayed, color: '#dc2626' },
+  ]
 })
 
 const emit = defineEmits<{
@@ -692,7 +702,7 @@ watch(
 /** 未知狀態的圖例 key */
 const OTHER = '__other__'
 
-const statusIndex = computed(() => new Map(props.statuses.map((s, i) => [s.value, i])))
+const statusIndex = computed(() => new Map(statusDefs.value.map((s, i) => [s.value, i])))
 
 function statusKey(status: string): string {
   return statusIndex.value.has(status) ? status : OTHER
@@ -704,7 +714,7 @@ const legendItems = computed(() => {
     const k = statusKey(t.status)
     counts.set(k, (counts.get(k) ?? 0) + 1)
   }
-  const items = props.statuses.map((s) => ({
+  const items = statusDefs.value.map((s) => ({
     value: s.value,
     label: s.label ?? s.value,
     color: s.color,
@@ -712,7 +722,7 @@ const legendItems = computed(() => {
     hidden: hidden.value.has(s.value),
   }))
   if (counts.get(OTHER)) {
-    items.push({ value: OTHER, label: '其他', color: props.otherColor, count: counts.get(OTHER)!, hidden: hidden.value.has(OTHER) })
+    items.push({ value: OTHER, label: i18n.value.chart.others, color: props.otherColor, count: counts.get(OTHER)!, hidden: hidden.value.has(OTHER) })
   }
   return items
 })
@@ -732,14 +742,14 @@ function toggleStatus(value: string): void {
 
 function statusInfo(status: string): { label: string; color: string } {
   const i = statusIndex.value.get(status)
-  if (i === undefined) return { label: status || '其他', color: props.otherColor }
-  const def = props.statuses[i]
+  if (i === undefined) return { label: status || i18n.value.chart.others, color: props.otherColor }
+  const def = statusDefs.value[i]
   return { label: def.label ?? def.value, color: def.color }
 }
 
 const ariaSummary = computed(() => {
-  const name = props.title || '甘特圖'
-  return `${name}：${rowDefs.value.length} 列、${tasks.value.length} 筆任務`
+  const l = i18n.value
+  return l.chart.titled(props.title || l.gantt.title, l.gantt.summary(rowDefs.value.length, tasks.value.length))
 })
 
 // === 今天 ===
@@ -832,7 +842,7 @@ const lowerTicks = computed(() => {
   const ticks = xs.ticks(Math.max(2, Math.floor(w / 70)))
   const [d0, d1] = xs.domain().map((d) => d.getTime())
   const step = ticks.length >= 2 ? ticks[1].getTime() - ticks[0].getTime() : d1 - d0
-  const tiers = timeTiers(step)
+  const tiers = timeTiers(step, i18n.value)
   const fmt = props.timeFormat ?? tiers.lowerFormat
   return ticks.map((t, i) => {
     const x = xs(t)
@@ -849,7 +859,7 @@ const upperTicks = computed(() => {
   const ticks = lowerTicks.value
   const domain = xs.domain().map((d) => d.getTime()) as [number, number]
   const step = ticks.length >= 2 ? ticks[1].value - ticks[0].value : domain[1] - domain[0]
-  return upperSegments(domain, timeTiers(step)).map((seg) => {
+  return upperSegments(domain, timeTiers(step, i18n.value)).map((seg) => {
     const x = xs(new Date(seg.start))
     const x2 = xs(new Date(seg.end))
     // ✅ 區段開頭被捲出畫面時，文字貼著左緣（像固定的標題）
@@ -1022,8 +1032,8 @@ function makeBar(i: number, start: number, end: number, r: number, nextStartX: n
     dragging,
     ariaLabel: props.editable
       ? t.milestone
-        ? `${t.label || t.key}：${formatTime(start)}`
-        : `${t.label || t.key}：${formatTime(start)} 至 ${formatTime(end - shift)}`
+        ? i18n.value.chart.titled(t.label || t.key, formatTime(start))
+        : i18n.value.chart.titled(t.label || t.key, i18n.value.gantt.span(formatTime(start), formatTime(end - shift)))
       : '',
   }
 }
@@ -1122,18 +1132,21 @@ const tooltipLines = computed(() => {
   if (props.customRenderers.tooltip) return props.customRenderers.tooltip(t.datum, t)
   const task = tasks.value[hoverIndex.value]
   const lines: string[] = []
-  if (t.rowLabel && t.rowLabel !== t.label) lines.push(`列：${t.rowLabel}`)
-  if (t.status) lines.push(`狀態：${t.statusLabel}`)
+  const l = i18n.value
+  const g = l.gantt
+  const kv = l.chart.titled
+  if (t.rowLabel && t.rowLabel !== t.label) lines.push(kv(g.row, t.rowLabel))
+  if (t.status) lines.push(kv(g.status, t.statusLabel))
   if (!task || t.milestone) {
-    lines.push(`時間：${formatTime(t.start.getTime())}`)
+    lines.push(kv(g.time, formatTime(t.start.getTime())))
     return lines
   }
   // 拖曳中顯示預覽的時間
   const start = t.start.getTime()
   const end = t.end.getTime()
   const shift = task.end - task.displayEnd
-  lines.push(`開始：${formatTime(start)}`, `結束：${formatTime(end - shift)}`, `工期：${formatDuration(end - start)}`)
-  if (t.progress !== null) lines.push(`進度：${Math.round(t.progress * 100)}%`)
+  lines.push(kv(g.start, formatTime(start)), kv(g.end, formatTime(end - shift)), kv(g.duration, formatDuration(end - start, l)))
+  if (t.progress !== null) lines.push(kv(g.progress, `${Math.round(t.progress * 100)}%`))
   return lines
 })
 

@@ -76,6 +76,10 @@ jobs:
       - name: Theme colors
         run: npm run check:theme
 
+      # 組件庫不得寫死中文介面文字，否則 ChptConfigProvider 切換語系時不會跟著變
+      - name: i18n
+        run: npm run check:i18n
+
       - name: Lint
         run: npm run lint
 

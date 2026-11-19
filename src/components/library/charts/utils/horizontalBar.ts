@@ -1,6 +1,7 @@
 /**
  * HorizontalBarChart 的純函式：整理排行資料、長條路徑
  */
+import { zhTW } from '../../shared/locale'
 
 /** 整理後的一列 */
 export interface RankItem {
@@ -24,6 +25,8 @@ export interface RankOptions {
   topN: number | null
   showOthers: boolean
   othersLabel: string
+  /** 「其他」列的完整名稱（含項數）；不給時用繁中「其他（3 項）」 */
+  othersCountLabel?: (label: string, n: number) => string
 }
 
 /**
@@ -55,7 +58,7 @@ export function prepareRanking(rows: Record<string, unknown>[], o: RankOptions):
   if (o.showOthers) {
     kept.push({
       key: '__others__',
-      label: `${o.othersLabel}（${rest.length} 項）`,
+      label: (o.othersCountLabel ?? zhTW.chart.othersCount)(o.othersLabel, rest.length),
       value: rest.reduce((s, r) => s + r.value, 0),
       datum: null,
       isOthers: true,

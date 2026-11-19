@@ -30,7 +30,7 @@
           </div>
 
           <label v-if="current.requireText" class="flex flex-col gap-1.5 text-sm text-content-secondary">
-            <span>請輸入 <strong class="font-mono text-content-primary">{{ current.requireText }}</strong> 以確認</span>
+            <span>{{ t.confirm.requireBefore }} <strong class="font-mono text-content-primary">{{ current.requireText }}</strong> {{ t.confirm.requireAfter }}</span>
             <input
               ref="typed"
               v-model="typedText"
@@ -44,7 +44,7 @@
 
           <div class="flex justify-end gap-2">
             <ChptButton v-if="current.kind === 'confirm'" ref="cancelButton" size="sm" color="primary" is-outline @click="cancel">
-              {{ current.cancelText }}
+              {{ current.cancelText ?? t.common.cancel }}
             </ChptButton>
             <ChptButton
               ref="confirmButton"
@@ -53,7 +53,7 @@
               :disabled="!canConfirm"
               @click="confirm"
             >
-              {{ current.confirmText }}
+              {{ current.confirmText ?? (current.kind === 'alert' ? t.confirm.ok : t.common.confirm) }}
             </ChptButton>
           </div>
         </div>
@@ -68,6 +68,7 @@ import ChptIcon from './ChptIcon.vue'
 import ChptButton from './ChptButton.vue'
 import { settleConfirm, useConfirm } from '../shared/useConfirm'
 import { useOverlay } from '../shared/useOverlay'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptConfirmHost（CHPT 主題） - useConfirm() 的顯示端
@@ -84,6 +85,8 @@ import { useOverlay } from '../shared/useOverlay'
  * 關閉後焦點回到原本的按鈕。危險操作的預設焦點在「取消」。
  */
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const { queue } = useConfirm()
 const current = computed(() => queue[0] ?? null)
 

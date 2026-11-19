@@ -35,6 +35,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptAvatar（CHPT 主題）- 大頭貼 / 頭像元件
@@ -69,6 +70,8 @@ interface ChptAvatarProps {
   statusColor?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptAvatarProps>(), {
   src: '',
   alt: '',
@@ -90,7 +93,7 @@ const showImage = computed(() => !!props.src && !imageFailed.value)
  * 文字頭像的可及名稱。原本縮寫 span 是 aria-hidden、外層又沒有名稱 ——
  * 螢幕閱讀器完全不知道這裡有個人。
  */
-const accessibleName = computed(() => props.alt || props.name || '使用者')
+const accessibleName = computed(() => props.alt || props.name || t.value.avatar.fallback)
 
 const sizeClass = computed(() => {
   const map: Record<AvatarSize, string> = {

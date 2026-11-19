@@ -19,7 +19,7 @@
         v-if="props.controls"
         type="button"
         tabindex="-1"
-        aria-label="減少"
+        :aria-label="t.inputNumber.decrease"
         class="inline-flex items-center justify-center flex-shrink-0 border-r border-stroke-light text-content-secondary transition-colors hover:bg-surface-tertiary hover:text-content-primary disabled:cursor-not-allowed disabled:text-content-disabled disabled:hover:bg-transparent"
         :class="sizeClass.button"
         :disabled="!canDecrease"
@@ -64,7 +64,7 @@
         v-if="props.controls"
         type="button"
         tabindex="-1"
-        aria-label="增加"
+        :aria-label="t.inputNumber.increase"
         class="inline-flex items-center justify-center flex-shrink-0 border-l border-stroke-light text-content-secondary transition-colors hover:bg-surface-tertiary hover:text-content-primary disabled:cursor-not-allowed disabled:text-content-disabled disabled:hover:bg-transparent"
         :class="sizeClass.button"
         :disabled="!canIncrease"
@@ -83,7 +83,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { resolveSize, useConfig } from '../shared/config'
+import { resolveSize, useConfig, useLocale } from '../shared/config'
 import { useFormField } from '../shared/formContext'
 import type { ComponentSize } from '../shared/types/ui.types'
 
@@ -131,6 +131,8 @@ interface ChptInputNumberProps {
   errorText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptInputNumberProps>(), {
   modelValue: null,
   min: -Infinity,

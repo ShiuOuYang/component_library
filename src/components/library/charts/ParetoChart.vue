@@ -3,7 +3,7 @@
     <!-- 載入狀態 -->
     <div v-if="isLoading" class="flex justify-center items-center py-8">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-      <span class="ml-2 text-content-secondary">{{ loadingText }}</span>
+      <span class="ml-2 text-content-secondary">{{ text.loading }}</span>
     </div>
 
     <!-- 空數據狀態 -->
@@ -11,7 +11,7 @@
       <svg class="w-16 h-16 mb-4 text-content-disabled" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
       </svg>
-      <p class="text-sm">{{ emptyText }}</p>
+      <p class="text-sm">{{ text.empty }}</p>
     </div>
 
     <!-- Pareto 圖表 -->
@@ -21,26 +21,26 @@
 
     <!-- 統計資訊 -->
     <div v-if="showStatistics && paretoData.length > 0" class="statistics mt-4 bg-surface-secondary rounded-lg p-4">
-      <h4 class="text-sm font-medium text-content-primary mb-2">{{ statisticsTitle }}</h4>
+      <h4 class="text-sm font-medium text-content-primary mb-2">{{ text.statistics }}</h4>
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
         <div>
-          <span class="text-content-secondary">{{ countLabel }}:</span>
+          <span class="text-content-secondary">{{ text.count }}:</span>
           <span class="ml-1 font-medium">{{ totalDefects }}</span>
         </div>
         <div>
-          <span class="text-content-secondary">{{ typeLabel }}:</span>
+          <span class="text-content-secondary">{{ text.types }}:</span>
           <span class="ml-1 font-medium">{{ paretoData.length }}</span>
         </div>
         <div>
-          <span class="text-content-secondary">閾值設定:</span>
+          <span class="text-content-secondary">{{ i18n.pareto.thresholdSetting }}:</span>
           <span class="ml-1 font-medium text-accent">{{ cumulativeThreshold }}%</span>
         </div>
         <div>
-          <span class="text-content-secondary">Top3佔比:</span>
+          <span class="text-content-secondary">{{ i18n.pareto.top3 }}:</span>
           <span class="ml-1 font-medium text-danger">{{ top3Percentage.toFixed(1) }}%</span>
         </div>
         <div>
-          <span class="text-content-secondary">{{ maxLabel }}:</span>
+          <span class="text-content-secondary">{{ text.max }}:</span>
           <span class="ml-1 font-medium text-danger">{{ maxDefect?.name || '-' }}</span>
         </div>
       </div>
@@ -53,6 +53,7 @@ import { chartTheme } from './chartTheme'
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import * as d3 from 'd3'
 import { buildParetoData } from './composables/useParetoData'
+import { useLocale } from '../shared/config'
 
 // ===== 型別 =====
 
@@ -112,21 +113,23 @@ interface ParetoChartProps {
   colorScheme?: string[]
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<ParetoChartProps>(), {
   paretoInputData: () => [],
   cumulativeThreshold: 80,
   chartWidth: 0,
   chartHeight: 400,
   showStatistics: true,
-  loadingText: '載入 Pareto 數據...',
-  emptyText: '暫無數據',
-  statisticsTitle: '統計資訊',
-  countLabel: '總數量',
-  typeLabel: '類型數',
-  maxLabel: '最大項',
-  yAxisLeftLabel: '數量',
-  yAxisRightLabel: '累積百分比',
-  thresholdLabel: '閾值',
+  loadingText: undefined,
+  emptyText: undefined,
+  statisticsTitle: undefined,
+  countLabel: undefined,
+  typeLabel: undefined,
+  maxLabel: undefined,
+  yAxisLeftLabel: undefined,
+  yAxisRightLabel: undefined,
+  thresholdLabel: undefined,
   colorScheme: () => [
     '#ef4444',
     '#f97316',
@@ -138,6 +141,22 @@ const props = withDefaults(defineProps<ParetoChartProps>(), {
     '#6b7280',
     '#14b8a6',
   ],
+})
+
+/** 內建文字：prop 有傳就用 prop，沒傳取語系（pareto 群組） */
+const text = computed(() => {
+  const p = i18n.value.pareto
+  return {
+    loading: props.loadingText ?? p.loading,
+    empty: props.emptyText ?? p.empty,
+    statistics: props.statisticsTitle ?? p.statistics,
+    count: props.countLabel ?? p.totalCount,
+    types: props.typeLabel ?? p.types,
+    max: props.maxLabel ?? p.max,
+    yLeft: props.yAxisLeftLabel ?? p.count,
+    yRight: props.yAxisRightLabel ?? p.cumulative,
+    threshold: props.thresholdLabel ?? p.threshold,
+  }
 })
 
 const emit = defineEmits<{
@@ -437,7 +456,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('font-size', '11px')
       .attr('font-weight', 'bold')
       .style('fill', chartTheme.warning)
-      .text(`${props.cumulativeThreshold}% ${props.thresholdLabel}`)
+      .text(`${props.cumulativeThreshold}% ${text.value.threshold}`)
 
     // 添加 X 軸
     g.append('g')
@@ -462,7 +481,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('text-anchor', 'middle')
       .style('fill', chartTheme.text)
       .style('font-size', '12px')
-      .text(props.yAxisLeftLabel)
+      .text(text.value.yLeft)
 
     // 添加 Y 軸 (百分比)
     g.append('g')
@@ -476,7 +495,7 @@ const drawParetoChart = async (): Promise<void> => {
       .attr('text-anchor', 'middle')
       .style('fill', chartTheme.text)
       .style('font-size', '12px')
-      .text(props.yAxisRightLabel)
+      .text(text.value.yRight)
 
     // 發送渲染完成事件
     emit('chart-rendered', paretoData.value)

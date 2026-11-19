@@ -36,7 +36,7 @@
           <button
             type="button"
             class="-mr-1 -mt-1 inline-flex h-control-xs min-w-control-xs items-center justify-center rounded-md text-content-tertiary hover:bg-surface-tertiary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
-            aria-label="關閉導覽"
+            :aria-label="t.tour.close"
             @click="close('skip')"
           >
             <span class="material-symbols-outlined text-lg" aria-hidden="true">close</span>
@@ -54,7 +54,7 @@
               class="inline-flex h-control-sm items-center rounded-md border border-stroke-default px-3 text-sm text-content-primary hover:bg-surface-secondary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
               @click="go(current - 1)"
             >
-              上一步
+              {{ t.tour.prev }}
             </button>
             <button
               ref="primaryRef"
@@ -62,7 +62,7 @@
               class="inline-flex h-control-sm items-center rounded-md bg-accent-solid px-3 text-sm font-medium text-white hover:bg-accent-solid-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus focus-visible:ring-offset-2"
               @click="isLast ? close('finish') : go(current + 1)"
             >
-              {{ isLast ? props.finishText : '下一步' }}
+              {{ isLast ? (props.finishText ?? t.tour.finish) : t.tour.next }}
             </button>
           </div>
         </div>
@@ -75,6 +75,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, useId, watch, type CSSProperties } from 'vue'
 import { prefersReducedMotion } from '../shared/scroll'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptTour —— 新功能導覽（一步一步指出畫面上的元素）
@@ -104,12 +105,14 @@ interface ChptTourProps {
   gap?: number
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptTourProps>(), {
   open: false,
   current: 0,
   mask: true,
   closeOnMaskClick: false,
-  finishText: '完成',
+  finishText: undefined,
   gap: 6,
 })
 
@@ -206,7 +209,7 @@ async function showStep() {
   measure()
   // 平滑捲動結束後再量一次
   window.setTimeout(measure, prefersReducedMotion() ? 0 : 350)
-  announcement.value = `第 ${current.value + 1} 步，共 ${props.steps.length} 步：${step.value?.title ?? ''}`
+  announcement.value = t.value.tour.step(current.value + 1, props.steps.length, step.value?.title ?? '')
   primaryRef.value?.focus()
 }
 

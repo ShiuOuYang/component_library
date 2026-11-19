@@ -61,7 +61,7 @@
                     @click.stop="handleRestore(modal.id)"
                     class="w-6 h-6 flex items-center justify-center rounded-md
                            hover:bg-accent-subtle transition-colors text-content-tertiary hover:text-accent"
-                    title="還原視窗"
+                    :title="t.modalDock.restore"
                   >
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                       <rect x="4" y="4" width="16" height="16" rx="2"/>
@@ -71,7 +71,7 @@
                     @click.stop="handleClose(modal.id)"
                     class="w-6 h-6 flex items-center justify-center rounded-md
                            hover:bg-danger-subtle transition-colors text-content-tertiary hover:text-danger"
-                    title="關閉視窗"
+                    :title="t.modalDock.close"
                   >
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                       <path stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/>
@@ -119,6 +119,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useModalManager } from '../shared/useModalManager'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptModalDock（CHPT 主題） - 視窗口袋列
@@ -134,6 +135,8 @@ interface ChptModalDockProps {
   zIndex?: number
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptModalDockProps>(), {
   zIndex: 9999,
 })

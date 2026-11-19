@@ -6,7 +6,7 @@
     <!-- 標頭：年月 + 切換 -->
     <div class="flex items-center gap-1" :class="props.compact ? 'mb-2' : 'border-b border-stroke-light px-3 py-2'">
       <h2 :id="titleId" class="flex-1 whitespace-nowrap text-sm font-semibold text-content-primary" aria-live="polite">
-        <slot name="header" :year="view.year" :month="view.month">{{ view.year }} 年 {{ view.month }} 月</slot>
+        <slot name="header" :year="view.year" :month="view.month">{{ t.calendar.monthTitle(view.year, view.month) }}</slot>
       </h2>
       <button
         v-for="nav in navButtons"
@@ -24,7 +24,7 @@
         type="button"
         class="ml-1 inline-flex h-control-xs items-center rounded border border-stroke-default px-2 text-xs text-content-primary hover:bg-surface-tertiary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
         @click="goToday"
-      >今天</button>
+      >{{ t.calendar.today }}</button>
     </div>
 
     <table
@@ -41,7 +41,7 @@
             v-for="w in weekdays"
             :key="w.index"
             scope="col"
-            :abbr="`星期${w.short}`"
+            :abbr="w.long"
             class="pb-1 text-xs font-normal text-content-tertiary"
             :class="props.compact ? 'size-9' : 'px-2 py-1.5 text-right'"
           >{{ w.short }}</th>
@@ -91,6 +91,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId, useTemplateRef, watch } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptCalendar（CHPT 主題） - 月曆
@@ -127,6 +128,8 @@ interface ChptCalendarProps {
   valueType?: 'string' | 'date'
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptCalendarProps>(), {
   modelValue: null,
   month: undefined,
@@ -144,7 +147,6 @@ const emit = defineEmits<{
 }>()
 
 const titleId = `${useId()}-title`
-const WEEKDAY = ['日', '一', '二', '三', '四', '五', '六']
 
 // ---- 日期工具（全部本地時區） ----
 
@@ -198,7 +200,7 @@ watch(selectedKey, () => {
 const weekdays = computed(() =>
   Array.from({ length: 7 }, (_, i) => {
     const index = (props.firstDayOfWeek + i) % 7
-    return { index, short: WEEKDAY[index] }
+    return { index, short: t.value.calendar.weekdaysShort[index], long: t.value.calendar.weekdaysLong[index] }
   })
 )
 
@@ -233,7 +235,7 @@ const weeks = computed<Cell[][]>(() => {
         today: key === todayKey,
         selected: key === selectedKey.value,
         disabled: !!props.disabledDate?.(date),
-        fullLabel: `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日 星期${WEEKDAY[date.getDay()]}`,
+        fullLabel: t.value.calendar.fullDate(date.getFullYear(), date.getMonth() + 1, date.getDate(), t.value.calendar.weekdaysLong[date.getDay()]),
       })
     }
     rows.push(row)
@@ -285,10 +287,10 @@ function goToday(): void {
 }
 
 const navButtons = computed(() => [
-  { label: '上一年', icon: 'keyboard_double_arrow_left', action: () => moveTo(addMonths(focused.value, -12), false) },
-  { label: '上個月', icon: 'chevron_left', action: () => moveTo(addMonths(focused.value, -1), false) },
-  { label: '下個月', icon: 'chevron_right', action: () => moveTo(addMonths(focused.value, 1), false) },
-  { label: '下一年', icon: 'keyboard_double_arrow_right', action: () => moveTo(addMonths(focused.value, 12), false) },
+  { label: t.value.calendar.prevYear, icon: 'keyboard_double_arrow_left', action: () => moveTo(addMonths(focused.value, -12), false) },
+  { label: t.value.calendar.prevMonth, icon: 'chevron_left', action: () => moveTo(addMonths(focused.value, -1), false) },
+  { label: t.value.calendar.nextMonth, icon: 'chevron_right', action: () => moveTo(addMonths(focused.value, 1), false) },
+  { label: t.value.calendar.nextYear, icon: 'keyboard_double_arrow_right', action: () => moveTo(addMonths(focused.value, 12), false) },
 ])
 
 function onKeydown(event: KeyboardEvent): void {

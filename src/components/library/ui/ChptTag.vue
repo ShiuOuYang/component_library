@@ -13,7 +13,7 @@
       v-if="props.closable"
       type="button"
       class="relative flex items-center cursor-pointer rounded-full before:absolute before:-inset-1 before:content-[''] hover:bg-surface-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus transition-colors"
-      :aria-label="props.label ? `關閉 ${props.label}` : '關閉標籤'"
+      :aria-label="props.label ? t.tag.closeWithLabel(props.label) : t.tag.close"
       @click="handleClose"
     >
       <ChptIcon :size="closeSize" color="current">close</ChptIcon>
@@ -25,6 +25,7 @@
 import { computed } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import type { ComponentSize, ColorVariant } from '../shared/types/ui.types'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptTag（CHPT 主題） - 標籤 / 膠囊元件
@@ -50,6 +51,8 @@ interface ChptTagProps {
   closable?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptTagProps>(), {
   label: '',
   color: 'primary',

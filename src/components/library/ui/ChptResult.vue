@@ -24,7 +24,7 @@
     </div>
 
     <h2 class="font-semibold text-content-primary" :class="props.compact ? 'text-base' : 'text-xl'">
-      <slot name="title">{{ props.title || config.title }}</slot>
+      <slot name="title">{{ props.title || t.result[config.title] }}</slot>
     </h2>
 
     <p
@@ -52,6 +52,7 @@
 <script setup lang="ts">
 import { Comment, Fragment, Text, computed, useSlots, type VNode } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useLocale, type ChptLocale } from '../shared/config'
 
 /**
  * ChptResult（CHPT 主題） - 結果頁
@@ -80,6 +81,8 @@ interface ChptResultProps {
   compact?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptResultProps>(), {
   status: 'info',
   title: '',
@@ -87,14 +90,14 @@ const props = withDefaults(defineProps<ChptResultProps>(), {
   compact: false,
 })
 
-const STATUS: Record<ResultStatus, { icon: string; tint: string; title: string; code?: string }> = {
-  success: { icon: 'check_circle', tint: 'bg-success-subtle text-success', title: '操作成功' },
-  error: { icon: 'cancel', tint: 'bg-danger-subtle text-danger', title: '操作失敗' },
-  warning: { icon: 'warning', tint: 'bg-warning-subtle text-warning', title: '請注意' },
-  info: { icon: 'info', tint: 'bg-info-subtle text-info', title: '提示' },
-  '403': { icon: 'lock', tint: '', title: '沒有存取權限', code: '403' },
-  '404': { icon: 'search_off', tint: '', title: '找不到這個頁面', code: '404' },
-  '500': { icon: 'error', tint: '', title: '伺服器發生錯誤', code: '500' },
+const STATUS: Record<ResultStatus, { icon: string; tint: string; title: keyof ChptLocale['result']; code?: string }> = {
+  success: { icon: 'check_circle', tint: 'bg-success-subtle text-success', title: 'success' },
+  error: { icon: 'cancel', tint: 'bg-danger-subtle text-danger', title: 'error' },
+  warning: { icon: 'warning', tint: 'bg-warning-subtle text-warning', title: 'warning' },
+  info: { icon: 'info', tint: 'bg-info-subtle text-info', title: 'info' },
+  '403': { icon: 'lock', tint: '', title: 'forbidden', code: '403' },
+  '404': { icon: 'search_off', tint: '', title: 'notFound', code: '404' },
+  '500': { icon: 'error', tint: '', title: 'serverError', code: '500' },
 }
 
 const config = computed(() => STATUS[props.status] ?? STATUS.info)

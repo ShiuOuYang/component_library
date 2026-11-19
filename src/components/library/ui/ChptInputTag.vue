@@ -17,7 +17,7 @@
       ]"
       @click="focusInput"
     >
-      <ul v-if="props.modelValue.length" role="list" class="contents" :aria-label="`${props.label || '標籤'}（${props.modelValue.length} 個）`">
+      <ul v-if="props.modelValue.length" role="list" class="contents" :aria-label="t.inputTag.list(props.label ?? '', props.modelValue.length)">
         <li
           v-for="(tag, index) in props.modelValue"
           :key="tag"
@@ -29,7 +29,7 @@
             v-if="!props.disabled && !props.readonly"
             type="button"
             class="relative inline-flex h-4 w-4 items-center justify-center rounded before:absolute before:-inset-1 before:content-[''] hover:bg-accent-subtle-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
-            :aria-label="`移除 ${tag}`"
+            :aria-label="t.inputTag.remove(tag)"
             @click.stop="removeAt(index)"
           >
             <span class="material-symbols-outlined text-[14px] leading-none" aria-hidden="true">close</span>
@@ -44,7 +44,7 @@
         type="text"
         class="min-w-[6rem] flex-1 bg-transparent px-1 text-content-primary outline-none placeholder:text-content-disabled disabled:cursor-not-allowed"
         :class="textSizeClass"
-        :placeholder="props.modelValue.length ? '' : props.placeholder"
+        :placeholder="props.modelValue.length ? '' : (props.placeholder ?? t.inputTag.placeholder)"
         :disabled="props.disabled"
         :readonly="props.readonly || atMax"
         :aria-invalid="invalid ? 'true' : undefined"
@@ -70,7 +70,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId } from 'vue'
 import { useFormField } from '../shared/formContext'
-import { resolveSize, useConfig } from '../shared/config'
+import { resolveSize, useConfig, useLocale } from '../shared/config'
 import type { ComponentSize } from '../shared/types/ui.types'
 
 /**
@@ -102,10 +102,12 @@ interface ChptInputTagProps {
   errorText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptInputTagProps>(), {
   modelValue: () => [],
   label: '',
-  placeholder: '輸入後按 Enter',
+  placeholder: undefined,
   max: undefined,
   separators: () => [',', '，', ';', '；', '\n'],
   allowDuplicates: false,
@@ -139,7 +141,7 @@ const pendingRemove = ref<number | null>(null)
 const atMax = computed(() => props.max !== undefined && props.modelValue.length >= props.max)
 const showHint = computed(() => props.max !== undefined)
 const hintText = computed(() =>
-  props.max !== undefined ? `${props.modelValue.length} / ${props.max}` : '按 Enter 或逗號加入，Backspace 刪除最後一個'
+  props.max !== undefined ? `${props.modelValue.length} / ${props.max}` : t.value.inputTag.hint
 )
 
 const textSizeClass = computed(() => ({ xs: 'text-xs', sm: 'text-sm', md: 'text-base', lg: 'text-lg', xl: 'text-xl' })[size.value])
@@ -162,14 +164,14 @@ function addValues(values: string[]): string[] {
   const rejected: string[] = []
   for (const value of values) {
     let reason = ''
-    if (props.max !== undefined && next.length >= props.max) reason = `最多 ${props.max} 個`
-    else if (!props.allowDuplicates && next.includes(value)) reason = '已經有了'
+    if (props.max !== undefined && next.length >= props.max) reason = t.value.inputTag.max(props.max)
+    else if (!props.allowDuplicates && next.includes(value)) reason = t.value.inputTag.duplicate
     else {
       const result = props.validate?.(value)
       if (typeof result === 'string') reason = result
     }
     if (reason) {
-      rejected.push(`${value}：${reason}`)
+      rejected.push(t.value.inputTag.rejectedItem(value, reason))
       emit('reject', value, reason)
       continue
     }
@@ -179,8 +181,8 @@ function addValues(values: string[]): string[] {
   }
   if (added.length) emit('update:modelValue', next)
   announcement.value = [
-    added.length ? `已加入 ${added.join('、')}` : '',
-    rejected.length ? `未加入 ${rejected.join('；')}` : '',
+    added.length ? t.value.inputTag.added(added) : '',
+    rejected.length ? t.value.inputTag.rejected(rejected) : '',
   ].filter(Boolean).join('。')
   return added
 }
@@ -202,7 +204,7 @@ function removeAt(index: number) {
   pendingRemove.value = null
   emit('update:modelValue', next)
   emit('remove', value)
-  announcement.value = `已移除 ${value}`
+  announcement.value = t.value.inputTag.removed(value)
   nextTick(focusInput)
 }
 
@@ -223,7 +225,7 @@ function onKeydown(event: KeyboardEvent) {
       removeAt(last)
     } else {
       pendingRemove.value = last
-      announcement.value = `再按一次 Backspace 移除 ${props.modelValue[last]}`
+      announcement.value = t.value.inputTag.backspaceAgain(props.modelValue[last])
     }
     return
   }

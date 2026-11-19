@@ -8,7 +8,7 @@
       v-model:open="isOpen"
       placement="bottom-start"
       width="15rem"
-      :aria-label="props.label ? `選擇${props.label}` : '選擇顏色'"
+      :aria-label="props.label ? t.colorPicker.choose(props.label) : t.colorPicker.chooseColor"
       :disabled="props.disabled"
     >
       <button
@@ -37,14 +37,14 @@
           <ChptIcon v-if="!props.modelValue" :size="16">format_color_reset</ChptIcon>
         </span>
         <!-- 按鈕名稱：色碼（或「未設定」）；只顯示色塊時放在 sr-only -->
-        <span :id="valueId" :class="props.showText ? 'font-mono uppercase' : 'sr-only'">{{ props.modelValue || '未設定' }}</span>
+        <span :id="valueId" :class="props.showText ? 'font-mono uppercase' : 'sr-only'">{{ props.modelValue || t.colorPicker.unset }}</span>
         <ChptIcon :size="16" color="current" class="text-content-tertiary">expand_more</ChptIcon>
       </button>
 
       <template #content="{ close }">
         <div class="flex flex-col gap-3">
           <label class="flex flex-col gap-1 text-xs text-content-secondary">
-            自訂顏色
+            {{ t.colorPicker.custom }}
             <input
               type="color"
               :value="props.modelValue || '#000000'"
@@ -55,7 +55,7 @@
           </label>
 
           <label class="flex flex-col gap-1 text-xs text-content-secondary">
-            色碼
+            {{ t.colorPicker.hex }}
             <input
               :value="hexDraft"
               type="text"
@@ -74,7 +74,7 @@
             <span v-if="hexError" :id="hexErrorId" class="text-danger">{{ hexError }}</span>
           </label>
 
-          <div v-if="props.presets.length" role="group" aria-label="預設顏色" class="grid grid-cols-8 gap-1.5">
+          <div v-if="props.presets.length" role="group" :aria-label="t.colorPicker.presets" class="grid grid-cols-8 gap-1.5">
             <button
               v-for="color in normalizedPresets"
               :key="color"
@@ -101,7 +101,7 @@
               class="h-control-xs rounded px-2 text-xs text-content-secondary hover:bg-surface-tertiary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
               @click="pick(null, close)"
             >
-              清除顏色
+              {{ t.colorPicker.clearColor }}
             </button>
           </div>
         </div>
@@ -118,6 +118,7 @@ import ChptIcon from './ChptIcon.vue'
 import ChptPopover from './ChptPopover.vue'
 import { useFormField } from '../shared/formContext'
 import type { ComponentSize } from '../shared/types/ui.types'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptColorPicker（CHPT 主題） - 顏色選擇
@@ -145,6 +146,8 @@ interface ChptColorPickerProps {
   errorText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptColorPickerProps>(), {
   modelValue: null,
   // defineProps 會被提到 setup 外面，預設值不能引用元件內宣告的常數
@@ -221,7 +224,7 @@ function commitHex(): void {
   }
   const hex = normalizeHex(hexDraft.value)
   if (!hex) {
-    hexError.value = '請輸入 #RGB 或 #RRGGBB'
+    hexError.value = t.value.colorPicker.invalidHex
     return
   }
   hexDraft.value = hex

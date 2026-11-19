@@ -55,7 +55,7 @@
       class="absolute right-2 top-2 z-20 rounded-md border border-stroke-light bg-surface-primary/80 px-2.5 py-1 text-xs text-content-secondary shadow-sm backdrop-blur hover:bg-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
       @click="handleResetZoom"
     >
-      重設縮放
+      {{ i18n.chart.resetZoom }}
     </button>
 
     <!-- Vue 插槽：允許外部注入自定義 Tooltip -->
@@ -107,6 +107,7 @@ import {
   zoomBandWindow,
   zoomContinuousDomain,
 } from './utils/largeData'
+import { useLocale } from '../shared/config'
 
 interface DualAxisComboChartProps {
 
@@ -194,6 +195,8 @@ interface DualAxisComboChartProps {
   triggerLines?: TriggerLine[]
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<DualAxisComboChartProps>(), {
   width: 800,
   height: 500,
@@ -1505,7 +1508,7 @@ const renderSimpleBars = (
     const [d0, d1] = ys.domain() as [number, number];
     const baseValue = Math.min(Math.max(0, Math.min(d0, d1)), Math.max(d0, d1));
     const baseY = ys(baseValue);
-    const color = layer.color || resolveSeriesColor(layer.colorScale, layerLabelOf(layer), layerIndex);
+    const color = layer.color || resolveSeriesColor(layer.colorScale, layerLabelOf(layer, i18n.value), layerIndex);
     const barX = (d: ChartDatum): number | undefined => {
       const raw = xValue(d);
       const start = band
@@ -2137,7 +2140,7 @@ const renderLegend = () => {
           legendItems.push({ label: key, color, type: 'rect' });
         });
       } else if (layer.type === 'bar') {
-        legendItems.push({ label: layerLabelOf(layer), color: layer.color || '#3b82f6', type: 'rect' });
+        legendItems.push({ label: layerLabelOf(layer, i18n.value), color: layer.color || '#3b82f6', type: 'rect' });
       } else if (layer.type === 'line' || layer.type === 'area') {
         legendItems.push({
           label: layer.legend?.label || layer.name || 'Line',

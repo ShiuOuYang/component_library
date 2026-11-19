@@ -4,14 +4,14 @@
     <label v-if="label" :for="id" class="text-sm text-content-secondary whitespace-nowrap">{{ label }}</label>
     <select
       :id="id"
-      :aria-label="label ? undefined : (placeholder || '篩選')"
+      :aria-label="label ? undefined : (placeholderText || t.filter.label)"
       :value="modelValue"
       @change="handleSelectChange"
       :disabled="disabled"
       class="border-stroke-default rounded-md shadow-sm focus:border-stroke-focus focus:ring-stroke-focus"
       :class="[sizeClass, fullWidth ? 'w-full' : '', selectClass]"
     >
-      <option v-if="showAllOption" :value="allValue">{{ placeholder }}</option>
+      <option v-if="showAllOption" :value="allValue">{{ placeholderText }}</option>
       <option v-for="option in options" :key="getOptionValue(option)" :value="getOptionValue(option)">
         <slot :option="option">{{ getOptionLabel(option) }}</slot>
       </option>
@@ -40,7 +40,7 @@
       <div class="px-2 py-1 border-b border-stroke-light">
         <label class="flex items-center hover:bg-surface-secondary cursor-pointer">
           <input type="checkbox" :checked="isAllSelected" :indeterminate="isIndeterminate" @change="toggleAll" class="rounded border-stroke-default text-accent focus:ring-stroke-focus">
-          <span class="ml-2 text-xs font-medium text-content-primary">全部</span>
+          <span class="ml-2 text-xs font-medium text-content-primary">{{ t.common.all }}</span>
         </label>
       </div>
       <div class="py-1">
@@ -56,7 +56,7 @@
   <div v-else class="w-full bg-surface-primary rounded-lg border border-stroke-light shadow-sm">
     <div class="px-2 py-1 border-b border-stroke-light">
       <div class="flex items-center justify-between">
-        <h3 class="text-xs font-medium text-content-primary">{{ label || '篩選' }}</h3>
+        <h3 class="text-xs font-medium text-content-primary">{{ label || t.filter.label }}</h3>
         <div class="flex items-center gap-1">
           <span v-if="arrayValue.length > 0" class="px-1 py-0.5 bg-accent-subtle text-accent-on-subtle text-[10px] rounded">{{ arrayValue.length }}</span>
           <!--
@@ -64,12 +64,12 @@
                實際用滑鼠也很難點中。改成 control-xs 的正方形（24×24）。
                字體從 text-[9px] 提到 text-xs，9px 的 × 在一般螢幕上幾乎看不見。
           -->
-          <button type="button" v-if="showClearAll && arrayValue.length > 0" aria-label="清空篩選" @click="clearAll" class="inline-flex items-center justify-center h-control-xs min-w-control-xs text-xs text-danger hover:bg-danger-subtle rounded leading-none">×</button>
+          <button type="button" v-if="showClearAll && arrayValue.length > 0" :aria-label="t.filter.clearAll" @click="clearAll" class="inline-flex items-center justify-center h-control-xs min-w-control-xs text-xs text-danger hover:bg-danger-subtle rounded leading-none">×</button>
         </div>
       </div>
     </div>
     <div class="px-2 py-1 border-b border-stroke-light">
-      <input v-model="searchText" type="text" :placeholder="placeholder" class="block w-full px-2 py-1 text-xs border border-stroke-default rounded bg-surface-primary focus:outline-none focus:ring-1 focus:ring-stroke-focus focus:border-stroke-focus">
+      <input v-model="searchText" type="text" :placeholder="placeholderText" class="block w-full px-2 py-1 text-xs border border-stroke-default rounded bg-surface-primary focus:outline-none focus:ring-1 focus:ring-stroke-focus focus:border-stroke-focus">
     </div>
     <div class="px-2 py-1">
       <div class="space-y-0.5 max-h-18 overflow-y-auto">
@@ -83,13 +83,13 @@
           <div class="w-2 h-2 rounded border mr-1 flex-shrink-0" :class="arrayValue.includes(getOptionValue(option)) ? 'bg-accent-solid border-stroke-focus' : 'border-stroke-default'"></div>
           <span class="truncate">{{ getOptionLabel(option) }}</span>
         </div>
-        <div v-if="filteredOptions.length === 0" class="text-center py-1"><p class="text-xs text-content-tertiary">無選項</p></div>
+        <div v-if="filteredOptions.length === 0" class="text-center py-1"><p class="text-xs text-content-tertiary">{{ t.filter.noOptions }}</p></div>
       </div>
       <div v-if="filteredOptions.length > 0" class="flex justify-between items-center mt-1 pt-1 border-t border-stroke-light">
         <span class="text-xs text-content-tertiary">{{ filteredOptions.length }}</span>
         <div class="flex gap-1">
-          <button type="button" @click="selectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-accent-on-subtle bg-accent-subtle rounded hover:bg-accent-subtle-hover">全選</button>
-          <button type="button" @click="unselectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-content-secondary bg-surface-secondary rounded hover:bg-surface-tertiary">清空</button>
+          <button type="button" @click="selectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-accent-on-subtle bg-accent-subtle rounded hover:bg-accent-subtle-hover">{{ t.common.selectAll }}</button>
+          <button type="button" @click="unselectAll" class="inline-flex items-center h-control-xs px-2 text-xs text-content-secondary bg-surface-secondary rounded hover:bg-surface-tertiary">{{ t.filter.clear }}</button>
         </div>
       </div>
     </div>
@@ -100,6 +100,7 @@
 import { ref, computed, onMounted, onUnmounted, useId } from 'vue'
 import type { ComponentSize } from '../shared/types/ui.types'
 import type { Recordable, SelectOption } from '../shared/types/ui.types'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptFilter（CHPT 主題） - 過濾選擇元件
@@ -151,13 +152,15 @@ interface ChptFilterProps {
   showClearAll?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptFilterProps>(), {
   type: 'select',
   modelValue: undefined,
   showClearAll: true,
   label: '',
   options: () => [],
-  placeholder: '全部',
+  placeholder: undefined,
   allValue: '',
   showAllOption: true,
   disabled: false,
@@ -229,15 +232,18 @@ function handleSelectChange(event: Event): void {
   emit('update:modelValue', value)
 }
 
+/** 沒傳 placeholder 時用語系的「全部」 */
+const placeholderText = computed(() => props.placeholder ?? t.value.common.all)
+
 // ===== dropdown / tag（多選） =====
 const arrayValue = computed<SelectOption['value'][]>(() =>
   Array.isArray(props.modelValue) ? (props.modelValue as SelectOption['value'][]) : []
 )
 
 const displayText = computed(() => {
-  if (arrayValue.value.length === 0) return props.placeholder
+  if (arrayValue.value.length === 0) return placeholderText.value
   if (arrayValue.value.length === 1) return String(arrayValue.value[0])
-  return `已選擇 ${arrayValue.value.length} 項`
+  return t.value.filter.selected(arrayValue.value.length)
 })
 
 const allOptionValues = computed(() => props.options.map(getOptionValue))

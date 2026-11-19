@@ -125,6 +125,12 @@
         <strong>使用時機：</strong>一個區塊（或整個 App）統一元件尺寸與內建文字。密集的後台表格頁用 sm、產線觸控面板用 lg；
         給外籍同仁的頁面切英文。元件自己有傳的 prop 永遠優先；沒有 Provider 的頁面行為完全不變。
       </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>語系涵蓋整個組件庫：</strong>按鈕、預設 placeholder、aria-label、title 提示、螢幕閱讀器的即時播報、
+        圖表的摘要與 tooltip、Excel 編輯器的工具列與函式說明都從語系檔（<code>shared/locale.ts</code>）讀取。
+        原本寫死中文預設值的 prop（例如 Popconfirm 的 <code>confirmText</code>、Transfer 的 <code>titles</code>）
+        預設改為「不傳」，沒傳時取語系 —— 繁中的文字與原本相同。
+      </p>
       <div class="mb-3 flex flex-wrap items-center gap-4">
         <ChptSegmented v-model="cfgSize" :options="[{ label: 'sm', value: 'sm' }, { label: 'md', value: 'md' }, { label: 'lg', value: 'lg' }]" aria-label="尺寸" size="xs" />
         <ChptSegmented v-model="cfgLang" :options="[{ label: '繁中', value: 'zh' }, { label: 'English', value: 'en' }]" aria-label="語系" size="xs" />
@@ -136,6 +142,8 @@
             <ChptButton color="primary">{{ cfgLang === 'en' ? 'Search' : '查詢' }}</ChptButton>
           </div>
           <ChptEmpty />
+          <ChptCalendar compact model-value="2026-11-11" />
+          <ChptUpload :model-value="[]" accept=".csv,.xlsx" :max-count="3" />
           <div class="md:col-span-2">
             <ChptTable :columns="[{ key: 'wo', title: cfgLang === 'en' ? 'Order' : '工單' }]" :data="[]" :default-page-size="5" />
           </div>
@@ -144,8 +152,10 @@
       <ChptCodeBlock class="mt-6" :code="configSample" />
       <ApiTable of="ChptConfigProvider" title="Props" :rows="configProps" />
       <ApiTable of="-" title="相關 composable" :rows="configComposables" />
-      <p class="text-sm text-content-secondary mt-4"><strong>目前會讀取設定的元件：</strong>尺寸 —— ChptButton、ChptInput、ChptSelect、ChptInputNumber、ChptTextarea、ChptInputTag；
-        文字 —— ChptTable（含分頁）、ChptPagination、ChptEmpty、ChptSpinner、ChptSkeleton、ChptList。Provider 可以巢狀，內層只覆寫它有給的欄位。</p>
+      <p class="text-sm text-content-secondary mt-4"><strong>會讀取設定的元件：</strong>尺寸 —— ChptButton、ChptInput、ChptSelect、ChptInputNumber、ChptTextarea、ChptInputTag；
+        文字 —— 組件庫所有元件（ui、圖表、PCB / Gerber 檢視器、Excel）。Provider 可以巢狀，內層只覆寫它有給的欄位，群組也可以只給部分欄位。</p>
+      <p class="text-sm text-content-secondary mt-2"><strong>新增元件文字時：</strong>把文字加進 <code>ChptLocale</code>（zhTW 與 enUS 都要補，型別與測試會擋），
+        元件裡用 <code>useLocale()</code> 讀取；<code>npm run check:i18n</code> 會掃出組件庫裡寫死的中文。</p>
     </section>
 
   </div>
@@ -164,6 +174,8 @@ import {
   ChptButton,
   ChptEmpty,
   ChptTable,
+  ChptCalendar,
+  ChptUpload,
   zhTW,
   enUS,
 } from '@/components/library'
@@ -236,13 +248,16 @@ const configSample = `<!-- App.vue -->
   <RouterView />
 </ChptConfigProvider>
 
-<!-- 只改部分文字 -->
-<ChptConfigProvider :locale="{ empty: '尚無工單' }">…</ChptConfigProvider>
+<!-- 只改部分文字：群組也可以只給其中幾個欄位，其餘沿用外層語系 -->
+<ChptConfigProvider :locale="{ empty: '尚無工單', modal: { close: '關閉視窗' } }">…</ChptConfigProvider>
 
-import { ChptConfigProvider, enUS, zhTW, useConfig } from '@/components/library'`
+<!-- 以 enUS 為基礎做自己的語系（例如日文），沒翻到的欄位沿用英文 -->
+const jaJP = mergeLocale(enUS, { code: 'ja-JP', common: { confirm: 'OK', cancel: 'キャンセル' } })
+
+import { ChptConfigProvider, enUS, zhTW, mergeLocale, useConfig, useLocale } from '@/components/library'`
 const pageSwitcherProps = [
   { name: 'pages', type: '{ path, title, icon? }[]', def: '[]', desc: '頁面選項' },
-  { name: 'title / footerHint', type: 'string', def: "'頁面切換' / '滑鼠移開自動收起'", desc: '面板標題與底部提示' },
+  { name: 'title / footerHint', type: 'string', def: "語系（繁中「頁面切換」/「滑鼠移開自動收起」）", desc: '面板標題與底部提示' },
   { name: 'activePath', type: 'string', def: '—', desc: '目前頁面的路徑；有給時是受控模式，不再讀取目前路由；沒有 vue-router 時要給，才標得出目前頁面' },
   { name: '@select', type: 'event (page)', def: '—', desc: '選了某一頁；有 vue-router 時元件也會自己切換' },
 ]
@@ -263,7 +278,7 @@ const codeBlockProps = [
   { name: 'code', type: 'string', def: "''", desc: '程式碼內容' },
   { name: 'language', type: 'string', def: "'javascript'", desc: '程式語言（顯示用）' },
   { name: 'trimIndent', type: 'boolean', def: 'true', desc: '移除多餘的共同縮排' },
-  { name: 'tip / tipType / tipTitle', type: "string / 'info' | 'warning' | 'success' | 'error' / string", def: "'' / 'info' / '重要提示'", desc: '程式碼下方的提示框' },
+  { name: 'tip / tipType / tipTitle', type: "string / 'info' | 'warning' | 'success' | 'error' / string", def: "'' / 'info' / 語系（繁中「重要提示」）", desc: '程式碼下方的提示框' },
   { name: '#tip', type: 'slot', def: '—', desc: '自訂提示框內容' },
 ]
 const dataTooltipProps = [
@@ -284,9 +299,11 @@ const dataTooltipProps = [
 
 const configProps = [
   { name: 'size', type: "'sm'|'md'|'lg'", def: '—', desc: '表單元件與按鈕的預設尺寸（元件自己的 size 優先）' },
-  { name: 'locale', type: 'Partial<ChptLocale>', def: 'zhTW', desc: '內建文字；可只給部分欄位。內建 zhTW、enUS' },
+  { name: 'locale', type: 'ChptLocaleInput', def: 'zhTW', desc: '內建文字；可只給部分欄位，群組逐層合併。內建 zhTW、enUS' },
 ]
 const configComposables = [
   { name: 'useConfig()', type: '() => ComputedRef<ChptConfig>', desc: '自訂元件讀取目前設定（{ size, locale }）' },
+  { name: 'useLocale()', type: '() => ComputedRef<ChptLocale>', desc: '只讀內建文字；template 裡 t.modal.close、script 裡 t.value.modal.close' },
+  { name: 'mergeLocale(base, override)', type: '(ChptLocale, ChptLocaleInput) => ChptLocale', desc: '以現有語系為基礎產生新語系（不修改原物件）' },
 ]
 </script>

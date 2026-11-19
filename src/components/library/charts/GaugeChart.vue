@@ -5,7 +5,7 @@
       :width="autoResize ? '100%' : width"
       :height="autoResize ? undefined : (width * geometry.height) / VB_W"
       role="meter"
-      :aria-label="title || '儀表'"
+      :aria-label="title || i18n.gauge.title"
       :aria-valuemin="min"
       :aria-valuemax="max"
       :aria-valuenow="hasValue ? (value as number) : undefined"
@@ -59,6 +59,7 @@ import { computed, onMounted } from 'vue'
 import * as d3 from 'd3'
 import { chartPalette } from './chartTheme'
 import { estimateTextWidth } from './utils/chartText'
+import { useLocale } from '../shared/config'
 
 /**
  * GaugeChart —— 儀表（單一數值對照目標或區間）
@@ -117,6 +118,8 @@ interface GaugeChartProps {
   showBands?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<GaugeChartProps>(), {
   width: 200,
   autoResize: false,
@@ -124,7 +127,7 @@ const props = withDefaults(defineProps<GaugeChartProps>(), {
   max: 100,
   bands: null,
   target: null,
-  targetLabel: '目標',
+  targetLabel: undefined,
   sweep: 240,
   thickness: 14,
   title: '',
@@ -228,7 +231,7 @@ const targetView = computed(() => {
     y1: -r0 * cos,
     x2: r1 * sin,
     y2: -r1 * cos,
-    label: `${props.targetLabel} ${fmt(props.target)}`,
+    label: `${props.targetLabel ?? i18n.value.chart.target} ${fmt(props.target)}`,
   }
 })
 
@@ -244,9 +247,9 @@ const valueText = computed(() => (hasValue.value ? fmt(props.value as number) : 
 const statusWidth = computed(() => (currentBand.value?.label ? 17 + estimateTextWidth(currentBand.value.label, 12) : 0))
 
 const ariaValueText = computed(() => {
-  if (!hasValue.value) return '沒有資料'
+  if (!hasValue.value) return i18n.value.chart.noData
   const base = `${fmt(props.value as number)}${props.unit}`
-  return currentBand.value?.label ? `${base}，${currentBand.value.label}` : base
+  return currentBand.value?.label ? `${base}${i18n.value.chart.clauseSeparator}${currentBand.value.label}` : base
 })
 
 onMounted(() => {

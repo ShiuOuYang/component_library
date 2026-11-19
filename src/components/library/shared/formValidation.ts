@@ -3,7 +3,13 @@
  *
  * 一個欄位可以有多條規則，依序檢查，回傳第一個錯誤訊息。
  * 沒有填的欄位只檢查 required —— 選填欄位留白不該出現「格式錯誤」。
+ *
+ * 預設訊息來自語系檔（ChptLocale.validation）；ChptFormItem 會傳入目前 ChptConfigProvider
+ * 的語系，單獨呼叫時不傳就是繁中。
  */
+import { zhTW, type ChptLocale } from './locale'
+
+export type ValidationMessages = ChptLocale['validation']
 
 export interface FormRule {
   /** 必填（空字串、只有空白、null、undefined、空陣列都算沒填） */
@@ -49,43 +55,45 @@ export async function checkRule(
   rule: FormRule,
   value: unknown,
   model: Record<string, unknown>,
-  label = '此欄位'
+  label?: string,
+  messages: ValidationMessages = zhTW.validation
 ): Promise<string> {
+  const m = messages
   const fail = (fallback: string) => rule.message || fallback
 
   const runValidator = async (): Promise<string> => {
     if (!rule.validator) return ''
     const result = await rule.validator(value, model)
-    return result === true || result === '' ? '' : result || fail('驗證失敗')
+    return result === true || result === '' ? '' : result || fail(m.failed)
   }
 
   if (isEmptyValue(value)) {
-    if (rule.required) return fail(`請輸入${label}`)
+    if (rule.required) return fail(m.required(label || m.field))
     // 選填欄位留白：格式、長度都不檢查（自訂 validator 仍會執行，由它自己決定空值算不算錯）
     return runValidator()
   }
 
   if (rule.type) {
     const s = String(value)
-    if (rule.type === 'email' && !EMAIL.test(s)) return fail('電子郵件格式不正確')
-    if (rule.type === 'url' && !URL_RE.test(s)) return fail('網址格式不正確（需以 http:// 或 https:// 開頭）')
+    if (rule.type === 'email' && !EMAIL.test(s)) return fail(m.email)
+    if (rule.type === 'url' && !URL_RE.test(s)) return fail(m.url)
     if (rule.type === 'number' && !(typeof value === 'number' ? Number.isFinite(value) : /^[+-]?(\d+\.?\d*|\.\d+)$/.test(s.trim())))
-      return fail('請輸入數字')
+      return fail(m.number)
     if (rule.type === 'integer' && !(typeof value === 'number' ? Number.isInteger(value) : /^[+-]?\d+$/.test(s.trim())))
-      return fail('請輸入整數')
+      return fail(m.integer)
   }
 
   const len = lengthOf(value)
   if (rule.min !== undefined) {
-    if (len !== null && len < rule.min) return fail(Array.isArray(value) ? `至少選擇 ${rule.min} 項` : `至少 ${rule.min} 個字`)
-    if (typeof value === 'number' && value < rule.min) return fail(`不能小於 ${rule.min}`)
+    if (len !== null && len < rule.min) return fail(Array.isArray(value) ? m.minItems(rule.min) : m.minLength(rule.min))
+    if (typeof value === 'number' && value < rule.min) return fail(m.minValue(rule.min))
   }
   if (rule.max !== undefined) {
-    if (len !== null && len > rule.max) return fail(Array.isArray(value) ? `最多選擇 ${rule.max} 項` : `最多 ${rule.max} 個字`)
-    if (typeof value === 'number' && value > rule.max) return fail(`不能大於 ${rule.max}`)
+    if (len !== null && len > rule.max) return fail(Array.isArray(value) ? m.maxItems(rule.max) : m.maxLength(rule.max))
+    if (typeof value === 'number' && value > rule.max) return fail(m.maxValue(rule.max))
   }
 
-  if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) return fail('格式不正確')
+  if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) return fail(m.pattern)
 
   return runValidator()
 }
@@ -95,11 +103,11 @@ export async function validateValue(
   rules: FormRule[],
   value: unknown,
   model: Record<string, unknown>,
-  options: { label?: string; trigger?: 'blur' | 'change' } = {}
+  options: { label?: string; trigger?: 'blur' | 'change'; messages?: ValidationMessages } = {}
 ): Promise<string> {
   for (const rule of rules) {
     if (options.trigger && (rule.trigger ?? 'blur') !== options.trigger) continue
-    const error = await checkRule(rule, value, model, options.label)
+    const error = await checkRule(rule, value, model, options.label, options.messages)
     if (error) return error
   }
   return ''

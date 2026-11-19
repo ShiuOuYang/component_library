@@ -43,6 +43,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import ChptIcon from './ChptIcon.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptSteps（CHPT 主題） - 步驟條元件
@@ -67,6 +68,8 @@ interface ChptStepsProps {
   showLabel?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptStepsProps>(), {
   steps: () => [],
   showLabel: true,
@@ -86,13 +89,14 @@ function nodeClass(step: StepItem): string {
 /** 外部容器樣式 */
 /** 步驟狀態的文字說明（僅供螢幕閱讀器） */
 function statusText(step: StepItem): string {
+  const s = t.value.steps
   const map: Record<string, string> = {
-    done: '已完成',
-    process: '進行中',
+    done: s.done,
+    process: s.process,
     // StepStatus 是 'pending'，原本只寫了 'wait'：尚未開始的步驟什麼都不唸
-    pending: '尚未開始',
-    wait: '尚未開始',
-    error: '發生錯誤',
+    pending: s.pending,
+    wait: s.pending,
+    error: s.error,
   }
   return map[step.status ?? 'wait'] ?? ''
 }

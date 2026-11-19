@@ -49,6 +49,7 @@
 </template>
 
 <script setup lang="ts">
+import { useLocale } from '../shared/config'
 import { chartTheme } from './chartTheme';
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import * as d3 from 'd3';
@@ -139,6 +140,8 @@ interface EnterpriseParetoProps {
   enableTooltip?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<EnterpriseParetoProps>(), {
   width: 800,
   height: 600,
@@ -156,11 +159,11 @@ const props = withDefaults(defineProps<EnterpriseParetoProps>(), {
   xAxisFormat: null,
   xAxisAngle: -45,
 
-  yAxisLeftLabel: '數量',
+  yAxisLeftLabel: undefined,
   yAxisLeftFormat: null,
   valueDomain: null,
 
-  yAxisRightLabel: '累積百分比 (%)',
+  yAxisRightLabel: undefined,
   yAxisRightFormat: (value: number) => `${value}%`,
 
   barColor: '#3b82f6',
@@ -682,7 +685,8 @@ const renderYAxisLeft = (): void => {
     .duration(props.animationDuration)
     .call(yAxis);
 
-  if (props.yAxisLeftLabel) {
+  const leftLabel = props.yAxisLeftLabel ?? i18n.value.pareto.count
+  if (leftLabel) {
     yAxisSelection.selectAll('.axis-label').remove();
     yAxisSelection.append('text')
       .attr('class', 'axis-label')
@@ -693,7 +697,7 @@ const renderYAxisLeft = (): void => {
       .style('font-size', '14px')
       .style('font-weight', '600')
       .style('fill', props.barColor)
-      .text(props.yAxisLeftLabel);
+      .text(leftLabel);
   }
 };
 
@@ -713,7 +717,8 @@ const renderYAxisRight = (): void => {
     .duration(props.animationDuration)
     .call(yAxis);
 
-  if (props.yAxisRightLabel) {
+  const rightLabel = props.yAxisRightLabel ?? i18n.value.pareto.cumulativeAxis
+  if (rightLabel) {
     yAxisSelection.selectAll('.axis-label').remove();
     yAxisSelection.append('text')
       .attr('class', 'axis-label')
@@ -724,7 +729,7 @@ const renderYAxisRight = (): void => {
       .style('font-size', '14px')
       .style('font-weight', '600')
       .style('fill', props.lineColor)
-      .text(props.yAxisRightLabel);
+      .text(rightLabel);
   }
 };
 

@@ -11,8 +11,8 @@
       v-if="visible"
       v-bind="$attrs"
       type="button"
-      :aria-label="props.label"
-      :title="props.label"
+      :aria-label="props.label ?? t.backTop.label"
+      :title="props.label ?? t.backTop.label"
       class="fixed z-40 inline-flex size-11 items-center justify-center rounded-full border border-stroke-light bg-surface-primary text-content-secondary shadow-lg transition-colors hover:bg-surface-secondary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
       :style="{ right: `${props.right}px`, bottom: `${props.bottom}px` }"
       @click="toTop"
@@ -36,6 +36,7 @@ import {
   scrollTopOf,
   type ScrollTarget,
 } from '../shared/scroll'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptBackTop（CHPT 主題） - 回到頂端
@@ -58,12 +59,14 @@ interface ChptBackTopProps {
   label?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptBackTopProps>(), {
   target: undefined,
   visibilityHeight: 400,
   right: 24,
   bottom: 24,
-  label: '回到頂端',
+  label: undefined,
 })
 
 defineOptions({ inheritAttrs: false })

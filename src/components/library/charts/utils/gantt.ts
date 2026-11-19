@@ -5,6 +5,7 @@
  */
 
 import * as d3 from 'd3'
+import { zhTW, type ChptLocale } from '../../shared/locale'
 
 // 文字量測與文字色已移到 chartText（其他圖表也要用）；這裡保留匯出，舊的 import 不會壞
 export { estimateTextWidth, readableTextColor } from './chartText'
@@ -190,9 +191,10 @@ export interface TimeTiers {
 /**
  * 依刻度間距決定兩層時間軸的單位：
  * 小時刻度 → 上層是日期；日刻度 → 上層是月；月刻度 → 上層是年；年刻度 → 只有一層。
- * d3 預設的多尺度格式是英文（"October"、"Wed 07"），這裡改成中文慣用的寫法。
+ * d3 預設的多尺度格式是英文（"October"、"Wed 07"），這裡改用語系檔的格式（繁中：「2026 年 10 月」）。
  */
-export function timeTiers(step: number): TimeTiers {
+export function timeTiers(step: number, locale: ChptLocale = zhTW): TimeTiers {
+  const f = locale.chart.timeFormat
   if (step < MINUTE) {
     return { lowerFormat: d3.timeFormat('%H:%M:%S'), upper: { interval: d3.timeDay, format: d3.timeFormat('%Y/%m/%d') } }
   }
@@ -200,10 +202,10 @@ export function timeTiers(step: number): TimeTiers {
     return { lowerFormat: d3.timeFormat('%H:%M'), upper: { interval: d3.timeDay, format: d3.timeFormat('%Y/%m/%d') } }
   }
   if (step < 28 * DAY) {
-    return { lowerFormat: d3.timeFormat('%-d'), upper: { interval: d3.timeMonth, format: d3.timeFormat('%Y 年 %-m 月') } }
+    return { lowerFormat: d3.timeFormat('%-d'), upper: { interval: d3.timeMonth, format: d3.timeFormat(f.monthOfYear) } }
   }
   if (step < 365 * DAY) {
-    return { lowerFormat: d3.timeFormat('%-m 月'), upper: { interval: d3.timeYear, format: d3.timeFormat('%Y 年') } }
+    return { lowerFormat: d3.timeFormat(f.month), upper: { interval: d3.timeYear, format: d3.timeFormat(f.year) } }
   }
   return { lowerFormat: d3.timeFormat('%Y'), upper: null }
 }
@@ -230,15 +232,16 @@ export function upperSegments(domain: [number, number], tiers: TimeTiers, limit 
   return out
 }
 
-/** 期間的中文寫法：3 天 4 小時、2 小時 30 分、45 分 */
-export function formatDuration(ms: number): string {
-  if (!Number.isFinite(ms) || ms <= 0) return '0 分'
+/** 期間的寫法（依語系）：繁中為 3 天 4 小時、2 小時 30 分、45 分 */
+export function formatDuration(ms: number, locale: ChptLocale = zhTW): string {
+  const { days: d, hours: h, minutes: m } = locale.chart
+  if (!Number.isFinite(ms) || ms <= 0) return m(0)
   const days = Math.floor(ms / DAY)
   const hours = Math.floor((ms % DAY) / HOUR)
   const minutes = Math.round((ms % HOUR) / MINUTE)
-  if (days > 0) return hours > 0 ? `${days} 天 ${hours} 小時` : `${days} 天`
-  if (hours > 0) return minutes > 0 ? `${hours} 小時 ${minutes} 分` : `${hours} 小時`
-  return `${Math.max(1, minutes)} 分`
+  if (days > 0) return hours > 0 ? `${d(days)} ${h(hours)}` : d(days)
+  if (hours > 0) return minutes > 0 ? `${h(hours)} ${m(minutes)}` : h(hours)
+  return m(Math.max(1, minutes))
 }
 
 /** 依列分組任務索引（列順序對應 rows） */

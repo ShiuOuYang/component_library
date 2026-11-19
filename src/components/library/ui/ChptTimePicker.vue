@@ -33,7 +33,7 @@
         <button
           v-if="props.clearable && props.modelValue && !props.disabled"
           type="button"
-          aria-label="清除"
+          :aria-label="t.clear"
           class="inline-flex h-control-xs min-w-control-xs items-center justify-center rounded text-content-tertiary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
           @click="clear"
         >
@@ -43,7 +43,7 @@
           ref="toggleButton"
           type="button"
           :disabled="props.disabled"
-          :aria-label="props.label ? `選擇${props.label}` : '選擇時間'"
+          :aria-label="props.label ? t.timePicker.choose(props.label) : t.timePicker.chooseTime"
           aria-haspopup="dialog"
           :aria-expanded="isOpen"
           :aria-controls="isOpen ? panelId : undefined"
@@ -59,7 +59,7 @@
       v-if="isOpen"
       :id="panelId"
       role="dialog"
-      :aria-label="props.label ? `選擇${props.label}` : '選擇時間'"
+      :aria-label="props.label ? t.timePicker.choose(props.label) : t.timePicker.chooseTime"
       class="absolute left-0 top-full z-dropdown mt-1 flex flex-col rounded-lg border border-stroke-light bg-surface-primary shadow-lg"
       @keydown="onPanelKeydown"
     >
@@ -97,12 +97,12 @@
           type="button"
           class="h-control-xs rounded px-2 text-xs text-accent hover:bg-surface-tertiary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
           @click="setNow"
-        >現在</button>
+        >{{ t.timePicker.now }}</button>
         <button
           type="button"
           class="h-control-xs rounded bg-accent-solid px-3 text-xs font-medium text-content-on-solid hover:bg-accent-solid-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus focus-visible:ring-offset-1"
           @click="close(true)"
-        >確定</button>
+        >{{ t.common.confirm }}</button>
       </div>
     </div>
 
@@ -116,6 +116,7 @@ import { onClickOutside } from '@vueuse/core'
 import ChptIcon from './ChptIcon.vue'
 import { useFormField } from '../shared/formContext'
 import type { ComponentSize } from '../shared/types/ui.types'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptTimePicker（CHPT 主題） - 時間選擇
@@ -151,6 +152,8 @@ interface ChptTimePickerProps {
   errorText?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptTimePickerProps>(), {
   modelValue: null,
   showSeconds: false,
@@ -283,13 +286,13 @@ const columns = computed(() => {
   const cols: { unit: Unit; label: string; options: { value: number; disabled: boolean }[] }[] = [
     {
       unit: 'h',
-      label: '時',
+      label: t.value.timePicker.hour,
       // 整個小時都在範圍外才停用
       options: range(24, 1).map((v) => ({ value: v, disabled: v * 3600 + 3599 < minSec.value || v * 3600 > maxSec.value })),
     },
     {
       unit: 'm',
-      label: '分',
+      label: t.value.timePicker.minute,
       options: range(60, props.minuteStep).map((v) => {
         const start = hh * 3600 + v * 60
         return { value: v, disabled: start + 59 < minSec.value || start > maxSec.value }
@@ -299,7 +302,7 @@ const columns = computed(() => {
   if (props.showSeconds) {
     cols.push({
       unit: 's',
-      label: '秒',
+      label: t.value.timePicker.second,
       options: range(60, props.secondStep).map((v) => ({ value: v, disabled: !inRange(hh * 3600 + mm * 60 + v) })),
     })
   }

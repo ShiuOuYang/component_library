@@ -1,5 +1,5 @@
 <template>
-  <nav :aria-label="props.ariaLabel" class="chpt-anchor text-sm">
+  <nav :aria-label="props.ariaLabel ?? t.anchor.label" class="chpt-anchor text-sm">
     <p v-if="props.title" class="mb-2 text-xs font-semibold uppercase tracking-wide text-content-tertiary">{{ props.title }}</p>
     <ul class="flex flex-col border-l border-stroke-light">
       <template v-for="item in flat" :key="item.href">
@@ -33,6 +33,7 @@ import {
   viewportTopOf,
   type ScrollTarget,
 } from '../shared/scroll'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptAnchor（CHPT 主題） - 頁內目錄（錨點導覽）
@@ -65,11 +66,13 @@ interface ChptAnchorProps {
   updateHash?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptAnchorProps>(), {
   container: undefined,
   offset: 16,
   title: '',
-  ariaLabel: '本頁內容',
+  ariaLabel: undefined,
   updateHash: true,
 })
 

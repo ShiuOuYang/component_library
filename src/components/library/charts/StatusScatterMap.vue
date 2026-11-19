@@ -7,14 +7,14 @@
     <!-- 標題與圖例（HTML：圖例要能用鍵盤切換） -->
     <div class="absolute inset-x-0 top-0 z-10 flex flex-col items-center gap-1 px-2 pt-1">
       <p v-if="title" class="text-sm font-semibold text-content-primary">{{ title }}</p>
-      <div v-if="showLegend" class="flex flex-wrap justify-center gap-x-4 gap-y-1" role="group" aria-label="狀態圖例">
+      <div v-if="showLegend" class="flex flex-wrap justify-center gap-x-4 gap-y-1" role="group" :aria-label="i18n.chart.statusLegend">
         <button
           v-for="item in legendItems"
           :key="item.value"
           type="button"
           class="inline-flex items-center gap-1.5 rounded px-1 text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
           :aria-pressed="!item.hidden"
-          :title="item.hidden ? `顯示 ${item.label}` : `隱藏 ${item.label}`"
+          :title="item.hidden ? i18n.chart.show(item.label) : i18n.chart.hide(item.label)"
           @click="toggleStatus(item.value)"
         >
           <span class="h-3 w-10 shrink-0 rounded-sm" :style="{ background: item.color, opacity: item.hidden ? 0.35 : 1 }" aria-hidden="true"></span>
@@ -89,7 +89,7 @@
       class="absolute right-2 top-2 z-20 rounded-md border border-stroke-light bg-surface-primary/80 px-2.5 py-1 text-xs text-content-secondary shadow-sm backdrop-blur hover:bg-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
       @click="resetZoom"
     >
-      重設縮放
+      {{ i18n.chart.resetZoom }}
     </button>
 
     <!-- Tooltip：插槽可完全自訂；沒給插槽時用預設樣式 -->
@@ -127,6 +127,7 @@ import {
   type DotStamp,
   type PlotRect,
 } from './utils/statusScatter'
+import { useLocale } from '../shared/config'
 
 /**
  * StatusScatterMap —— 依狀態著色的座標散佈圖（探針點／量測點分佈）
@@ -239,6 +240,8 @@ interface StatusScatterMapProps {
   }
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<StatusScatterMapProps>(), {
   width: 640,
   height: 560,
@@ -370,7 +373,7 @@ const legendItems = computed(() => {
   if (grouping.value.other.length) {
     items.unshift({
       value: OTHER,
-      label: '其他',
+      label: i18n.value.chart.others,
       color: props.otherColor,
       count: grouping.value.other.length,
       hidden: hidden.value.has(OTHER),
@@ -391,8 +394,9 @@ function toggleStatus(value: string): void {
 
 /** 讀螢幕報讀用的摘要：各狀態筆數 */
 const ariaSummary = computed(() => {
-  const parts = legendItems.value.map((it) => `${it.label} ${it.count} 筆`)
-  return `${props.title || '狀態散佈圖'}：${parts.join('、')}`
+  const l = i18n.value
+  const parts = legendItems.value.map((it) => `${it.label} ${l.chart.records(it.count)}`)
+  return l.chart.titled(props.title || l.statusScatter.title, parts.join(l.chart.listSeparator))
 })
 
 // === 比例尺 ===
@@ -450,7 +454,7 @@ function statusInfo(i: number): { value: string; label: string; color: string } 
   const def = props.statuses.find((s) => s.value === value)
   return def
     ? { value, label: def.label ?? def.value, color: def.color }
-    : { value, label: value || '其他', color: props.otherColor }
+    : { value, label: value || i18n.value.chart.others, color: props.otherColor }
 }
 
 // === 渲染 ===

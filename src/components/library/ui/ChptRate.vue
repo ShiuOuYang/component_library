@@ -22,7 +22,7 @@
       :id="id"
       ref="group"
       role="radiogroup"
-      :aria-label="labelledBy ? undefined : props.ariaLabel"
+      :aria-label="labelledBy ? undefined : ariaLabelText"
       :aria-labelledby="labelledBy"
       :aria-disabled="props.disabled || undefined"
       :aria-invalid="invalid ? 'true' : undefined"
@@ -61,6 +61,7 @@
 import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import { useFormField } from '../shared/formContext'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptRate（CHPT 主題） - 評分
@@ -96,6 +97,8 @@ interface ChptRateProps {
   ariaLabel?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptRateProps>(), {
   modelValue: 0,
   count: 5,
@@ -107,7 +110,7 @@ const props = withDefaults(defineProps<ChptRateProps>(), {
   disabled: false,
   size: 'md',
   color: 'warning',
-  ariaLabel: '評分',
+  ariaLabel: undefined,
 })
 
 const emit = defineEmits<{
@@ -131,12 +134,13 @@ const iconSize = computed(() => ({ sm: 16, md: 20, lg: 28 })[props.size])
 const filledClass = computed(() => ({ warning: 'text-warning-500', danger: 'text-danger-500', accent: 'text-accent-solid' })[props.color])
 
 const fillOf = (n: number, value: number) => (n <= Math.round(value) ? 1 : 0)
-const labelOf = (n: number) => props.texts[n - 1] || `${n} 星`
+const ariaLabelText = computed(() => props.ariaLabel ?? t.value.rate.label)
+const labelOf = (n: number) => props.texts[n - 1] || t.value.rate.star(n)
 
 const currentText = computed(() => (props.modelValue ? labelOf(props.modelValue) : ''))
 const shownText = computed(() => (shown.value ? labelOf(shown.value) : ''))
 const readonlyLabel = computed(() => {
-  const base = `${props.ariaLabel} ${props.modelValue} / ${props.count}`
+  const base = `${ariaLabelText.value} ${props.modelValue} / ${props.count}`
   return props.texts[props.modelValue - 1] ? `${base}（${props.texts[props.modelValue - 1]}）` : base
 })
 

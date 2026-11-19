@@ -22,7 +22,7 @@
         class="absolute z-popover mt-2 left-1/2 -translate-x-1/2 bg-surface-primary rounded-lg shadow-2xl border border-stroke-light p-4 w-60 focus:outline-none"
       >
         <p :id="messageId" class="text-sm text-content-primary mb-3">
-          <slot name="message">{{ props.message }}</slot>
+          <slot name="message">{{ props.message ?? t.popconfirm.message }}</slot>
         </p>
         <div class="flex justify-end gap-2">
           <ChptButton
@@ -30,7 +30,7 @@
             is-outline
             @click="handleCancel"
           >
-            {{ props.cancelText }}
+            {{ props.cancelText ?? t.common.cancel }}
           </ChptButton>
           <ChptButton
             ref="confirmButton"
@@ -38,7 +38,7 @@
             :color="props.color"
             @click="handleConfirm"
           >
-            {{ props.confirmText }}
+            {{ props.confirmText ?? t.common.confirm }}
           </ChptButton>
         </div>
       </div>
@@ -51,6 +51,7 @@ import { nextTick, onMounted, ref, useId, useTemplateRef, watch } from 'vue'
 import { onClickOutside } from '@vueuse/core'
 import ChptButton from './ChptButton.vue'
 import { useOverlay } from '../shared/useOverlay'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptPopconfirm（CHPT 主題） - 彈出式確認元件
@@ -74,10 +75,12 @@ interface ChptPopconfirmProps {
   color?: 'primary' | 'secondary' | 'success' | 'danger' | 'warning'
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptPopconfirmProps>(), {
-  message: '確定要執行此操作嗎？',
-  confirmText: '確定',
-  cancelText: '取消',
+  message: undefined,
+  confirmText: undefined,
+  cancelText: undefined,
   color: 'danger',
 })
 

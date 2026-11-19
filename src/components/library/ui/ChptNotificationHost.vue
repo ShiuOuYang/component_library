@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <section
-      :aria-label="props.ariaLabel"
+      :aria-label="props.ariaLabel ?? t.notification.label"
       class="pointer-events-none fixed z-[9998] flex w-[min(24rem,calc(100vw-2rem))] flex-col gap-3"
       :class="placementClass"
     >
@@ -40,7 +40,7 @@
           <button
             v-if="item.closable"
             type="button"
-            :aria-label="`關閉通知：${item.title}`"
+            :aria-label="t.notification.close(item.title)"
             class="-mr-1 -mt-1 inline-flex h-control-xs min-w-control-xs shrink-0 items-center justify-center rounded text-content-tertiary hover:bg-surface-tertiary hover:text-content-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
             @click="close(item.id)"
           >
@@ -61,6 +61,7 @@ import {
   type NotificationItem,
   type NotificationType,
 } from '../shared/useNotification'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptNotificationHost（CHPT 主題） - useNotification() 的顯示端
@@ -79,10 +80,12 @@ interface ChptNotificationHostProps {
   ariaLabel?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptNotificationHostProps>(), {
   placement: 'top-right',
   max: 5,
-  ariaLabel: '通知',
+  ariaLabel: undefined,
 })
 
 const { items, close } = useNotification()

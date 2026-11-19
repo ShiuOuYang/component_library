@@ -130,12 +130,12 @@
             <input
               type="text"
               v-model="filterSearchText"
-              placeholder="搜尋..."
+              :placeholder="t.common.searchEllipsis"
               class="text-sm p-1 border rounded outline-none flex-1 min-w-0 focus:border-primary-400 focus:ring-1 focus:ring-primary-200 transition-all"
             />
             <button
               type="button"
-              title="全選"
+              :title="t.common.selectAll"
               class="p-1 cursor-pointer hover:bg-surface-tertiary rounded transition-all active:scale-90 active:bg-surface-tertiary"
               @click="selectAllHandler"
             >
@@ -143,7 +143,7 @@
             </button>
             <button
               type="button"
-              title="關閉"
+              :title="t.common.close"
               class="p-1 cursor-pointer hover:bg-surface-tertiary rounded transition-all active:scale-90 active:bg-surface-tertiary"
               @click="clickHandler($event)"
             >
@@ -180,6 +180,7 @@ import ChptIcon from './ChptIcon.vue'
 import ChptCheckbox from './ChptCheckbox.vue'
 import ChptPagination from './ChptPagination.vue'
 import ChptDataTooltip from './ChptDataTooltip.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptFixedTable（CHPT 主題）- 固定欄位資料表格元件
@@ -242,6 +243,8 @@ interface ChptFixedTableProps {
   defaultPageSize?: number
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptFixedTableProps>(), {
   isKeep: true,
   isFilter: true,

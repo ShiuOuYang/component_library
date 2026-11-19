@@ -34,7 +34,7 @@ const props = withDefaults(defineProps<CodeBlockProps>(), {
   trimIndent: true,
   tip: '',
   tipType: 'info',
-  tipTitle: '重要提示',
+  tipTitle: undefined,
 })
 
 warnDeprecated('CodeBlock', 'ChptCodeBlock')

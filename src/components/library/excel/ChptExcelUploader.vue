@@ -50,7 +50,7 @@
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
       </svg>
 
-      <span>{{ loading ? props.loadingText : props.label }}</span>
+      <span>{{ loading ? (props.loadingText ?? i18n.excelUploader.uploading) : (props.label ?? i18n.excelUploader.button) }}</span>
     </label>
     <span v-if="fileName && !loading && props.showFileName" class="text-xs text-content-secondary">{{ fileName }}</span>
   </div>
@@ -58,6 +58,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useLocale } from '../shared/config'
 // xlsx（約 600 KB）在使用者選了檔案之後才載入
 
 /**
@@ -95,9 +96,11 @@ interface ChptExcelUploaderProps {
   showFileName?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const i18n = useLocale()
 const props = withDefaults(defineProps<ChptExcelUploaderProps>(), {
-  label: '匯入 Excel',
-  loadingText: '上傳中...',
+  label: undefined,
+  loadingText: undefined,
   inputId: 'excel-upload',
   size: 'sm',
   variant: 'solid-green',
@@ -186,7 +189,7 @@ async function handleFileUpload(event: Event): Promise<void> {
       const data = new Uint8Array(e.target?.result as ArrayBuffer)
 
       if (!hasSupportedSignature(data)) {
-        throw new Error('檔案格式不是 Excel（僅支援 .xlsx 與 .xls）')
+        throw new Error(i18n.value.excelUploader.notExcel)
       }
 
       const XLSX = await import('xlsx')
@@ -195,7 +198,7 @@ async function handleFileUpload(event: Event): Promise<void> {
       // 簽章對了但一張工作表都沒有：sheet_to_json(undefined) 會拋出
       // 難以理解的內部錯誤，這裡先換成使用端看得懂的訊息。
       if (firstSheetName === undefined) {
-        throw new Error('這個 Excel 檔沒有任何工作表')
+        throw new Error(i18n.value.excelUploader.noSheets)
       }
       const worksheet = workbook.Sheets[firstSheetName]
       const jsonData = XLSX.utils.sheet_to_json(worksheet)
@@ -219,8 +222,8 @@ async function handleFileUpload(event: Event): Promise<void> {
   }
 
   reader.onerror = () => {
-    emit('error', '讀取檔案失敗')
-    emit('upload-error', new Error('讀取檔案失敗'))
+    emit('error', i18n.value.excelUploader.readFailed)
+    emit('upload-error', new Error(i18n.value.excelUploader.readFailed))
     fileName.value = ''
     loading.value = false
   }

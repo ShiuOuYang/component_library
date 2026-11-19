@@ -4,7 +4,7 @@
     :model-value="props.modelValue"
     :options="props.options"
     :label="props.label"
-    :placeholder="props.placeholder"
+    :placeholder="props.placeholder ?? t.common.searchEllipsis"
     :show-clear-all="props.isUnselectAll"
     @update:model-value="handleUpdate"
   />
@@ -14,6 +14,7 @@
 import ChptFilter from './ChptFilter.vue'
 import { warnDeprecated } from '../shared/warnDeprecated'
 import type { SelectOption } from '../shared/types/ui.types'
+import { useLocale } from '../shared/config'
 
 /**
  * TagFilterDropdown（@deprecated）—— 請改用 <ChptFilter type="tag" />
@@ -29,11 +30,13 @@ interface TagFilterDropdownProps {
   isUnselectAll?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<TagFilterDropdownProps>(), {
   label: '',
   options: () => [],
   modelValue: () => [],
-  placeholder: '搜尋...',
+  placeholder: undefined,
   isUnselectAll: false,
 })
 

@@ -3,7 +3,7 @@
     type="dropdown"
     :model-value="props.modelValue"
     :options="props.options"
-    :placeholder="props.placeholder"
+    :placeholder="props.placeholder ?? t.common.pleaseSelectEllipsis"
     @update:model-value="handleUpdate"
   />
 </template>
@@ -12,6 +12,7 @@
 import ChptFilter from './ChptFilter.vue'
 import { warnDeprecated } from '../shared/warnDeprecated'
 import type { SelectOption } from '../shared/types/ui.types'
+import { useLocale } from '../shared/config'
 
 /**
  * FilterDropdown（@deprecated）—— 請改用 <ChptFilter type="dropdown" />
@@ -28,11 +29,13 @@ interface FilterDropdownProps {
   placeholder?: string
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<FilterDropdownProps>(), {
   label: '',
   options: () => [],
   modelValue: () => [],
-  placeholder: '請選擇...',
+  placeholder: undefined,
 })
 
 const emit = defineEmits<{

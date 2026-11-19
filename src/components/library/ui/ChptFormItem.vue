@@ -41,6 +41,7 @@ import {
   type FormRule,
 } from '../shared/formValidation'
 import { FORM_KEY, type FormItemHandle } from './chptFormKeys'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptFormItem（CHPT 主題） - 表單欄位
@@ -75,6 +76,8 @@ interface ChptFormItemProps {
   showMessage?: boolean
 }
 
+/** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
+const t = useLocale()
 const props = withDefaults(defineProps<ChptFormItemProps>(), {
   prop: undefined,
   label: '',
@@ -144,6 +147,7 @@ async function run(trigger?: 'change'): Promise<string> {
   const message = await validateValue(ruleList.value, value.value, form.model(), {
     label: props.label || undefined,
     trigger,
+    messages: t.value.validation,
   })
   if (mine === token) error.value = message
   return message
