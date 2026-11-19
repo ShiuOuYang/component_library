@@ -44,6 +44,12 @@
     預設對篩選後的全部資料計算（`summaryScope: 'page'` 只算這一頁）；`summaryLabel`、`#summary-cell` 插槽；
     虛擬捲動時合計列固定在底部
 
+- **ChptDatePicker 快捷選項**：`presets` 在日曆旁加一排快捷按鈕（今天、昨天、本週、近 7 天、本月、上月；
+  另有上週、近 30 天、本季、今年，以及班別的「本班 / 上一班」）。也可自訂 `{ label, value }`。
+  - 區間在點下去那一刻才計算；以日為單位的區間含結束當天（到 23:59:59.999）
+  - `shifts` 設定班別，夜班跨午夜正確（凌晨的「本班」是前一天開始的晚班）；`weekStart` 設定一週起始日（預設週一）
+  - 純函式 `resolveDatePreset`、`resolvePresetValue`、`shiftRange` 也從正式入口匯出
+
 - **ChptScanInput 條碼掃描輸入**：產線掃描站用，掃描槍掃一下就送出、清空、繼續掃下一個。
   - 以按鍵速度分辨掃描槍與手打（`scanSpeed`，容許前綴碼後的一次停頓）；`allowManual: false` 只接受掃描槍
   - 重複條碼 `duplicate`（allow / warn / reject）與 `duplicateWindow`；`pattern`、`validator`、`minLength`、`trim`、`transform`
@@ -159,6 +165,9 @@
 ### 修正
 
 - **ChptFixedTable**：搜尋框寫死英文「Search...」，改為依語系。
+
+- **ChptDatePicker 日曆語系**：原本沒有把語系傳給底層的 vue-datepicker，月份、星期、「Select / Cancel」一直是英文；
+  現在跟著 ChptConfigProvider（繁中為「週一…週日」「取消 / 確定」）。
 
 - **StatusScatterMap**：繪圖區還沒有尺寸時（容器剛掛載、尚未排版，例如放進外框或分頁），
   `createImageData(0, h)` 丟出 IndexSizeError。現在沒有尺寸時跳過繪製，等尺寸量到再畫。

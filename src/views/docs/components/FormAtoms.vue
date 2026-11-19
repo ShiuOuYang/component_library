@@ -113,6 +113,31 @@
             </div>
             <p class="text-sm text-content-secondary mt-2 break-all">單日：<span class="font-mono">{{ form.date ? String(form.date) : '(未選擇)' }}</span></p>
           </div>
+
+          <h3 class="mt-6 mb-2 text-lg font-semibold text-content-primary">快捷選項</h3>
+          <p class="text-content-secondary text-sm mb-3">
+            <code>presets</code>：日曆左側一排快捷按鈕。<code>true</code> 為今天、昨天、本週、近 7 天、本月、上月；
+            也可以挑內建的 key（另有上週、近 30 天、本季、今年、本班、上一班）或自訂 <code>{ label, value }</code>。
+            區間在<strong>點下去的那一刻</strong>才計算（頁面開著過了午夜也正確）；「本週」依 <code>week-start</code>（預設週一）。
+            班別用 <code>shifts</code> 設定，夜班跨午夜也算得對 —— 凌晨 2 點的「本班」是前一天 20:00 開始的晚班。
+          </p>
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
+            <div class="grid md:grid-cols-2 gap-4">
+              <ChptDatePicker v-model="form.presetRange" label="報表期間" range presets full-width />
+              <ChptDatePicker
+                v-model="form.shiftRange"
+                label="班別區間"
+                range
+                enable-time-picker
+                format="yyyy-MM-dd HH:mm"
+                :presets="['currentShift', 'previousShift', 'today', fiscalMonth]"
+                :shifts="[{ name: '早班', start: '08:00' }, { name: '晚班', start: '20:00' }]"
+                full-width
+              />
+            </div>
+            <p class="text-sm text-content-secondary mt-2 break-all">報表期間：<span class="font-mono">{{ fmtRange(form.presetRange) }}</span></p>
+            <p class="text-sm text-content-secondary mt-1 break-all">班別區間：<span class="font-mono">{{ fmtRange(form.shiftRange) }}</span></p>
+          </div>
           <ChptCodeBlock :code="dateSample" />
           <ApiTable of="ChptDatePicker" title="Props" :rows="dateProps" />
           <ApiTable of="ChptDatePicker" title="Events" :rows="dateEvents" />
@@ -267,6 +292,8 @@ const form = reactive({
   notify: true,
   date: null,
   range: null,
+  presetRange: null,
+  shiftRange: null,
   qty: 1200,
   threshold: 98.5,
   lot: null,
@@ -408,7 +435,36 @@ const selectSample = `<ChptSelect v-model="v" :options="['A','B','C']" label="�
 const radioSample = `<ChptRadio v-model="v" :items="[{label:'高',value:'high'}]" color="primary" />`
 const switchSample = `<ChptSwitch v-model="on" label="啟用通知" color="success" />`
 const dateSample = `<ChptDatePicker v-model="d" label="單日" />
-<ChptDatePicker v-model="r" label="區間" range enable-time-picker format="yyyy-MM-dd HH:mm" />`
+<ChptDatePicker v-model="r" label="區間" range enable-time-picker format="yyyy-MM-dd HH:mm" />
+
+<!-- 快捷選項：true 為預設六個；也可以挑內建 key、班別或自訂 -->
+<ChptDatePicker v-model="r" range presets />
+<ChptDatePicker
+  v-model="r"
+  range
+  enable-time-picker
+  :presets="['currentShift', 'previousShift', 'today', { label: '會計月', value: (now) => fiscalMonthOf(now) }]"
+  :shifts="[{ name: '早班', start: '08:00' }, { name: '晚班', start: '20:00' }]"
+/>
+
+// 不用元件，直接算區間
+import { resolveDatePreset } from '@/components/library'
+const [from, to] = resolveDatePreset('last7Days')`
+
+/** 自訂快捷：會計月（上月 26 日 ～ 本月 25 日） */
+const fiscalMonth = {
+  label: '會計月',
+  value: (now) => {
+    const y = now.getFullYear()
+    const m = now.getDate() > 25 ? now.getMonth() + 1 : now.getMonth()
+    return [new Date(y, m - 1, 26), new Date(y, m, 25, 23, 59, 59, 999)]
+  },
+}
+function fmtRange(r) {
+  if (!Array.isArray(r) || !r[0]) return '(未選擇)'
+  const f = (d) => new Date(d).toLocaleString('zh-TW', { hour12: false })
+  return `${f(r[0])} ～ ${f(r[1])}`
+}
 
 const inputProps = [
   { name: 'modelValue', type: 'string | number', def: "''", desc: '值（v-model）' },
@@ -478,6 +534,9 @@ const dateProps = [
   { name: 'disabled / clearable / autoApply', type: 'boolean', def: '…', desc: '禁用／可清／自動套用' },
   { name: 'fullWidth', type: 'boolean', def: 'false', desc: '全寬' },
   { name: 'errorText', type: 'string', def: "''", desc: '錯誤訊息' },
+  { name: 'presets', type: 'boolean | (DatePresetKey | { label, value })[]', def: 'false', desc: "快捷選項；true 為今天、昨天、本週、近 7 天、本月、上月。內建 key 另有 lastWeek、last30Days、thisQuarter、thisYear、currentShift、previousShift；value 可為 [開始, 結束] 或 (now) => [開始, 結束]。單日模式取開始日" },
+  { name: 'weekStart', type: '0 | 1 | … | 6', def: '1', desc: '一週的第一天（0 = 週日、1 = 週一）；影響日曆與本週 / 上週' },
+  { name: 'shifts', type: '{ name, start: "HH:mm" }[]', def: '早班 08:00、晚班 20:00', desc: '班別（本班 / 上一班用）；最後一班延續到隔天第一班開始' },
 ]
 const dateEvents = [
   { name: 'update:modelValue', params: '(value)', desc: '日期變更' },
