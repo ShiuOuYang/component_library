@@ -36,6 +36,11 @@
 
 ### 新增
 
+- **WaferMap 晶圓圖／面板圖**：每筆資料是一顆晶粒的行列座標加上 bin 或量測值。bin 模式在標題列顯示良率、圖例顯示各 bin 顆數，
+  點圖例淡化該 bin（`v-model:hidden-bins`）；給 `valueField` 是數值模式（預設 viridis 色階，可用 `valueColors` / `valueDomain` 自訂）。
+  `rings` 分圈算分區良率（看邊緣良率損失）、`shape="panel"` 矩形面板、`notch` 定位缺口、`flipY`、`dieAspect`、固定 `grid` 讓多片並排大小一致。
+  晶粒畫在 Canvas；方向鍵逐顆移動（跳過空格）、Enter 選取，目前晶粒以 aria-live 念出。事件 `die-click` / `die-hover`。
+  純計算在 `charts/utils/waferMap.ts`。新增語系群組 `waferMap`。
 - **ChptSchemaForm 依設定檔產生表單**：用 `fields` 陣列描述欄位（`type`：input / number / textarea / select / radio /
   checkbox / switch / date / time / section），產生整張表單；底下仍是 ChptForm + ChptFormItem，驗證與錯誤聚焦行為相同。
   `columns` + 欄位 `span` 排版（小螢幕一欄）、`visible(model)` 條件顯示（隱藏的欄位不驗證，`clearHidden` 時清掉值）、

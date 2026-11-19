@@ -605,6 +605,19 @@ export interface ChptLocale {
     reset: string
     requiredSelect: (label: string) => string
   }
+  waferMap: {
+    yieldLabel: string
+    yieldCount: (pass: number, total: number) => string
+    ringYield: string
+    ring: (i: number, n: number) => string
+    coord: (x: number, y: number) => string
+    bin: string
+    value: string
+    pass: string
+    empty: string
+    legend: string
+    ariaLabel: (total: number, yieldText: string) => string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1233,6 +1246,19 @@ export const zhTW: ChptLocale = {
     reset: '重設',
     requiredSelect: (label) => `請選擇${label}`,
   },
+  waferMap: {
+    yieldLabel: '良率',
+    yieldCount: (pass, total) => `（${pass.toLocaleString()} / ${total.toLocaleString()} 顆）`,
+    ringYield: '分區良率',
+    ring: (i, n) => (i === 1 ? '中心' : i === n ? '外圈' : `第 ${i} 圈`),
+    coord: (x, y) => `座標 (${x}, ${y})`,
+    bin: 'Bin',
+    value: '數值',
+    pass: '良品',
+    empty: '沒有晶粒資料',
+    legend: 'Bin 圖例（點一下淡化 / 恢復）',
+    ariaLabel: (total, yieldText) => `晶圓圖，${total.toLocaleString()} 顆晶粒${yieldText ? `，良率 ${yieldText}` : ''}。方向鍵逐顆移動，Enter 選取`,
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1860,6 +1886,19 @@ export const enUS: ChptLocale = {
     submit: 'Submit',
     reset: 'Reset',
     requiredSelect: (label) => `Please select ${label}`,
+  },
+  waferMap: {
+    yieldLabel: 'Yield',
+    yieldCount: (pass, total) => `(${pass.toLocaleString()} / ${total.toLocaleString()} dies)`,
+    ringYield: 'Yield by zone',
+    ring: (i, n) => (i === 1 ? 'Center' : i === n ? 'Edge' : `Ring ${i}`),
+    coord: (x, y) => `Die (${x}, ${y})`,
+    bin: 'Bin',
+    value: 'Value',
+    pass: 'Pass',
+    empty: 'No die data',
+    legend: 'Bin legend (click to dim / restore)',
+    ariaLabel: (total, yieldText) => `Wafer map, ${total.toLocaleString()} dies${yieldText ? `, yield ${yieldText}` : ''}. Use arrow keys to move between dies, Enter to select`,
   },
 }
 

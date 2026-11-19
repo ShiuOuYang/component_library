@@ -86,6 +86,14 @@ const routes = [
         },
       },
       {
+        path: "components/wafer-map",
+        name: "WaferMapDoc",
+        component: () => import("../views/docs/WaferMapDoc.vue"),
+        meta: {
+          title: "晶圓圖",
+        },
+      },
+      {
         path: "components/gantt-chart",
         name: "GanttChartDoc",
         component: () => import("../views/docs/GanttChartDoc.vue"),
