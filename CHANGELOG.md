@@ -36,6 +36,12 @@
 
 ### 新增
 
+- **ChptFormList 動態列**：一筆單據裡有好幾列要輸入（多筆量測值、多個料號）時使用。綁定陣列（v-model），
+  每一列的內容由插槽決定；`path('value')` 給出這一列的欄位路徑（`measures.0.value`）。`min` / `max` 限制列數、
+  `sortable` 上下移動、新增後聚焦到新的一列、新增 / 刪除以 aria-live 念出；每列 key 穩定（刪除中間一列不會讓下面的輸入框「換人」）
+- **ChptFormItem 萬用字元規則**：ChptForm 的 rules 找不到完全相同的路徑時，會把數字索引換成 `*` 再找
+  （`'measures.*.value'` 套用到每一列）
+
 - **ChptTable 樹狀資料**：`tree` 開啟後，`childrenKey`（預設 children）裡的子列縮排顯示在父列下方，第一欄有展開 / 收合鈕
   （`aria-expanded`、列帶 `aria-level`）。
   - 排序在同一層的兄弟之間進行，不打亂父子關係；搜尋保留符合的列與它的上層並自動展開（清除後恢復原本的展開狀態）
