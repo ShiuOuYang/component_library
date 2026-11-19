@@ -406,6 +406,10 @@ const navSections = [
         anchors: [{ label: '基本示範', id: 'basic' }, { label: '5 萬個點', id: 'large' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/wafer-map', icon: '💿', label: '晶圓圖',
+        anchors: [{ label: 'Bin 圖與分區良率', id: 'bin' }, { label: '數值模式', id: 'value' }, { label: '整批比較', id: 'lot' }, { label: '面板圖', id: 'panel' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/gantt-chart', icon: '🗓️', label: '甘特圖',
         anchors: [
           { label: '機台排程', id: 'basic' }, { label: '專案進度', id: 'project' },
