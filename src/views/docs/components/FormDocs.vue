@@ -82,6 +82,56 @@
       </p>
     </section>
 
+    <!-- ============ ChptFormList ============ -->
+    <section id="chpt-form-list" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFormList 動態列</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>一筆單據裡有好幾列要輸入 —— 檢驗單的多筆量測值、工單的多個料號、出貨單的多個箱號。
+        綁定一個陣列，每一列的內容由插槽決定；插槽的 <code>path('value')</code> 給出這一列欄位的路徑，
+        放在 <code>ChptFormItem</code> 的 <code>prop</code> 上。規則在 ChptForm 寫一次 <code>'measures.*.value'</code>（數字索引換成 *）就套用到每一列。
+        新增後自動聚焦到新的一列；<code>min</code> / <code>max</code> 限制列數；<code>sortable</code> 可上下移動。
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptForm ref="inspectRef" :model="inspection" :rules="inspectRules" label-position="top">
+          <ChptFormItem prop="lot" label="批號" class="max-w-xs">
+            <ChptInput v-model="inspection.lot" placeholder="例如 LOT-2611-07" />
+          </ChptFormItem>
+          <ChptFormList
+            v-model="inspection.measures"
+            prop="measures"
+            label="量測值（mm）"
+            :create-item="() => ({ point: '', value: null })"
+            :min="1"
+            :max="8"
+            sortable
+          >
+            <template #default="{ path, index }">
+              <div class="grid gap-2 sm:grid-cols-2">
+                <ChptFormItem :prop="path('point')" label="量測點">
+                  <ChptInput v-model="inspection.measures[index].point" placeholder="例如 孔徑 A" />
+                </ChptFormItem>
+                <ChptFormItem :prop="path('value')" label="量測值">
+                  <ChptInputNumber v-model="inspection.measures[index].value" :step="0.01" :precision="2" />
+                </ChptFormItem>
+              </div>
+            </template>
+          </ChptFormList>
+          <div class="mt-4 flex gap-2">
+            <ChptButton color="primary" @click="submitInspection">送出</ChptButton>
+            <ChptButton is-outline @click="inspectRef?.reset()">重設</ChptButton>
+          </div>
+        </ChptForm>
+        <p class="mt-3 text-sm text-content-secondary" aria-live="polite">{{ inspectResult }}</p>
+      </div>
+      <div class="mt-6">
+        <ChptCodeBlock :code="formListSample" />
+      </div>
+      <ApiTable of="ChptFormList" title="Props" :rows="formListProps" />
+      <ApiTable of="ChptFormList" title="Events" :rows="formListEvents" />
+      <ApiTable of="ChptFormList" title="Slots" :rows="formListSlots" />
+      <ApiTable of="ChptFormList" title="方法（ref）" :rows="formListMethods" />
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -132,6 +182,7 @@ import { reactive, ref } from 'vue'
 import {
   ChptForm,
   ChptFormItem,
+  ChptFormList,
   ChptInput,
   ChptSelect,
   ChptInputNumber,
@@ -144,6 +195,71 @@ import {
   ChptCodeBlock,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+
+// ---- ChptFormList ----
+const inspectRef = ref(null)
+const inspection = reactive({
+  lot: '',
+  measures: [{ point: '孔徑 A', value: 3.02 }, { point: '', value: null }],
+})
+const inspectRules = {
+  lot: { required: true },
+  // 數字索引換成 *：每一列都套用
+  'measures.*.point': { required: true, message: '請輸入量測點' },
+  'measures.*.value': [{ required: true, message: '請輸入量測值' }, { type: 'number' }, { min: 0, max: 50 }],
+}
+const inspectResult = ref('')
+async function submitInspection() {
+  const { valid, errors } = await inspectRef.value.validate()
+  inspectResult.value = valid ? `已送出：${inspection.measures.length} 筆量測值` : `有 ${Object.keys(errors).length} 個欄位需要修正`
+}
+const formListSample = `<ChptForm :model="form" :rules="rules">
+  <ChptFormList
+    v-model="form.measures"
+    prop="measures"
+    label="量測值"
+    :create-item="() => ({ point: '', value: null })"
+    :min="1"
+    :max="8"
+    sortable
+  >
+    <template #default="{ path, index }">
+      <ChptFormItem :prop="path('value')" label="量測值">
+        <ChptInputNumber v-model="form.measures[index].value" />
+      </ChptFormItem>
+    </template>
+  </ChptFormList>
+</ChptForm>
+
+const rules = {
+  // 數字索引換成 *：每一列都套用
+  'measures.*.value': [{ required: true }, { type: 'number' }],
+}`
+const formListProps = [
+  { name: 'modelValue', type: 'T[]', def: '—', desc: '陣列（v-model）' },
+  { name: 'prop', type: 'string', def: "''", desc: '陣列在 ChptForm model 裡的路徑；插槽的 path() 以它為開頭' },
+  { name: 'label / itemLabel', type: 'string', def: "''", desc: '整組標題（群組名稱）；每一列的名稱（螢幕閱讀器念「量測值 第 2 筆」）' },
+  { name: 'createItem', type: '() => T', def: '() => ({})', desc: '新增一列時的初始值' },
+  { name: 'min / max', type: 'number', def: '0 / —', desc: '最少 / 最多幾列；到達時刪除 / 新增鈕停用' },
+  { name: 'sortable', type: 'boolean', def: 'false', desc: '每一列顯示上移 / 下移鈕' },
+  { name: 'showIndex', type: 'boolean', def: 'true', desc: '每列左側顯示序號' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '停用新增、刪除、移動' },
+  { name: 'addText / emptyText', type: 'string', def: '語系（繁中「新增一列」/「尚無資料…」）', desc: '新增鈕與空狀態的文字' },
+]
+const formListEvents = [
+  { name: 'update:modelValue', params: '(value: T[])', desc: '新增、刪除、移動後的新陣列' },
+  { name: 'add', params: '(item, index)', desc: '新增了一列' },
+  { name: 'remove', params: '(item, index)', desc: '刪除了一列' },
+]
+const formListSlots = [
+  { name: 'default', params: '{ item, index, path(field?), remove, moveUp, moveDown, canRemove }', desc: '每一列的內容；path("value") 為 "measures.0.value"' },
+  { name: 'header', params: '{ count }', desc: '自訂標題列' },
+  { name: 'empty', params: '—', desc: '沒有資料時的內容' },
+]
+const formListMethods = [
+  { name: 'add(item?, at?)', type: '(T?, number?) => Promise<number>', desc: '新增一列（不給 item 時用 createItem），回傳索引；超過 max 時回傳 -1' },
+  { name: 'remove(index) / move(index, delta)', type: '(number) => void', desc: '刪除；上下移動（delta 為 -1 / 1）' },
+]
 
 // ---- ChptForm ----
 const formRef = ref(null)

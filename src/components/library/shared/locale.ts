@@ -588,6 +588,18 @@ export interface ChptLocale {
     manual: string
     status: { ok: string; duplicate: string; rejected: string }
   }
+  formList: {
+    add: string
+    empty: string
+    item: (label: string, n: number) => string
+    remove: (n: number) => string
+    moveUp: (n: number) => string
+    moveDown: (n: number) => string
+    added: (n: number) => string
+    removed: (n: number) => string
+    moved: (from: number, to: number) => string
+    max: (n: number) => string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1199,6 +1211,18 @@ export const zhTW: ChptLocale = {
     manual: '手動',
     status: { ok: '已接受', duplicate: '重複（已接受）', rejected: '已拒絕' },
   },
+  formList: {
+    add: '新增一列',
+    empty: '尚無資料，按「新增一列」加入',
+    item: (label, n) => `${label ? `${label} ` : ''}第 ${n} 筆`,
+    remove: (n) => `刪除第 ${n} 筆`,
+    moveUp: (n) => `第 ${n} 筆上移`,
+    moveDown: (n) => `第 ${n} 筆下移`,
+    added: (n) => `已新增第 ${n} 筆`,
+    removed: (n) => `已刪除第 ${n} 筆`,
+    moved: (a, b) => `第 ${a} 筆已移到第 ${b} 筆`,
+    max: (n) => `最多 ${n} 筆`,
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1809,6 +1833,18 @@ export const enUS: ChptLocale = {
     scanner: 'Scan',
     manual: 'Manual',
     status: { ok: 'Accepted', duplicate: 'Duplicate (accepted)', rejected: 'Rejected' },
+  },
+  formList: {
+    add: 'Add row',
+    empty: 'No rows yet. Use “Add row” to add one.',
+    item: (label, n) => `${label ? `${label} ` : ''}row ${n}`,
+    remove: (n) => `Remove row ${n}`,
+    moveUp: (n) => `Move row ${n} up`,
+    moveDown: (n) => `Move row ${n} down`,
+    added: (n) => `Added row ${n}`,
+    removed: (n) => `Removed row ${n}`,
+    moved: (a, b) => `Moved row ${a} to ${b}`,
+    max: (n) => `Up to ${n} rows`,
   },
 }
 

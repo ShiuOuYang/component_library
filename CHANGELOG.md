@@ -36,6 +36,12 @@
 
 ### 新增
 
+- **ChptFormList 動態列**：一筆單據裡有好幾列要輸入（多筆量測值、多個料號）時使用。綁定陣列（v-model），
+  每一列的內容由插槽決定；`path('value')` 給出這一列的欄位路徑（`measures.0.value`）。`min` / `max` 限制列數、
+  `sortable` 上下移動、新增後聚焦到新的一列、新增 / 刪除以 aria-live 念出；每列 key 穩定（刪除中間一列不會讓下面的輸入框「換人」）
+- **ChptFormItem 萬用字元規則**：ChptForm 的 rules 找不到完全相同的路徑時，會把數字索引換成 `*` 再找
+  （`'measures.*.value'` 套用到每一列）
+
 - **ChptTable 欄位設定與記憶**：`columnSettings` 在右上角加「欄位」按鈕，使用者勾選要顯示的欄位
   （多層表頭標上群組名稱；至少留一欄；群組底下全部隱藏時群組表頭也拿掉）；`v-model:hidden-columns`。
   `persistKey` 把隱藏的欄位與拖曳過的欄寬記在 localStorage，重新整理後還在（讀寫失敗時不影響表格）；

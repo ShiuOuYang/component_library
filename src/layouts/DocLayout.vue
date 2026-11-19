@@ -265,6 +265,7 @@ const navSections = [
         to: '/docs/components/form', icon: '📝', label: '表單驗證與上傳',
         anchors: [
           { label: 'ChptForm', id: 'chpt-form' },
+          { label: 'ChptFormList', id: 'chpt-form-list' },
           { label: 'ChptUpload', id: 'chpt-upload' },
         ],
       },

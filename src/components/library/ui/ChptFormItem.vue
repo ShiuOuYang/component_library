@@ -108,8 +108,21 @@ const isGroup = ref(false)
 const isLeft = computed(() => form?.labelPosition() === 'left')
 const labelWidth = computed(() => props.labelWidth || form?.labelWidth() || '8rem')
 
+/**
+ * ChptForm 的規則：先找完全相同的路徑，找不到時把數字索引換成 * 再找一次 ——
+ * 動態列（ChptFormList）的每一列路徑都不同（measures.0.value、measures.1.value…），
+ * 在 ChptForm 寫一次 'measures.*.value' 就能套用到每一列
+ */
+function formRulesFor(prop: string): FormRule[] {
+  if (!form) return []
+  const all = form.rules()
+  if (all[prop]) return toRuleList(all[prop])
+  const wildcard = prop.replace(/\.\d+(?=\.|$)/g, '.*')
+  return wildcard !== prop ? toRuleList(all[wildcard]) : []
+}
+
 const ruleList = computed<FormRule[]>(() => {
-  const fromForm = props.prop && form ? toRuleList(form.rules()[props.prop]) : []
+  const fromForm = props.prop ? formRulesFor(props.prop) : []
   const list = [...fromForm, ...toRuleList(props.rules)]
   if (props.required && !list.some((r) => r.required)) list.unshift({ required: true })
   return list
