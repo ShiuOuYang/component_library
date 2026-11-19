@@ -550,6 +550,13 @@ export interface ChptLocale {
     removeSheet: string
     formats: { general: string; integer: string; decimal2: string; thousands: string; thousandsDecimal: string; percent: string; percentDecimal: string; date: string; dateTime: string; time: string }
   }
+  kpiCard: {
+    good: string
+    warning: string
+    critical: string
+    target: (value: string) => string
+    trend: (title: string, label: string) => string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1127,6 +1134,13 @@ export const zhTW: ChptLocale = {
     removeSheet: '刪除工作表',
     formats: { general: '一般格式', integer: '整數', decimal2: '小數 2 位', thousands: '千分位整數', thousandsDecimal: '千分位小數', percent: '百分比整數', percentDecimal: '百分比小數', date: '日期', dateTime: '日期時間', time: '時間' },
   },
+  kpiCard: {
+    good: '達標',
+    warning: '接近目標',
+    critical: '未達標',
+    target: (v) => `目標 ${v}`,
+    trend: (title, label) => `${title}趨勢${label ? `（${label}）` : ''}`,
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1703,6 +1717,13 @@ export const enUS: ChptLocale = {
     addSheet: 'Add sheet',
     removeSheet: 'Delete sheet',
     formats: { general: 'General', integer: 'Integer', decimal2: '2 decimals', thousands: 'Thousands separator', thousandsDecimal: 'Thousands separator, 2 decimals', percent: 'Percent', percentDecimal: 'Percent, 2 decimals', date: 'Date', dateTime: 'Date and time', time: 'Time' },
+  },
+  kpiCard: {
+    good: 'On target',
+    warning: 'Near target',
+    critical: 'Off target',
+    target: (v) => `Target ${v}`,
+    trend: (title, label) => `${title} trend${label ? ` (${label})` : ''}`,
   },
 }
 

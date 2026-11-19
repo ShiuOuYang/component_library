@@ -33,7 +33,7 @@ export {
   DualAxisComboChart, EnterpriseHeatmap, EnterprisePareto, ParetoChart,
   FacetedChart, GridFacetChart, StatusScatterMap, GanttChart,
   HorizontalBarChart, PieChart, SparklineChart, GaugeChart, ControlChart, CapabilityHistogram,
-  StateTimeline, BoxPlotChart, WaterfallChart,
+  StateTimeline, BoxPlotChart, WaterfallChart, ChptKpiCard,
 } from './charts/index.js'
 
 // ===== viewer =====
@@ -93,7 +93,7 @@ export type {
   ControlChartType, ControlChartLimits, ControlChartViolation, CapabilityResult,
   StateTimelineEvent, StateTimelineTooltip, StateTimelineRowInput, StateDef, StateSummary,
   BoxPlotGroupEvent, BoxPlotPointEvent, BoxPlotTooltip, BoxPlotReferenceLine, BoxPlotGroupInput, BoxStats, QuartileMethod,
-  WaterfallEvent, WaterfallTooltip, WaterfallKind,
+  WaterfallEvent, WaterfallTooltip, WaterfallKind, KpiStatus, ChptKpiCardProps,
 } from './charts/index.js'
 export type {
   GerberLayerInput, GerberImageInfo, PcbBoardInfo, PcbElementEvent,

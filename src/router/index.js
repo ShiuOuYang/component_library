@@ -114,7 +114,7 @@ const routes = [
         name: "KpiChartsDoc",
         component: () => import("../views/docs/KpiChartsDoc.vue"),
         meta: {
-          title: "KPI 小圖",
+          title: "KPI 卡片與小圖",
         },
       },
       {

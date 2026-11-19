@@ -18,6 +18,7 @@ export { default as CapabilityHistogram } from './CapabilityHistogram.vue'
 export { default as StateTimeline } from './StateTimeline.vue'
 export { default as BoxPlotChart } from './BoxPlotChart.vue'
 export { default as WaterfallChart } from './WaterfallChart.vue'
+export { default as ChptKpiCard } from './ChptKpiCard.vue'
 
 // ===== 型別（props 的資料形狀與事件 payload） =====
 export type {
@@ -57,3 +58,4 @@ export type {
 export type { BoxStats, QuartileMethod } from './utils/boxPlot'
 export type { WaterfallEvent, WaterfallTooltip } from './WaterfallChart.vue'
 export type { WaterfallKind } from './utils/waterfall'
+export type { KpiStatus, ChptKpiCardProps } from './ChptKpiCard.vue'

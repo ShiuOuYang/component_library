@@ -429,7 +429,7 @@ const navSections = [
         anchors: [{ label: '一天的狀態', id: 'basic' }, { label: '停最久的機台', id: 'summary' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' }],
       },
       {
-        to: '/docs/components/kpi-charts', icon: '🎛️', label: 'KPI 小圖',
+        to: '/docs/components/kpi-charts', icon: '🎛️', label: 'KPI 卡片與小圖',
         anchors: [{ label: 'KPI 卡片', id: 'cards' }, { label: '迷你趨勢線', id: 'sparkline' }, { label: '儀表', id: 'gauge' }, { label: 'API', id: 'api' }],
       },
     ],
