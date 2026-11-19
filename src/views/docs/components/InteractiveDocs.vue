@@ -189,6 +189,48 @@
         游標可以移到提示上不讓它消失、任何時候按 Esc 都能關閉（WCAG 1.4.13）。層級為 z-tooltip，放在 Modal 裡也不會被蓋住。
       </p>
     </section>
+
+    <section id="chpt-kanban" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptKanban 看板</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>工單、異常單、改善提案這類有狀態流程的清單：每一欄是一個狀態，卡片拖到下一欄就是推進流程。
+        卡片是一個陣列（v-model），每張卡片的 <code>column-field</code> 記錄它在哪一欄。欄的 <code>limit</code> 是在製上限，超過時標紅；
+        <code>can-move</code> 自訂規則 —— 這個範例不能從「待處理」直接跳到「結案」，也不能跳過品檢。
+        鍵盤：Tab 到卡片，<kbd class="rounded border border-stroke-default px-1 text-xs">空白鍵</kbd>拿起、方向鍵移動、再按空白鍵放下，Escape 取消。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptKanban } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptKanban
+          v-model="issues"
+          :columns="issueColumns"
+          :can-move="issueCanMove"
+          :is-locked="(c) => c.locked"
+          :max-height="360"
+          @move="onIssueMove"
+          @card-click="(c) => (issueLog = `開啟 ${c.id}：${c.title}`)"
+        >
+          <template #card="{ card }">
+            <div class="flex items-start justify-between gap-2">
+              <span class="font-medium">{{ card.title }}</span>
+              <ChptTag size="sm" :color="card.level === '高' ? 'danger' : card.level === '中' ? 'warning' : 'secondary'">{{ card.level }}</ChptTag>
+            </div>
+            <div class="mt-1.5 flex items-center justify-between text-xs text-content-tertiary">
+              <span>{{ card.id }} · {{ card.machine }}</span>
+              <span>{{ card.owner }}<template v-if="card.locked"> · 🔒</template></span>
+            </div>
+          </template>
+        </ChptKanban>
+        <p class="mt-2 text-xs text-content-tertiary" aria-live="polite">{{ issueLog || '拖曳卡片或點一張卡片' }}</p>
+      </div>
+      <div class="mt-6">
+        <ChptCodeBlock :code="kanbanSample" />
+      </div>
+      <ApiTable of="ChptKanban" title="Props" :rows="kanbanProps" />
+      <ApiTable of="ChptKanban" title="Events" :rows="kanbanEvents" />
+      <ApiTable of="ChptKanban" title="Slots" :rows="kanbanSlots" />
+    </section>
   </div>
 </template>
 
@@ -204,8 +246,73 @@ import {
   ChptAvatar,
   ChptTooltip,
   ChptCodeBlock,
+  ChptKanban,
+  ChptTag,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+
+// ---- Kanban ----
+const issueColumns = [
+  { id: 'todo', title: '待處理', color: 'rgb(var(--t-chart-8))' },
+  { id: 'doing', title: '處理中', color: 'rgb(var(--t-chart-1))', limit: 3 },
+  { id: 'qa', title: '品檢確認', color: 'rgb(var(--t-chart-4))' },
+  { id: 'done', title: '結案', color: 'rgb(var(--t-success-solid))' },
+]
+const FLOW = ['todo', 'doing', 'qa', 'done']
+/** 往前只能一次走一步（不能跳過品檢）；往回退可以 */
+const issueCanMove = (_card, from, to) => FLOW.indexOf(to) <= FLOW.indexOf(from) + 1
+const issues = ref([
+  { id: 'AB-1021', title: 'SMT-3 吸嘴堵塞', machine: 'SMT-3', owner: '王小明', level: '高', status: 'todo' },
+  { id: 'AB-1022', title: 'AOI 誤判率偏高', machine: 'AOI-1', owner: '陳大文', level: '中', status: 'todo' },
+  { id: 'AB-1019', title: '回焊爐 A-03 溫度偏高', machine: 'RF-A03', owner: '林美華', level: '高', status: 'doing' },
+  { id: 'AB-1017', title: '錫膏印刷偏移', machine: 'SP-2', owner: '王小明', level: '中', status: 'doing' },
+  { id: 'AB-1015', title: '治具磨損', machine: 'ICT-1', owner: '張志強', level: '低', status: 'qa' },
+  { id: 'AB-1009', title: '鋼板張力不足', machine: 'SP-1', owner: '林美華', level: '低', status: 'done', locked: true },
+])
+const issueLog = ref('')
+function onIssueMove({ card, from, to }) {
+  const title = (id) => issueColumns.find((c) => c.id === id).title
+  issueLog.value = `${card.id}：${title(from)} → ${title(to)}`
+}
+const kanbanSample = `<ChptKanban v-model="issues" :columns="columns" :can-move="canMove" @move="save">
+  <template #card="{ card }">
+    <strong>{{ card.title }}</strong>
+    <small>{{ card.id }} · {{ card.owner }}</small>
+  </template>
+</ChptKanban>
+
+const columns = [
+  { id: 'todo', title: '待處理' },
+  { id: 'doing', title: '處理中', limit: 3 }, // 在製上限
+  { id: 'qa', title: '品檢確認' },
+  { id: 'done', title: '結案' },
+]
+// 卡片的 status 欄位記錄它在哪一欄（column-field 預設 'status'、key-field 預設 'id'）
+const issues = ref([{ id: 'AB-1021', title: 'SMT-3 吸嘴堵塞', status: 'todo' }, ...])
+// 往前只能一次走一步
+const canMove = (card, from, to) => FLOW.indexOf(to) <= FLOW.indexOf(from) + 1`
+const kanbanProps = [
+  { name: 'modelValue', type: 'T[]', def: '—', desc: '卡片（v-model）；同一欄的順序就是陣列順序' },
+  { name: 'columns', type: 'KanbanColumn[]', def: '—', desc: '{ id, title, limit?（在製上限）, color? }' },
+  { name: 'keyField / columnField / titleField', type: 'string', def: "'id' / 'status' / 'title'", desc: '卡片的唯一鍵、所在欄、預設內容用的標題欄位' },
+  { name: 'canMove', type: '(card, from, to) => boolean', def: '—', desc: '自訂移動規則；不允許的欄拖過去時顯示禁止、鍵盤移動時跳過' },
+  { name: 'enforceLimit', type: 'boolean', def: 'false', desc: '不能放進已達在製上限的欄（沒開時可以放，但欄會標紅）' },
+  { name: 'isLocked', type: '(card) => boolean', def: '—', desc: '不能拖曳的卡片' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '整個看板不能拖曳' },
+  { name: 'columnWidth / maxHeight', type: 'number', def: '272 / —', desc: '欄寬；卡片區的最大高度（px，超過時捲動）' },
+  { name: 'emptyText / ariaLabel', type: 'string', def: '語系', desc: '空欄的文字；區域名稱' },
+]
+const kanbanEvents = [
+  { name: 'update:modelValue', params: '(cards: T[])', desc: '移動後的新陣列（被移的卡片是新物件，所在欄已更新）' },
+  { name: 'move', params: '({ card, from, to, index })', desc: '移動了一張卡片（適合在這裡存到後端）' },
+  { name: 'card-click', params: '(card: T)', desc: '點擊卡片（沒有拖曳）或在卡片上按 Enter' },
+]
+const kanbanSlots = [
+  { name: 'card', params: '{ card, column }', desc: '卡片內容' },
+  { name: 'column-header', params: '{ column, cards }', desc: '欄標題' },
+  { name: 'column-footer', params: '{ column, cards }', desc: '欄底部（例如「新增卡片」按鈕）' },
+  { name: 'empty', params: '{ column }', desc: '空欄的內容' },
+]
 
 const activeTab = ref(0)
 const tabs = [
