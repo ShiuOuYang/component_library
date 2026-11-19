@@ -36,6 +36,14 @@
 
 ### 新增
 
+- **ChptTable 固定欄與合計列**
+  - 欄位 `fixed: 'start' | 'end'`（也接受 left / right / true）：橫向捲動時固定在左 / 右側，勾選欄、展開欄跟著固定在最左；
+    設在最上層欄位（含群組），左固定自動排到最前、右固定排到最後；依實際欄寬計算位置（不必給 width）；
+    固定格的底色跟著斑馬紋、hover、勾選、警告列與欄位顏色；捲動時固定區邊緣有陰影
+  - 欄位 `summary`（sum / avg / min / max / count 或 `(values, rows) => 值`）與 `summaryFormat`：表格底部出現合計列；
+    預設對篩選後的全部資料計算（`summaryScope: 'page'` 只算這一頁）；`summaryLabel`、`#summary-cell` 插槽；
+    虛擬捲動時合計列固定在底部
+
 - **ChptScanInput 條碼掃描輸入**：產線掃描站用，掃描槍掃一下就送出、清空、繼續掃下一個。
   - 以按鍵速度分辨掃描槍與手打（`scanSpeed`，容許前綴碼後的一次停頓）；`allowManual: false` 只接受掃描槍
   - 重複條碼 `duplicate`（allow / warn / reject）與 `duplicateWindow`；`pattern`、`validator`、`minLength`、`trim`、`transform`
@@ -149,6 +157,8 @@
   「重設縮放」回到設定的範圍。（#17、#18）
 
 ### 修正
+
+- **ChptFixedTable**：搜尋框寫死英文「Search...」，改為依語系。
 
 - **StatusScatterMap**：繪圖區還沒有尺寸時（容器剛掛載、尚未排版，例如放進外框或分頁），
   `createImageData(0, h)` 丟出 IndexSizeError。現在沒有尺寸時跳過繪製，等尺寸量到再畫。

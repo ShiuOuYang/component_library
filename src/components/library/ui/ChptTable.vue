@@ -61,6 +61,7 @@
       @scroll.passive="onScroll"
     >
       <table
+        ref="tableEl"
         class="w-full border-collapse text-xs whitespace-nowrap min-w-max text-content-primary"
         :class="{ 'table-fixed': props.resizable }"
         :aria-busy="props.loading || undefined"
@@ -77,16 +78,20 @@
               <th
                 v-if="expandEnabled"
                 scope="col"
+                data-lead
                 :rowspan="headerDepth > 1 ? headerDepth : undefined"
                 class="lead-col header-cell bg-gradient-to-b"
-                :class="[props.headerBgGradient]"
+                :class="[props.headerBgGradient, { 'is-fixed': hasFixedStart }]"
+                :style="leadFixedStyle(0)"
               ><span class="sr-only">{{ t.table.expand }}</span></th>
               <th
                 v-if="selectionEnabled"
                 scope="col"
+                data-lead
                 :rowspan="headerDepth > 1 ? headerDepth : undefined"
                 class="lead-col header-cell bg-gradient-to-b"
-                :class="[props.headerBgGradient, { 'has-divider': expandEnabled }]"
+                :class="[props.headerBgGradient, { 'has-divider': expandEnabled, 'is-fixed': hasFixedStart }]"
+                :style="leadFixedStyle(expandEnabled ? 1 : 0)"
               >
                 <input
                   v-if="!singleSelect"
@@ -110,8 +115,8 @@
                 scope="colgroup"
                 :colspan="cell.colspan"
                 class="header-cell group-cell font-semibold py-1.5 px-2 text-center whitespace-nowrap"
-                :class="[headerBgClass(cell.column), headerTextClass(cell.column, props.groupHeaderTextColor), { 'has-divider': cell.divider }]"
-                :style="cell.column.style"
+                :class="[headerBgClass(cell.column), headerTextClass(cell.column, props.groupHeaderTextColor), { 'has-divider': cell.divider }, fixedClassOf(cell.column, true)]"
+                :style="[cell.column.style, fixedStyleOf(cell.column, true)]"
               >{{ cell.column.title }}</th>
 
               <!-- 葉欄：可排序、可調整欄寬 -->
@@ -120,7 +125,8 @@
                 v-bind="cell.column.headerProps"
                 scope="col"
                 :rowspan="cell.rowspan > 1 ? cell.rowspan : undefined"
-                :style="[cell.column.style, widthStyle(cell.column)]"
+                :data-leaf="leafIndexMap.get(cell.column)"
+                :style="[cell.column.style, widthStyle(cell.column), fixedStyleOf(cell.column)]"
                 :class="[
                   'header-cell leaf-cell font-medium py-2 px-2 whitespace-nowrap',
                   headerBgClass(cell.column),
@@ -130,7 +136,8 @@
                     'is-sorted': getColumnSortInfo(cell.column.key) !== null,
                     'relative': props.resizable,
                     'has-divider': cell.divider,
-                  }
+                  },
+                  fixedClassOf(cell.column),
                 ]"
                 :aria-sort="ariaSortFor(cell.column)"
                 :tabindex="isColumnClickable(cell.column) ? 0 : undefined"
@@ -228,7 +235,7 @@
                   @click="onRowClick(item, index + renderStart, $event)"
                   @keydown.enter.self="onRowClick(item, index + renderStart, $event)"
                 >
-                  <td v-if="expandEnabled" class="lead-col">
+                  <td v-if="expandEnabled" class="lead-col" :class="{ 'is-fixed': hasFixedStart }" :style="leadFixedStyle(0)">
                     <button
                       v-if="canExpandRow(item)"
                       type="button"
@@ -245,7 +252,7 @@
                       >chevron_right</span>
                     </button>
                   </td>
-                  <td v-if="selectionEnabled" class="lead-col">
+                  <td v-if="selectionEnabled" class="lead-col" :class="{ 'is-fixed': hasFixedStart }" :style="leadFixedStyle(expandEnabled ? 1 : 0)">
                     <input
                       :type="singleSelect ? 'radio' : 'checkbox'"
                       class="table-check"
@@ -261,8 +268,8 @@
                     v-for="column in displayColumns"
                     :key="column.key ?? column.title"
                     v-bind="cellPropsOf(column, item, index + renderStart)"
-                    :class="toneOf(column) ? `tone-cell-${toneOf(column)}` : undefined"
-                    :style="[column.style, widthStyle(column), alignStyle(column)]"
+                    :class="[toneOf(column) ? `tone-cell-${toneOf(column)}` : undefined, fixedClassOf(column)]"
+                    :style="[column.style, widthStyle(column), alignStyle(column), fixedStyleOf(column)]"
                   >
                     <slot
                       name="cell"
@@ -289,7 +296,35 @@
           </template>
         </tbody>
         <!-- 表格底部 -->
-        <tfoot v-if="hasFooterSlot">
+        <tfoot v-if="hasFooterSlot || hasSummary" :class="{ 'is-sticky-foot': props.virtual }">
+          <!-- 合計列：預設對篩選後的全部資料計算（summaryScope='page' 時只算這一頁） -->
+          <tr v-if="hasSummary && paginatedData.length" class="summary-row">
+            <td v-if="expandEnabled" class="lead-col" :class="{ 'is-fixed': hasFixedStart }" :style="leadFixedStyle(0)"></td>
+            <component
+              :is="summaryLabelIndex === -1 ? 'th' : 'td'"
+              v-if="selectionEnabled"
+              :scope="summaryLabelIndex === -1 ? 'row' : undefined"
+              class="lead-col"
+              :class="{ 'is-fixed': hasFixedStart }"
+              :style="leadFixedStyle(expandEnabled ? 1 : 0)"
+            >{{ summaryLabelIndex === -1 ? (props.summaryLabel ?? t.table.summary) : '' }}</component>
+            <template v-for="(column, i) in displayColumns" :key="column.key ?? column.title">
+              <th
+                v-if="i === summaryLabelIndex"
+                scope="row"
+                :class="fixedClassOf(column)"
+                :style="[widthStyle(column), alignStyle(column), fixedStyleOf(column)]"
+              >{{ props.summaryLabel ?? t.table.summary }}</th>
+              <td
+                v-else
+                :class="[toneOf(column) ? `tone-cell-${toneOf(column)}` : undefined, fixedClassOf(column)]"
+                :style="[widthStyle(column), alignStyle(column), fixedStyleOf(column)]"
+              >
+                <slot v-if="column.summary" name="summary-cell" :column="column" :value="summaryValues[i]" :rows="summaryRows">{{ formatSummary(column, summaryValues[i]) }}</slot>
+              </td>
+            </template>
+            <td v-if="props.resizable" role="presentation" class="filler-col"></td>
+          </tr>
           <slot name="footer"></slot>
         </tfoot>
       </table>
@@ -333,7 +368,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, shallowReactive, useSlots, onMounted, onBeforeUnmount, getCurrentInstance, useId } from 'vue'
+import { ref, computed, watch, shallowReactive, useSlots, onMounted, onBeforeUnmount, getCurrentInstance, useId, nextTick } from 'vue'
 import ChptPagination from './ChptPagination.vue'
 import ChptSpinner from './ChptSpinner.vue'
 import { useConfig, useLocale } from '../shared/config'
@@ -372,7 +407,21 @@ export interface Column {
   color?: ColumnColor
   /** 這一欄每個儲存格 <td> 的屬性（同 Vuetify 的 cellProps）；給函式時依那一列決定 */
   cellProps?: Record<string, unknown> | ((ctx: CellContext) => Record<string, unknown> | undefined)
+  /**
+   * 固定欄：橫向捲動時固定在左側（'start'）或右側（'end'）；也接受 'left' / 'right' / true（= start）。
+   * 設在最上層欄位（含群組）；固定在左的自動排到最前面、右的排到最後面
+   */
+  fixed?: ColumnFixed
+  /** 合計列：這一欄的彙總方式；有任何欄位設定時，表格底部出現合計列 */
+  summary?: SummaryType | ((values: unknown[], rows: DataRow[]) => unknown)
+  /** 合計值的顯示格式；不給時數字依語系加千分位、最多 2 位小數 */
+  summaryFormat?: (value: unknown) => string
 }
+
+export type ColumnFixed = 'start' | 'end' | 'left' | 'right' | boolean
+
+/** 內建的合計方式：加總、平均、最小、最大、非空值筆數 */
+export type SummaryType = 'sum' | 'avg' | 'min' | 'max' | 'count'
 
 export type ColumnAlign = 'start' | 'center' | 'end' | 'left' | 'right'
 
@@ -506,6 +555,12 @@ const props = withDefaults(defineProps<{
   overscan?: number
   /** virtual 時距離底部多少 px 送出 reach-bottom（無限捲動載入下一批） */
   reachBottomThreshold?: number
+
+  // ===== 合計列 =====
+  /** 合計列第一格的文字（預設取語系：合計） */
+  summaryLabel?: string
+  /** 合計的範圍：all 為篩選後的全部資料（預設）、page 為目前這一頁 */
+  summaryScope?: 'all' | 'page'
 }>(), {
   data: () => [],
   columns: () => [],
@@ -547,6 +602,8 @@ const props = withDefaults(defineProps<{
   rowHeight: 32,
   overscan: 8,
   reachBottomThreshold: 120,
+  summaryLabel: undefined,
+  summaryScope: 'all',
 })
 
 const config = useConfig()
@@ -631,6 +688,24 @@ const enabledSortColumns = ref<Set<string>>(new Set())
 /** 有 children 的是群組欄 */
 const isGroup = (column: Column): boolean => !!column.children && column.children.length > 0
 
+type FixedSide = 'start' | 'end'
+function fixedSideOf(value: ColumnFixed | undefined): FixedSide | undefined {
+  if (value === true || value === 'start' || value === 'left') return 'start'
+  if (value === 'end' || value === 'right') return 'end'
+  return undefined
+}
+
+/** 最上層欄位：固定在左的排到最前面、固定在右的排到最後面（其餘維持原順序） */
+const orderedColumns = computed<Column[]>(() => {
+  const cols = props.columns
+  if (!cols.some((c) => fixedSideOf(c.fixed))) return cols
+  return [
+    ...cols.filter((c) => fixedSideOf(c.fixed) === 'start'),
+    ...cols.filter((c) => !fixedSideOf(c.fixed)),
+    ...cols.filter((c) => fixedSideOf(c.fixed) === 'end'),
+  ]
+})
+
 /** 底下的葉欄（真正顯示資料的欄位），依左到右的順序 */
 function leavesOf(columns: Column[]): Column[] {
   return columns.flatMap((c) => (isGroup(c) ? leavesOf(c.children!) : [c]))
@@ -644,7 +719,7 @@ function depthOf(columns: Column[]): number {
 // 如果父組件沒有傳 columns，自動從資料第一筆的 key 生成；有群組欄時只取葉欄
 const displayColumns = computed<Column[]>(() => {
   if (props.columns && props.columns.length > 0) {
-    return leavesOf(props.columns)
+    return leavesOf(orderedColumns.value)
   }
   if (props.data && props.data.length > 0) {
     return Object.keys(props.data[0]).map(key => ({
@@ -666,7 +741,7 @@ const colorMap = computed(() => {
       if (isGroup(c)) walk(c.children!, color)
     }
   }
-  walk(props.columns, undefined)
+  walk(orderedColumns.value, undefined)
   return map
 })
 
@@ -689,7 +764,7 @@ const headerDepth = computed(() => Math.max(1, props.columns.length ? depthOf(pr
  * 沒有群組欄時只有一列，與原本的單層表頭相同
  */
 const headerRows = computed<HeaderCell[][]>(() => {
-  const source = props.columns.length ? props.columns : displayColumns.value
+  const source = props.columns.length ? orderedColumns.value : displayColumns.value
   const depth = headerDepth.value
   const rows: HeaderCell[][] = Array.from({ length: depth }, () => [])
   const lead = (expandEnabled.value ? 1 : 0) + (selectionEnabled.value ? 1 : 0)
@@ -1312,6 +1387,160 @@ function resetWidth(column: Column): void {
 onBeforeUnmount(() => stopResize?.())
 
 // ===================================================================
+// 固定欄
+// ===================================================================
+/** 葉欄固定在哪一側（沿用最上層欄位的設定） */
+const fixedSideMap = computed(() => {
+  const map = new Map<Column, FixedSide>()
+  for (const top of orderedColumns.value) {
+    const side = fixedSideOf(top.fixed)
+    if (side) for (const leaf of leavesOf([top])) map.set(leaf, side)
+  }
+  return map
+})
+const hasFixed = computed(() => fixedSideMap.value.size > 0)
+const hasFixedStart = computed(() => [...fixedSideMap.value.values()].includes('start'))
+
+/** 量到的欄寬（葉欄依顯示順序、前導欄依展開 / 勾選） */
+const leafWidths = ref<number[]>([])
+const leadWidths = ref<number[]>([])
+const tableEl = ref<HTMLTableElement | null>(null)
+
+function measureColumns(): void {
+  const table = tableEl.value
+  if (!table || !hasFixed.value) return
+  const width = (el: Element) => el.getBoundingClientRect().width
+  const leaves = [...table.querySelectorAll<HTMLElement>('thead th[data-leaf]')].sort((a, b) => Number(a.dataset.leaf) - Number(b.dataset.leaf))
+  const leads = [...table.querySelectorAll<HTMLElement>('thead th[data-lead]')]
+  const lw = leaves.map(width)
+  const dw = leads.map(width)
+  // 只有真的變了才寫回，避免 ResizeObserver ↔ 重繪的無窮迴圈
+  if (lw.join() !== leafWidths.value.join()) leafWidths.value = lw
+  if (dw.join() !== leadWidths.value.join()) leadWidths.value = dw
+  updateScrollEdges()
+}
+
+/** 每個固定葉欄的偏移（px）：左側為 left、右側為 right */
+const fixedOffsets = computed(() => {
+  const map = new Map<Column, { side: FixedSide; offset: number }>()
+  const cols = displayColumns.value
+  let left = hasFixedStart.value ? leadWidths.value.reduce((a, b) => a + b, 0) : 0
+  cols.forEach((c, i) => {
+    if (fixedSideMap.value.get(c) !== 'start') return
+    map.set(c, { side: 'start', offset: left })
+    left += leafWidths.value[i] ?? 0
+  })
+  let right = 0
+  for (let i = cols.length - 1; i >= 0; i--) {
+    if (fixedSideMap.value.get(cols[i]) !== 'end') continue
+    map.set(cols[i], { side: 'end', offset: right })
+    right += leafWidths.value[i] ?? 0
+  }
+  return map
+})
+
+/** 左側固定區的最後一欄、右側固定區的第一欄：捲動時在這裡畫陰影，看得出後面還有內容 */
+const lastStartFixed = computed(() => [...displayColumns.value].reverse().find((c) => fixedSideMap.value.get(c) === 'start'))
+const firstEndFixed = computed(() => displayColumns.value.find((c) => fixedSideMap.value.get(c) === 'end'))
+
+const scrolledFromStart = ref(false)
+const scrolledToEnd = ref(true)
+function updateScrollEdges(): void {
+  const el = scroller.value
+  if (!el || !hasFixed.value) return
+  scrolledFromStart.value = el.scrollLeft > 0
+  scrolledToEnd.value = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1
+}
+
+/** 葉欄（含群組欄：底下全部固定在同一側時）的固定 class 與 style */
+function fixedClassOf(column: Column, isGroupCell = false): Record<string, boolean> | undefined {
+  const leaves = isGroupCell ? leavesOf([column]) : [column]
+  const side = fixedSideMap.value.get(leaves[0])
+  if (!side || !leaves.every((l) => fixedSideMap.value.get(l) === side)) return undefined
+  return {
+    'is-fixed': true,
+    'is-fixed-start-last': side === 'start' && leaves.includes(lastStartFixed.value as Column) && scrolledFromStart.value,
+    'is-fixed-end-first': side === 'end' && leaves.includes(firstEndFixed.value as Column) && !scrolledToEnd.value,
+  }
+}
+function fixedStyleOf(column: Column, isGroupCell = false): Record<string, string> | undefined {
+  const leaves = isGroupCell ? leavesOf([column]) : [column]
+  if (!fixedClassOf(column, isGroupCell)) return undefined
+  const side = fixedSideMap.value.get(leaves[0])!
+  const anchor = side === 'start' ? leaves[0] : leaves[leaves.length - 1]
+  const offset = fixedOffsets.value.get(anchor)?.offset ?? 0
+  return side === 'start' ? { left: `${offset}px` } : { right: `${offset}px` }
+}
+/** 前導欄（展開 / 勾選）：有左側固定欄時一起固定在最左 */
+function leadFixedStyle(index: number): Record<string, string> | undefined {
+  if (!hasFixedStart.value) return undefined
+  return { left: `${leadWidths.value.slice(0, index).reduce((a, b) => a + b, 0)}px` }
+}
+const leafIndexMap = computed(() => new Map(displayColumns.value.map((c, i) => [c, i])))
+
+let fixedObserver: ResizeObserver | null = null
+onMounted(() => {
+  measureColumns()
+  if (typeof ResizeObserver === 'undefined' || !tableEl.value) return
+  fixedObserver = new ResizeObserver(() => measureColumns())
+  fixedObserver.observe(tableEl.value)
+})
+onBeforeUnmount(() => fixedObserver?.disconnect())
+// 欄位、前導欄改變後重新量
+watch([displayColumns, () => props.selectable, expandEnabled], () => nextTick(measureColumns))
+
+// ===================================================================
+// 合計列
+// ===================================================================
+const hasSummary = computed(() => displayColumns.value.some((c) => c.summary))
+const summaryRows = computed<DataRow[]>(() => {
+  if (props.remote) return props.data
+  return props.summaryScope === 'page' && !props.virtual ? paginatedData.value : sortedAndFilteredData.value
+})
+
+function toNumber(v: unknown): number | null {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null
+  if (typeof v === 'string' && v.trim() !== '') {
+    const n = Number(v.replace(/,/g, ''))
+    return Number.isFinite(n) ? n : null
+  }
+  return null
+}
+
+function summarize(column: Column, rows: DataRow[]): unknown {
+  const kind = column.summary
+  if (!kind) return undefined
+  const values = rows.map((r) => (column.key ? r[column.key] : undefined))
+  if (typeof kind === 'function') return kind(values, rows)
+  if (kind === 'count') return values.filter((v) => v !== null && v !== undefined && v !== '').length
+  const nums = values.map(toNumber).filter((n): n is number => n !== null)
+  if (!nums.length) return null
+  switch (kind) {
+    case 'sum':
+      return nums.reduce((a, b) => a + b, 0)
+    case 'avg':
+      return nums.reduce((a, b) => a + b, 0) / nums.length
+    case 'min':
+      return Math.min(...nums)
+    case 'max':
+      return Math.max(...nums)
+  }
+}
+
+/** 合計值（依葉欄順序；沒有設定 summary 的欄位為 undefined） */
+const summaryValues = computed(() => displayColumns.value.map((c) => summarize(c, summaryRows.value)))
+
+function formatSummary(column: Column, value: unknown): string {
+  if (column.summaryFormat) return column.summaryFormat(value)
+  if (value === null || value === undefined) return '—'
+  if (typeof value === 'number') return value.toLocaleString(locale.value.code, { maximumFractionDigits: 2 })
+  return String(value)
+}
+
+/** 合計列標籤放在哪一格：第一個沒有合計的葉欄（都有的話放在前導欄） */
+const summaryLabelIndex = computed(() => displayColumns.value.findIndex((c) => !c.summary))
+
+// ===================================================================
 // 虛擬捲動
 // ===================================================================
 const scroller = ref<HTMLElement | null>(null)
@@ -1400,6 +1629,7 @@ function measure(): void {
 
 let reachArmed = true
 function onScroll(): void {
+  updateScrollEdges()
   const el = scroller.value
   if (!props.virtual || !el) return
   scrollTop.value = el.scrollTop
@@ -1702,7 +1932,8 @@ watch(displayColumns, (newColumns) => {
 }
 
 .tone-cell-accent {
-  background-color: rgb(var(--t-accent-subtle) / 0.55);
+  --tone: rgb(var(--t-accent-subtle) / 0.55);
+  background-color: var(--tone);
 }
 
 .tone-bg-success {
@@ -1714,7 +1945,8 @@ watch(displayColumns, (newColumns) => {
 }
 
 .tone-cell-success {
-  background-color: rgb(var(--t-success-subtle) / 0.55);
+  --tone: rgb(var(--t-success-subtle) / 0.55);
+  background-color: var(--tone);
 }
 
 .tone-bg-warning {
@@ -1726,7 +1958,8 @@ watch(displayColumns, (newColumns) => {
 }
 
 .tone-cell-warning {
-  background-color: rgb(var(--t-warning-subtle) / 0.55);
+  --tone: rgb(var(--t-warning-subtle) / 0.55);
+  background-color: var(--tone);
 }
 
 .tone-bg-danger {
@@ -1738,7 +1971,8 @@ watch(displayColumns, (newColumns) => {
 }
 
 .tone-cell-danger {
-  background-color: rgb(var(--t-danger-subtle) / 0.55);
+  --tone: rgb(var(--t-danger-subtle) / 0.55);
+  background-color: var(--tone);
 }
 
 .tone-bg-info {
@@ -1750,7 +1984,8 @@ watch(displayColumns, (newColumns) => {
 }
 
 .tone-cell-info {
-  background-color: rgb(var(--t-info-subtle) / 0.55);
+  --tone: rgb(var(--t-info-subtle) / 0.55);
+  background-color: var(--tone);
 }
 
 .tone-bg-neutral {
@@ -1762,7 +1997,8 @@ watch(displayColumns, (newColumns) => {
 }
 
 .tone-cell-neutral {
-  background-color: rgb(var(--t-surface-tertiary) / 0.5);
+  --tone: rgb(var(--t-surface-tertiary) / 0.5);
+  background-color: var(--tone);
 }
 
 /* ===== 勾選 / 展開 / 可點列 / 欄寬把手 ===== */
@@ -1870,6 +2106,86 @@ tr.is-clickable {
   width: 2px;
   left: 2px;
   background-color: rgb(var(--t-accent-solid));
+}
+
+/* ===== 固定欄 =====
+ * 固定的格子一定要有不透明的底色，否則捲動時後面的內容會從底下透出來。
+ * 列的底色（斑馬紋、hover、勾選、警告列）原本畫在 <tr> 上，固定格要自己再畫一次；
+ * 欄位顏色（--tone，半透明）以 background-image 疊在上面。
+ * 順序與上面 <tr> 的規則相同：一般 → 偶數列 → hover → 勾選 → 警告列（後者優先）
+ */
+th.is-fixed,
+:deep(tbody tr > td.is-fixed),
+tfoot :deep(.is-fixed) {
+  position: sticky;
+  z-index: 2;
+}
+
+:deep(tbody tr > td.is-fixed) {
+  background-color: rgb(var(--t-surface-primary));
+}
+
+:deep(tbody tr:nth-child(even) > td.is-fixed) {
+  background-color: v-bind('props.evenRowBgColor');
+}
+
+:deep(tbody tr:hover > td.is-fixed) {
+  background-color: v-bind('props.hoverRowBgColor');
+}
+
+:deep(tbody tr.is-selected > td.is-fixed) {
+  background-color: rgb(var(--t-accent-subtle));
+}
+
+:deep(tbody tr.warning-row > td.is-fixed) {
+  background-color: rgb(var(--t-danger-subtle));
+}
+
+:deep(td.is-fixed[class*='tone-cell-']) {
+  background-image: linear-gradient(var(--tone), var(--tone));
+}
+
+/* 捲動時固定區的邊緣畫一道陰影：看得出後面還有被蓋住的內容 */
+.is-fixed-start-last::after,
+.is-fixed-end-first::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: -1px;
+  width: 10px;
+  pointer-events: none;
+}
+
+.is-fixed-start-last::after {
+  right: -10px;
+  box-shadow: inset 8px 0 8px -8px rgb(0 0 0 / 0.18);
+}
+
+.is-fixed-end-first::after {
+  left: -10px;
+  box-shadow: inset -8px 0 8px -8px rgb(0 0 0 / 0.18);
+}
+
+/* ===== 合計列 ===== */
+:deep(tfoot tr.summary-row > td),
+:deep(tfoot tr.summary-row > th) {
+  padding: 0.5rem 0.375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  background-color: rgb(var(--t-surface-secondary));
+  border-top: 2px solid rgb(var(--t-stroke-default));
+  white-space: nowrap;
+}
+
+:deep(tfoot tr.summary-row > td[class*='tone-cell-']) {
+  background-image: linear-gradient(var(--tone), var(--tone));
+}
+
+/* 虛擬捲動：合計列固定在底部，捲到哪裡都看得到 */
+tfoot.is-sticky-foot {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
 }
 
 /* 表格底部樣式 */
