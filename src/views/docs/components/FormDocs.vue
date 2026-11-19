@@ -132,6 +132,43 @@
       <ApiTable of="ChptFormList" title="方法（ref）" :rows="formListMethods" />
     </section>
 
+    <!-- ============ ChptSchemaForm ============ -->
+    <section id="chpt-schema-form" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSchemaForm 依設定檔產生表單</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>欄位由後端或系統設定決定（不同產品的檢驗項目、不同站別的報工欄位），
+        或欄位很多但都很單純的維護畫面。用一個 <code>fields</code> 陣列描述每個欄位的種類、標籤、規則、版面與顯示條件，
+        底下仍是 ChptForm + ChptFormItem，驗證、錯誤聚焦與無障礙行為都一樣。
+        特殊欄位用 <code>#field-{prop}</code> 插槽自己畫，或在設定裡給 <code>component</code>。
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex items-center gap-3 text-sm text-content-secondary">
+          <span aria-hidden="true">每列欄位數</span>
+          <ChptSegmented v-model="schemaColumns" :options="[{ label: '1', value: 1 }, { label: '2', value: 2 }, { label: '3', value: 3 }]" aria-label="每列欄位數" size="xs" />
+        </div>
+        <ChptSchemaForm
+          :model="abnormal"
+          :fields="abnormalFields"
+          :columns="schemaColumns"
+          clear-hidden
+          @submit="onAbnormalSubmit"
+        >
+          <template #field-lot="{ value, setValue, disabled }">
+            <ChptInput :model-value="value" :disabled="disabled" placeholder="掃描或輸入批號" full-width @update:model-value="(v) => setValue(String(v).toUpperCase())" />
+          </template>
+        </ChptSchemaForm>
+        <pre v-if="abnormalResult" class="mt-3 overflow-x-auto rounded bg-surface-tertiary p-3 text-xs text-content-secondary">{{ abnormalResult }}</pre>
+      </div>
+      <div class="mt-6">
+        <ChptCodeBlock :code="schemaFormSample" />
+      </div>
+      <ApiTable of="ChptSchemaForm" title="Props" :rows="schemaFormProps" />
+      <ApiTable of="-" title="欄位設定（SchemaFormField）" :rows="schemaFieldRows" />
+      <ApiTable of="ChptSchemaForm" title="Events" :rows="schemaFormEvents" />
+      <ApiTable of="ChptSchemaForm" title="Slots" :rows="schemaFormSlots" />
+      <ApiTable of="ChptSchemaForm" title="方法（ref）" :rows="schemaFormMethods" />
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -183,6 +220,7 @@ import {
   ChptForm,
   ChptFormItem,
   ChptFormList,
+  ChptSchemaForm,
   ChptInput,
   ChptSelect,
   ChptInputNumber,
@@ -259,6 +297,106 @@ const formListSlots = [
 const formListMethods = [
   { name: 'add(item?, at?)', type: '(T?, number?) => Promise<number>', desc: '新增一列（不給 item 時用 createItem），回傳索引；超過 max 時回傳 -1' },
   { name: 'remove(index) / move(index, delta)', type: '(number) => void', desc: '刪除；上下移動（delta 為 -1 / 1）' },
+]
+
+// ---- ChptSchemaForm ----
+const schemaColumns = ref(2)
+const machinesByLine = { 'SMT-1': ['貼片機 A', '貼片機 B', '回焊爐'], 'SMT-2': ['貼片機 C', '回焊爐'], DIP: ['波焊爐', '插件機'] }
+const abnormal = reactive({})
+const abnormalFields = [
+  { type: 'section', label: '發生地點', hint: '機台清單依線別而定' },
+  { prop: 'line', label: '線別', type: 'select', required: true, options: Object.keys(machinesByLine).map((v) => ({ label: v, value: v })) },
+  {
+    prop: 'machine',
+    label: '機台',
+    type: 'select',
+    required: true,
+    options: (m) => (machinesByLine[m.line] ?? []).map((v) => ({ label: v, value: v })),
+    disabled: (m) => !m.line,
+  },
+  { prop: 'lot', label: '批號', required: true, rules: { pattern: /^[A-Z0-9-]+$/, message: '只能有英數字與 -' } },
+  { prop: 'time', label: '發生時間', type: 'time' },
+  { type: 'section', label: '異常內容' },
+  {
+    prop: 'level',
+    label: '等級',
+    type: 'radio',
+    defaultValue: 'minor',
+    options: [{ label: '輕微', value: 'minor' }, { label: '嚴重', value: 'major' }, { label: '停線', value: 'stop' }],
+  },
+  { prop: 'qty', label: '影響數量', type: 'number', defaultValue: 0, props: { min: 0, unit: 'pcs' }, rules: { type: 'number', min: 0 } },
+  {
+    prop: 'notify',
+    label: '通知對象',
+    type: 'checkbox',
+    hint: '嚴重以上才需要通知',
+    options: [{ label: '線長', value: 'leader' }, { label: '製程工程師', value: 'pe' }, { label: '品保', value: 'qa' }],
+    visible: (m) => m.level !== 'minor',
+    rules: { required: true, message: '請至少選一位通知對象' },
+  },
+  { prop: 'stopped', label: '已停機', type: 'switch', visible: (m) => m.level === 'stop' },
+  { prop: 'desc', label: '現象描述', type: 'textarea', required: true, span: 'full', props: { rows: 3, maxlength: 200, showCount: true } },
+]
+const abnormalResult = ref('')
+function onAbnormalSubmit(model) {
+  abnormalResult.value = JSON.stringify(model, null, 2)
+}
+const schemaFormSample = `<ChptSchemaForm :model="form" :fields="fields" :columns="2" clear-hidden @submit="save">
+  <!-- 特殊欄位自己畫（一樣有標籤與驗證） -->
+  <template #field-lot="{ value, setValue }">
+    <ChptInput :model-value="value" @update:model-value="(v) => setValue(v.toUpperCase())" />
+  </template>
+</ChptSchemaForm>
+
+const form = reactive({})
+const fields = [
+  { type: 'section', label: '發生地點' },
+  { prop: 'line', label: '線別', type: 'select', required: true, options: lineOptions },
+  // 選項依目前的資料決定；沒選線別時停用
+  { prop: 'machine', label: '機台', type: 'select', options: (m) => machinesOf(m.line), disabled: (m) => !m.line },
+  { prop: 'lot', label: '批號', required: true },
+  { prop: 'level', label: '等級', type: 'radio', options: levels, defaultValue: 'minor' },
+  // 條件顯示：隱藏的欄位不驗證；clear-hidden 時一併清掉值
+  { prop: 'notify', label: '通知對象', type: 'checkbox', options: people, visible: (m) => m.level !== 'minor' },
+  { prop: 'desc', label: '現象描述', type: 'textarea', required: true, span: 'full' },
+]`
+const schemaFormProps = [
+  { name: 'model', type: 'Record<string, unknown>', def: '—', desc: '表單資料（reactive 物件）；欄位值直接寫回，缺少的欄位會補上初始值' },
+  { name: 'fields', type: 'SchemaFormField[]', def: '—', desc: '欄位設定（見下表）' },
+  { name: 'rules', type: 'FormRules', def: '{}', desc: '額外的驗證規則（鍵是欄位路徑），與欄位自己的 rules 合併' },
+  { name: 'columns', type: 'number', def: '1', desc: '一列放幾個欄位；小於 640px 時一律一欄' },
+  { name: 'labelPosition / labelWidth / gap', type: "'top' | 'left' / string / 'sm' | 'md' | 'lg'", def: "'top' / '8rem' / 'md'", desc: '同 ChptForm' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '停用整張表單' },
+  { name: 'clearHidden', type: 'boolean', def: 'false', desc: '欄位被隱藏時把值還原成 defaultValue（避免送出看不到的舊資料）' },
+  { name: 'showActions', type: 'boolean', def: 'true', desc: '顯示送出 / 重設鈕' },
+  { name: 'submitText / resetText', type: 'string', def: '語系（繁中「送出」/「重設」）', desc: '按鈕文字' },
+]
+const schemaFieldRows = [
+  { name: 'prop', type: 'string', def: '—', desc: '欄位路徑（可用 a.b.c，中間物件不存在時自動建立）' },
+  { name: 'label / hint', type: 'string', def: '—', desc: '標籤；說明文字（section 時顯示在標題下方）' },
+  { name: 'type', type: "'input' | 'number' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'switch' | 'date' | 'time' | 'section'", def: "'input'", desc: '欄位種類；section 是區段標題' },
+  { name: 'component', type: 'Component', def: '—', desc: '自訂輸入元件（支援 v-model 即可），給了就不看 type' },
+  { name: 'props', type: 'Record<string, unknown>', def: '—', desc: '傳給輸入元件的 props（placeholder、min、range…）' },
+  { name: 'options', type: 'SchemaFieldOption[] | (model) => SchemaFieldOption[]', def: '—', desc: 'select / radio / checkbox 的選項，可依目前資料決定' },
+  { name: 'required / rules', type: 'boolean / FormRule | FormRule[]', def: '—', desc: '必填；這個欄位的規則' },
+  { name: 'defaultValue', type: 'unknown', def: '依種類（checkbox []、switch false…）', desc: 'model 裡沒有這個欄位時填入；重設時還原成它' },
+  { name: 'span', type: "number | 'full'", def: '1', desc: '佔幾欄（不超過 columns）' },
+  { name: 'visible', type: '(model) => boolean', def: '—', desc: '依資料決定是否顯示；隱藏的欄位不驗證' },
+  { name: 'disabled', type: 'boolean | (model) => boolean', def: 'false', desc: '停用；可依資料決定' },
+]
+const schemaFormEvents = [
+  { name: 'submit', params: '(model)', desc: '驗證通過後送出' },
+  { name: 'invalid', params: '(errors: Record<string, string>)', desc: '驗證失敗' },
+  { name: 'change', params: '(prop: string, value)', desc: '任何欄位的值改變' },
+]
+const schemaFormSlots = [
+  { name: 'field-{prop}', params: '{ field, model, value, setValue, disabled }', desc: '自己畫某個欄位的輸入元件（外層的標籤、錯誤訊息照舊）' },
+  { name: 'actions', params: '{ submitting, validate, resetFields }', desc: '取代送出 / 重設鈕' },
+]
+const schemaFormMethods = [
+  { name: 'validate(fields?, options?)', type: 'Promise<{ valid, errors }>', desc: '同 ChptForm' },
+  { name: 'validateField(field) / resetFields(fields?) / clearValidate(fields?)', type: '—', desc: '同 ChptForm' },
+  { name: 'submit()', type: '() => Promise<void>', desc: '以程式送出' },
 ]
 
 // ---- ChptForm ----

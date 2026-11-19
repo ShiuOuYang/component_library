@@ -36,6 +36,11 @@
 
 ### 新增
 
+- **ChptSchemaForm 依設定檔產生表單**：用 `fields` 陣列描述欄位（`type`：input / number / textarea / select / radio /
+  checkbox / switch / date / time / section），產生整張表單；底下仍是 ChptForm + ChptFormItem，驗證與錯誤聚焦行為相同。
+  `columns` + 欄位 `span` 排版（小螢幕一欄）、`visible(model)` 條件顯示（隱藏的欄位不驗證，`clearHidden` 時清掉值）、
+  `options(model)` 依資料決定選項（線別 → 機台）、`disabled(model)`、`defaultValue`（model 缺少的欄位自動補上，巢狀路徑自動建立）；
+  特殊欄位用 `#field-{prop}` 插槽或 `component` 自訂。新增語系群組 `schemaForm`（submit / reset）。
 - **ChptFormList 動態列**：一筆單據裡有好幾列要輸入（多筆量測值、多個料號）時使用。綁定陣列（v-model），
   每一列的內容由插槽決定；`path('value')` 給出這一列的欄位路徑（`measures.0.value`）。`min` / `max` 限制列數、
   `sortable` 上下移動、新增後聚焦到新的一列、新增 / 刪除以 aria-live 念出；每列 key 穩定（刪除中間一列不會讓下面的輸入框「換人」）

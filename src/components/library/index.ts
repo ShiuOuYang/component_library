@@ -26,7 +26,7 @@ export {
   ChptAffix, ChptCarousel, ChptNotificationHost, ChptSplitter, ChptVirtualList,
   ChptCopyButton, ChptCountdown, ChptEllipsis, ChptWatermark,
   ChptConfigProvider, ChptInputTag, ChptList, ChptQRCode, ChptSpace, ChptTour,
-  ChptScanInput, ChptFormList,
+  ChptScanInput, ChptFormList, ChptSchemaForm,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -79,6 +79,7 @@ export type {
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
   ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps,
+  SchemaFormField, SchemaFieldType, SchemaFieldOption,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'
 export type {

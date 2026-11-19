@@ -266,6 +266,7 @@ const navSections = [
         anchors: [
           { label: 'ChptForm', id: 'chpt-form' },
           { label: 'ChptFormList', id: 'chpt-form-list' },
+          { label: 'ChptSchemaForm', id: 'chpt-schema-form' },
           { label: 'ChptUpload', id: 'chpt-upload' },
         ],
       },
