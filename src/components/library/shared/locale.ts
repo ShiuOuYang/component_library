@@ -550,6 +550,16 @@ export interface ChptLocale {
     removeSheet: string
     formats: { general: string; integer: string; decimal2: string; thousands: string; thousandsDecimal: string; percent: string; percentDecimal: string; date: string; dateTime: string; time: string }
   }
+  chartFrame: {
+    export: string
+    exporting: string
+    png: string
+    svg: string
+    csv: string
+    exportFailed: string
+    error: string
+    retry: string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1127,6 +1137,16 @@ export const zhTW: ChptLocale = {
     removeSheet: '刪除工作表',
     formats: { general: '一般格式', integer: '整數', decimal2: '小數 2 位', thousands: '千分位整數', thousandsDecimal: '千分位小數', percent: '百分比整數', percentDecimal: '百分比小數', date: '日期', dateTime: '日期時間', time: '時間' },
   },
+  chartFrame: {
+    export: '匯出',
+    exporting: '匯出中…',
+    png: '下載 PNG 圖片',
+    svg: '下載 SVG 向量圖',
+    csv: '下載 CSV 資料',
+    exportFailed: '匯出失敗，請再試一次',
+    error: '圖表載入失敗',
+    retry: '重試',
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1703,6 +1723,16 @@ export const enUS: ChptLocale = {
     addSheet: 'Add sheet',
     removeSheet: 'Delete sheet',
     formats: { general: 'General', integer: 'Integer', decimal2: '2 decimals', thousands: 'Thousands separator', thousandsDecimal: 'Thousands separator, 2 decimals', percent: 'Percent', percentDecimal: 'Percent, 2 decimals', date: 'Date', dateTime: 'Date and time', time: 'Time' },
+  },
+  chartFrame: {
+    export: 'Export',
+    exporting: 'Exporting…',
+    png: 'Download PNG image',
+    svg: 'Download SVG vector',
+    csv: 'Download CSV data',
+    exportFailed: 'Export failed. Please try again.',
+    error: 'Failed to load the chart',
+    retry: 'Retry',
   },
 }
 

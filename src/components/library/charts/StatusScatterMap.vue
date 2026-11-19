@@ -84,6 +84,7 @@
     </svg>
 
     <button
+      data-export-ignore
       v-if="isZoomed && showResetButton"
       type="button"
       class="absolute right-2 top-2 z-20 rounded-md border border-stroke-light bg-surface-primary/80 px-2.5 py-1 text-xs text-content-secondary shadow-sm backdrop-blur hover:bg-surface-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
@@ -562,6 +563,9 @@ function renderPoints(): void {
     canvas.style.width = `${Math.max(0, w)}px`
     canvas.style.height = `${Math.max(0, h)}px`
   }
+  // 繪圖區還沒有尺寸（容器剛掛載、尚未排版，或被收合）：沒東西可畫。
+  // ⚠️ 原本照樣往下走，createImageData(0, h) 丟出 IndexSizeError —— 圖表放進還沒排版的容器（例如外框、分頁）就會出錯
+  if (pw === 0 || ph === 0) return
   const ctx = canvas.getContext?.('2d')
   if (!ctx) return
   ctx.setTransform(1, 0, 0, 1, 0, 0)

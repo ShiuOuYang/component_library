@@ -33,7 +33,8 @@ export {
   DualAxisComboChart, EnterpriseHeatmap, EnterprisePareto, ParetoChart,
   FacetedChart, GridFacetChart, StatusScatterMap, GanttChart,
   HorizontalBarChart, PieChart, SparklineChart, GaugeChart, ControlChart, CapabilityHistogram,
-  StateTimeline, BoxPlotChart, WaterfallChart,
+  StateTimeline, BoxPlotChart, WaterfallChart, ChptChartFrame,
+  exportChart, elementToSvg, svgToPng, toCsv, csvBlob, downloadBlob,
 } from './charts/index.js'
 
 // ===== viewer =====
@@ -94,6 +95,7 @@ export type {
   StateTimelineEvent, StateTimelineTooltip, StateTimelineRowInput, StateDef, StateSummary,
   BoxPlotGroupEvent, BoxPlotPointEvent, BoxPlotTooltip, BoxPlotReferenceLine, BoxPlotGroupInput, BoxStats, QuartileMethod,
   WaterfallEvent, WaterfallTooltip, WaterfallKind,
+  ChartFrameExportFormat, ChptChartFrameProps, ChartExportFormat, ChartExportOptions, CsvColumn,
 } from './charts/index.js'
 export type {
   GerberLayerInput, GerberImageInfo, PcbBoardInfo, PcbElementEvent,

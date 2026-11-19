@@ -429,6 +429,10 @@ const navSections = [
         anchors: [{ label: '一天的狀態', id: 'basic' }, { label: '停最久的機台', id: 'summary' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/chart-frame', icon: '🖼️', label: '圖表外框與匯出',
+        anchors: [{ label: '匯出', id: 'basic' }, { label: '狀態', id: 'states' }, { label: 'Canvas 與自訂', id: 'custom' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/kpi-charts', icon: '🎛️', label: 'KPI 小圖',
         anchors: [{ label: 'KPI 卡片', id: 'cards' }, { label: '迷你趨勢線', id: 'sparkline' }, { label: '儀表', id: 'gauge' }, { label: 'API', id: 'api' }],
       },
