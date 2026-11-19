@@ -36,6 +36,11 @@
 
 ### 新增
 
+- **多張圖同步 `useChartSync()`**：同一條時間軸的好幾張 DualAxisComboChart 上下排在一起時，`v-bind="sync.bind()"` 就能同步
+  X 縮放（框選、滾輪、拖曳 X 軸）、十字線與高亮（同一個 key）。各圖自己的重設鈕收起來，改用整組的 `sync.reset()`；
+  `sync.xDomain` / `crosshairValue` / `highlightKey` 可讀可寫（例如接外部的時間區間選擇器）。
+- **DualAxisComboChart 十字線**：`crosshair` 開啟時滑鼠在繪圖區畫垂直十字線與 X 讀數，並送出 `crosshair-move`（X 值，類別軸為最近的類別）；
+  `crosshairValue` 由外部指定位置（時間軸可給毫秒數）。
 - **BulletChart 子彈圖**：一列一個指標 —— 區間底色、實際值細長條、目標直線、前期值淡色細線；區間格式與 GaugeChart 相同，
   有 label 時右側顯示狀態（圖示 + 文字）。共用 `bands` / `max` 讓多列刻度一致；每一列是 role="meter"；綁 `@item-click` 時每一列是按鈕。
 - **YieldFunnel 良率漏斗**：依製程順序列出各站剩下的數量，兩站之間標出站良率與損失，標題列為直通率（RTY）；

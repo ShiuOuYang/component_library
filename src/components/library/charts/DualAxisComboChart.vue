@@ -1,5 +1,11 @@
 <template>
-  <div ref="containerRef" class="dual-axis-chart" :style="autoResize ? {} : { width: width + 'px', height: height + 'px' }">
+  <div
+    ref="containerRef"
+    class="dual-axis-chart"
+    :style="autoResize ? {} : { width: width + 'px', height: height + 'px' }"
+    @mousemove="onCrosshairMove"
+    @mouseleave="onCrosshairLeave"
+  >
     <!--
       ✅ 大量資料模式：散點與長條畫在 Canvas 上（數萬個 SVG 節點光排版就要好幾秒）。
       疊在 SVG 下方、對齊繪圖區；SVG 沒有底色，折線、參考線、brush 都在它上面。
@@ -59,6 +65,17 @@
       {{ i18n.chart.resetZoom }}
     </button>
 
+    <!-- 十字線：滑鼠所在的 X，或外部指定的 crosshairValue（多張圖同步） -->
+    <div
+      v-if="crosshairView"
+      class="chart-crosshair"
+      data-export-ignore
+      aria-hidden="true"
+      :style="{ left: `${margin.left + crosshairView.x}px`, top: `${margin.top}px`, height: `${Math.max(0, chartHeight)}px` }"
+    >
+      <span v-if="crosshairView.label" class="chart-crosshair-label">{{ crosshairView.label }}</span>
+    </div>
+
     <!-- Vue 插槽：允許外部注入自定義 Tooltip -->
     <slot 
       name="tooltip" 
@@ -98,7 +115,7 @@ import type {
   YScale,
 } from './types/chart.types'
 import type { TriggerLine } from './composables/faceChart/useFacetLayout'
-import { layerLabel as layerLabelOf } from './composables/faceChart/facetHelpers'
+import { formatXValue, layerLabel as layerLabelOf } from './composables/faceChart/facetHelpers'
 import {
   minMaxDownsample,
   nearestPointIndex,
@@ -194,6 +211,15 @@ interface DualAxisComboChartProps {
   // === Trigger 線配置（管制圖、良率分析圖） ===
   /** 參考線，例如規格上下限或良率門檻 */
   triggerLines?: TriggerLine[]
+
+  // === 十字線（多張圖同步） ===
+  /** 滑鼠在繪圖區時畫一條垂直十字線並送出 crosshair-move（該位置的 X 值） */
+  crosshair?: boolean
+  /**
+   * 由外部指定十字線的 X 值（例如另一張圖 crosshair-move 送出的值）。
+   * 滑鼠在本圖的繪圖區時以滑鼠位置為準；搭配 useChartSync() 不必自己接線
+   */
+  crosshairValue?: number | string | Date | null
 }
 
 /** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
@@ -232,6 +258,8 @@ const props = withDefaults(defineProps<DualAxisComboChartProps>(), {
   largeDataThreshold: 2000,
   highlightKey: null,
   triggerLines: () => [],
+  crosshair: false,
+  crosshairValue: null,
 })
 
 const emit = defineEmits<{
@@ -250,6 +278,8 @@ const emit = defineEmits<{
   'axis-drag': [payload: ChartAxisDomainEvent]
   /** 滾輪縮放／平移；domain 為 null 代表回到全覽 */
   'wheel-zoom': [payload: ChartAxisDomainEvent]
+  /** 十字線移動（crosshair 開啟時）：滑鼠所在的 X 值；離開繪圖區時為 null */
+  'crosshair-move': [value: number | string | Date | null]
 }>();
 
 // === 圖例 ===
@@ -2925,6 +2955,75 @@ function syncZoomedState(): void {
     currentXDomain.value !== null || currentYLeftDomain.value !== null || currentYRightDomain.value !== null;
 }
 
+// === 十字線 ===
+
+type CrosshairX = number | string | Date
+const hoverCrosshair = ref<CrosshairX | null>(null);
+
+/** 繪圖區內的像素 → X 值；類別軸取最近的類別 */
+function xValueAt(px: number): CrosshairX | null {
+  const xs = xScale.value;
+  if (!xs) return null;
+  if (isBandScale(xs)) {
+    let best: string | null = null;
+    let bestD = Infinity;
+    const half = xs.bandwidth() / 2;
+    for (const c of xs.domain()) {
+      const d = Math.abs((xs(c) ?? 0) + half - px);
+      if (d < bestD) {
+        bestD = d;
+        best = c;
+      }
+    }
+    return best;
+  }
+  const v = (xs as d3.ScaleContinuousNumeric<number, number>).invert(px) as number | Date;
+  return v instanceof Date ? v : Number(v);
+}
+
+/** X 值 → 繪圖區內的像素（對不到時為 null） */
+function xPixelOf(value: CrosshairX): number | null {
+  const xs = xScale.value;
+  if (!xs) return null;
+  if (isBandScale(xs)) {
+    const p = xs(String(value));
+    return p === undefined ? null : p + xs.bandwidth() / 2;
+  }
+  const p = (xs as unknown as (x: unknown) => number)(value);
+  return Number.isFinite(p) ? p : null;
+}
+
+const sameX = (a: CrosshairX | null, b: CrosshairX | null) =>
+  a === b || (a instanceof Date && b instanceof Date && +a === +b);
+
+function onCrosshairMove(event: MouseEvent): void {
+  if (!props.crosshair || !containerRef.value) return;
+  const rect = containerRef.value.getBoundingClientRect();
+  const x = event.clientX - rect.left - props.margin.left;
+  const y = event.clientY - rect.top - props.margin.top;
+  const inside = x >= 0 && x <= chartWidth.value && y >= 0 && y <= chartHeight.value;
+  const value = inside ? xValueAt(x) : null;
+  if (sameX(value, hoverCrosshair.value)) return;
+  hoverCrosshair.value = value;
+  emit('crosshair-move', value);
+}
+
+function onCrosshairLeave(): void {
+  if (hoverCrosshair.value === null) return;
+  hoverCrosshair.value = null;
+  emit('crosshair-move', null);
+}
+
+const crosshairView = computed(() => {
+  let value = hoverCrosshair.value ?? props.crosshairValue;
+  if (value === null || value === undefined) return null;
+  // 時間軸收到數字（毫秒）時轉成 Date：位置與讀數格式（xAxisFormat 吃 Date）都一致
+  if (props.xScaleType === 'time' && !(value instanceof Date)) value = new Date(value as number);
+  const x = xPixelOf(value);
+  if (x === null || x < 0 || x > chartWidth.value) return null;
+  return { x, label: formatXValue(value, props.xAxisFormat, i18n.value) };
+});
+
 // === 主渲染循環 ===
 watchEffect(() => {
   beginCanvasFrame(); // ✅ 大量資料模式的 Canvas 與命中測試資料每輪重建
@@ -3082,6 +3181,29 @@ svg.is-panning * {
 .dual-axis-chart {
   position: relative;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* 十字線：與 FacetedChart 同一個樣式 */
+.chart-crosshair {
+  position: absolute;
+  z-index: 15;
+  width: 0;
+  border-left: 1px dashed rgb(var(--t-content-tertiary));
+  pointer-events: none;
+}
+
+.chart-crosshair-label {
+  position: absolute;
+  bottom: -22px;
+  left: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background-color: rgb(var(--t-content-primary));
+  color: rgb(var(--t-surface-primary));
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ✅ 自動響應式模式：容器填滿父元素 */

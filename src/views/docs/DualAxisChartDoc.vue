@@ -78,6 +78,41 @@
         <ApiTable of="DualAxisComboChart" title="Props" :rows="highlightProps" />
       </section>
 
+      <!-- 多張圖同步 -->
+      <section id="sync" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">多張圖同步（十字線、縮放、高亮）</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          同一條時間軸的好幾張圖上下排在一起時，用 <code>useChartSync()</code> 把它們連起來：在任一張框選或滾輪縮放，其他張縮到同一段；
+          滑鼠移到任一張，每一張都在同一個時間畫十字線；滑到某個點，其他張同一個 key 的點一起標出。
+          每張圖的左右 <code>margin</code> 要一樣，X 軸才會上下對齊。各圖自己的「重設縮放」鈕會收起來，改用一個整組的重設。
+        </p>
+        <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
+          <div class="mb-2 flex items-center justify-between gap-3">
+            <p class="text-xs text-content-tertiary">爐 A-03 · 今日 08:00 起 12 小時（每 5 分鐘一筆）</p>
+            <ChptButton size="xs" is-outline :disabled="!syncDomain" @click="sync.reset()">重設縮放</ChptButton>
+          </div>
+          <div v-for="c in syncCharts" :key="c.key" style="height: 200px">
+            <DualAxisComboChart
+              v-bind="sync.bind()"
+              auto-resize
+              :layers="c.layers"
+              x-scale-type="time"
+              :x-axis-format="hhmm"
+              :y-left-axis-label="c.label"
+              :y-left-domain="c.domain"
+              :margin="syncMargin"
+              brush-mode="x"
+              wheel-zoom-axes="x"
+              :animation-duration="0"
+            />
+          </div>
+        </div>
+        <ChptCodeBlock class="mt-4" :code="syncCode" />
+        <ApiTable of="DualAxisComboChart" title="Props" :rows="syncProps" />
+        <ApiTable of="DualAxisComboChart" title="Events" :rows="syncEvents" />
+        <ApiTable of="-" title="useChartSync(options)" :rows="syncApi" />
+      </section>
+
       <!-- 大量資料與縮放 API -->
       <section id="large-data-api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">大量資料與滾輪縮放</h2>
@@ -119,9 +154,9 @@
 </template>
 
 <script setup>
-import { DualAxisComboChart } from '@/components/library/charts'
+import { DualAxisComboChart, useChartSync } from '@/components/library/charts'
 import { ref } from 'vue'
-import { ChptCodeBlock, ChptSegmented } from '@/components/library'
+import { ChptButton, ChptCodeBlock, ChptSegmented } from '@/components/library'
 import SalesReportExample from '../../components/docs/DualAxisChartexamples/SalesReportExample.vue'
 import ProductionMonitorExample from '../../components/docs/DualAxisChartexamples/ProductionMonitorExample.vue'
 import ControlChartExample from '../../components/docs/DualAxisChartexamples/ControlChartExample.vue'
@@ -145,6 +180,70 @@ const highlightOptions = [
   { label: '無', value: '' },
   ...['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((m) => ({ label: m, value: m })),
 ]
+// ---- 多張圖同步 ----
+const sync = useChartSync({ zoom: true, crosshair: true, highlight: true })
+const syncDomain = sync.xDomain
+const syncMargin = { top: 16, right: 24, bottom: 36, left: 72 }
+const hhmm = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+const syncSeries = (() => {
+  const t0 = new Date()
+  t0.setHours(8, 0, 0, 0)
+  let seed = 7
+  const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296)
+  return Array.from({ length: 145 }, (_, i) => {
+    const t = new Date(t0.getTime() + i * 5 * 60_000)
+    // 10:30 左右溫度飆高，壓力跟著掉、不良率上升
+    const spike = Math.exp(-(((i - 30) / 4) ** 2))
+    return {
+      t,
+      key: t.toISOString(),
+      temp: 245 + Math.sin(i / 12) * 3 + spike * 18 + (rand() - 0.5) * 2,
+      pressure: 1.8 - spike * 0.35 + (rand() - 0.5) * 0.04,
+      defect: 0.6 + spike * 3.2 + rand() * 0.4,
+    }
+  })
+})()
+const syncLine = (field, color) => ({
+  type: 'line',
+  data: syncSeries,
+  xValue: (d) => d.t,
+  yValue: (d) => d[field],
+  keyFn: (d) => d.key,
+  color,
+  showDots: false,
+  legend: { show: false },
+})
+const syncCharts = [
+  { key: 'temp', label: '溫度 (°C)', domain: [235, 270], layers: [syncLine('temp', 'rgb(var(--t-chart-1))')] },
+  { key: 'pressure', label: '壓力 (bar)', domain: [1.3, 1.9], layers: [syncLine('pressure', 'rgb(var(--t-chart-2))')] },
+  { key: 'defect', label: '不良率 (%)', domain: null, layers: [syncLine('defect', 'rgb(var(--t-chart-4))')] },
+]
+const syncCode = `import { useChartSync } from '@/components/library'
+
+const sync = useChartSync({ zoom: true, crosshair: true, highlight: true })
+const margin = { top: 16, right: 24, bottom: 36, left: 72 } // 每張一樣，X 軸才會對齊
+
+<ChptButton :disabled="!sync.xDomain.value" @click="sync.reset()">重設縮放</ChptButton>
+<DualAxisComboChart v-bind="sync.bind()" :layers="tempLayers" x-scale-type="time" :margin="margin" />
+<DualAxisComboChart v-bind="sync.bind()" :layers="pressureLayers" x-scale-type="time" :margin="margin" />
+<DualAxisComboChart v-bind="sync.bind()" :layers="defectLayers" x-scale-type="time" :margin="margin" />`
+const syncProps = [
+  { name: 'crosshair', type: 'boolean', def: 'false', desc: '滑鼠在繪圖區時畫垂直十字線（底下顯示 X 讀數）並送出 crosshair-move' },
+  { name: 'crosshairValue', type: 'number | string | Date | null', def: 'null', desc: '外部指定十字線的 X 值（例如另一張圖的 crosshair-move）；滑鼠在本圖時以滑鼠為準。時間軸可給毫秒數' },
+]
+const syncEvents = [
+  { name: 'crosshair-move', params: '(value: number | string | Date | null)', desc: '十字線移動：滑鼠所在的 X 值（類別軸是最近的類別）；離開繪圖區時為 null' },
+]
+const syncApi = [
+  { name: 'options.zoom', type: 'boolean', def: 'true', desc: '同步 X 縮放（框選、滾輪、拖曳 X 軸、重設）' },
+  { name: 'options.crosshair', type: 'boolean', def: 'true', desc: '同步十字線' },
+  { name: 'options.highlight', type: 'boolean', def: 'false', desc: '同步高亮：提示框出現時，其他圖標出同一個 key（需要圖層 keyFn）' },
+  { name: 'options.xDomain', type: 'XDomain | null', def: 'null', desc: '一開始的 X 範圍' },
+  { name: 'bind()', type: '() => props', def: '—', desc: '套到每張圖：v-bind="sync.bind()"（在模板裡呼叫）' },
+  { name: 'xDomain / crosshairValue / highlightKey', type: 'Ref', def: '—', desc: '目前的同步狀態；可以讀，也可以自己改（例如外部的時間區間選擇器）' },
+  { name: 'reset()', type: '() => void', def: '—', desc: '回到全覽並清掉十字線與高亮' },
+]
+
 const highlightProps = [
   { name: 'highlightKey', type: 'string | number | Date | null', def: 'null', desc: '要高亮的資料鍵；對到的點與長條畫標記、其餘 SVG 元素淡化（大量資料的 Canvas 只畫標記）。換鍵只重畫標記，不會整張圖重繪' },
   { name: 'layer.keyFn', type: '(datum, index) => string', def: '—', desc: '資料鍵的來源（同時用於元素比對）；沒有時用 X 值，Date 以 ISO 字串比對。index 是目前顯示資料中的位置，縮放後會變，請由資料欄位組出鍵' },
