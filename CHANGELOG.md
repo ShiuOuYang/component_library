@@ -52,6 +52,12 @@
   - 匯出工具也可單獨使用：`exportChart`、`elementToSvg`、`svgToPng`、`toCsv`、`csvBlob`、`downloadBlob`；
     不想出現在匯出圖片裡的元素加上 `data-export-ignore`（各圖表的重設縮放鈕已加上）
 
+- **ChptKpiCard KPI 卡片**：數字、與前期比較、趨勢線、是否達標，一個元件做完（組合 ChptStatistic 與 SparklineChart）。
+  - `previous` 自動算出變化（`deltaMode`：相對 % 或差值）；前期為 0 時不顯示百分比
+  - `target` / `thresholds`（[接近, 達標]）判定達標 / 接近 / 未達標：左側色條、圖示與文字一起表示，目標畫成趨勢線上的參考線；
+    `higherIsBetter: false` 時門檻與好壞都反過來（不良率下降是綠色）
+  - `clickable` 時整張卡片可點、鍵盤可操作（延伸點擊區，`actions` 插槽的按鈕不會變成巢狀按鈕）；`loading`、`size`
+
 - **多語系涵蓋整個組件庫**：`ChptConfigProvider :locale="enUS"` 現在會切換所有元件的內建文字 ——
   ui 元件、圖表（螢幕閱讀器摘要、tooltip、即時播報）、PCB / Gerber 檢視器、Excel 編輯 / 匯入 / 匯出。
   原本只有分頁、空狀態、表格等十幾個字串有接語系，其餘 600 多處寫死中文。

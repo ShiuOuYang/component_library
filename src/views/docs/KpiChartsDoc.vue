@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-surface-secondary p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
-        <h1 class="text-4xl font-bold text-content-primary mb-2">KPI 小圖：SparklineChart、GaugeChart</h1>
+        <h1 class="text-4xl font-bold text-content-primary mb-2">KPI：ChptKpiCard、SparklineChart、GaugeChart</h1>
         <p class="text-lg text-content-secondary">
           儀表板最上面那一排數字。單一數值不需要畫成圖表 —— 用 <code class="bg-surface-tertiary px-1.5 py-0.5 rounded text-sm">ChptStatistic</code> 顯示數字與漲跌，
           旁邊加一條迷你趨勢線（SparklineChart）交代走勢；要對照目標或紅黃綠區間時用儀表（GaugeChart）。
@@ -12,37 +12,51 @@
       </div>
 
       <section id="cards" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
-        <h2 class="text-2xl font-semibold text-content-primary mb-2">KPI 卡片</h2>
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">KPI 卡片：ChptKpiCard</h2>
         <p class="text-sm text-content-secondary mb-4">
-          <code>ChptStatistic</code> 的 <code>footer</code> 插槽放 SparklineChart：數字是主角，趨勢線用淡化色、最新一點用強調色。
+          數字、與前期比較、趨勢線、是否達標，一個元件做完。給 <code>previous</code> 自動算出變化；給 <code>target</code>（與 <code>thresholds</code>）
+          自動判定達標 / 接近 / 未達標 —— 左側色條、圖示與文字一起表示（不只靠顏色），目標也畫成趨勢線上的虛線。
+          好壞跟著 <code>higher-is-better</code>：不良率、停機時數下降才是綠色。
         </p>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div v-for="k in kpis" :key="k.title" class="rounded-xl border border-stroke-light bg-surface-primary p-4">
-            <ChptStatistic
-              :title="k.title"
-              :value="k.value"
-              :precision="k.precision"
-              :suffix="k.suffix"
-              :delta="k.delta"
-              delta-suffix="%"
-              :higher-is-better="k.higherIsBetter"
-              description="與上週比"
-            >
-              <template #footer>
-                <div class="mt-2 h-8">
-                  <SparklineChart
-                    :data="k.trend"
-                    :type="k.type"
-                    :title="`${k.title}（近 12 週）`"
-                    :value-format="k.format"
-                    :auto-resize="true"
-                  />
-                </div>
-              </template>
-            </ChptStatistic>
-          </div>
+          <ChptKpiCard
+            v-for="k in kpiCards"
+            :key="k.title"
+            v-bind="k"
+            comparison-label="較上週"
+            trend-label="近 12 週"
+          />
         </div>
+
+        <h3 class="mt-8 mb-2 text-lg font-semibold text-content-primary">小尺寸、可點、載入中</h3>
+        <p class="text-sm text-content-secondary mb-4">
+          <code>clickable</code> 時整張卡片可點（送出 <code>click</code>，例如切到明細），鍵盤 Tab 到卡片按 Enter 也可以；
+          讀螢幕會念出「標題、數值、狀態、目標」。<code>actions</code> 插槽的按鈕仍可單獨操作。
+        </p>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ChptKpiCard
+            v-for="k in kpiCards"
+            :key="`sm-${k.title}`"
+            v-bind="k"
+            size="sm"
+            clickable
+            comparison-label="較上週"
+            @click="lastClicked = k.title"
+          />
+        </div>
+        <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ChptKpiCard title="今日產量" :value="null" loading size="sm" />
+          <ChptKpiCard title="在線人數" :value="38" suffix="人" :previous="41" delta-mode="absolute" :delta-precision="0" comparison-label="較昨日" size="sm">
+            <template #actions>
+              <ChptButton size="xs" is-outline @click="lastClicked = '在線人數：重新整理'">重新整理</ChptButton>
+            </template>
+          </ChptKpiCard>
+        </div>
+        <p class="mt-2 text-xs text-content-tertiary" aria-live="polite">{{ lastClicked ? `點了：${lastClicked}` : '點任一張小卡片' }}</p>
         <ChptCodeBlock class="mt-4" :code="cardCode" />
+        <p class="mt-3 text-sm text-content-secondary">
+          需要更自由的版面時，也可以自己組合：<code>ChptStatistic</code> 的 <code>footer</code> 插槽放 <code>SparklineChart</code>（ChptKpiCard 就是這樣組成的）。
+        </p>
       </section>
 
       <section id="sparkline" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
@@ -97,6 +111,10 @@
       <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <h3 class="text-lg font-semibold text-content-primary mt-4">SparklineChart</h3>
+        <ApiTable of="ChptKpiCard" title="ChptKpiCard Props / Events" :rows="kpiCardProps" />
+        <ApiTable of="ChptKpiCard" title="ChptKpiCard Slots" :rows="kpiCardSlots" />
+        <ApiTable of="ChptKpiCard" title="ChptKpiCard 方法（ref）" :rows="kpiCardExpose" />
+        <h3 class="text-lg font-semibold text-content-primary mt-4">SparklineChart</h3>
         <ApiTable of="SparklineChart" title="Props" :rows="sparkProps" />
         <ApiTable of="SparklineChart" title="Events" :rows="sparkEvents" />
         <ApiTable of="SparklineChart" title="Slots" :rows="sparkSlots" />
@@ -110,7 +128,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { ChptCodeBlock, ChptStatistic, GaugeChart, SparklineChart } from '@/components/library'
+import { ChptButton, ChptCodeBlock, ChptKpiCard, GaugeChart, SparklineChart } from '@/components/library'
 import ApiTable from './components/_ApiTable.vue'
 
 const kpis = [
@@ -160,6 +178,62 @@ const kpis = [
   },
 ]
 
+// ChptKpiCard：前期數值、目標、門檻
+const kpiCards = [
+  {
+    title: '良率',
+    value: 98.6,
+    previous: 98.2,
+    deltaMode: 'absolute',
+    deltaSuffix: ' pt',
+    precision: 1,
+    suffix: '%',
+    target: 98.5,
+    thresholds: [97.5, 98.5],
+    trend: kpis[0].trend,
+    trendFormat: kpis[0].format,
+  },
+  {
+    title: '產量',
+    value: 52840,
+    previous: 51300,
+    precision: 0,
+    suffix: 'pcs',
+    target: 55000,
+    thresholds: [50000, 55000],
+    trend: kpis[1].trend,
+    trendType: 'bar',
+    trendFormat: kpis[1].format,
+  },
+  {
+    title: '不良率',
+    value: 1.4,
+    previous: 1.8,
+    deltaMode: 'absolute',
+    deltaSuffix: ' pt',
+    precision: 1,
+    suffix: '%',
+    higherIsBetter: false,
+    target: 1.5,
+    trend: kpis[2].trend,
+    trendType: 'area',
+    trendFormat: kpis[2].format,
+  },
+  {
+    title: '停機時數',
+    value: 6.5,
+    previous: 5.8,
+    precision: 1,
+    suffix: 'h',
+    higherIsBetter: false,
+    target: 5,
+    thresholds: [6, 5],
+    trend: kpis[3].trend,
+    trendFormat: kpis[3].format,
+  },
+]
+const lastClicked = ref('')
+
 const weekly = ['W31', 'W32', 'W33', 'W34', 'W35', 'W36', 'W37', 'W38', 'W39', 'W40', 'W41', 'W42']
 const sparkDemos = [
   {
@@ -196,13 +270,26 @@ const oeeBands = [
   { to: 100, status: 'good', label: '世界級' },
 ]
 
-const cardCode = `<ChptStatistic title="良率" :value="98.6" :precision="1" suffix="%" :delta="0.4" higher-is-better>
-  <template #footer>
-    <div class="mt-2 h-8">
-      <SparklineChart :data="trend" title="良率（近 12 週）" :auto-resize="true" />
-    </div>
-  </template>
-</ChptStatistic>`
+const cardCode = `<!-- thresholds = [接近, 達標]：≥ 98.5 達標、≥ 97.5 接近、其餘未達標 -->
+<ChptKpiCard
+  title="良率"
+  :value="98.6"
+  :previous="98.2"
+  delta-mode="absolute"
+  delta-suffix=" pt"
+  :precision="1"
+  suffix="%"
+  :target="98.5"
+  :thresholds="[97.5, 98.5]"
+  :trend="weeklyYield"
+  trend-label="近 12 週"
+  comparison-label="較上週"
+  clickable
+  @click="openDetail('yield')"
+/>
+
+<!-- 越低越好：不良率 1.4%（目標 ≤ 1.5%）是達標、綠色 -->
+<ChptKpiCard title="不良率" :value="1.4" :previous="1.8" :target="1.5" :higher-is-better="false" suffix="%" />`
 
 const gaugeCode = `<GaugeChart
   :value="96.4"
@@ -251,6 +338,33 @@ const gaugeProps = [
   { name: 'valueFormat', type: '(v) => string', def: "d3.format(',~f')", desc: '數值格式' },
   { name: 'showMinMax / showBands', type: 'boolean', def: 'true / true', desc: '兩端的最小最大值、外圈的區間細環' },
   { name: 'width / autoResize', type: 'number / boolean', def: '200 / false', desc: '寬度（高度依角度算）；autoResize 時寬度跟著容器' },
+]
+
+const kpiCardProps = [
+  { name: 'title', type: 'string', def: '—', desc: '標題（必填）' },
+  { name: 'value / precision / groupSeparator / prefix / suffix', type: 'number | string | null / number / boolean / string', def: "null / — / true / ''", desc: '數值與格式（同 ChptStatistic）' },
+  { name: 'higherIsBetter', type: 'boolean', def: 'true', desc: '數值越高越好；不良率、停機時間設 false（變化與狀態的好壞都跟著反過來）' },
+  { name: 'previous / deltaMode', type: "number | null / 'percent' | 'absolute'", def: "null / 'percent'", desc: '前期數值；自動算出相對變化（%）或差值。前期為 0 時不顯示百分比' },
+  { name: 'delta / deltaSuffix / deltaPrecision', type: 'number | null / string / number', def: "— / 依 deltaMode / 1", desc: '直接指定變化量（優先於 previous）與其單位、小數位數' },
+  { name: 'comparisonLabel', type: 'string', def: "''", desc: '比較基準（例如「較上週」）；有變化量時才顯示' },
+  { name: 'target / showTargetLine / targetFormat', type: 'number | null / boolean / (v) => string', def: 'null / true / —', desc: '目標：顯示「目標 …」、畫在趨勢線上，並用來判定狀態' },
+  { name: 'thresholds', type: '[接近, 達標] | null', def: 'null', desc: '狀態門檻；不給時只看 target（達到為達標，否則未達標）' },
+  { name: 'status', type: "'good' | 'warning' | 'critical' | null", def: '—', desc: '直接指定狀態（優先於 target / thresholds）；null 不顯示' },
+  { name: 'trend / trendType', type: "(number | object)[] / 'line' | 'area' | 'bar'", def: "[] / 'line'", desc: '趨勢資料與圖形；物件陣列用 trendValueField / trendLabelField 取值' },
+  { name: 'trendValueField / trendLabelField / trendLabel / trendFormat', type: 'string / string / string / (v) => string', def: "'value' / 'label' / '' / —", desc: '趨勢的欄位、讀螢幕說明（例如「近 12 週」）與提示框格式' },
+  { name: 'size', type: "'sm' | 'md'", def: "'md'", desc: '尺寸' },
+  { name: 'loading', type: 'boolean', def: 'false', desc: '載入中（數值顯示骨架、隱藏趨勢與狀態）' },
+  { name: 'clickable', type: 'boolean', def: 'false', desc: '整張卡片可點（送出 click）；鍵盤可操作' },
+  { name: '@click', type: '(event: MouseEvent)', def: '—', desc: 'clickable 時點了卡片' },
+]
+const kpiCardSlots = [
+  { name: 'title', type: '—', desc: '自訂標題內容' },
+  { name: 'actions', type: '—', desc: '右上角的小動作（可單獨點，不會觸發卡片的 click）' },
+  { name: 'footer', type: '—', desc: '趨勢線與目標下方的補充內容' },
+]
+const kpiCardExpose = [
+  { name: 'status', type: "Ref<'good' | 'warning' | 'critical' | null>", desc: '目前判定的狀態' },
+  { name: 'delta', type: 'Ref<number | null>', desc: '實際顯示的變化量' },
 ]
 
 const gaugeEvents = [{ name: 'chart-ready', type: '{ width, height }', desc: '掛載完成' }]

@@ -560,6 +560,13 @@ export interface ChptLocale {
     error: string
     retry: string
   }
+  kpiCard: {
+    good: string
+    warning: string
+    critical: string
+    target: (value: string) => string
+    trend: (title: string, label: string) => string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1147,6 +1154,13 @@ export const zhTW: ChptLocale = {
     error: '圖表載入失敗',
     retry: '重試',
   },
+  kpiCard: {
+    good: '達標',
+    warning: '接近目標',
+    critical: '未達標',
+    target: (v) => `目標 ${v}`,
+    trend: (title, label) => `${title}趨勢${label ? `（${label}）` : ''}`,
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1733,6 +1747,13 @@ export const enUS: ChptLocale = {
     exportFailed: 'Export failed. Please try again.',
     error: 'Failed to load the chart',
     retry: 'Retry',
+  },
+  kpiCard: {
+    good: 'On target',
+    warning: 'Near target',
+    critical: 'Off target',
+    target: (v) => `Target ${v}`,
+    trend: (title, label) => `${title} trend${label ? ` (${label})` : ''}`,
   },
 }
 

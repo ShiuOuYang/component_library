@@ -433,7 +433,7 @@ const navSections = [
         anchors: [{ label: '匯出', id: 'basic' }, { label: '狀態', id: 'states' }, { label: 'Canvas 與自訂', id: 'custom' }, { label: 'API', id: 'api' }],
       },
       {
-        to: '/docs/components/kpi-charts', icon: '🎛️', label: 'KPI 小圖',
+        to: '/docs/components/kpi-charts', icon: '🎛️', label: 'KPI 卡片與小圖',
         anchors: [{ label: 'KPI 卡片', id: 'cards' }, { label: '迷你趨勢線', id: 'sparkline' }, { label: '儀表', id: 'gauge' }, { label: 'API', id: 'api' }],
       },
     ],
