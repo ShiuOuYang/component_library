@@ -37,6 +37,8 @@ export type {
 } from './types/chart.types'
 export type { TriggerLine, FacetConfig, GridFacet, GridFacetDatum } from './composables/faceChart/useFacetLayout'
 export type { ParetoDatum, ParetoSortOrder } from './composables/useParetoData'
+export { useChartSync } from './composables/useChartSync'
+export type { ChartSync, ChartSyncOptions, CrosshairValue } from './composables/useChartSync'
 export type {
   HeatmapDatum, ColorLegendPosition, HighlightMode as HeatmapHighlightMode, HeatmapColorScale,
   HeatmapCell, GradientStop, HeatmapCustomRenderers,

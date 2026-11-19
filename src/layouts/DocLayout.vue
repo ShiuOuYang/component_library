@@ -393,7 +393,7 @@ const navSections = [
     items: [
       {
         to: '/docs/components/dual-axis-chart', icon: '📊', label: '雙軸組合圖',
-        anchors: [{ label: '基本示範', id: 'basic' }, { label: '進階範例', id: 'examples' }],
+        anchors: [{ label: '基本示範', id: 'basic' }, { label: '進階範例', id: 'examples' }, { label: '連動高亮', id: 'highlight' }, { label: '多張圖同步', id: 'sync' }],
       },
       {
         to: '/docs/components/facet-charts', icon: '🧮', label: '分面圖',
