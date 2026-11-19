@@ -39,6 +39,19 @@
           </button>
         </div>
 
+        <!-- 指令面板入口：Ctrl / ⌘ + K 也能開 -->
+        <div v-if="!isSidebarCollapsed" class="px-4 pb-3">
+          <button
+            type="button"
+            class="flex w-full items-center gap-2 rounded-lg border border-stroke-default bg-surface-secondary px-3 py-1.5 text-sm text-content-tertiary hover:border-stroke-medium hover:text-content-secondary"
+            @click="paletteOpen = true"
+          >
+            <ChptIcon :size="18" color="current">search</ChptIcon>
+            <span class="flex-1 text-left">搜尋文件…</span>
+            <kbd class="rounded border border-stroke-default px-1.5 text-[11px]">{{ paletteHotkey }}</kbd>
+          </button>
+        </div>
+
         <!-- 收合狀態的 Logo -->
         <div v-else class="py-3 flex items-center justify-center">
           <router-link to="/docs" class="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center group">
@@ -165,6 +178,8 @@
       </div>
     </aside>
 
+    <ChptCommandPalette v-model="paletteOpen" :commands="paletteCommands" recent-key="docs" placeholder="搜尋元件、頁面或動作…" />
+
     <!-- 右側內容區域 (Main Content) -->
     <main id="main-content" ref="mainRef" tabindex="-1" class="flex-1 overflow-y-auto focus:outline-none">
       <router-view />
@@ -173,8 +188,9 @@
 </template>
 
 <script setup>
-import { ref, useTemplateRef, watch } from 'vue';
+import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { ChptCommandPalette, ChptIcon, formatHotkey, useDarkMode } from '@/components/library';
 
 // 版本與更新日期在建置時帶入（vite.config.js 的 define）；版本號還沒啟用（0.0.0）時顯示「未發布」
 const docsVersion = __DOCS_VERSION__ === '0.0.0' ? '未發布' : `v${__DOCS_VERSION__}`;
@@ -366,6 +382,7 @@ const navSections = [
           { label: 'ChptMenu', id: 'chpt-menu' },
           { label: 'ChptAnchor', id: 'chpt-anchor' },
           { label: 'ChptBackTop', id: 'chpt-backtop' },
+          { label: 'ChptCommandPalette', id: 'chpt-command-palette' },
         ],
       },
       {
@@ -497,6 +514,40 @@ const collapsedShortcuts = [
   { to: '/docs/components/dual-axis-chart', icon: '📈', title: '圖表' },
   { to: '/docs/components/excel-editor', icon: '📑', title: 'Excel' },
 ];
+
+// ===== 指令面板（Ctrl / ⌘ + K）：側欄的每一頁與每個元件錨點都搜得到 =====
+const paletteOpen = ref(false);
+const paletteHotkey = formatHotkey('mod+k').join(' ');
+const { toggle: toggleDark } = useDarkMode();
+const paletteCommands = computed(() => {
+  const out = [{ id: '/docs', label: '首頁', group: '頁面', icon: 'home', to: '/docs' }];
+  for (const section of navSections) {
+    for (const item of section.items) {
+      out.push({
+        id: item.to,
+        label: item.label,
+        group: section.title,
+        icon: 'article',
+        to: item.to,
+        // 路由的最後一段（wafer-map → wafer map）：中文標籤的頁面也能用英文元件名搜到
+        keywords: [item.to.split('/').pop().replace(/-/g, ' '), ...(item.anchors ?? []).map((a) => a.label)],
+      });
+      for (const anchor of item.anchors ?? []) {
+        out.push({
+          id: `${item.to}#${anchor.id}`,
+          label: anchor.label,
+          group: section.title,
+          description: item.label,
+          icon: 'tag',
+          perform: () => jump(item, anchor.id),
+        });
+      }
+    }
+  }
+  out.push({ id: 'action:dark', label: '切換深色 / 淺色模式', group: '動作', icon: 'dark_mode', keywords: ['dark', 'theme', '主題'], perform: toggleDark });
+  out.push({ id: 'action:sidebar', label: '收合 / 展開側邊欄', group: '動作', icon: 'side_navigation', keywords: ['sidebar'], perform: toggleSidebar });
+  return out;
+});
 
 /** 切頁後自動展開所在群組（navSections 需已定義，故置於此） */
 watch(
