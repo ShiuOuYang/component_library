@@ -618,6 +618,19 @@ export interface ChptLocale {
     legend: string
     ariaLabel: (total: number, yieldText: string) => string
   }
+  bullet: {
+    title: string
+    target: (value: string) => string
+  }
+  funnel: {
+    title: string
+    rty: string
+    stepYield: string
+    cumulative: string
+    loss: (n: string) => string
+    worst: string
+    empty: string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1259,6 +1272,19 @@ export const zhTW: ChptLocale = {
     legend: 'Bin 圖例（點一下淡化 / 恢復）',
     ariaLabel: (total, yieldText) => `晶圓圖，${total.toLocaleString()} 顆晶粒${yieldText ? `，良率 ${yieldText}` : ''}。方向鍵逐顆移動，Enter 選取`,
   },
+  bullet: {
+    title: '子彈圖',
+    target: (value) => `目標 ${value}`,
+  },
+  funnel: {
+    title: '良率漏斗',
+    rty: '直通率',
+    stepYield: '站良率',
+    cumulative: '累計',
+    loss: (n) => `損失 ${n}`,
+    worst: '最大損失',
+    empty: '沒有資料',
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -1899,6 +1925,19 @@ export const enUS: ChptLocale = {
     empty: 'No die data',
     legend: 'Bin legend (click to dim / restore)',
     ariaLabel: (total, yieldText) => `Wafer map, ${total.toLocaleString()} dies${yieldText ? `, yield ${yieldText}` : ''}. Use arrow keys to move between dies, Enter to select`,
+  },
+  bullet: {
+    title: 'Bullet chart',
+    target: (value) => `target ${value}`,
+  },
+  funnel: {
+    title: 'Yield funnel',
+    rty: 'Rolled throughput yield',
+    stepYield: 'Step yield',
+    cumulative: 'Cumulative',
+    loss: (n) => `${n} lost`,
+    worst: 'Largest loss',
+    empty: 'No data',
   },
 }
 
