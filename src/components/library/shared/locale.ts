@@ -661,6 +661,29 @@ export interface ChptLocale {
     blocked: (title: string, column: string) => string
     card: string
   }
+  richText: {
+    toolbar: string
+    placeholder: string
+    bold: string
+    italic: string
+    underline: string
+    strike: string
+    heading: (level: number) => string
+    bulletList: string
+    orderedList: string
+    blockquote: string
+    codeBlock: string
+    link: string
+    linkUrl: string
+    apply: string
+    unlink: string
+    invalidUrl: string
+    undo: string
+    redo: string
+    clear: string
+    count: (n: number, max?: number) => string
+    overLimit: (max: number) => string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1345,6 +1368,29 @@ export const zhTW: ChptLocale = {
     blocked: (title, column) => `「${title}」不能移到「${column}」`,
     card: '卡片',
   },
+  richText: {
+    toolbar: '格式工具列',
+    placeholder: '輸入內容…',
+    bold: '粗體',
+    italic: '斜體',
+    underline: '底線',
+    strike: '刪除線',
+    heading: (level) => `標題 ${level}`,
+    bulletList: '項目清單',
+    orderedList: '編號清單',
+    blockquote: '引用',
+    codeBlock: '程式碼區塊',
+    link: '連結',
+    linkUrl: '連結網址',
+    apply: '套用',
+    unlink: '移除連結',
+    invalidUrl: '只接受 http、https 或 mailto 開頭的網址',
+    undo: '復原',
+    redo: '重做',
+    clear: '清除格式',
+    count: (n, max) => (max ? `${n} / ${max} 字` : `${n} 字`),
+    overLimit: (max) => `超過 ${max} 字`,
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -2028,6 +2074,29 @@ export const enUS: ChptLocale = {
     cancelled: (title) => `Move of ${title} cancelled`,
     blocked: (title, column) => `${title} can't be moved to ${column}`,
     card: 'Card',
+  },
+  richText: {
+    toolbar: 'Formatting',
+    placeholder: 'Start typing…',
+    bold: 'Bold',
+    italic: 'Italic',
+    underline: 'Underline',
+    strike: 'Strikethrough',
+    heading: (level) => `Heading ${level}`,
+    bulletList: 'Bulleted list',
+    orderedList: 'Numbered list',
+    blockquote: 'Quote',
+    codeBlock: 'Code block',
+    link: 'Link',
+    linkUrl: 'Link URL',
+    apply: 'Apply',
+    unlink: 'Remove link',
+    invalidUrl: 'Only http, https or mailto URLs are allowed',
+    undo: 'Undo',
+    redo: 'Redo',
+    clear: 'Clear formatting',
+    count: (n, max) => (max ? `${n} / ${max} characters` : `${n} characters`),
+    overLimit: (max) => `Over the ${max}-character limit`,
   },
 }
 

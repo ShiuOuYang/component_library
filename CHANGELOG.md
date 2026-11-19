@@ -36,6 +36,11 @@
 
 ### 新增
 
+- **ChptRichTextEditor 富文字編輯器**（Tiptap）：v-model 是 HTML（清空時為空字串，`required` 規則照常運作）。
+  工具列可自訂（粗體、斜體、底線、刪除線、H2 / H3、清單、引用、程式碼區塊、連結、復原 / 重做、清除格式），
+  按鈕以 aria-pressed 表示目前格式、左右方向鍵在按鈕間移動；連結輸入框在工具列下方，只接受 http / https / mailto 與站內路徑。
+  放在 ChptFormItem 裡時標籤、必填、錯誤以 aria 接到編輯區；`maxLength` 顯示字數、超過時標紅（不截斷）。
+  新增 `isSafeUrl()`（`shared/safeUrl.ts`）與語系群組 `richText`。
 - **ChptKanban 看板**：卡片是一個扁平陣列（v-model），`columnField` 記錄所在欄、同一欄的順序就是陣列順序。
   滑鼠拖曳換欄與排序（即時預覽、Escape 取消）；鍵盤空白鍵拿起 → 方向鍵移動 → 空白鍵放下，每一步以 aria-live 念出；Enter 開啟卡片。
   欄的 `limit` 是在製上限（超過時標紅；`enforceLimit` 時不能放進已滿的欄）；`canMove(card, from, to)` 自訂流程規則
