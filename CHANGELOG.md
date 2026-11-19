@@ -36,6 +36,15 @@
 
 ### 新增
 
+- **ChptScanInput 條碼掃描輸入**：產線掃描站用，掃描槍掃一下就送出、清空、繼續掃下一個。
+  - 以按鍵速度分辨掃描槍與手打（`scanSpeed`，容許前綴碼後的一次停頓）；`allowManual: false` 只接受掃描槍
+  - 重複條碼 `duplicate`（allow / warn / reject）與 `duplicateWindow`；`pattern`、`validator`、`minLength`、`trim`、`transform`
+  - `captureGlobal`：焦點不在任何輸入框時也接收掃描槍（只攔掃描槍速度的按鍵）；`keepFocus` 點到空白處自動聚焦回來
+  - 偵測中文輸入法組字並提示切換（`ime-detected`）—— 掃描站「掃不進去」最常見的原因
+  - 回饋：狀態文字（成功 polite、錯誤 alert）、`sound` 嗶聲、`vibrate` 震動、`showHistory` 掃描紀錄；
+    ref `submit(value)` 供相機掃碼、RFID 走同樣的驗證
+  - 判斷邏輯在 `shared/scanDetector.ts`（純函式）
+
 - **ChptTable 虛擬捲動**：`virtual` 開啟後不分頁，表身固定高度（`height`）上下捲，只畫看得到的列，
   5 萬筆也能順暢捲動。每列固定 `rowHeight`（預設 32px）以便直接算出捲動位置；展開的明細列高度自動量測。
   - 排序、搜尋（回到最上面）、勾選（全選是全部資料）、展開、多層表頭、拖曳欄寬照常可用；表頭固定在頂端

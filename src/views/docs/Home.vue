@@ -137,6 +137,7 @@ const groups = [
   { to: '/docs/components/data-filter', icon: '📊', title: '資料與過濾', badge: 'UI', description: 'ChptTable / ChptFixedTable / ChptPagination / ChptFilter / ChptFilterBar' },
   { to: '/docs/components/pickers', icon: '🎯', title: '進階選擇元件', badge: 'UI', description: 'Autocomplete / Cascader / TreeSelect / Transfer / TimePicker / ColorPicker / Rate / Calendar / InputTag' },
   { to: '/docs/components/form', icon: '📝', title: '表單驗證與上傳', badge: 'UI', description: 'Form / FormItem（驗證）/ Upload（拖放、進度、取消）' },
+  { to: '/docs/components/scan-input', icon: '📷', title: '條碼掃描輸入', badge: 'UI', description: 'ScanInput：分辨掃描槍與手打、擋重複、驗證格式、全頁接收、輸入法提示' },
   { to: '/docs/components/data-display', icon: '🗂️', title: '資料展示', badge: 'UI', description: 'Statistic（KPI）/ Descriptions / Timeline / Tree / Image（看圖）/ List / QRCode' },
   { to: '/docs/components/feedback', icon: '🛎️', title: '反饋元件', badge: 'UI', description: 'Alert / Badge / Tag / Toast / Notification / Progress / Spinner / Empty / Skeleton / Result' },
   { to: '/docs/components/interactive', icon: '🖱️', title: '互動元件', badge: 'UI', description: 'Button / Avatar / Tooltip / Icon / Tabs / Steps' },
