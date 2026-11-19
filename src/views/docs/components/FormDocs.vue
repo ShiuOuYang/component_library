@@ -169,6 +169,47 @@
       <ApiTable of="ChptSchemaForm" title="方法（ref）" :rows="schemaFormMethods" />
     </section>
 
+    <!-- ============ ChptRichTextEditor ============ -->
+    <section id="chpt-rich-text" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptRichTextEditor 富文字編輯器</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>異常描述、改善報告、公告這類需要粗體、清單、連結的長文字（基於 Tiptap）。v-model 是 HTML 字串，清空時是空字串，
+        放在 ChptFormItem 裡就能用一般的 <code>required</code> 規則。工具列可自訂；工具列裡左右方向鍵移動、Tab 跳進編輯區。
+        連結只接受 http、https、mailto 與站內路徑。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptRichTextEditor } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptForm ref="reportRef" :model="report" :rules="reportRules" @submit="reportResult = report.content">
+          <ChptFormItem prop="title" label="主旨" class="max-w-md">
+            <ChptInput v-model="report.title" placeholder="例如 SMT-3 吸嘴堵塞改善" />
+          </ChptFormItem>
+          <ChptFormItem prop="content" label="改善內容" hint="說明原因、對策與效果確認">
+            <ChptRichTextEditor v-model="report.content" :max-length="500" placeholder="原因、對策、效果確認…" />
+          </ChptFormItem>
+          <div class="flex gap-2">
+            <ChptButton type="submit">送出</ChptButton>
+            <ChptButton type="reset" is-outline>重設</ChptButton>
+          </div>
+        </ChptForm>
+        <details v-if="reportResult" class="mt-3 text-xs text-content-secondary">
+          <summary class="cursor-pointer">送出的 HTML</summary>
+          <pre class="mt-2 overflow-x-auto whitespace-pre-wrap rounded bg-surface-tertiary p-2">{{ reportResult }}</pre>
+        </details>
+      </div>
+      <div class="mt-6">
+        <ChptCodeBlock :code="richTextSample" />
+      </div>
+      <ApiTable of="ChptRichTextEditor" title="Props" :rows="richTextProps" />
+      <ApiTable of="ChptRichTextEditor" title="Events" :rows="richTextEvents" />
+      <ApiTable of="ChptRichTextEditor" title="方法（ref）" :rows="richTextMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>安全：</strong>輸出只有 Tiptap 認得的標籤（貼上的 &lt;script&gt;、事件屬性、style 會被丟掉），連結擋掉 javascript: 這類網址。
+        但前端的限制擋不住直接呼叫 API 的人 —— 要把 HTML 顯示給其他人看時，伺服器端仍要再過濾一次。
+      </p>
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -221,6 +262,7 @@ import {
   ChptFormItem,
   ChptFormList,
   ChptSchemaForm,
+  ChptRichTextEditor,
   ChptInput,
   ChptSelect,
   ChptInputNumber,
@@ -297,6 +339,43 @@ const formListSlots = [
 const formListMethods = [
   { name: 'add(item?, at?)', type: '(T?, number?) => Promise<number>', desc: '新增一列（不給 item 時用 createItem），回傳索引；超過 max 時回傳 -1' },
   { name: 'remove(index) / move(index, delta)', type: '(number) => void', desc: '刪除；上下移動（delta 為 -1 / 1）' },
+]
+
+// ---- ChptRichTextEditor ----
+const reportRef = ref(null)
+const report = reactive({
+  title: 'SMT-3 吸嘴堵塞改善',
+  content: '<h2>原因</h2><p>吸嘴<strong>未依保養週期清潔</strong>，錫膏殘留造成堵塞。</p><h2>對策</h2><ul><li><p>保養週期由 7 天改為 3 天</p></li><li><p>換線時加做吸嘴檢查</p></li></ul>',
+})
+const reportRules = {
+  title: { required: true },
+  content: { required: true, message: '請填寫改善內容' },
+}
+const reportResult = ref('')
+const richTextSample = `<ChptFormItem prop="content" label="改善內容">
+  <ChptRichTextEditor v-model="form.content" :max-length="500" placeholder="原因、對策、效果確認…" />
+</ChptFormItem>
+
+<!-- 自訂工具列（'|' 是分隔線） -->
+<ChptRichTextEditor v-model="note" :toolbar="['bold', 'italic', '|', 'bulletList', 'link']" :min-height="80" />`
+const richTextProps = [
+  { name: 'modelValue', type: 'string', def: "''", desc: 'HTML（v-model）；清空時是空字串' },
+  { name: 'toolbar', type: 'RichTextTool[]', def: '全部', desc: "bold、italic、underline、strike、heading2、heading3、bulletList、orderedList、blockquote、codeBlock、link、undo、redo、clear；'|' 是分隔線；空陣列不顯示工具列" },
+  { name: 'placeholder', type: 'string', def: '語系（繁中「輸入內容…」）', desc: '空白時的提示' },
+  { name: 'disabled / readonly', type: 'boolean', def: 'false', desc: '停用；唯讀（不顯示工具列）' },
+  { name: 'minHeight / maxHeight', type: 'number', def: '120 / —', desc: '編輯區高度（px；超過 maxHeight 時捲動）' },
+  { name: 'maxLength / showCount', type: 'number / boolean', def: '— / false', desc: '字數上限（只提示、超過時標紅，不截斷）；顯示字數' },
+  { name: 'ariaLabel', type: 'string', def: '—', desc: '沒有 ChptFormItem 時的名稱' },
+  { name: 'errorText', type: 'string', def: '—', desc: '錯誤訊息（在 ChptFormItem 裡時由驗證決定）' },
+]
+const richTextEvents = [
+  { name: 'update:modelValue', params: '(html: string)', desc: '內容改變' },
+  { name: 'focus / blur', params: '—', desc: '編輯區取得 / 失去焦點' },
+]
+const richTextMethods = [
+  { name: 'focus()', type: '() => void', desc: '聚焦到編輯區' },
+  { name: 'getText()', type: '() => string', desc: '純文字內容' },
+  { name: 'editor', type: 'ShallowRef<Editor>', desc: 'Tiptap 的 editor 實例（進階用途）' },
 ]
 
 // ---- ChptSchemaForm ----
