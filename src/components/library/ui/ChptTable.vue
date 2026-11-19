@@ -230,6 +230,7 @@
                   ]"
                   :aria-selected="selectionEnabled ? selectedKeySet.has(keyOf(item, index + renderStart)) : undefined"
                   :aria-rowindex="ariaRowCount ? headerDepth + index + renderStart + 1 : undefined"
+                  :aria-level="props.tree ? (metaOf(item)?.level ?? 0) + 1 : undefined"
                   :style="props.virtual ? { height: `${rowHeightPx}px` } : undefined"
                   :tabindex="hasRowClickListener ? 0 : undefined"
                   @click="onRowClick(item, index + renderStart, $event)"
@@ -265,12 +266,34 @@
                     />
                   </td>
                   <td
-                    v-for="column in displayColumns"
+                    v-for="(column, ci) in displayColumns"
                     :key="column.key ?? column.title"
                     v-bind="cellPropsOf(column, item, index + renderStart)"
                     :class="[toneOf(column) ? `tone-cell-${toneOf(column)}` : undefined, fixedClassOf(column)]"
                     :style="[column.style, widthStyle(column), alignStyle(column), fixedStyleOf(column)]"
                   >
+                    <!-- 樹狀：第一欄依層級縮排，有子列時前面是展開 / 收合鈕 -->
+                    <span
+                      v-if="props.tree && ci === 0"
+                      class="tree-cell"
+                      :style="{ paddingLeft: `${(metaOf(item)?.level ?? 0) * props.treeIndent}px` }"
+                    >
+                      <button
+                        v-if="metaOf(item)?.hasChildren"
+                        type="button"
+                        class="tree-toggle"
+                        :aria-expanded="metaOf(item)?.expanded"
+                        :aria-label="metaOf(item)?.expanded ? locale.collapseRow : locale.expandRow"
+                        @click.stop="toggleTreeRow(item, index + renderStart)"
+                      >
+                        <span
+                          class="material-symbols-outlined text-base transition-transform duration-150"
+                          :class="{ 'rotate-90': metaOf(item)?.expanded }"
+                          aria-hidden="true"
+                        >chevron_right</span>
+                      </button>
+                      <span v-else class="tree-toggle-spacer" aria-hidden="true"></span>
+                    </span>
                     <slot
                       name="cell"
                       :item="item"
@@ -556,6 +579,22 @@ const props = withDefaults(defineProps<{
   /** virtual 時距離底部多少 px 送出 reach-bottom（無限捲動載入下一批） */
   reachBottomThreshold?: number
 
+  // ===== 樹狀資料 =====
+  /**
+   * 樹狀資料（例如 BOM 階層）：childrenKey 裡的子列縮排顯示在父列下方，第一欄有展開 / 收合鈕。
+   * 排序在同一層的兄弟之間進行；搜尋保留符合的列與它的上層並自動展開；分頁以最上層計算。
+   * 請給 rowKey（展開狀態、勾選都靠它）
+   */
+  tree?: boolean
+  /** 子列的欄位名稱 */
+  childrenKey?: string
+  /** 已展開的樹節點（v-model:tree-expanded-keys） */
+  treeExpandedKeys?: RowKey[]
+  /** 一開始全部展開（沒給 treeExpandedKeys 時） */
+  defaultExpandAll?: boolean
+  /** 每一層的縮排（px） */
+  treeIndent?: number
+
   // ===== 合計列 =====
   /** 合計列第一格的文字（預設取語系：合計） */
   summaryLabel?: string
@@ -604,6 +643,11 @@ const props = withDefaults(defineProps<{
   reachBottomThreshold: 120,
   summaryLabel: undefined,
   summaryScope: 'all',
+  tree: false,
+  childrenKey: 'children',
+  treeExpandedKeys: undefined,
+  defaultExpandAll: false,
+  treeIndent: 16,
 })
 
 const config = useConfig()
@@ -635,6 +679,8 @@ const emit = defineEmits<{
   'column-resize': [info: { key: string; width: number }]
   /** virtual 時捲到接近底部（loading 時不送；新資料進來前只送一次） */
   'reach-bottom': []
+  /** 樹節點展開 / 收合 */
+  'update:treeExpandedKeys': [keys: RowKey[]]
 }>()
 
 // 獲取插槽信息
@@ -1053,15 +1099,70 @@ const filteredData = computed(() => {
   }
   
   const query = searchQuery.value.toLowerCase().trim()
-  return props.data.filter(item => {
-    return Object.values(item).some(val => {
-      if (val !== null && val !== undefined) {
-        return String(val).toLowerCase().includes(query)
-      }
-      return false
-    })
-  })
+  // 樹狀：保留符合的列與它的所有上層（不複製資料列 —— 勾選拿到的仍是原本的物件）
+  if (props.tree) return props.data.filter((row) => treeMatches.value.has(row))
+  return props.data.filter(item => rowMatches(item, query))
 })
+
+/** 這一列的某個值（子列陣列除外）包含關鍵字 */
+function rowMatches(item: DataRow, query: string): boolean {
+  return Object.entries(item).some(([k, val]) => {
+    if (props.tree && k === props.childrenKey) return false
+    if (val !== null && val !== undefined && typeof val !== 'object') {
+      return String(val).toLowerCase().includes(query)
+    }
+    return false
+  })
+}
+
+// ===== 樹狀資料 =====
+function childrenOf(row: DataRow): DataRow[] {
+  const c = row[props.childrenKey]
+  return Array.isArray(c) ? (c as DataRow[]) : []
+}
+
+/** 搜尋時要留下的列：符合的列與它的上層（沒有搜尋時為空集合） */
+const treeMatches = computed(() => {
+  const set = new Set<DataRow>()
+  const query = searchQuery.value.toLowerCase().trim()
+  if (!props.tree || !query) return set
+  const visit = (row: DataRow): boolean => {
+    let keep = rowMatches(row, query)
+    for (const child of childrenOf(row)) if (visit(child)) keep = true
+    if (keep) set.add(row)
+    return keep
+  }
+  props.data.forEach(visit)
+  return set
+})
+
+/** 所有有子列的節點鍵（defaultExpandAll 用） */
+function allParentKeys(rows: DataRow[], out: RowKey[] = []): RowKey[] {
+  rows.forEach((row, i) => {
+    if (childrenOf(row).length) {
+      out.push(keyOf(row, i))
+      allParentKeys(childrenOf(row), out)
+    }
+  })
+  return out
+}
+
+const innerTreeExpanded = ref<RowKey[]>(props.treeExpandedKeys ?? (props.tree && props.defaultExpandAll ? allParentKeys(props.data) : []))
+watch(() => props.treeExpandedKeys, (keys) => { if (keys) innerTreeExpanded.value = [...keys] })
+const treeExpandedSet = computed(() => new Set(innerTreeExpanded.value))
+
+function toggleTreeRow(row: DataRow, index: number): void {
+  const key = keyOf(row, index)
+  innerTreeExpanded.value = treeExpandedSet.value.has(key)
+    ? innerTreeExpanded.value.filter((k) => k !== key)
+    : [...innerTreeExpanded.value, key]
+  emit('update:treeExpandedKeys', [...innerTreeExpanded.value])
+}
+
+interface TreeMeta { level: number; hasChildren: boolean; expanded: boolean; index: number }
+/** 攤平後每一列的層級資訊（只有樹狀模式有） */
+let treeMetaStore = new WeakMap<DataRow, TreeMeta>()
+const metaOf = (row: DataRow): TreeMeta | undefined => treeMetaStore.get(row)
 
 // 排序和過濾後的數據
 const sortedAndFilteredData = computed(() => {
@@ -1087,6 +1188,34 @@ const paginatedData = computed(() => {
   // 虛擬捲動不分頁：「本頁」就是篩選、排序後的全部資料（全選、勾選狀態都以此為準）
   if (props.virtual) return sortedAndFilteredData.value
   return sortedAndFilteredData.value.slice(startIndex.value, endIndex.value)
+})
+
+/**
+ * 實際畫出來的列：一般模式就是 paginatedData；樹狀模式把展開的子列攤平插在父列下方
+ * （子列同樣依目前的排序，在兄弟之間排）。搜尋中自動展開到符合的列
+ */
+const displayRows = computed<DataRow[]>(() => {
+  if (!props.tree) {
+    treeMetaStore = new WeakMap()
+    return paginatedData.value
+  }
+  const out: DataRow[] = []
+  const meta = new WeakMap<DataRow, TreeMeta>()
+  const searching = treeMatches.value.size > 0
+  const walk = (rows: DataRow[], level: number) => {
+    rows.forEach((row) => {
+      // 與 template 的 index + renderStart 一致（沒有 rowKey 時退回的列序才對得上）
+      const index = out.length + startIndex.value
+      const kids = childrenOf(row).filter((c) => !searching || treeMatches.value.has(c))
+      const expanded = kids.length > 0 && (searching || treeExpandedSet.value.has(keyOf(row, index)))
+      meta.set(row, { level, hasChildren: kids.length > 0, expanded, index })
+      out.push(row)
+      if (expanded) walk(props.remote ? kids : sortData(kids), level + 1)
+    })
+  }
+  walk(paginatedData.value, 0)
+  treeMetaStore = meta
+  return out
 })
 
 // 處理頁面變化
@@ -1197,11 +1326,14 @@ const selectedKeySet = computed(() => new Set(innerSelected.value))
 const seenRows = shallowReactive(new Map<RowKey, DataRow>())
 watch(() => props.data, (rows) => {
   const current = new Set<RowKey>()
-  rows.forEach((row, i) => {
+  // 樹狀時連子列一起記（勾選的子列也要拿得回原本的物件）
+  const record = (list: DataRow[]) => list.forEach((row, i) => {
     const key = keyOf(row, i)
     current.add(key)
     seenRows.set(key, row)
+    if (props.tree) record(childrenOf(row))
   })
+  record(rows)
   // 只留這次的資料與勾選中的列：remote 長時間翻頁時快取才不會一直長大
   const selected = selectedKeySet.value
   for (const key of seenRows.keys()) {
@@ -1239,7 +1371,7 @@ function toggleRow(row: DataRow, index: number): void {
 
 /** 本頁可勾的列鍵 */
 const selectablePageKeys = computed(() =>
-  paginatedData.value
+  displayRows.value
     .map((row, i) => (canSelectRow(row) ? keyOf(row, i + startIndex.value) : null))
     .filter((k): k is RowKey => k !== null)
 )
@@ -1562,7 +1694,7 @@ const EXPAND_ESTIMATE = 120
  */
 const rowOffsets = computed<Float64Array | null>(() => {
   if (!props.virtual || !expandEnabled.value || expandedKeySet.value.size === 0) return null
-  const rows = paginatedData.value
+  const rows = displayRows.value
   const h = rowHeightPx.value
   const out = new Float64Array(rows.length + 1)
   for (let i = 0; i < rows.length; i++) {
@@ -1574,11 +1706,11 @@ const rowOffsets = computed<Float64Array | null>(() => {
 })
 
 const offsetOf = (i: number): number => rowOffsets.value?.[i] ?? i * rowHeightPx.value
-const totalBodyHeight = computed(() => offsetOf(paginatedData.value.length))
+const totalBodyHeight = computed(() => offsetOf(displayRows.value.length))
 
 /** 第一個底部超過 y 的列（offsets 已排序，用二分搜尋） */
 function indexAt(y: number): number {
-  const n = paginatedData.value.length
+  const n = displayRows.value.length
   const off = rowOffsets.value
   if (!off) return Math.min(n, Math.max(0, Math.floor(y / rowHeightPx.value)))
   let lo = 0
@@ -1596,7 +1728,7 @@ function indexAt(y: number): number {
  * 表頭是 sticky、在表身之前：表身座標 y 的內容在可視範圍內 ⇔ scrollTop ≤ y ≤ scrollTop + 視窗高 − 表頭高
  */
 const windowRange = computed(() => {
-  const n = paginatedData.value.length
+  const n = displayRows.value.length
   if (!props.virtual) return { start: 0, end: n, padTop: 0, padBottom: 0 }
   const top = scrollTop.value
   const bottom = top + Math.max(0, viewportHeight.value - headHeight.value)
@@ -1607,7 +1739,7 @@ const windowRange = computed(() => {
 
 /** 實際畫出來的列與第一列的絕對索引 */
 const renderedData = computed(() =>
-  props.virtual ? paginatedData.value.slice(windowRange.value.start, windowRange.value.end) : paginatedData.value
+  props.virtual ? displayRows.value.slice(windowRange.value.start, windowRange.value.end) : displayRows.value
 )
 const renderStart = computed(() => (props.virtual ? windowRange.value.start : startIndex.value))
 
@@ -1616,7 +1748,7 @@ const renderStart = computed(() => (props.virtual ? windowRange.value.start : st
  * 有展開明細時列數不好對應（明細列不是資料列），就不宣告
  */
 const ariaRowCount = computed(() =>
-  props.virtual && !expandEnabled.value ? headerDepth.value + paginatedData.value.length : undefined
+  props.virtual && !expandEnabled.value ? headerDepth.value + displayRows.value.length : undefined
 )
 
 function measure(): void {
@@ -1635,20 +1767,20 @@ function onScroll(): void {
   scrollTop.value = el.scrollTop
   const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - props.reachBottomThreshold
   // 到底只送一次；離開底部區域或資料變多後才重新啟用（避免捲動事件連發 → 重複載入同一批）
-  if (nearBottom && reachArmed && !props.loading && paginatedData.value.length) {
+  if (nearBottom && reachArmed && !props.loading && displayRows.value.length) {
     reachArmed = false
     emit('reach-bottom')
   } else if (!nearBottom) {
     reachArmed = true
   }
 }
-watch(() => paginatedData.value.length, () => (reachArmed = true))
+watch(() => displayRows.value.length, () => (reachArmed = true))
 
 /** 捲到第 index 列（篩選、排序後的順序）；index 超出範圍時夾到兩端 */
 function scrollToIndex(index: number): void {
   const el = scroller.value
   if (!props.virtual || !el) return
-  const n = paginatedData.value.length
+  const n = displayRows.value.length
   const i = Math.min(Math.max(0, Math.floor(index)), Math.max(0, n - 1))
   el.scrollTop = offsetOf(i)
   scrollTop.value = el.scrollTop
@@ -1656,7 +1788,7 @@ function scrollToIndex(index: number): void {
 
 /** 捲到某個列鍵；找不到時回傳 false */
 function scrollToKey(key: RowKey): boolean {
-  const i = paginatedData.value.findIndex((row, idx) => keyOf(row, idx) === key)
+  const i = displayRows.value.findIndex((row, idx) => keyOf(row, idx) === key)
   if (i < 0) return false
   scrollToIndex(i)
   return true
@@ -1733,6 +1865,15 @@ defineExpose({
   scrollToIndex,
   /** virtual 時捲到某個列鍵；找不到回傳 false */
   scrollToKey,
+  /** 樹狀：全部展開 / 全部收合 */
+  expandAllTree: () => {
+    innerTreeExpanded.value = allParentKeys(props.data)
+    emit('update:treeExpandedKeys', [...innerTreeExpanded.value])
+  },
+  collapseAllTree: () => {
+    innerTreeExpanded.value = []
+    emit('update:treeExpandedKeys', [])
+  },
   selectedRows,
   refresh: performSearch,
   resetPage: () => { currentPage.value = 1 },
@@ -2186,6 +2327,39 @@ tfoot.is-sticky-foot {
   position: sticky;
   bottom: 0;
   z-index: 3;
+}
+
+/* ===== 樹狀資料 ===== */
+.tree-cell {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.tree-toggle,
+.tree-toggle-spacer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.25rem;
+  flex-shrink: 0;
+}
+
+.tree-toggle {
+  border-radius: 0.25rem;
+  color: rgb(var(--t-content-secondary));
+}
+
+.tree-toggle:hover {
+  background-color: rgb(var(--t-surface-tertiary));
+  color: rgb(var(--t-content-primary));
+}
+
+.tree-toggle:focus-visible {
+  outline: 2px solid rgb(var(--t-stroke-focus));
+  outline-offset: -2px;
 }
 
 /* 表格底部樣式 */
