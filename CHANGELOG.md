@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **CalendarHeatmap 日曆熱圖**（charts）：每天一格、顏色深淺代表數值；一欄一週、一列一個星期幾（`weekStart` 週一 / 週日），
+  週期性規律一眼可見。預設把最小～最大值等分成 5 級（主色由淺到深），可用 `thresholds` + `colors` 改成門檻分級、
+  `domain` 固定刻度；同一天多筆加總，沒有資料的日子只畫外框（和 0 不同），今天加粗外框。範圍比容器寬時可水平捲動、
+  一開始捲到最近的日子，星期標籤固定在左側。鍵盤：↑↓ 一天、←→ 一週、Home / End、Enter 送出 `cell-click`，目前的格子以 aria-live 念出；
+  ref 方法 `focusDate()`。新增 `charts/utils/calendarHeatmap.ts`、型別 `CalendarDatum` / `CalendarCell` 與語系群組 `calendarHeatmap`。
+
 - **ChptSignaturePad 簽名板**：簽收、點檢確認、放行簽核用。線條平滑（二次貝茲曲線）、粗細隨書寫速度變化（筆有壓力值時隨壓力），
   高解析度螢幕不糊；簽名中不捲動頁面、多指觸控只取第一根手指。每簽完一筆更新 v-model（PNG data URL，空白為 null），
   可復原上一筆、清除；`trim` 只輸出有簽名的範圍、`exportBackground` / `exportType` 決定輸出格式；ref 方法 `toDataURL()`、
