@@ -33,19 +33,6 @@ export function useAuth() {
     router.push("/login");
   }
 
-  // 獲取用戶頭像 URL
-  function getAvatarUrl() {
-    if (user.value?.avatar) {
-      return user.value.avatar;
-    }
-
-    // 使用用戶名生成預設頭像
-    const name = userName.value || "User";
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      name
-    )}&background=9333ea&color=ffffff`; // purple-600 背景，白色文字
-  }
-
   // 生命週期管理
   onMounted(() => {
     // 初始化認證狀態
@@ -65,39 +52,5 @@ export function useAuth() {
     // 方法
     login,
     logout,
-    getAvatarUrl,
-  };
-}
-
-// 用戶資料管理 composable
-export function useUser() {
-  const userStore = useUserStore();
-
-  // 計算屬性
-  const user = computed(() => userStore.user);
-  const userName = computed(() => userStore.userName);
-  const userDepartment = computed(() => userStore.userDepartment);
-
-  // 獲取用戶頭像 URL
-  function getAvatarUrl() {
-    if (user.value?.avatar) {
-      return user.value.avatar;
-    }
-
-    // 使用用戶名生成預設頭像
-    const name = userName.value || "User";
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      name
-    )}&background=random`;
-  }
-
-  return {
-    // 狀態
-    user,
-    userName,
-    userDepartment,
-
-    // 方法
-    getAvatarUrl,
   };
 }

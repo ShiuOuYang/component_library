@@ -110,7 +110,7 @@ src/views/docs/      組件文檔站（/docs 子頁）
 
 ### 不屬於組件庫的整頁應用
 
-`SchematicViewer`、`whiteboard/*`、`GlobalNotifications` 位於
+`SchematicViewer`、`whiteboard/*` 位於
 `src/components/` 而非 `src/components/library/`，它們是自帶版面的整頁應用
 或 app 專屬元件，刻意**不**列入 `@/components/library` 的公開 API。
 文件站保留展示頁，但不代表它們可以被當成組件庫元件引用。

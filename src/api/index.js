@@ -36,12 +36,6 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // 添加請求時間戳
-    config.metadata = { startTime: new Date() };
-
-    console.log(
-      `🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`
-    );
     return config;
   },
   (error) => {
@@ -52,29 +46,10 @@ api.interceptors.request.use(
 
 // 響應攔截器
 api.interceptors.response.use(
-  (response) => {
-    // 計算請求時間
-    const endTime = new Date();
-    const duration = endTime - response.config.metadata.startTime;
-    console.log(
-      `✅ API Response: ${response.config.method?.toUpperCase()} ${
-        response.config.url
-      } (${duration}ms)`
-    );
-    return response;
-  },
+  // 成功的請求不另外記錄（瀏覽器開發者工具的 Network 分頁就看得到每個請求與耗時）
+  (response) => response,
   (error) => {
-    const { response, config } = error;
-    // 計算請求時間
-    if (config?.metadata) {
-      const endTime = new Date();
-      const duration = endTime - config.metadata.startTime;
-      console.log(
-        `❌ API Error: ${config.method?.toUpperCase()} ${
-          config.url
-        } (${duration}ms)`
-      );
-    }
+    const { response } = error;
     // 處理不同的錯誤狀態碼
     if (response) {
       const status = response.status;
