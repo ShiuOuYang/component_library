@@ -25,7 +25,7 @@ export {
   ChptAffix, ChptCarousel, ChptNotificationHost, ChptSplitter, ChptVirtualList,
   ChptCopyButton, ChptCountdown, ChptEllipsis, ChptWatermark,
   ChptConfigProvider, ChptInputTag, ChptList, ChptQRCode, ChptSpace, ChptTour,
-  ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode,
+  ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode, ChptCameraScanner,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -62,6 +62,8 @@ export type { KanbanCardLike } from './shared/kanban'
 export { isSafeUrl } from './shared/safeUrl'
 export { encodeBarcode, encodeCode128, encodeCode39, code39CheckChar, BarcodeError } from './shared/barcode'
 export type { BarcodeFormat, BarcodeResult } from './shared/barcode'
+export { createDetector, classifyCameraError, cameraAvailability, createDeduper } from './shared/cameraScan'
+export type { ScanFormat, DetectedCode, CameraErrorKind, CodeDetector, ScanFrame } from './shared/cameraScan'
 export { useConfig, useLocale, provideConfig, zhTW, enUS, mergeLocale } from './shared/config'
 export type { ChptConfig, ChptConfigInput, ChptLocale, ChptLocaleInput, ConfigSize } from './shared/config'
 export type { NotificationOptions, NotificationAction, NotificationType } from './shared/useNotification'

@@ -83,6 +83,43 @@
       </ul>
     </section>
 
+    <section id="camera" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptCameraScanner 相機掃碼</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>平板、手機上沒有掃描槍時用鏡頭掃 —— 巡檢、盤點、領料。有掃描槍的工作站請用上面的 ChptScanInput（掃描槍其實是鍵盤，更快也更準）。
+        優先用瀏覽器內建的 BarcodeDetector（QR 與一維條碼都能讀）；沒有時退回 jsQR，只能讀 QR Code，畫面會提示。
+        同一個碼對著鏡頭時 2 秒內只算一次；掃到時嗶一聲、震動、畫面閃一下並念出內容。分頁切到背景時自動關閉相機。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptCameraScanner } from '@/components/library'</code>
+      </p>
+      <div class="grid gap-6 md:grid-cols-2">
+        <div>
+          <ChptCameraScanner v-model:active="cameraOn" :width="360" @scan="onCameraScan" @error="(k) => (cameraError = k)" />
+          <div class="mt-3 flex flex-wrap items-center gap-3">
+            <ChptSwitch v-model="cameraOn" label="開啟相機" />
+            <ChptSwitch v-model="cameraContinuous" label="連續掃描" />
+          </div>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-content-secondary mb-2">掃描紀錄</h3>
+          <p v-if="!cameraLog.length" class="text-sm text-content-tertiary">（還沒有）—— 可以拿手機打開下面的 QR Code 對著鏡頭</p>
+          <ol class="space-y-1 text-sm">
+            <li v-for="(r, i) in cameraLog" :key="i" class="flex gap-2"><span class="font-mono text-content-primary">{{ r.text }}</span><span class="text-content-tertiary">{{ r.format }}</span></li>
+          </ol>
+        </div>
+      </div>
+      <div class="mt-6">
+        <ChptCodeBlock :code="cameraSample" />
+      </div>
+      <ApiTable of="ChptCameraScanner" title="Props" :rows="cameraProps" />
+      <ApiTable of="ChptCameraScanner" title="Events" :rows="cameraEvents" />
+      <ApiTable of="ChptCameraScanner" title="方法（ref）" :rows="cameraMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>瀏覽器只允許 HTTPS（或 localhost）的網頁使用相機；使用者拒絕權限後，要到瀏覽器的網站設定重新允許，元件會顯示這段說明與重試鈕。
+      </p>
+    </section>
+
     <section id="api" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-4">API</h2>
       <ApiTable of="ChptScanInput" title="Props" :rows="props" />
@@ -94,8 +131,40 @@
 
 <script setup>
 import { ref } from 'vue'
-import { ChptButton, ChptCodeBlock, ChptScanInput, ChptSegmented, ChptSwitch } from '@/components/library'
+import { ChptButton, ChptCameraScanner, ChptCodeBlock, ChptScanInput, ChptSegmented, ChptSwitch } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+
+// ---- ChptCameraScanner ----
+// 一進頁面不自動開相機（會跳權限詢問）：按「開啟相機」才開
+const cameraOn = ref(false)
+const cameraContinuous = ref(true)
+const cameraError = ref('')
+const cameraLog = ref([])
+function onCameraScan(code) {
+  cameraLog.value = [code, ...cameraLog.value].slice(0, 8)
+}
+const cameraSample = `<ChptCameraScanner v-model:active="open" @scan="({ text, format }) => receive(text)" />
+
+<!-- 只掃一次就關（例如掃儲位後跳到下一步） -->
+<ChptCameraScanner v-model:active="open" :continuous="false" :formats="['qr_code']" @scan="goto" />`
+const cameraProps = [
+  { name: 'active', type: 'boolean', def: 'true', desc: '開啟相機（v-model:active）；false 時關閉' },
+  { name: 'formats', type: 'ScanFormat[]', def: "['qr_code', 'code_128', 'code_39', 'ean_13', 'ean_8']", desc: '要讀的格式（BarcodeDetector 的命名）；退回 jsQR 時只有 qr_code' },
+  { name: 'facingMode', type: "'environment' | 'user'", def: "'environment'", desc: '優先用後鏡頭或前鏡頭；有多顆鏡頭時畫面右上角可切換' },
+  { name: 'continuous', type: 'boolean', def: 'true', desc: '連續掃描；false 時掃到一次就關閉並送出 update:active false' },
+  { name: 'dedupeMs', type: 'number', def: '2000', desc: '同一個內容在這段時間內只算一次（毫秒）' },
+  { name: 'interval', type: 'number', def: '200', desc: '每隔幾毫秒解碼一次' },
+  { name: 'feedback', type: "'both' | 'beep' | 'vibrate' | 'none'", def: "'both'", desc: '掃到時嗶一聲、震動' },
+  { name: 'aspectRatio / width', type: 'string / number', def: "'4 / 3' / 填滿", desc: '畫面比例；固定寬度（px）' },
+  { name: 'viewfinder', type: 'boolean', def: 'true', desc: '顯示對準框與掃描線' },
+]
+const cameraEvents = [
+  { name: 'scan', params: '({ text, format })', desc: '掃到一個碼（同一個內容 dedupeMs 內只送一次）' },
+  { name: 'error', params: "(kind: 'denied' | 'notFound' | 'inUse' | 'insecure' | 'unsupported' | 'unknown')", desc: '相機開不起來的原因（畫面上也會顯示說明）' },
+  { name: 'ready', params: '({ native, formats })', desc: '相機開好、開始掃描；native 為 false 時用的是 jsQR（只讀 QR）' },
+  { name: 'update:active', params: '(active: boolean)', desc: 'continuous=false 掃到後送出 false' },
+]
+const cameraMethods = [{ name: 'start() / stop() / switchCamera()', type: '() => Promise<void> | void', desc: '開啟、關閉相機；切換到下一顆鏡頭' }]
 
 const station = ref(null)
 const allowManual = ref(true)
