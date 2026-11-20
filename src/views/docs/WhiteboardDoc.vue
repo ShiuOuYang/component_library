@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-5xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">Whiteboard 白板</h1>
@@ -8,7 +8,7 @@
         </p>
       </div>
 
-      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <h2 class="text-2xl font-semibold text-content-primary mb-4">引入方式</h2>
         <ChptCodeBlock
           language="html"
@@ -16,7 +16,7 @@
         />
       </section>
 
-      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <h2 class="text-2xl font-semibold text-content-primary mb-4">元件對照</h2>
         <table class="w-full text-sm">
           <thead class="bg-surface-tertiary">

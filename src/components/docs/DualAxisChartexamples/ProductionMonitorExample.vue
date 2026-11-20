@@ -6,7 +6,7 @@
       右軸顯示 <span class="font-semibold text-warning">設備稼動率</span>（折線圖）。
     </p>
     
-    <div class="grid lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
         <div style="width: 100%; height: 400px;">
           <DualAxisComboChart

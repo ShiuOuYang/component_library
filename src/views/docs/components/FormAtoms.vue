@@ -34,7 +34,7 @@
     <!-- 內容：一元件一區塊（左側 DocLayout 側欄可展開子元件跳轉） -->
     <div class="space-y-10">
         <!-- ============ ChptInput ============ -->
-        <section id="chpt-input" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-input" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptInput 輸入框</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>單行文字輸入（帳號／料號／搜尋）。支援前綴圖示、可清除、錯誤訊息與 v-model。
@@ -51,7 +51,7 @@
         </section>
 
         <!-- ============ ChptSelect ============ -->
-        <section id="chpt-select" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-select" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptSelect 下拉選單</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>單選下拉；options 可為字串/數字陣列或 { label, value, disabled } 物件陣列。
@@ -67,7 +67,7 @@
         </section>
 
         <!-- ============ ChptRadio ============ -->
-        <section id="chpt-radio" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-radio" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptRadio 單選群組</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>少量互斥選項（優先級／狀態）；值支援 String | Number | Boolean。
@@ -83,7 +83,7 @@
         </section>
 
         <!-- ============ ChptSwitch ============ -->
-        <section id="chpt-switch" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-switch" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptSwitch 開關</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>布林開關（啟用／停用、通知、權限）。
@@ -101,13 +101,13 @@
         </section>
 
         <!-- ============ ChptDatePicker ============ -->
-        <section id="chpt-datepicker" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-datepicker" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptDatePicker 日期選擇</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>單日／日期區間／時間選擇；封裝 @vuepic/vue-datepicker。
           </p>
           <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
-            <div class="grid md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ChptDatePicker v-model="form.date" label="單日" placeholder="選擇日期" full-width />
               <ChptDatePicker v-model="form.range" label="區間" :range="true" :enable-time-picker="true" format="yyyy-MM-dd HH:mm" full-width />
             </div>
@@ -122,7 +122,7 @@
             班別用 <code>shifts</code> 設定，夜班跨午夜也算得對 —— 凌晨 2 點的「本班」是前一天 20:00 開始的晚班。
           </p>
           <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
-            <div class="grid md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <ChptDatePicker v-model="form.presetRange" label="報表期間" range presets full-width />
               <ChptDatePicker
                 v-model="form.shiftRange"
@@ -145,7 +145,7 @@
         </section>
 
         <!-- ============ ChptInputNumber ============ -->
-        <section id="chpt-inputnumber" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-inputnumber" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptInputNumber 數字輸入框</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>數量、門檻值、百分比這類有上下限的數字欄位。打字途中不夾限（離開欄位才驗證），
@@ -167,7 +167,7 @@
         </section>
 
         <!-- ============ ChptNumpad ============ -->
-        <section id="chpt-numpad" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-numpad" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptNumpad 數字鍵盤</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>產線平板、觸控工作站輸入數量、重量、溫度 —— 沒有實體鍵盤，或戴手套點不準系統鍵盤。
@@ -221,14 +221,14 @@
         </section>
 
         <!-- ============ ChptSlider ============ -->
-        <section id="chpt-slider" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-slider" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptSlider 滑桿</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>在範圍內挑一個「大概位置」比精確數字重要的值（透明度、靈敏度）。需要精確輸入時搭配 ChptInputNumber。
             以原生 range 為基礎，鍵盤、觸控與螢幕閱讀器都由瀏覽器處理。
           </p>
           <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ChptSlider v-model="form.opacity" label="透明度" show-value :formatter="(v) => v + '%'" full-width />
               <ChptSlider v-model="form.level" label="靈敏度" :min="1" :max="5" :marks="{ 1: '低', 3: '中', 5: '高' }" full-width />
             </div>
@@ -241,7 +241,7 @@
         </section>
 
         <!-- ============ ChptSegmented ============ -->
-        <section id="chpt-segmented" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-segmented" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptSegmented 分段控制器</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>2~5 個互斥的「檢視方式」（日／週／月、清單／卡片）。選項少、希望一直看得到時比下拉直覺；
@@ -262,7 +262,7 @@
         </section>
 
         <!-- ============ ChptCheckbox ============ -->
-        <section id="chpt-checkbox" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-checkbox" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptCheckbox 核取方塊群組</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>可複選的少量選項（5 個以內）直接攤開；選項多時改用 ChptSelect 多選或 ChptTransfer。
@@ -279,12 +279,12 @@
         </section>
 
         <!-- ============ ChptTextarea ============ -->
-        <section id="chpt-textarea" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+        <section id="chpt-textarea" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptTextarea 多行文字</h2>
           <p class="text-content-secondary text-sm mb-4">
             <strong>使用時機：</strong>備註、異常描述等多行輸入。<code>autosize</code> 讓高度跟著內容長，<code>showCount</code> 顯示字數。
           </p>
-          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4 grid gap-4 md:grid-cols-2">
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <ChptTextarea v-model="form.note" label="異常描述" placeholder="發生了什麼？" show-count :maxlength="200" autosize full-width />
             <ChptTextarea v-model="form.memo" label="交接備註" show-count :error-text="form.memo ? '' : '交接備註必填'" full-width />
           </div>
@@ -294,7 +294,7 @@
         </section>
 
         <!-- 引入方式 -->
-        <section class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light">
+        <section class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light">
           <h2 class="text-2xl font-bold text-content-primary mb-2">引入方式</h2>
           <ChptCodeBlock :code="importSample" />
         </section>

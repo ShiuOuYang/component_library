@@ -14,7 +14,7 @@
       </p>
     </div>
 
-    <section id="station" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="station" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">掃描站</h2>
       <p class="text-sm text-content-secondary mb-4">
         掃描槍就是一個「打字很快、最後按 Enter」的鍵盤，所以用按鍵速度分辨：平均每個字 40ms 以內（<code>scan-speed</code>）是掃描槍。
@@ -28,7 +28,7 @@
           <ChptSegmented v-model="duplicate" :options="duplicateOptions" size="xs" aria-label="重複條碼的處理" />
         </label>
       </div>
-      <div class="grid gap-6 lg:grid-cols-[1fr_16rem]">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_16rem]">
         <ChptScanInput
           ref="station"
           label="序號"
@@ -53,7 +53,7 @@
       <ChptCodeBlock class="mt-6" :code="stationCode" />
     </section>
 
-    <section id="global" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="global" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">全頁接收</h2>
       <p class="text-sm text-content-secondary mb-4">
         <code>capture-global</code>：焦點不在任何輸入框時（操作員點了別的地方、或根本沒點輸入框就掃），掃描槍的輸入也收得到。
@@ -72,7 +72,7 @@
       <ChptCodeBlock class="mt-6" :code="globalCode" />
     </section>
 
-    <section id="tips" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="tips" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">掃描站常見問題</h2>
       <ul class="list-disc space-y-2 pl-5 text-sm text-content-secondary">
         <li><strong>掃不進去、或只進來一半</strong>：多半是中文輸入法開著，掃描槍打的字被輸入法吃掉。元件偵測到組字時會提示「請切換為英數輸入」並送出 <code>ime-detected</code>。</li>
@@ -83,7 +83,7 @@
       </ul>
     </section>
 
-    <section id="camera" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="camera" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptCameraScanner 相機掃碼</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>平板、手機上沒有掃描槍時用鏡頭掃 —— 巡檢、盤點、領料。有掃描槍的工作站請用上面的 ChptScanInput（掃描槍其實是鍵盤，更快也更準）。
@@ -93,7 +93,7 @@
       <p class="text-sm text-content-secondary mb-4">
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptCameraScanner } from '@/components/library'</code>
       </p>
-      <div class="grid gap-6 md:grid-cols-2">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
           <ChptCameraScanner v-model:active="cameraOn" :width="360" @scan="onCameraScan" @error="(k) => (cameraError = k)" />
           <div class="mt-3 flex flex-wrap items-center gap-3">
@@ -120,7 +120,7 @@
       </p>
     </section>
 
-    <section id="api" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="api" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-4">API</h2>
       <ApiTable of="ChptScanInput" title="Props" :rows="props" />
       <ApiTable of="ChptScanInput" title="Events" :rows="events" />

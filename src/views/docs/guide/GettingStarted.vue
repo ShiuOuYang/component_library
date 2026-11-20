@@ -11,7 +11,7 @@
     </div>
 
     <!-- ============ 安裝 ============ -->
-    <section id="install" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="install" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-4">安裝與啟動</h2>
 
       <ChptCodeBlock language="bash" :code="installCode" />
@@ -30,7 +30,7 @@
     </section>
 
     <!-- ============ 引入元件 ============ -->
-    <section id="import" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="import" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">引入元件</h2>
       <p class="text-sm text-content-secondary mb-4">
         一律由 <code class="bg-surface-tertiary px-1 py-0.5 rounded">@/components/library</code> 引入。
@@ -54,7 +54,7 @@
     </section>
 
     <!-- ============ 前置條件 ============ -->
-    <section id="prerequisites" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="prerequisites" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">使用端要提供什麼</h2>
       <p class="text-sm text-content-secondary mb-4">
         組件庫刻意不在自己內部處理這些事，因為它們屬於應用程式層的設定。
@@ -74,7 +74,7 @@
     </section>
 
     <!-- ============ 第一個範例 ============ -->
-    <section id="first-example" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="first-example" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">第一個範例</h2>
       <p class="text-sm text-content-secondary mb-4">
         以下是一個可以直接跑的表單 + 提示範例。
@@ -95,9 +95,9 @@
     </section>
 
     <!-- ============ 下一步 ============ -->
-    <section id="next-steps" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="next-steps" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-4">下一步</h2>
-      <div class="grid md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <RouterLink
           v-for="link in nextSteps"
           :key="link.to"

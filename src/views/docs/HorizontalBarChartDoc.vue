@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">HorizontalBarChart 水平長條圖</h1>
@@ -10,13 +10,13 @@
         </p>
       </div>
 
-      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">排行榜</h2>
         <p class="text-sm text-content-secondary mb-4">
           <code>top-n</code> 只取前幾名，<code>show-others</code> 把其餘併成「其他」；<code>show-percent</code> 在數值後加上佔比。
           <code>auto-height</code> 讓高度依列數撐開。滑過或用 <kbd>Tab</kbd> 選到某一列會顯示名次與佔比。
         </p>
-        <div class="grid lg:grid-cols-2 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
             <HorizontalBarChart
               :data="defects"
@@ -37,13 +37,13 @@
         </div>
       </section>
 
-      <section id="emphasis" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="emphasis" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">強調、目標線與負值</h2>
         <p class="text-sm text-content-secondary mb-4">
           <code>highlight-key</code> 強調一列、其餘轉灰（重點是「這一台」時，比一堆顏色清楚）；<code>reference-lines</code> 畫出目標。
           負值從基線往左長；<code>show-axis</code> 改用數值軸。
         </p>
-        <div class="grid lg:grid-cols-2 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
             <div class="mb-2 flex items-center gap-2 text-sm">
               <label for="hbc-highlight" class="text-content-secondary">強調機台</label>
@@ -79,7 +79,7 @@
         </div>
       </section>
 
-      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <ApiTable of="HorizontalBarChart" title="Props" :rows="propsRows" />
         <ApiTable of="HorizontalBarChart" title="Events" :rows="eventRows" />

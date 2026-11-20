@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">BoxPlotChart 箱型圖</h1>
@@ -10,7 +10,7 @@
         </p>
       </div>
 
-      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">四台貼片機的錫膏厚度</h2>
         <p class="text-sm text-content-secondary mb-4">
           箱子是 Q1～Q3（中間一半的資料），粗線是中位數，菱形是平均；鬚畫到 1.5 倍四分位距內最遠的點，外面的空心圓是離群值。
@@ -40,7 +40,7 @@
         <ChptCodeBlock class="mt-4" :code="basicCode" />
       </section>
 
-      <section id="violin" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="violin" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">小提琴圖：看出雙峰</h2>
         <p class="text-sm text-content-secondary mb-4">
           夜班的資料混了兩種狀況（換線前後），箱型圖看起來只是比較寬，小提琴圖才看得出是兩個峰。
@@ -77,7 +77,7 @@
         <ChptCodeBlock class="mt-4" :code="violinCode" />
       </section>
 
-      <section id="minitab" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="minitab" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">四分位數算法</h2>
         <p class="text-sm text-content-secondary mb-4">
           四分位數有好幾種算法，資料少的時候差很多。預設 <code>inclusive</code> 與 Excel QUARTILE.INC、R 相同；
@@ -86,7 +86,7 @@
         <ApiTable of="-" title="同一組資料（1, 2, 3, 4, 5, 6, 7, 8）" :rows="quartileRows" />
       </section>
 
-      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-4">API</h2>
         <ApiTable of="BoxPlotChart" title="Props" :rows="propsRows" />
         <ApiTable of="BoxPlotChart" title="Events" :rows="eventRows" />

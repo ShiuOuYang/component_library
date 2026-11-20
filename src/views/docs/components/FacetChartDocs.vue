@@ -8,7 +8,7 @@
     </div>
 
     <!-- ============ FacetedChart ============ -->
-    <section id="faceted-chart" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="faceted-chart" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">FacetedChart 垂直分面</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>同一段時間的多個指標上下對照（產量、良率、停機時間）。所有分面共用 X 軸，
@@ -49,7 +49,7 @@
     </section>
 
     <!-- ============ GridFacetChart ============ -->
-    <section id="grid-facet-chart" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="grid-facet-chart" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">GridFacetChart 網格分面</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>兩個維度交叉比較（廠區 × 產線、機台 × 班別）。每一格是一張小圖，表頭在上方與左側。

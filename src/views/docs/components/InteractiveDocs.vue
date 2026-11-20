@@ -12,7 +12,7 @@
     </div>
 
     <!-- ============ ChptTabs ============ -->
-    <section id="chpt-tabs" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-tabs" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTabs 頁籤</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>同一視窗內切換多個內容區塊（非導向路由）；可帶 icon 與計數 badge。
@@ -38,7 +38,7 @@
     </section>
 
     <!-- ============ ChptToast ============ -->
-    <section id="chpt-toast" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-toast" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptToast 全域提示</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>全域操作回饋（成功/失敗/警告/資訊）。<strong>容器需在 App 根層掛載一次</strong>，
@@ -66,7 +66,7 @@
     </section>
 
     <!-- ============ ChptButton ============ -->
-    <section id="chpt-button" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-button" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptButton 按鈕</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>任何可點擊的操作入口；支援語意色、實心/輪廓、尺寸、圓角、loading、badge 與前後置圖示。
@@ -92,7 +92,7 @@
     </section>
 
     <!-- ============ ChptProgress ============ -->
-    <section id="chpt-progress" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-progress" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptProgress 進度條</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>顯示 0–100 的進度/完成度；可換語意色、粗細、百分比標籤。
@@ -115,7 +115,7 @@
     </section>
 
     <!-- ============ ChptAlert ============ -->
-    <section id="chpt-alert" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-alert" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAlert 提示條</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>頁面內的區塊級訊息（成功/資訊/警告/錯誤）；可帶標題、可關閉、全寬。
@@ -139,7 +139,7 @@
     </section>
 
     <!-- ============ ChptAvatar ============ -->
-    <section id="chpt-avatar" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-avatar" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAvatar 頭像</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>使用者、負責人、簽核人。沒有照片時顯示姓名縮寫；照片載入失敗也會自動退回縮寫。
@@ -158,7 +158,7 @@
     </section>
 
     <!-- ============ ChptTooltip ============ -->
-    <section id="chpt-tooltip" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-tooltip" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTooltip 文字提示</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>圖示按鈕的補充說明、截斷文字的完整內容。滑鼠停留或鍵盤聚焦都會出現；
@@ -187,7 +187,7 @@
       </p>
     </section>
 
-    <section id="chpt-kanban" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-kanban" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptKanban 看板</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>工單、異常單、改善提案這類有狀態流程的清單：每一欄是一個狀態，卡片拖到下一欄就是推進流程。
@@ -230,7 +230,7 @@
     </section>
 
     <!-- ============ ChptDefectAnnotator ============ -->
-    <section id="chpt-defect-annotator" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-defect-annotator" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDefectAnnotator 缺陷標註</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>目檢、IPQC、客訴分析時在產品照片或 PCB 圖上標出缺陷位置。點一下放編號標記，或切到「框」拖出範圍；

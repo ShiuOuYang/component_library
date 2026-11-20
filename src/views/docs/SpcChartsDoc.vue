@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">SPC 管制圖與製程能力</h1>
@@ -11,7 +11,7 @@
         </p>
       </div>
 
-      <section id="imr" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="imr" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">I-MR 圖（個別值與移動全距）</h2>
         <p class="text-sm text-content-secondary mb-4">
           每筆量測一點，適合抽檢頻率低、無法分組的製程。σ̂ = MR̄ ÷ 1.128，界限 = 平均 ± 3σ̂。
@@ -39,7 +39,7 @@
         <ChptCodeBlock class="mt-4" :code="imrCode" />
       </section>
 
-      <section id="xbar" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="xbar" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">X̄-R 圖（子組平均與全距）</h2>
         <p class="text-sm text-content-secondary mb-4">
           每次抽 n 個（這裡 5 個）為一組。資料有 <code>subgroup</code> 欄位時同值的列為一組，沒有時依 <code>subgroup-size</code> 依序切。
@@ -52,7 +52,7 @@
         </div>
       </section>
 
-      <section id="p" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="p" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">p 圖（不良率）</h2>
         <p class="text-sm text-content-secondary mb-4">
           每批的不良數與檢驗數（<code>defects-field</code>、<code>size-field</code>）。每批數量不同時界限逐批計算（階梯狀），數量越多界限越窄。
@@ -65,7 +65,7 @@
         </div>
       </section>
 
-      <section id="rules" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="rules" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">判異規則（Nelson）</h2>
         <p class="text-sm text-content-secondary mb-4">
           <code>rules</code> 指定要檢查哪幾條，預設 [1, 2, 3, 5, 6]。標出的是「讓規則成立的那一點」；副圖（MR／R／S）只檢查規則 1。
@@ -73,7 +73,7 @@
         <ApiTable of="-" title="規則" :rows="ruleRows" />
       </section>
 
-      <section id="capability" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="capability" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">製程能力（直方圖 + Cpk）</h2>
         <p class="text-sm text-content-secondary mb-4">
           Cp、Cpk 用組內標準差（<code>subgroup-size</code> 為 1 時用移動全距，資料要依生產順序排列），Pp、Ppk 用整體標準差。
@@ -103,7 +103,7 @@
         <ChptCodeBlock class="mt-4" :code="capCode" />
       </section>
 
-      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <h3 class="text-lg font-semibold text-content-primary mt-4">ControlChart</h3>
         <ApiTable of="ControlChart" title="Props" :rows="ccProps" />

@@ -8,7 +8,7 @@
     </div>
 
     <!-- ============ ChptSplitter ============ -->
-    <section id="chpt-splitter" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-splitter" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSplitter 分割面板</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>左邊清單 / 右邊明細、上面圖表 / 下面資料表，讓使用者自己決定比例。
@@ -31,7 +31,7 @@
     </section>
 
     <!-- ============ ChptVirtualList ============ -->
-    <section id="chpt-virtuallist" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-virtuallist" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptVirtualList 虛擬捲動清單</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>上萬筆的清單（序號、Log）。只畫看得到的幾十列，捲起來一樣順；
@@ -59,7 +59,7 @@
     </section>
 
     <!-- ============ ChptAffix ============ -->
-    <section id="chpt-affix" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-affix" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAffix 捲動時固定</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>工具列、篩選列在捲下去時貼在頂端。用 CSS sticky 實作，不會讓下面的內容跳動；
@@ -80,7 +80,7 @@
     </section>
 
     <!-- ============ ChptCarousel ============ -->
-    <section id="chpt-carousel" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-carousel" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptCarousel 輪播</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>看板首頁的公告、產線畫面輪播。自動播放時左上角有暫停鈕，滑鼠停留或焦點在裡面時自動暫停。
@@ -101,10 +101,10 @@
     </section>
 
     <!-- ============ 小工具 ============ -->
-    <section id="chpt-small-utils" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-small-utils" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-4">小工具：CopyButton / Ellipsis / Countdown / Watermark</h2>
 
-      <div class="grid gap-6 lg:grid-cols-2">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div id="chpt-copybutton" class="rounded-lg border border-stroke-light p-4 scroll-mt-24">
           <h3 class="mb-2 font-semibold text-content-primary">ChptCopyButton 複製</h3>
           <div class="flex flex-wrap items-center gap-2 text-sm">
@@ -148,7 +148,7 @@
     </section>
 
     <!-- ============ ChptSpace ============ -->
-    <section id="chpt-space" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-space" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSpace 間距</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>一排按鈕、一組標籤、表單下方的動作列。間距用同一組尺度（xs 4 / sm 8 / md 16 / lg 24px），

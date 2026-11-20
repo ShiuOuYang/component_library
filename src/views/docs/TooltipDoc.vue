@@ -12,7 +12,7 @@
     </div>
 
     <!-- ============ 主題 ============ -->
-    <section id="chpt-tooltip-theme" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-tooltip-theme" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">主題 theme</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>以 <code>theme</code> 快速切換配色——dark（預設深色）、light（淺色卡片）、
@@ -39,7 +39,7 @@
     </section>
 
     <!-- ============ 位置 ============ -->
-    <section id="chpt-tooltip-placement" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-tooltip-placement" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">位置 placement</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>以 <code>placement</code> 指定顯示於觸發元素的上／下／左／右；
@@ -63,7 +63,7 @@
     </section>
 
     <!-- ============ 自訂內容 ============ -->
-    <section id="chpt-tooltip-content" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-tooltip-content" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">自訂內容 #content</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>提示不只是單行文字時（說明＋圖示、清單、圖片等），以

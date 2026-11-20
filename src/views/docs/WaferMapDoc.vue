@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">WaferMap 晶圓圖／面板圖</h1>
@@ -11,13 +11,13 @@
       </div>
 
       <!-- bin 模式 -->
-      <section id="bin" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="bin" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">Bin 圖與分區良率</h2>
         <p class="text-sm text-content-secondary mb-4">
           <code>rings</code> 把晶圓分成幾圈同心環，各圈分別算良率 —— 這片的不良集中在外圈與一道刮痕。
           點圖例淡化某個 bin（不移除，位置分佈本身就是資訊）；Tab 進入圖後可用方向鍵逐顆移動、Enter 選取。
         </p>
-        <div class="grid lg:grid-cols-2 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
             <div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-content-secondary">
               <span aria-hidden="true">分圈</span>
@@ -43,22 +43,24 @@
       </section>
 
       <!-- 數值模式 -->
-      <section id="value" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="value" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">數值模式（參數分佈）</h2>
         <p class="text-sm text-content-secondary mb-4">
           給 <code>value-field</code> 後依數值上連續色階（預設 viridis，對色覺差異友善、深淺色模式都清楚）；
           用 <code>value-colors</code> 自訂色階、<code>value-domain</code> 固定範圍（多片比較時色階才一致）。
         </p>
-        <div class="grid lg:grid-cols-2 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
-            <WaferMap :data="wafer" value-field="vth" :value-format="(v) => `${v.toFixed(3)} V`" title="Vth 分佈" :width="420" :height="380" />
+            <div class="max-lg:overflow-x-auto"><!-- 固定寬度的圖表：手機上在自己的框裡水平捲動，不把整頁撐寬 -->
+              <WaferMap :data="wafer" value-field="vth" :value-format="(v) => `${v.toFixed(3)} V`" title="Vth 分佈" :width="420" :height="380" />
+            </div>
           </div>
           <ChptCodeBlock :code="valueCode" />
         </div>
       </section>
 
       <!-- 多片比較 -->
-      <section id="lot" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="lot" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">整批比較</h2>
         <p class="text-sm text-content-secondary mb-4">
           並排多片時給同一個 <code>grid</code>，每片的晶粒大小才一致；關掉圖例，只看位置分佈與良率。
@@ -71,21 +73,23 @@
       </section>
 
       <!-- 面板 -->
-      <section id="panel" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="panel" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">面板圖</h2>
         <p class="text-sm text-content-secondary mb-4">
           <code>shape="panel"</code> 外框改為矩形、沒有定位缺口；<code>die-aspect</code> 是晶粒寬高比（例如顯示面板的 cell）。
           <code>flip-y</code> 讓第 0 列在最下面（座標原點在左下）。
         </p>
-        <div class="grid lg:grid-cols-2 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
-            <WaferMap :data="panel" :bins="panelBins" shape="panel" :die-aspect="1.6" flip-y title="Panel P-0193" :width="440" :height="220" />
+            <div class="max-lg:overflow-x-auto"><!-- 固定寬度的圖表：手機上在自己的框裡水平捲動，不把整頁撐寬 -->
+              <WaferMap :data="panel" :bins="panelBins" shape="panel" :die-aspect="1.6" flip-y title="Panel P-0193" :width="440" :height="220" />
+            </div>
           </div>
           <ChptCodeBlock :code="panelCode" />
         </div>
       </section>
 
-      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-4">API</h2>
         <ApiTable of="WaferMap" title="Props" :rows="propsRows" />
         <ApiTable of="WaferMap" title="Events" :rows="eventRows" />

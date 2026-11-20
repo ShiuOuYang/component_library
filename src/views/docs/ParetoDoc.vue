@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-6xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">EnterprisePareto 柏拉圖</h1>
@@ -9,23 +9,25 @@
         </p>
       </div>
 
-      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">基本示範</h2>
         <p class="text-sm text-content-secondary mb-4">
           data 為 <code>{ category, value }</code>；autoSort 降冪、顯示累積曲線與 80% 參考線。
         </p>
-        <EnterprisePareto
-          :data="defectData"
-          :width="880"
-          :height="500"
-          title="缺陷柏拉圖分析"
-          x-axis-label="缺陷類型"
-          y-axis-left-label="數量"
-          :bar-color="'#2563eb'"
-          :reference-line-color="'#dc2626'"
-          :reference-line-percent="80"
-          :show-values-on-bars="true"
-        />
+        <div class="max-lg:overflow-x-auto"><!-- 固定寬度的圖表：手機上在自己的框裡水平捲動，不把整頁撐寬 -->
+          <EnterprisePareto
+            :data="defectData"
+            :width="880"
+            :height="500"
+            title="缺陷柏拉圖分析"
+            x-axis-label="缺陷類型"
+            y-axis-left-label="數量"
+            :bar-color="'#2563eb'"
+            :reference-line-color="'#dc2626'"
+            :reference-line-percent="80"
+            :show-values-on-bars="true"
+          />
+        </div>
         <div class="mt-4">
           <ChptCodeBlock
             language="html"
@@ -34,7 +36,7 @@
         </div>
       </section>
 
-      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">EnterprisePareto API</h2>
         <ApiTable of="EnterprisePareto" title="資料與尺寸 Props" :rows="dataProps" />
         <ApiTable of="EnterprisePareto" title="座標軸 Props" :rows="axisProps" />
@@ -43,7 +45,7 @@
         <ApiTable of="EnterprisePareto" title="Events / Slots" :rows="eventRows" />
       </section>
 
-      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">ParetoChart（簡易版）</h2>
         <p class="text-sm text-content-secondary mb-4">
           較早期的柏拉圖，內建統計資訊卡與載入／空狀態，輸入格式是 <code>{ name, count }</code>。

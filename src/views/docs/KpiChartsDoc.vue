@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">KPI：ChptKpiCard、SparklineChart、GaugeChart</h1>
@@ -11,14 +11,14 @@
         </p>
       </div>
 
-      <section id="cards" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="cards" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">KPI 卡片：ChptKpiCard</h2>
         <p class="text-sm text-content-secondary mb-4">
           數字、與前期比較、趨勢線、是否達標，一個元件做完。給 <code>previous</code> 自動算出變化；給 <code>target</code>（與 <code>thresholds</code>）
           自動判定達標 / 接近 / 未達標 —— 左側色條、圖示與文字一起表示（不只靠顏色），目標也畫成趨勢線上的虛線。
           好壞跟著 <code>higher-is-better</code>：不良率、停機時數下降才是綠色。
         </p>
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <ChptKpiCard
             v-for="k in kpiCards"
             :key="k.title"
@@ -33,7 +33,7 @@
           <code>clickable</code> 時整張卡片可點（送出 <code>click</code>，例如切到明細），鍵盤 Tab 到卡片按 Enter 也可以；
           讀螢幕會念出「標題、數值、狀態、目標」。<code>actions</code> 插槽的按鈕仍可單獨操作。
         </p>
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <ChptKpiCard
             v-for="k in kpiCards"
             :key="`sm-${k.title}`"
@@ -44,7 +44,7 @@
             @click="lastClicked = k.title"
           />
         </div>
-        <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <ChptKpiCard title="今日產量" :value="null" loading size="sm" />
           <ChptKpiCard title="在線人數" :value="38" suffix="人" :previous="41" delta-mode="absolute" :delta-precision="0" comparison-label="較昨日" size="sm">
             <template #actions>
@@ -59,13 +59,13 @@
         </p>
       </section>
 
-      <section id="sparkline" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="sparkline" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">迷你趨勢線</h2>
         <p class="text-sm text-content-secondary mb-4">
           線、面積、長條三種。<code>show-min-max</code> 標出最高最低點，<code>reference-value</code> 畫目標線；資料可以是數字陣列，
           或物件陣列（<code>value-field</code>／<code>label-field</code>，滑過時顯示標籤）。<code>null</code> 會斷開線段。
         </p>
-        <div class="grid gap-6 sm:grid-cols-3">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <div v-for="s in sparkDemos" :key="s.label" class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
             <p class="mb-2 text-xs text-content-secondary">{{ s.label }}</p>
             <SparklineChart v-bind="s.props" :width="200" :height="48" />
@@ -73,7 +73,7 @@
         </div>
       </section>
 
-      <section id="gauge" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="gauge" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">儀表</h2>
         <p class="text-sm text-content-secondary mb-4">
           <code>bands</code> 定義區間（例如未達標／注意／達標）：填色代表目前落在哪一區，軌道是同色的淡色，
@@ -84,7 +84,7 @@
           <input id="gauge-value" v-model.number="yieldValue" type="range" min="85" max="100" step="0.1" class="w-60" />
           <span class="tabular-nums text-content-primary">{{ yieldValue.toFixed(1) }}%</span>
         </div>
-        <div class="grid gap-6 sm:grid-cols-3">
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
             <GaugeChart
               :value="yieldValue"
@@ -108,7 +108,7 @@
         <ChptCodeBlock class="mt-4" :code="gaugeCode" />
       </section>
 
-      <section id="bullet" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="bullet" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">BulletChart 子彈圖</h2>
         <p class="text-sm text-content-secondary mb-4">
           一列一個指標：底色是區間（差 / 普通 / 好）、中間細長條是實際值、直線是目標、淡色細線是前期值。
@@ -122,13 +122,13 @@
         <ChptCodeBlock class="mt-4" :code="bulletCode" />
       </section>
 
-      <section id="funnel" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="funnel" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">YieldFunnel 良率漏斗</h2>
         <p class="text-sm text-content-secondary mb-4">
           依製程順序列出每一站通過後的數量：兩站之間標出站良率與損失，標題列是直通率（RTY = 最後一站 / 投入）。
           損失最多的那一站以紅字與「最大損失」標出 —— 改善先從那一站下手。<code>align="center"</code> 是漏斗外觀。
         </p>
-        <div class="grid gap-4 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
             <YieldFunnel :steps="pcbaSteps" unit="pcs" title="PCBA 工單 WO-2611-0042" auto-resize />
           </div>
@@ -139,14 +139,14 @@
         <ChptCodeBlock class="mt-4" :code="funnelCode" />
       </section>
 
-      <section id="calendar" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="calendar" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">CalendarHeatmap 日曆熱圖</h2>
         <p class="text-sm text-content-secondary mb-4">
           每天一格、顏色深淺代表數值：一欄一週、一列一個星期幾，「每週一特別多」這種規律一眼就看得出來（折線圖看不出來）。
           預設把最小～最大值等分成 5 級；<code>thresholds</code> + <code>colors</code> 可以改成門檻分級（例如良率紅黃綠）。
           沒有資料的日子只畫外框（和 0 不同），今天加粗外框；範圍比容器寬時可水平捲動，一開始捲到最近的日子。鍵盤：Tab 進入後 ↑↓ 前後一天、←→ 前後一週、Enter 等同點擊。
         </p>
-        <div class="grid gap-4 xl:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
             <CalendarHeatmap :data="defectDays" title="SMT 每日異常件數（週日停線）" unit="件" end="2026-11-20" @cell-click="(c) => (pickedDay = c)" />
             <p class="mt-2 text-sm text-content-secondary" aria-live="polite">
@@ -168,7 +168,7 @@
         <ChptCodeBlock class="mt-4" :code="calendarCode" />
       </section>
 
-      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <h3 class="text-lg font-semibold text-content-primary mt-4">ChptKpiCard</h3>
         <ApiTable of="ChptKpiCard" title="ChptKpiCard Props / Events" :rows="kpiCardProps" />

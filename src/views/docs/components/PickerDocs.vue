@@ -20,14 +20,14 @@
 
     <div class="space-y-10">
       <!-- ============ ChptAutocomplete ============ -->
-      <section id="chpt-autocomplete" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+      <section id="chpt-autocomplete" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptAutocomplete 自動完成</h2>
         <p class="text-content-secondary text-sm mb-4">
           <strong>使用時機：</strong>可以自由輸入、但希望邊打邊給建議的文字欄位（料號、客戶、最近搜尋）。
           值就是文字本身，選建議只是幫忙填字。只能從清單裡選時用 ChptSelect。
         </p>
         <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4 pb-24">
-          <div class="grid md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ChptAutocomplete v-model="state.station" label="站點（固定清單）" :options="stations" placeholder="輸入 SMT、AOI…" clearable full-width />
             <ChptAutocomplete
               v-model="state.part"
@@ -48,7 +48,7 @@
       </section>
 
       <!-- ============ ChptCascader ============ -->
-      <section id="chpt-cascader" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+      <section id="chpt-cascader" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptCascader 級聯選擇</h2>
         <p class="text-content-secondary text-sm mb-4">
           <strong>使用時機：</strong>有層級的選項，一欄一欄往右選（廠區 → 產線 → 機台）。v-model 是整條路徑的值陣列。
@@ -70,7 +70,7 @@
       </section>
 
       <!-- ============ ChptTransfer ============ -->
-      <section id="chpt-transfer" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+      <section id="chpt-transfer" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptTransfer 穿梭框</h2>
         <p class="text-content-secondary text-sm mb-4">
           <strong>使用時機：</strong>從一份清單挑一批出來（通知對象、報表欄位、權限）。v-model 是右邊（已選）的 key 陣列。
@@ -88,7 +88,7 @@
       </section>
 
       <!-- ============ ChptColorPicker ============ -->
-      <section id="chpt-colorpicker" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+      <section id="chpt-colorpicker" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptColorPicker 顏色選擇</h2>
         <p class="text-content-secondary text-sm mb-4">
           <strong>使用時機：</strong>讓使用者設定標記色、圖表系列色。v-model 是小寫六碼 #rrggbb 或 null。
@@ -108,7 +108,7 @@
       </section>
 
       <!-- ============ ChptRate ============ -->
-      <section id="chpt-rate" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+      <section id="chpt-rate" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptRate 評分</h2>
         <p class="text-content-secondary text-sm mb-4">
           <strong>使用時機：</strong>滿意度、嚴重度這類 1~N 的等級。v-model 是整數，0 表示未評分。
@@ -130,7 +130,7 @@
       </section>
 
       <!-- ============ ChptTimePicker ============ -->
-      <section id="chpt-timepicker" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+      <section id="chpt-timepicker" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptTimePicker 時間選擇</h2>
         <p class="text-content-secondary text-sm mb-4">
           <strong>使用時機：</strong>班別起訖、排程時間這類「一天中的某個時刻」。v-model 是 'HH:mm'（或 'HH:mm:ss'）。
@@ -152,7 +152,7 @@
       </section>
 
       <!-- ============ ChptTreeSelect ============ -->
-      <section id="chpt-treeselect" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+      <section id="chpt-treeselect" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptTreeSelect 樹狀下拉選擇</h2>
         <p class="text-content-secondary text-sm mb-4">
           <strong>使用時機：</strong>選項有階層、又想收在一個欄位裡（部門、廠區／產線、料號分類）。裡面就是 ChptTree，
@@ -173,7 +173,7 @@
       </section>
 
       <!-- ============ ChptCalendar ============ -->
-      <section id="chpt-calendar" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+      <section id="chpt-calendar" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptCalendar 月曆</h2>
         <p class="text-content-secondary text-sm mb-4">
           <strong>使用時機：</strong>以月為單位檢視排程、值班、每日產量（#date-cell 插槽放內容）；compact 模式當作常駐的小月曆。
@@ -206,13 +206,13 @@
       </section>
 
       <!-- ============ ChptInputTag ============ -->
-      <section id="chpt-inputtag" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+      <section id="chpt-inputtag" class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light scroll-mt-24">
         <h2 class="text-2xl font-bold text-content-primary mb-1">ChptInputTag 標籤輸入</h2>
         <p class="text-content-secondary text-sm mb-4">
           <strong>使用時機：</strong>一次輸入多個自由值：序號、Email、關鍵字。Enter 或逗號加入，貼上「A, B; C」一次拆成多個。
           選項是固定清單時改用 ChptSelect 多選。
         </p>
-        <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4 grid gap-4 md:grid-cols-2">
+        <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
           <ChptInputTag v-model="state.serials" label="序號（格式 SN-數字，最多 5 個）" :max="5" :validate="checkSerial" full-width />
           <ChptInputTag v-model="state.keywords" label="關鍵字" placeholder="輸入後按 Enter" full-width />
         </div>
@@ -224,7 +224,7 @@
       </section>
 
       <!-- 引入方式 -->
-      <section class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light">
+      <section class="bg-surface-primary rounded-xl shadow-md p-4 sm:p-6 lg:p-8 border border-stroke-light">
         <h2 class="text-2xl font-bold text-content-primary mb-2">引入方式</h2>
         <ChptCodeBlock :code="importSample" />
       </section>

@@ -12,7 +12,7 @@
     </div>
 
     <!-- ============ ChptDarkModeToggle ============ -->
-    <section id="chpt-darkmodetoggle" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-darkmodetoggle" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDarkModeToggle 深色模式切換</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>App 右上角提供淺／深色主題切換；<code>variant</code> 分 fancy（SVG 動畫）與
@@ -22,7 +22,7 @@
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptDarkModeToggle } from '@/components/library'</code>
       </p>
 
-      <div class="grid md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-surface-secondary rounded-lg p-6 border border-stroke-light flex flex-col items-center gap-3">
           <p class="text-sm font-semibold text-content-primary">variant="fancy"（SVG 動畫）</p>
           <ChptDarkModeToggle v-model:dark-mode="darkFancy" variant="fancy" :sync-body-by-default="false" />
@@ -51,7 +51,7 @@
     </section>
 
     <!-- ============ ChptHeaderLogoutButton ============ -->
-    <section id="chpt-headerlogout" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-headerlogout" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptHeaderLogoutButton 登出按鈕</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>Header 右上角的登出按鈕；整合 <code>useAuth().logout()</code>，點擊先跳出確認、
@@ -86,13 +86,13 @@
     </section>
 
     <!-- ============ 其他工具包裝 ============ -->
-    <section class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light">
+    <section class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light">
       <h2 class="text-2xl font-bold text-content-primary mb-2">其他工具類包裝元件</h2>
       <p class="text-sm text-content-secondary mb-4">
         以下元件由原 legacy 實作改名包裝為 Chpt 主題，統一自 <code>@/components/library</code> 匯入。
       </p>
 
-      <div class="grid md:grid-cols-2 gap-4 text-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
           <p class="font-semibold text-content-primary mb-1">🖱️ ChptPageSwitcher</p>
           <p class="text-xs text-content-secondary">左側頁面切換滑出面板。</p>
@@ -119,7 +119,7 @@
     </section>
 
     <!-- ============ ChptConfigProvider ============ -->
-    <section id="chpt-config-provider" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-config-provider" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptConfigProvider 全域設定</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>一個區塊（或整個 App）統一元件尺寸與內建文字。密集的後台表格頁用 sm、產線觸控面板用 lg；
@@ -136,7 +136,7 @@
         <ChptSegmented v-model="cfgLang" :options="[{ label: '繁中', value: 'zh' }, { label: 'English', value: 'en' }]" aria-label="語系" size="xs" />
       </div>
       <ChptConfigProvider :size="cfgSize" :locale="cfgLang === 'en' ? enUS : zhTW">
-        <div class="grid gap-4 rounded-lg border border-stroke-light p-4 md:grid-cols-2">
+        <div class="grid grid-cols-1 gap-4 rounded-lg border border-stroke-light p-4 md:grid-cols-2">
           <div class="flex flex-wrap items-end gap-3">
             <ChptInput model-value="" :label="cfgLang === 'en' ? 'Work order' : '工單'" />
             <ChptButton color="primary">{{ cfgLang === 'en' ? 'Search' : '查詢' }}</ChptButton>
