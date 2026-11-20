@@ -435,6 +435,7 @@ import ChptPagination from './ChptPagination.vue'
 import ChptSpinner from './ChptSpinner.vue'
 import ChptPopover from './ChptPopover.vue'
 import { useConfig, useLocale } from '../shared/config'
+import { readStoredJSON, writeStoredJSON } from '../shared/safeStorage'
 
 // === 型別定義 ===
 export type DataRow = Record<string, unknown>
@@ -824,13 +825,8 @@ const storageKey = computed(() => (props.persistKey ? `chpt-table:${props.persis
 
 /** 讀記住的設定；私密瀏覽、儲存空間被停用時 localStorage 會丟錯 —— 讀不到就當沒有 */
 function readPersisted(): PersistedSettings {
-  if (!storageKey.value || typeof localStorage === 'undefined') return {}
-  try {
-    const parsed = JSON.parse(localStorage.getItem(storageKey.value) ?? '{}')
-    return parsed && typeof parsed === 'object' ? parsed : {}
-  } catch {
-    return {}
-  }
+  if (!storageKey.value) return {}
+  return readStoredJSON<PersistedSettings>(storageKey.value, {}, (v) => !!v && typeof v === 'object' && !Array.isArray(v))
 }
 const persisted = readPersisted()
 
@@ -1571,12 +1567,7 @@ const colWidths = ref<Record<string, number>>(
 
 // 記住欄位設定：只存隱藏的欄位與欄寬（寫不進去時 —— 私密瀏覽、空間滿 —— 不影響表格）
 watch([innerHidden, colWidths], () => {
-  if (!storageKey.value || typeof localStorage === 'undefined') return
-  try {
-    localStorage.setItem(storageKey.value, JSON.stringify({ hidden: innerHidden.value, widths: colWidths.value }))
-  } catch {
-    /* 忽略 */
-  }
+  if (storageKey.value) writeStoredJSON(storageKey.value, { hidden: innerHidden.value, widths: colWidths.value })
 }, { deep: true })
 
 function colId(column: Column): string {

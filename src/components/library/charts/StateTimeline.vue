@@ -145,6 +145,7 @@ import {
 } from './utils/stateTimeline'
 import { tooltipPlacement } from './utils/tooltipPlacement'
 import { useLocale } from '../shared/config'
+import { wheelModifierPressed } from './utils/largeData'
 
 /**
  * StateTimeline —— 機台狀態時間軸
@@ -473,11 +474,6 @@ function zoomTo(start: TimeInput, end: TimeInput): void {
   if (Number.isFinite(a) && Number.isFinite(b) && b > a) setView([a, b])
 }
 
-function wheelModifierPressed(event: WheelEvent): boolean {
-  if (props.wheelZoomModifier === 'ctrl') return event.ctrlKey || event.metaKey
-  if (props.wheelZoomModifier === 'alt') return event.altKey
-  return true
-}
 
 /** 滑鼠在繪圖區的 X（px）；不在繪圖區時 null */
 function plotXOf(event: MouseEvent): number | null {
@@ -504,7 +500,7 @@ function onWheel(event: WheelEvent): void {
     setView([d0 + shift, d1 + shift])
     return
   }
-  if (!wheelModifierPressed(event)) return
+  if (!wheelModifierPressed(event, props.wheelZoomModifier)) return
   const k = Math.exp(event.deltaY * unit * 0.002)
   // 全覽時往外縮沒有作用：交還給頁面
   if (k > 1 && !isZoomed.value) return

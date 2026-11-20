@@ -518,13 +518,13 @@ interface TooltipInfo {
 }
 
 const tooltipInfo = ref<TooltipInfo>({ x: 0, y: 0, opacity: 0, column: null })
-const uniqueColumnValueArray = ref<ChptRadioItem[]>([])
+const uniqueColumnValueArray = ref<ColumnFilterOption[]>([])
 const filterColumnValueArray = ref<Array<string | number | boolean>>([])
 const originalData = ref<ChptFixedTableRow[]>([])
 const filterSearchText = ref('')
 
 /** 欄位篩選用的選項。label 必須是 string —— ChptCheckbox 的 items 要求如此 */
-interface ChptRadioItem {
+interface ColumnFilterOption {
   label: string
   value: string | number | boolean
   disabled?: boolean
@@ -546,7 +546,7 @@ function normalizeCellValue(value: unknown): string | number | boolean {
 }
 
 /** 由儲存格值建立篩選選項 */
-function toFilterOption(value: unknown): ChptRadioItem {
+function toFilterOption(value: unknown): ColumnFilterOption {
   const v = normalizeCellValue(value)
   return { value: v, label: String(v) }
 }

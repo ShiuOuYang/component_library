@@ -1,4 +1,5 @@
 import { computed, readonly, ref, type ComputedRef, type Ref } from 'vue'
+import { readStoredString, writeStoredString } from './safeStorage'
 
 /**
  * useDarkMode（CHPT 主題） - 深色模式的唯一真實來源
@@ -38,13 +39,9 @@ const isBrowser = typeof window !== 'undefined' && typeof document !== 'undefine
 /** 讀取先前儲存的偏好；讀不到或值不合法則回傳 'system' */
 function readStoredMode(): ChptThemeMode {
   if (!isBrowser) return 'system'
-  try {
-    const raw = window.localStorage.getItem(THEME_STORAGE_KEY)
-    if (raw === 'light' || raw === 'dark' || raw === 'system') return raw
-  } catch {
-    // Safari 無痕模式等情境會丟例外，忽略即可
-  }
-  return 'system'
+  // Safari 無痕模式等情境讀取會丟錯：safeStorage 讀不到就回 null
+  const raw = readStoredString(THEME_STORAGE_KEY)
+  return raw === 'light' || raw === 'dark' || raw === 'system' ? raw : 'system'
 }
 
 /** 目前作業系統是否偏好深色 */
@@ -79,13 +76,8 @@ function applyToDom(): void {
 /** 設定主題模式 */
 function setMode(next: ChptThemeMode): void {
   mode.value = next
-  if (isBrowser) {
-    try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, next)
-    } catch {
-      // 寫入失敗不影響當次切換
-    }
-  }
+  // 寫入失敗不影響當次切換
+  if (isBrowser) writeStoredString(THEME_STORAGE_KEY, next)
   applyToDom()
 }
 

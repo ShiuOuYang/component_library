@@ -46,19 +46,14 @@ const getNotificationStyle = (type) => {
   }
 }
 
-// 通知圖示 - 更低調的圖示
-const getNotificationIcon = (type) => {
-  switch (type) {
-    case 'success':
-      return 'fas fa-check text-emerald-500'
-    case 'error':
-      return 'fas fa-exclamation-triangle text-red-500'
-    case 'loading':
-      return 'fas fa-spinner fa-spin text-blue-500'
-    default:
-      return 'fas fa-info-circle text-gray-500'
-  }
+// 通知圖示（Material Symbols：組件庫統一的圖示字型；原本為了這四個圖示整包載入 FontAwesome）
+const NOTIFICATION_ICONS = {
+  success: { name: 'check', cls: 'text-emerald-500' },
+  error: { name: 'warning', cls: 'text-red-500' },
+  loading: { name: 'progress_activity', cls: 'text-blue-500 animate-spin' },
+  info: { name: 'info', cls: 'text-gray-500' },
 }
+const getNotificationIcon = (type) => NOTIFICATION_ICONS[type] ?? NOTIFICATION_ICONS.info
 
 // 格式化錯誤訊息
 const formatErrorMessage = computed(() => {
@@ -89,7 +84,7 @@ const formatSuccessMessage = computed(() => {
         class="px-3 py-2 rounded-lg border backdrop-blur-sm flex items-center space-x-3 min-w-[220px] max-w-[240px]"
       >
         <div class="flex-shrink-0">
-          <i :class="getNotificationIcon('loading')" class="text-sm"></i>
+          <span :class="getNotificationIcon('loading').cls" class="material-symbols-outlined text-base leading-none" aria-hidden="true">{{ getNotificationIcon('loading').name }}</span>
         </div>
         <div class="flex-1">
           <p class="font-medium text-xs">載入中...</p>
@@ -106,7 +101,7 @@ const formatSuccessMessage = computed(() => {
         class="px-3 py-2 rounded-lg border backdrop-blur-sm flex items-center space-x-3 min-w-[220px] max-w-[240px]"
       >
         <div class="flex-shrink-0">
-          <i :class="getNotificationIcon('success')" class="text-sm"></i>
+          <span :class="getNotificationIcon('success').cls" class="material-symbols-outlined text-base leading-none" aria-hidden="true">{{ getNotificationIcon('success').name }}</span>
         </div>
         <div class="flex-1">
           <p class="font-medium text-xs">操作成功</p>
@@ -123,7 +118,7 @@ const formatSuccessMessage = computed(() => {
         class="px-3 py-2 rounded-lg border backdrop-blur-sm flex items-center space-x-3 min-w-[220px] max-w-[240px]"
       >
         <div class="flex-shrink-0">
-          <i :class="getNotificationIcon('error')" class="text-sm"></i>
+          <span :class="getNotificationIcon('error').cls" class="material-symbols-outlined text-base leading-none" aria-hidden="true">{{ getNotificationIcon('error').name }}</span>
         </div>
         <div class="flex-1">
           <p class="font-medium text-xs">操作失敗</p>

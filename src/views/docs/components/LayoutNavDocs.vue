@@ -235,6 +235,10 @@ import {
   ChptSwitch,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+import { useToast } from '@/components/library'
+
+/** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */
+const toast = useToast()
 
 // ---- DashboardGrid ----
 const defaultDashboard = () => [
@@ -329,7 +333,7 @@ const collapses = [
 const openPanels = ref([0])
 
 function onCardClick() {
-  console.log('卡片被點擊')
+  toast.info('卡片被點擊')
 }
 
 // ---- 程式碼範例（字串，避免模板解析） ----

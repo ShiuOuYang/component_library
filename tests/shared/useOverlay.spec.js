@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file -- 測試裡就地定義多個浮層元件 */
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, ref, useTemplateRef } from 'vue'
 import { mount } from '@vue/test-utils'

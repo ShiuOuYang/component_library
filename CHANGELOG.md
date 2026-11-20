@@ -248,12 +248,18 @@
 
 ### 移除
 
+- 沒有程式使用的相依套件：`lodash`、`plotly.js-dist-min`。
+- 文件站不再載入 FontAwesome：全站只有全域通知用到 4 個圖示，改用組件庫統一的 Material Symbols（入口 CSS 少約 100 KB，另有字型檔）。
 - ChptExcelExporter `rawData`、EnterprisePareto `highlightMode` / `customRenderers` 與其型別（見上方破壞性變更）。
 - 沒有路由連到、內容過時的文件頁：`/chpt-table-guide`、CommonTableDoc、DraggableModal、TagFilterDropdown、
   FilterBar、FilterDropdown、FilterSelect 示範頁。對應元件以現行文件頁為準。（#23、#25）
 
 ### 文件與工具
 
+- 內部整理（行為不變）：localStorage 的安全讀寫收斂到 `shared/safeStorage.ts`（ChptTable、ChptCommandPalette、
+  ChptDashboardGrid、useDarkMode 原本各寫一份 try/catch）；四張圖表各自的滾輪修飾鍵判斷收斂為 `wheelModifierPressed()`。
+- 文件站在 DocLayout 掛一份全域 ChptToast（原本各頁自己掛，同一則提示可能出現兩次）；文件示範的事件回饋從 `console.log` 改為 toast。
+- 組件庫、文件頁與測試的 lint 警告清零（ChptButton 的 `class` 預設值、ChptCodeBlock `tip` 的 v-html 加上說明）。
 - `npm run check:i18n`：用 Vue 與 TypeScript 的 AST 掃描組件庫裡寫死的中文介面文字（含 template 運算式），
   已加入 `verify` 與 CI。確定是資料（例如 Excel 自動填滿要辨識的「星期一」）時以 `i18n-ignore` 註解標註。
 - 測試：zhTW / enUS 的欄位與函式參數必須一致、enUS 不得含中文、切換 enUS 後元件文字正確。

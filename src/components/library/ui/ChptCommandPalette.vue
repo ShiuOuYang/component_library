@@ -92,6 +92,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, useTemplate
 import ChptIcon from './ChptIcon.vue'
 import { useOverlay } from '../shared/useOverlay'
 import { useOptionalRouter } from '../shared/useOptionalRouter'
+import { readStoredJSON, writeStoredJSON } from '../shared/safeStorage'
 import { formatHotkey, highlightParts, matchHotkey, scoreCommand } from '../shared/commandSearch'
 import { useLocale } from '../shared/config'
 
@@ -193,21 +194,14 @@ useOverlay(() => open.value, panel, {
 const recentIds = ref<string[]>([])
 function loadRecent(): void {
   if (!props.recentKey) return
-  try {
-    const raw = JSON.parse(localStorage.getItem(`chpt-command:${props.recentKey}`) ?? '[]')
-    recentIds.value = Array.isArray(raw) ? raw.filter((v) => typeof v === 'string') : []
-  } catch {
-    recentIds.value = []
-  }
+  const raw = readStoredJSON<unknown[]>(`chpt-command:${props.recentKey}`, [], Array.isArray)
+  recentIds.value = raw.filter((v): v is string => typeof v === 'string')
 }
 function remember(id: string): void {
   if (!props.recentKey) return
   recentIds.value = [id, ...recentIds.value.filter((v) => v !== id)].slice(0, Math.max(0, props.maxRecent))
-  try {
-    localStorage.setItem(`chpt-command:${props.recentKey}`, JSON.stringify(recentIds.value))
-  } catch {
-    /* 無痕模式或空間不足：只是記不住，不影響使用 */
-  }
+  // 無痕模式或空間不足時只是記不住，不影響使用
+  writeStoredJSON(`chpt-command:${props.recentKey}`, recentIds.value)
 }
 
 // === 結果 ===

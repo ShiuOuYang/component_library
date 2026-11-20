@@ -57,6 +57,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watch, type CSSProperties } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import { bottom, clampItem, compact as compactLayout, moveItem, sameLayout, sortLayout, type GridCompact, type GridItem } from '../shared/gridLayout'
+import { readStoredJSON, removeStored, writeStoredJSON } from '../shared/safeStorage'
 import { useLocale } from '../shared/config'
 
 /**
@@ -157,22 +158,12 @@ function storageKey() {
   return `chpt-dashboard:${props.persistKey}`
 }
 function save(layout: DashboardItem[]): void {
-  if (!props.persistKey) return
-  try {
-    localStorage.setItem(storageKey(), JSON.stringify(layout.map(({ id, x, y, w, h }) => ({ id, x, y, w, h }))))
-  } catch {
-    /* 無痕模式或空間不足：只是記不住 */
-  }
+  // 無痕模式或空間不足時只是記不住
+  if (props.persistKey) writeStoredJSON(storageKey(), layout.map(({ id, x, y, w, h }) => ({ id, x, y, w, h })))
 }
 onMounted(() => {
   if (!props.persistKey) return
-  let saved: Array<Pick<GridItem, 'id' | 'x' | 'y' | 'w' | 'h'>> = []
-  try {
-    const raw = JSON.parse(localStorage.getItem(storageKey()) ?? '[]')
-    saved = Array.isArray(raw) ? raw : []
-  } catch {
-    return
-  }
+  const saved = readStoredJSON<Array<Pick<GridItem, 'id' | 'x' | 'y' | 'w' | 'h'>>>(storageKey(), [], Array.isArray)
   const byId = new Map(saved.filter((s) => s && typeof s.id === 'string').map((s) => [s.id, s]))
   if (!byId.size) return
   const merged = props.modelValue.map((it) => {
@@ -337,12 +328,7 @@ defineExpose({
   layout: () => committed.value,
   /** 清掉 persistKey 記住的版面（不改目前的版面） */
   clearSaved: () => {
-    if (!props.persistKey) return
-    try {
-      localStorage.removeItem(storageKey())
-    } catch {
-      /* 忽略 */
-    }
+    if (props.persistKey) removeStored(storageKey())
   },
 })
 </script>

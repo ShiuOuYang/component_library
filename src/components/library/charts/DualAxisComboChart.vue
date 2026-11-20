@@ -124,6 +124,7 @@ import {
   resolveCanvasColor,
   zoomBandWindow,
   zoomContinuousDomain,
+  wheelModifierPressed,
 } from './utils/largeData'
 import { useLocale } from '../shared/config'
 
@@ -2586,14 +2587,6 @@ const cancelFrame = (id: number): void => {
   else clearTimeout(id);
 };
 
-/** 是否按著設定的修飾鍵 */
-function wheelModifierPressed(event: WheelEvent): boolean {
-  switch (props.wheelZoomModifier) {
-    case 'ctrl': return event.ctrlKey || event.metaKey;
-    case 'alt': return event.altKey;
-    default: return true;
-  }
-}
 
 /**
  * 游標位置對應哪一個軸：
@@ -2683,7 +2676,7 @@ function wheelWouldChange(target: WheelTarget, zoomDelta: number, panDelta: numb
  * ✅ 觸控板一秒會送上百個 wheel 事件，逐一重繪會卡；合併後一個畫面最多重繪一次
  */
 function onWheel(event: WheelEvent): void {
-  if (!props.enableWheelZoom || !plotRef.value || !wheelModifierPressed(event)) return;
+  if (!props.enableWheelZoom || !plotRef.value || !wheelModifierPressed(event, props.wheelZoomModifier)) return;
   const [mx, my] = d3.pointer(event, plotRef.value);
   const target = wheelTargetAt(mx, my);
   if (!target) return;
