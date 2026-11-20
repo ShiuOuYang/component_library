@@ -47,7 +47,11 @@
   `domain` 固定刻度；同一天多筆加總，沒有資料的日子只畫外框（和 0 不同），今天加粗外框。範圍比容器寬時可水平捲動、
   一開始捲到最近的日子，星期標籤固定在左側。鍵盤：↑↓ 一天、←→ 一週、Home / End、Enter 送出 `cell-click`，目前的格子以 aria-live 念出；
   ref 方法 `focusDate()`。新增 `charts/utils/calendarHeatmap.ts`、型別 `CalendarDatum` / `CalendarCell` 與語系群組 `calendarHeatmap`。
-
+- **ChptDefectAnnotator 缺陷標註**：在產品照片、PCB 圖上標出缺陷位置與類型。點一下放編號標記、或切到「框」拖出範圍；
+  標記可拖曳移動，選類型會套用到選取中的標記，工具列顯示各類型數量；旁邊的清單可改備註、刪除。座標存成 0–1 的比例
+  （縮圖、全螢幕、列印都落在同一位置）。鍵盤：標註區按 Enter 於中央新增，標記是按鈕、方向鍵微調（Shift 加大）、Delete 刪除；
+  新增 / 刪除以 aria-live 念出。`readonly` 只檢視。新增 `shared/defectMarks.ts`（`DefectMark`、`DefectType`、`rectFromCorners()`、
+  `moveMark()`、`nextMarkId()`、`countByType()`、`markCenter()`）與語系群組 `defect`。
 - **ChptSignaturePad 簽名板**：簽收、點檢確認、放行簽核用。線條平滑（二次貝茲曲線）、粗細隨書寫速度變化（筆有壓力值時隨壓力），
   高解析度螢幕不糊；簽名中不捲動頁面、多指觸控只取第一根手指。每簽完一筆更新 v-model（PNG data URL，空白為 null），
   可復原上一筆、清除；`trim` 只輸出有簽名的範圍、`exportBackground` / `exportType` 決定輸出格式；ref 方法 `toDataURL()`、

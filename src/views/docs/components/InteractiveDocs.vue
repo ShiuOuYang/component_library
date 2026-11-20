@@ -228,6 +228,51 @@
       <ApiTable of="ChptKanban" title="Events" :rows="kanbanEvents" />
       <ApiTable of="ChptKanban" title="Slots" :rows="kanbanSlots" />
     </section>
+
+    <!-- ============ ChptDefectAnnotator ============ -->
+    <section id="chpt-defect-annotator" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDefectAnnotator 缺陷標註</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>目檢、IPQC、客訴分析時在產品照片或 PCB 圖上標出缺陷位置。點一下放編號標記，或切到「框」拖出範圍；
+        標記可拖曳移動，選類型會套用到選取中的標記。座標存成 0–1 的比例，縮圖、全螢幕、列印都落在同一位置。
+        鍵盤：在標註區按 <kbd class="rounded border border-stroke-default px-1 text-xs">Enter</kbd> 於中央新增，Tab 到標記後方向鍵微調（Shift 加大）、Delete 刪除。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptDefectAnnotator } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptDefectAnnotator
+          v-model="defectMarks"
+          :src="pcbImage"
+          alt="PCB-A12 正面"
+          :defect-types="defectTypes"
+          :max-height="360"
+        />
+        <div class="mt-3 flex items-center gap-3">
+          <ChptSwitch v-model="defectReadonly" label="唯讀檢視" />
+        </div>
+        <ChptDefectAnnotator
+          v-if="defectReadonly"
+          class="mt-3"
+          :model-value="defectMarks"
+          :src="pcbImage"
+          alt="PCB-A12 正面（唯讀）"
+          :defect-types="defectTypes"
+          :max-height="200"
+          :show-list="false"
+          readonly
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="defectSample" />
+      <ApiTable of="ChptDefectAnnotator" title="Props" :rows="defectProps" />
+      <ApiTable of="ChptDefectAnnotator" title="Events" :rows="defectEvents" />
+      <ApiTable of="ChptDefectAnnotator" title="方法（ref）" :rows="defectMethods" />
+      <ApiTable of="-" title="DefectMark" :rows="defectMarkFields" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>標記的位置是相對於圖片的比例，所以要用同一張（或同比例的）圖片顯示，標記才會對得上。
+        <code>defectTypes</code> 的顏色是任何 CSS 顏色，建議選在照片上分得出來的飽和色；圓點有白邊，在深色背景上也看得到。
+      </p>
+    </section>
   </div>
 </template>
 
@@ -244,8 +289,69 @@ import {
   ChptCodeBlock,
   ChptKanban,
   ChptTag,
+  ChptDefectAnnotator,
+  ChptSwitch,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+
+// ---- DefectAnnotator ----
+/** 範例用的 PCB 示意圖（SVG） */
+const pcbSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
+<rect width="640" height="400" rx="16" fill="#14532d"/><rect x="8" y="8" width="624" height="384" rx="12" fill="#166534"/>
+<g fill="#facc15"><circle cx="30" cy="30" r="9"/><circle cx="610" cy="30" r="9"/><circle cx="30" cy="370" r="9"/><circle cx="610" cy="370" r="9"/></g>
+<g stroke="#ca8a04" stroke-width="3" fill="none" opacity=".8"><path d="M120 120H260V200H420"/><path d="M120 280H300V240H500"/><path d="M500 120V320"/></g>
+<rect x="250" y="150" width="140" height="100" rx="6" fill="#111827"/>
+<g fill="#d1d5db">${Array.from({ length: 10 }, (_, i) => `<rect x="${258 + i * 13}" y="140" width="6" height="10"/><rect x="${258 + i * 13}" y="250" width="6" height="10"/>`).join('')}</g>
+<rect x="80" y="90" width="70" height="50" rx="4" fill="#1f2937"/><rect x="460" y="70" width="90" height="40" rx="4" fill="#1f2937"/>
+<g fill="#78350f">${Array.from({ length: 6 }, (_, i) => `<rect x="${90 + i * 32}" y="310" width="18" height="36" rx="3"/>`).join('')}</g>
+<g fill="#e5e7eb">${Array.from({ length: 6 }, (_, i) => `<rect x="${90 + i * 32}" y="306" width="18" height="6"/><rect x="${90 + i * 32}" y="342" width="18" height="6"/>`).join('')}</g>
+<text x="460" y="370" font-family="monospace" font-size="16" fill="#f0fdf4">PCB-A12 R3</text></svg>`
+const pcbImage = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(pcbSvg)}`
+const defectTypes = [
+  { value: 'short', label: '短路', color: '#ef4444' },
+  { value: 'open', label: '空焊', color: '#f59e0b' },
+  { value: 'scratch', label: '刮傷', color: '#3b82f6' },
+  { value: 'missing', label: '缺件', color: '#a855f7' },
+]
+const defectMarks = ref([
+  { id: 'd1', x: 0.47, y: 0.37, type: 'short', note: 'U3 第 4、5 腳錫橋' },
+  { id: 'd2', x: 0.13, y: 0.75, w: 0.21, h: 0.14, type: 'scratch' },
+  { id: 'd3', x: 0.79, y: 0.24, type: 'open' },
+])
+const defectReadonly = ref(false)
+const defectSample = `<ChptDefectAnnotator
+  v-model="marks"
+  :src="photoUrl"
+  alt="PCB-A12 正面"
+  :defect-types="[
+    { value: 'short', label: '短路', color: '#ef4444' },
+    { value: 'open', label: '空焊', color: '#f59e0b' },
+  ]"
+/>
+
+// marks：[{ id: 'd1', x: 0.47, y: 0.37, type: 'short', note: 'U3 錫橋' },
+//         { id: 'd2', x: 0.13, y: 0.75, w: 0.21, h: 0.14, type: 'open' }]`
+const defectProps = [
+  { name: 'modelValue', type: 'DefectMark[]', def: '[]', desc: '標記清單（v-model）' },
+  { name: 'src / alt', type: 'string', def: '— / \'\'', desc: '圖片網址／替代文字（也會放進標註區的名稱）' },
+  { name: 'defectTypes', type: 'DefectType[]', def: '一種「缺陷」', desc: '缺陷類型 { value, label, color }；工具列顯示各類型的數量' },
+  { name: 'maxHeight', type: 'number', def: '480', desc: '圖片最大高度（px），寬度依比例' },
+  { name: 'showList', type: 'boolean', def: 'true', desc: '顯示標記清單（編號、類型、備註、刪除）' },
+  { name: 'defaultTool', type: "'point' | 'rect'", def: "'point'", desc: '預設標記方式：點一下或拖曳出框' },
+  { name: 'readonly / disabled', type: 'boolean', def: 'false', desc: '唯讀（可點選看清單，不能修改）／禁用' },
+]
+const defectEvents = [
+  { name: 'update:modelValue', params: '(marks: DefectMark[])', desc: '新增、移動、改類型、改備註、刪除時' },
+  { name: 'add / remove', params: '(mark: DefectMark)', desc: '新增／刪除一個標記' },
+  { name: 'select', params: '(id: string | null)', desc: '選取改變' },
+]
+const defectMethods = [{ name: 'select(id)', type: '(id: string | null) => void', desc: '選取並聚焦某個標記；null 取消選取' }]
+const defectMarkFields = [
+  { name: 'id', type: 'string', def: '—', desc: '新增時自動產生 d1、d2…' },
+  { name: 'x / y', type: 'number（0–1）', def: '—', desc: '點的位置，或框的左上角（相對於圖片寬高的比例）' },
+  { name: 'w / h', type: 'number（0–1）', def: '—', desc: '框的寬高；點沒有' },
+  { name: 'type / note', type: 'string', def: '—', desc: '缺陷類型（defectTypes 的 value）／備註' },
+]
 
 // ---- Kanban ----
 const issueColumns = [
