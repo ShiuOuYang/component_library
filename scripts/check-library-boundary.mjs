@@ -43,18 +43,6 @@ async function collectFiles(dir) {
   return out
 }
 
-/**
- * canonical（Chpt*）元件不得內部相依 legacy 相容層。
- * ChptTable 曾經內部使用 PaginationControls，導致使用者只要用 ChptTable
- * 就會收到一則與自己無關的 PaginationControls deprecation 警告。
- */
-const LEGACY_COMPONENTS = [
-  'CodeBlock', 'CommonTable', 'CommonTooltip', 'DraggableModal',
-  'FilterBar', 'FilterDropdown', 'FilterSelect', 'HeaderLogoutButton',
-  'ModalDock', 'PageSwitcher', 'Pagination', 'PaginationControls',
-  'SimpleDarkModeToggle', 'TabNavigation', 'TagFilterDropdown',
-]
-
 const violations = []
 
 for (const file of await collectFiles(LIBRARY_ROOT)) {
@@ -81,8 +69,8 @@ for (const file of await collectFiles(LIBRARY_ROOT)) {
     })
   }
 
-  // 不得依賴應用程式全域載入的 Font Awesome（main.js 的 all.min.css）：
-  // 組件庫自己沒載入它，複製到別的專案時圖示會變成空白。一律用 Material Symbols。
+  // 不得使用 Font Awesome：組件庫沒有載入它（文件站原本在 main.js 全域載入，現在也拿掉了），
+  // 複製到別的專案時圖示會變成空白。一律用 Material Symbols。
   // ⚠️ ChptExcelExporter 原本就這樣用了五個 fas fa-* 圖示。
   const htmlOnly = code
     .replace(/<script[\s\S]*?<\/script>/g, (b) => b.replace(/[^\n]/g, ''))
@@ -94,27 +82,6 @@ for (const file of await collectFiles(LIBRARY_ROOT)) {
       line,
       spec: match[0],
       reason: '組件庫不得使用 Font Awesome 圖示（應用程式才有載入）；請改用 material-symbols-outlined 或 ChptIcon',
-    })
-  }
-
-  // canonical 不得 import legacy。
-  // 兩種檔案不受此限：legacy 本身（薄包裝當然要 import canonical，反向也可能
-  // 互相引用），以及 barrel index.js（匯出 legacy 正是它的職責）。
-  const base = file.split('/').pop()
-  if (base === 'index.js' || base === 'index.ts') continue
-  if (LEGACY_COMPONENTS.includes(base.replace(/\.vue$/, ''))) continue
-
-  for (const match of code.matchAll(IMPORT_RE)) {
-    const spec = match[1]
-    const imported = spec.split('/').pop().replace(/\.vue$/, '')
-    if (!LEGACY_COMPONENTS.includes(imported)) continue
-
-    const line = code.slice(0, match.index).split('\n').length
-    violations.push({
-      file: relative('.', file),
-      line,
-      spec,
-      reason: `canonical 元件不得內部使用 legacy 相容層（${imported}）`,
     })
   }
 }

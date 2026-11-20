@@ -3,12 +3,8 @@
  *
  * 這是正式入口之一。
  *
- * 檔末的 legacy 項目全部已收斂為薄包裝 —— 每一個都只是把 props / emits / slots
- * 轉發給對應的 canonical 元件，不再有第二份實作需要維護（原本合計 1830 行的
- * 重複實作，收斂後剩 455 行的轉發層）。
- *
- * 它們在開發模式會印一次 deprecation 警告（見 shared/warnDeprecated.ts），
- * 並預定於下一個主要版本移除。對照表見 README 的「Legacy 對照表」。
+ * 舊的非 Chpt 元件（CodeBlock、CommonTable、FilterBar…）已移除，
+ * 對應的 Chpt 元件見 README 的「舊元件遷移對照表」。
  */
 
 // ===== canonical（Chpt*，TypeScript、設計 token） =====
@@ -141,24 +137,3 @@ export type { RichTextTool } from './ChptRichTextEditor.vue'
 export type { TransferItem } from './ChptTransfer.vue'
 export type { TreeNode } from './ChptTree.vue'
 export type { UploadFile, UploadRequest, UploadStatus } from './ChptUpload.vue'
-
-// ===== legacy 相容層（@deprecated — 全部為轉發用的薄包裝） =====
-//
-// 每一項後面標的是它實際轉發到的 canonical 元件。
-// 開發模式下使用時會在 console 印一次 deprecation 警告。
-export { default as CodeBlock } from './CodeBlock.vue'                       // → ChptCodeBlock
-export { default as CommonTooltip } from './CommonTooltip.vue'               // → ChptDataTooltip
-export { default as DraggableModal } from './DraggableModal.vue'             // → ChptModal mode="window"
-export { default as FilterBar } from './FilterBar.vue'                       // → ChptFilterBar
-export { default as FilterDropdown } from './FilterDropdown.vue'             // → ChptFilter type="dropdown"
-export { default as FilterSelect } from './FilterSelect.vue'                 // → ChptFilter type="select"
-export { default as TagFilterDropdown } from './TagFilterDropdown.vue'       // → ChptFilter type="tag"
-export { default as Pagination } from './Pagination.vue'                     // → ChptPagination variant="full"
-export { default as PaginationControls } from './PaginationControls.vue'     // → ChptPagination variant="compact"
-export { default as SimpleDarkModeToggle } from './SimpleDarkModeToggle.vue' // → ChptDarkModeToggle variant="simple"
-export { default as CommonTable } from './CommonTable.vue'                   // → ChptTable
-export { default as ModalDock } from './ModalDock.vue'                       // → ChptModalDock
-export { default as PageSwitcher } from './PageSwitcher.vue'                 // → ChptPageSwitcher
-export { default as TabNavigation } from './TabNavigation.vue'               // → ChptTabNavigation
-export { default as HeaderLogoutButton } from './HeaderLogoutButton.vue'     // → ChptHeaderLogoutButton
-export { default as FixedTable } from './ChptFixedTable.vue'                 // → ChptFixedTable

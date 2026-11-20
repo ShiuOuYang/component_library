@@ -1,8 +1,7 @@
 /**
  * 組件庫正式入口 — 匯出 canonical 公開 API
  *
- * 新專案請改由此 import；既有專案過渡期仍可用 '@/components/common'（facade）。
- * legacy 元件不在此匯出（請用 canonical Chpt*）。
+ * 一律由此 import（舊的 '@/components/common' 入口與非 Chpt 元件已移除）。
  */
 
 // ===== ui：canonical 通用 UI =====

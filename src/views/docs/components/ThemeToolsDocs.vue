@@ -95,7 +95,7 @@
       <div class="grid md:grid-cols-2 gap-4 text-sm">
         <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
           <p class="font-semibold text-content-primary mb-1">🖱️ ChptPageSwitcher</p>
-          <p class="text-xs text-content-secondary">左側頁面切換滑出面板（包裝 PageSwitcher）。</p>
+          <p class="text-xs text-content-secondary">左側頁面切換滑出面板。</p>
         </div>
         <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
           <p class="font-semibold text-content-primary mb-1">📑 ChptTabNavigation</p>

@@ -34,7 +34,6 @@ npm run dev:clean  # 刪掉 node_modules/.vite 並以 --force 重新預打包依
 ```bash
 npm run typecheck        # vue-tsc，型別必須零錯誤
 npm run check:boundary   # 組件庫邊界檢查（見下方「組件庫邊界」）
-npm run check:legacy     # legacy 相容層必須維持薄包裝
 npm run check:docs       # 文件站路由不得有佔位頁、斷掉的引用或孤兒文件頁
 npm run check:doc-api    # 文件 API 表（<ApiTable of="元件">）與元件實際的 props / events / 插槽 / 方法雙向一致
 npm run test             # Vitest 單元測試
@@ -83,8 +82,6 @@ src/components/library/          正式組件庫入口
                      useModalManager、useOptionalRouter
   index.js           正式公開 API（canonical 元件 + composables）
 
-src/components/common/index.js   相容 facade（@deprecated）
-                                 保留舊匯出名，供既有程式碼/舊文件零改動遷移
 src/design/          設計系統（tokens.js 唯一手動來源 → tokensPlugin / Tailwind）
 src/styles/          全域樣式（base / components / index）
 src/views/docs/      組件文檔站（/docs 子頁）
@@ -173,7 +170,7 @@ Vitest + @vue/test-utils + jsdom。測試檔在 `tests/`：
 |---|---|
 | `tests/regression/` | **每個 case 對應一個實際存在過的 bug** |
 | `tests/shared/` | composables：useDarkMode / useOverlay / useToast / useModalManager / useOptionalRouter / warnDeprecated |
-| `tests/ui/` | 元件與 legacy 相容層的轉發 |
+| `tests/ui/` | UI 元件 |
 | `tests/design/` | 設計令牌與 tokensPlugin 產出的 CSS 變數 |
 
 > ⚠️ 本專案的 Vite 是 5.x，所以 Vitest 必須留在 **2.x**
@@ -259,20 +256,16 @@ const { logout } = useAuth()
 
 ---
 
-## Legacy 對照表
+## 舊元件遷移對照表
 
-所有 legacy 元件都已收斂為**薄包裝** —— 只把 props / emits / slots 轉發給
-canonical，不再有第二份實作。收斂前這些檔案合計 1830 行的重複邏輯，
-現在剩 455 行的轉發層。
+舊的非 Chpt 元件與 `@/components/common` 入口**已移除**。它們原本都只是把 props / emits / slots
+轉發給下表的 Chpt 元件的薄包裝（開發模式下會印棄用警告），換成右欄的元件即可，用法相同或只差下表註明的 prop。
 
-開發模式下使用它們會在 console 印一次 deprecation 警告；
-`npm run check:legacy` 會確保它們不會又長回成獨立實作。
-
-| legacy | canonical | 備註 |
+| 已移除 | 改用 | 備註 |
 |---|---|---|
 | `CodeBlock` | `ChptCodeBlock` | props 完全相同 |
 | `CommonTable` | `ChptTable` | |
-| `CommonTooltip` | `ChptDataTooltip` | **改名，非重複實作**，見下方說明 |
+| `CommonTooltip` | `ChptDataTooltip` | 改名，不是另一份實作，見下方說明 |
 | `DraggableModal` | `ChptModal mode="window"` | `zIndex` prop 原本就無作用 |
 | `FilterBar` | `ChptFilterBar` | |
 | `FilterDropdown` | `ChptFilter type="dropdown"` | |
@@ -285,15 +278,15 @@ canonical，不再有第二份實作。收斂前這些檔案合計 1830 行的�
 | `PaginationControls` | `ChptPagination variant="compact"` | `pageSize` → `items-per-page`、`total` → `total-items`；`totalPages` 改為自動推算 |
 | `SimpleDarkModeToggle` | `ChptDarkModeToggle variant="simple"` | |
 | `TabNavigation` | `ChptTabNavigation` | |
-
-legacy 版除了重複之外還有一個共通問題：它們寫死 `gray-*` / `blue-*` 色碼，
-不走設計令牌，所以改品牌色時不會跟著變。
+| `FixedTable` | `ChptFixedTable` | 別名 |
+| `ExcelEditor` / `ExcelExporter` / `ExcelUploader` | `ChptExcelEditor` / `ChptExcelExporter` / `ChptExcelUploader` | 別名 |
+| `import … from '@/components/common'` | `import … from '@/components/library'` | 匯出名相同（Chpt* 與圖表、檢視器、composables） |
 
 ### `ChptTooltip` 與 `ChptDataTooltip` 的分工
 
-`CommonTooltip` 原本被列在 legacy 區，但它**不是** `ChptTooltip` 的舊版，
+`CommonTooltip`（已移除）**不是** `ChptTooltip` 的舊版，
 兩者用途不同 —— `ChptFixedTable` 正在使用它，設計令牌也把它當成正式的
-z-index 層級。因此改名為 `ChptDataTooltip` 並移出 legacy 分類。
+z-index 層級。因此改名為 `ChptDataTooltip`。
 
 | | `ChptTooltip` | `ChptDataTooltip` |
 |---|---|---|
@@ -304,8 +297,7 @@ z-index 層級。因此改名為 `ChptDataTooltip` 並移出 legacy 分類。
 
 ---
 
-**遷移指引**：舊程式若使用 `@/components/common` 仍可運作（facade）；
-新程式請改用 `@/components/library`。
+**遷移指引**：舊的 `@/components/common` 入口已移除，一律改用 `@/components/library`。
 
 ---
 
