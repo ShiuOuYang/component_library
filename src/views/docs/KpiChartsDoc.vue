@@ -139,6 +139,35 @@
         <ChptCodeBlock class="mt-4" :code="funnelCode" />
       </section>
 
+      <section id="calendar" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">CalendarHeatmap 日曆熱圖</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          每天一格、顏色深淺代表數值：一欄一週、一列一個星期幾，「每週一特別多」這種規律一眼就看得出來（折線圖看不出來）。
+          預設把最小～最大值等分成 5 級；<code>thresholds</code> + <code>colors</code> 可以改成門檻分級（例如良率紅黃綠）。
+          沒有資料的日子只畫外框（和 0 不同），今天加粗外框；範圍比容器寬時可水平捲動，一開始捲到最近的日子。鍵盤：Tab 進入後 ↑↓ 前後一天、←→ 前後一週、Enter 等同點擊。
+        </p>
+        <div class="grid gap-4 xl:grid-cols-2">
+          <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
+            <CalendarHeatmap :data="defectDays" title="SMT 每日異常件數（週日停線）" unit="件" end="2026-11-20" @cell-click="(c) => (pickedDay = c)" />
+            <p class="mt-2 text-sm text-content-secondary" aria-live="polite">
+              {{ pickedDay ? `${pickedDay.date}：${pickedDay.value ?? '無資料'}${pickedDay.value === null ? '' : ' 件'}` : '點一下某一天' }}
+            </p>
+          </div>
+          <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
+            <CalendarHeatmap
+              :data="yieldDays"
+              title="每日良率（門檻分級）"
+              unit="%"
+              :thresholds="[95, 98]"
+              :colors="['rgb(var(--t-danger-solid))', 'rgb(var(--t-warning-solid))', 'rgb(var(--t-success-solid))']"
+              :week-start="0"
+              :cell-size="16"
+            />
+          </div>
+        </div>
+        <ChptCodeBlock class="mt-4" :code="calendarCode" />
+      </section>
+
       <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <h3 class="text-lg font-semibold text-content-primary mt-4">ChptKpiCard</h3>
@@ -159,6 +188,10 @@
         <h3 class="text-lg font-semibold text-content-primary mt-6">YieldFunnel</h3>
         <ApiTable of="YieldFunnel" title="Props" :rows="funnelProps" />
         <ApiTable of="YieldFunnel" title="Events" :rows="funnelEvents" />
+        <h3 class="text-lg font-semibold text-content-primary mt-6">CalendarHeatmap</h3>
+        <ApiTable of="CalendarHeatmap" title="Props" :rows="calendarProps" />
+        <ApiTable of="CalendarHeatmap" title="Events" :rows="calendarEvents" />
+        <ApiTable of="CalendarHeatmap" title="方法（ref）" :rows="calendarMethods" />
       </section>
     </div>
   </div>
@@ -166,8 +199,48 @@
 
 <script setup>
 import { ref } from 'vue'
-import { BulletChart, ChptButton, ChptCodeBlock, ChptKpiCard, GaugeChart, SparklineChart, YieldFunnel } from '@/components/library'
+import { BulletChart, CalendarHeatmap, ChptButton, ChptCodeBlock, ChptKpiCard, GaugeChart, SparklineChart, YieldFunnel } from '@/components/library'
 import ApiTable from './components/_ApiTable.vue'
+
+// ---- CalendarHeatmap：固定種子的示範資料（每次重新整理都一樣） ----
+function seeded(seed) {
+  let x = seed
+  return () => ((x = (x * 1103515245 + 12345) % 2147483648) / 2147483648)
+}
+function dayList(endKey, days) {
+  const [y, m, d] = endKey.split('-').map(Number)
+  return Array.from({ length: days }, (_, i) => new Date(y, m - 1, d - days + 1 + i))
+}
+const keyOf = (dt) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
+const rnd1 = seeded(7)
+const defectDays = dayList('2026-11-20', 182)
+  .filter((dt) => dt.getDay() !== 0)
+  .map((dt) => ({ date: keyOf(dt), value: Math.round((dt.getDay() === 1 ? 14 : 5) + rnd1() * 8 + (dt.getMonth() === 8 ? 6 : 0)) }))
+const rnd2 = seeded(42)
+const yieldDays = dayList('2026-11-20', 120).map((dt) => ({ date: keyOf(dt), value: Math.round((99.2 - rnd2() ** 3 * 7) * 10) / 10 }))
+const pickedDay = ref(null)
+const calendarCode = `<CalendarHeatmap :data="rows" title="SMT 每日異常件數" unit="件" @cell-click="openDay" />
+<!-- rows：[{ date: '2026-11-20', value: 12 }, ...]（同一天多筆會加總） -->
+
+<!-- 門檻分級：< 95 紅、95–98 黃、>= 98 綠 -->
+<CalendarHeatmap :data="yieldRows" unit="%" :thresholds="[95, 98]"
+  :colors="['rgb(var(--t-danger-solid))', 'rgb(var(--t-warning-solid))', 'rgb(var(--t-success-solid))']" />`
+const calendarProps = [
+  { name: 'data', type: 'CalendarDatum[]', def: '—', desc: "{ date: 'YYYY-MM-DD' | Date, value: number | null }；同一天多筆加總" },
+  { name: 'start / end', type: 'string | Date | null', def: '資料的最早 / 最晚', desc: '顯示範圍；都沒有資料時為今天往前 12 週' },
+  { name: 'weekStart', type: '0 | 1', def: '1', desc: '一週從週一（1）或週日（0）開始' },
+  { name: 'cellSize / cellGap', type: 'number', def: '14 / 3', desc: '格子大小與間距（px）；範圍很長時外層可水平捲動' },
+  { name: 'levels', type: 'number', def: '5', desc: '自動分級的級數（最小～最大值等分）' },
+  { name: 'thresholds', type: 'number[] | null', def: 'null', desc: '指定分級門檻（共 thresholds.length + 1 級）' },
+  { name: 'colors', type: 'string[] | null', def: '主色由淺到深', desc: '各級顏色（由少到多）' },
+  { name: 'domain', type: '[number, number] | null', def: '資料範圍', desc: '自動分級的範圍（固定刻度，跨期比較時用）' },
+  { name: 'title / unit', type: 'string', def: "''", desc: '標題／單位（tooltip 與念出的數值後面）' },
+  { name: 'valueFormat', type: '(v: number) => string', def: '千分位', desc: '數值格式' },
+  { name: 'showLegend / showMonths / showWeekdays', type: 'boolean', def: 'true', desc: '圖例／月份／星期標籤' },
+  { name: 'markToday', type: 'boolean', def: 'true', desc: '今天加外框' },
+]
+const calendarEvents = [{ name: 'cell-click', params: "({ date: 'YYYY-MM-DD', value: number | null })", desc: '點擊或按 Enter 某一天' }]
+const calendarMethods = [{ name: 'focusDate(date)', type: "(date: 'YYYY-MM-DD') => boolean", desc: '把游標移到某一天並聚焦；不在範圍內時回傳 false' }]
 
 const kpis = [
   {
