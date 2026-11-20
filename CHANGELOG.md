@@ -42,6 +42,14 @@
 
 ### 新增
 
+- **ChptNumpad 數字鍵盤**：產線平板、觸控工作站用的大按鍵數字鍵盤（`size` sm / md / lg = 48 / 56 / 72px）。
+  原本的值是選取狀態，直接按數字就取代；按「確定」（或 Enter）才更新 v-model 並檢查 `min` / `max`，超出範圍時顯示原因、
+  不送出也不夾限。`precision`（0 = 只能整數）、`allowNegative`（有設負的 `min` 時自動顯示 ±）、`maxDigits`、
+  `quickValues` 常用值、`layout`（calculator / phone）、`autofocus`（放進 ChptPopover 打開就能用實體鍵盤）。
+  整組一個 Tab 停駐點，點按鍵不搶焦點；實體鍵盤支援數字、小數點（含逗號）、Backspace、Delete、Enter、Esc（只有改過時才攔下）。
+  新增 `shared/numpad.ts`（`applyNumpadKey()`、`parseNumpad()`、`numpadText()`、`numpadRangeError()`、`numpadKeyFromKeyboard()`）
+  與語系群組 `numpad`。
+
 - **ChptBarcode 一維條碼**（Code 128 / Code 39）：工單、批號、箱號標籤用。Code 128 可編完整 ASCII、自動切換字集
   （連續數字兩位一組）；Code 39 可加 mod 43 檢查碼。SVG 繪製、模組寬度取整數像素、左右留靜區，深色模式不反轉；
   內容含無法編碼的字元時顯示錯誤。`toSVG()` 取得 SVG 原始碼。編碼純函式（`encodeBarcode`、`encodeCode128`、

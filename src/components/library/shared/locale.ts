@@ -187,6 +187,20 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  numpad: {
+    label: string
+    backspace: string
+    clear: string
+    confirm: string
+    negate: string
+    decimal: string
+    range: (min: string, max: string) => string
+    min: (min: string) => string
+    max: (max: string) => string
+    below: (min: string) => string
+    above: (max: string) => string
+    empty: string
+  }
   inputTag: {
     placeholder: string
     hint: string
@@ -841,6 +855,20 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  numpad: {
+    label: '數字鍵盤',
+    backspace: '刪除一位',
+    clear: '清除',
+    confirm: '確定',
+    negate: '正負號',
+    decimal: '小數點',
+    range: (min, max) => `範圍 ${min} – ${max}`,
+    min: (min) => `最小 ${min}`,
+    max: (max) => `最大 ${max}`,
+    below: (min) => `不能小於 ${min}`,
+    above: (max) => `不能大於 ${max}`,
+    empty: '請輸入數值',
+  },
   inputTag: {
     placeholder: '輸入後按 Enter',
     hint: '按 Enter 或逗號加入，Backspace 刪除最後一個',
@@ -1553,6 +1581,20 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  numpad: {
+    label: 'Number pad',
+    backspace: 'Delete last digit',
+    clear: 'Clear',
+    confirm: 'OK',
+    negate: 'Plus/minus',
+    decimal: 'Decimal point',
+    range: (min, max) => `Range ${min} – ${max}`,
+    min: (min) => `Min ${min}`,
+    max: (max) => `Max ${max}`,
+    below: (min) => `Must be at least ${min}`,
+    above: (max) => `Must be at most ${max}`,
+    empty: 'Enter a value',
+  },
   inputTag: {
     placeholder: 'Type and press Enter',
     hint: 'Press Enter or comma to add, Backspace to remove the last one',
