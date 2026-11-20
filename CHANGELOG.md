@@ -256,6 +256,13 @@
 
 ### 文件與工具
 
+- **DualAxisComboChart 拆分**（行為不變）：原本 3,340 行的單一檔案拆成元件本身（props、狀態、生命週期、主渲染循環，約 790 行）
+  與 `charts/composables/dualAxis/` 下的模組 —— `useBrushZoom`（框選、重設）、`useAxisDrag`（拖曳座標軸）、
+  `useWheelZoom`（滾輪縮放、中鍵平移）、`useLargeData`（Canvas 與命中測試）、`useHighlight`（連動高亮）、
+  `useCrosshair`（十字線）、`useTooltip`、`useLayerRenderers`（長條、堆疊、折線、散點、參考線）、
+  `useFrameRenderers`（網格、座標軸、標題、圖例），共用狀態由 `context.ts` 的 `DualAxisContext` 傳入。
+  程式本體逐段搬移、沒有改寫；文件站 21 張圖的截圖與 18 個互動情境（hover、滾輪縮放、中鍵平移、框選、拖曳軸、重設）
+  拆分前後逐位元組相同。新增對外型別 `DualAxisComboChartProps`。
 - 內部整理（行為不變）：localStorage 的安全讀寫收斂到 `shared/safeStorage.ts`（ChptTable、ChptCommandPalette、
   ChptDashboardGrid、useDarkMode 原本各寫一份 try/catch）；四張圖表各自的滾輪修飾鍵判斷收斂為 `wheelModifierPressed()`。
 - 文件站在 DocLayout 掛一份全域 ChptToast（原本各頁自己掛，同一則提示可能出現兩次）；文件示範的事件回饋從 `console.log` 改為 toast。

@@ -106,6 +106,7 @@ export type {
   ControlChartPoint, ControlChartTooltip, ControlChartAnalysis, ControlChartSpec, HistogramBin, HistogramTooltip,
   ControlChartType, ControlChartLimits, ControlChartViolation, CapabilityResult,
   StateTimelineEvent, StateTimelineTooltip, StateTimelineRowInput, StateDef, StateSummary,
+  DualAxisComboChartProps,
   WaferBin, WaferDieInfo, WaferGrid, WaferShape, WaferNotch, YieldSummary, RingYield,
   BulletItem, FunnelStep, FunnelRow, FunnelResult, ChartSync, ChartSyncOptions, CrosshairValue,
   BoxPlotGroupEvent, BoxPlotPointEvent, BoxPlotTooltip, BoxPlotReferenceLine, BoxPlotGroupInput, BoxStats, QuartileMethod,
