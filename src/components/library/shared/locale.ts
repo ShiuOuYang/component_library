@@ -187,6 +187,27 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  defect: {
+    regionLabel: string
+    regionWithAlt: (alt: string) => string
+    hint: string
+    hintRect: string
+    tool: string
+    toolPoint: string
+    toolRect: string
+    typeLabel: string
+    defaultType: string
+    mark: (n: number, type: string, note: string) => string
+    added: (n: number, type: string) => string
+    removed: (n: number) => string
+    remove: string
+    removeN: (n: number) => string
+    listLabel: string
+    count: (n: number) => string
+    empty: string
+    notePlaceholder: string
+    noteLabel: (n: number) => string
+  }
   numpad: {
     label: string
     backspace: string
@@ -868,6 +889,27 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  defect: {
+    regionLabel: '缺陷標註區',
+    regionWithAlt: (alt) => `缺陷標註區：${alt}`,
+    hint: '點一下新增標記，拖曳標記可移動。鍵盤：在標註區按 Enter 於中央新增，選取標記後方向鍵微調（Shift 加大）、Delete 刪除',
+    hintRect: '拖曳拉出範圍新增框，拖曳編號可移動。鍵盤：在標註區按 Enter 於中央新增，選取標記後方向鍵微調（Shift 加大）、Delete 刪除',
+    tool: '標記方式',
+    toolPoint: '點',
+    toolRect: '框',
+    typeLabel: '缺陷類型',
+    defaultType: '缺陷',
+    mark: (n, type, note) => `第 ${n} 處：${type}${note ? `，${note}` : ''}`,
+    added: (n, type) => `已新增第 ${n} 處：${type}`,
+    removed: (n) => `已刪除第 ${n} 處`,
+    remove: '刪除',
+    removeN: (n) => `刪除第 ${n} 處`,
+    listLabel: '標記清單',
+    count: (n) => `共 ${n} 處`,
+    empty: '尚未標記',
+    notePlaceholder: '備註',
+    noteLabel: (n) => `第 ${n} 處的備註`,
+  },
   numpad: {
     label: '數字鍵盤',
     backspace: '刪除一位',
@@ -1614,6 +1656,27 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  defect: {
+    regionLabel: 'Defect annotation area',
+    regionWithAlt: (alt) => `Defect annotation area: ${alt}`,
+    hint: 'Click to add a mark, drag a mark to move it. Keyboard: press Enter in the area to add one at the center; with a mark selected, arrow keys nudge it (Shift for larger steps) and Delete removes it',
+    hintRect: 'Drag to draw a box, drag a number to move it. Keyboard: press Enter in the area to add one at the center; with a mark selected, arrow keys nudge it (Shift for larger steps) and Delete removes it',
+    tool: 'Marking tool',
+    toolPoint: 'Point',
+    toolRect: 'Box',
+    typeLabel: 'Defect type',
+    defaultType: 'Defect',
+    mark: (n, type, note) => `#${n}: ${type}${note ? `, ${note}` : ''}`,
+    added: (n, type) => `Added #${n}: ${type}`,
+    removed: (n) => `Removed #${n}`,
+    remove: 'Remove',
+    removeN: (n) => `Remove #${n}`,
+    listLabel: 'Marks',
+    count: (n) => `${n} total`,
+    empty: 'No marks yet',
+    notePlaceholder: 'Note',
+    noteLabel: (n) => `Note for #${n}`,
+  },
   numpad: {
     label: 'Number pad',
     backspace: 'Delete last digit',

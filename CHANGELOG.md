@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptDefectAnnotator 缺陷標註**：在產品照片、PCB 圖上標出缺陷位置與類型。點一下放編號標記、或切到「框」拖出範圍；
+  標記可拖曳移動，選類型會套用到選取中的標記，工具列顯示各類型數量；旁邊的清單可改備註、刪除。座標存成 0–1 的比例
+  （縮圖、全螢幕、列印都落在同一位置）。鍵盤：標註區按 Enter 於中央新增，標記是按鈕、方向鍵微調（Shift 加大）、Delete 刪除；
+  新增 / 刪除以 aria-live 念出。`readonly` 只檢視。新增 `shared/defectMarks.ts`（`DefectMark`、`DefectType`、`rectFromCorners()`、
+  `moveMark()`、`nextMarkId()`、`countByType()`、`markCenter()`）與語系群組 `defect`。
+
 - **ChptNumpad 數字鍵盤**：產線平板、觸控工作站用的大按鍵數字鍵盤（`size` sm / md / lg = 48 / 56 / 72px）。
   原本的值是選取狀態，直接按數字就取代；按「確定」（或 Enter）才更新 v-model 並檢查 `min` / `max`，超出範圍時顯示原因、
   不送出也不夾限。`precision`（0 = 只能整數）、`allowNegative`（有設負的 `min` 時自動顯示 ±）、`maxDigits`、

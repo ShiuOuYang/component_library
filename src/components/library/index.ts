@@ -26,6 +26,7 @@ export {
   ChptCopyButton, ChptCountdown, ChptEllipsis, ChptWatermark,
   ChptConfigProvider, ChptInputTag, ChptList, ChptQRCode, ChptSpace, ChptTour,
   ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode, ChptCameraScanner,
+  ChptDefectAnnotator,
   ChptNumpad,
 } from './ui/index.js'
 
@@ -67,6 +68,8 @@ export { applyNumpadKey, parseNumpad, numpadText, numpadRangeError, numpadKeyFro
 export type { NumpadKey, NumpadBufferOptions } from './shared/numpad'
 export { createDetector, classifyCameraError, cameraAvailability, createDeduper } from './shared/cameraScan'
 export type { ScanFormat, DetectedCode, CameraErrorKind, CodeDetector, ScanFrame } from './shared/cameraScan'
+export { rectFromCorners, moveMark, nextMarkId, countByType, markCenter } from './shared/defectMarks'
+export type { DefectMark, DefectType } from './shared/defectMarks'
 export { useConfig, useLocale, provideConfig, zhTW, enUS, mergeLocale } from './shared/config'
 export type { ChptConfig, ChptConfigInput, ChptLocale, ChptLocaleInput, ConfigSize } from './shared/config'
 export type { NotificationOptions, NotificationAction, NotificationType } from './shared/useNotification'
