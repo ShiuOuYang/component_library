@@ -286,6 +286,7 @@ const navSections = [
           { label: 'ChptFormList', id: 'chpt-form-list' },
           { label: 'ChptSchemaForm', id: 'chpt-schema-form' },
           { label: 'ChptRichTextEditor', id: 'chpt-rich-text' },
+          { label: 'ChptSignaturePad', id: 'chpt-signature' },
           { label: 'ChptUpload', id: 'chpt-upload' },
         ],
       },

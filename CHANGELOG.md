@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptSignaturePad 簽名板**：簽收、點檢確認、放行簽核用。線條平滑（二次貝茲曲線）、粗細隨書寫速度變化（筆有壓力值時隨壓力），
+  高解析度螢幕不糊；簽名中不捲動頁面、多指觸控只取第一根手指。每簽完一筆更新 v-model（PNG data URL，空白為 null），
+  可復原上一筆、清除；`trim` 只輸出有簽名的範圍、`exportBackground` / `exportType` 決定輸出格式；ref 方法 `toDataURL()`、
+  `toSVG()`（向量）、`getStrokes()` / `setStrokes()`。v-model 傳入既有簽名圖時顯示在底下。簽名區固定白底（深色模式不反轉）。
+  新增 `shared/signature.ts`（`createWidthTracker()`、`signatureBounds()`、`signatureToSVG()`、`signatureExportRect()`）與語系群組 `signature`。
+
 - **ChptCameraScanner 相機掃碼**：用手機或平板的相機讀條碼與 QR Code。優先用瀏覽器內建的 BarcodeDetector
   （QR、Code128、Code39、EAN 等），沒有時退回 jsQR（動態載入，只能讀 QR，畫面會提示）。`v-model:active` 開關相機；
   同一個碼在 `dedupeMs` 內只送一次 `scan`；`continuous=false` 掃到一次就關。掃到時嗶聲 / 震動 / 閃一下（`feedback`），
