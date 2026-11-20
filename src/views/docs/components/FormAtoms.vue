@@ -166,6 +166,60 @@
             − / + 按鈕不佔 Tab 停駐點，鍵盤使用者用方向鍵。</p>
         </section>
 
+        <!-- ============ ChptNumpad ============ -->
+        <section id="chpt-numpad" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
+          <h2 class="text-2xl font-bold text-content-primary mb-1">ChptNumpad 數字鍵盤</h2>
+          <p class="text-content-secondary text-sm mb-4">
+            <strong>使用時機：</strong>產線平板、觸控工作站輸入數量、重量、溫度 —— 沒有實體鍵盤，或戴手套點不準系統鍵盤。
+            按鍵大（<code>size="lg"</code> 72px）；原本的值是選取狀態，直接按數字就取代。按「確定」才更新 v-model 並檢查範圍，
+            超出範圍時顯示原因、<strong>不會偷偷夾到上下限</strong>。按 ± 再打數字是新的負數（± 2 0 → −20），按 ± 直接確定是變號。聚焦後實體鍵盤也能用（數字、小數點、Backspace、Delete、Enter、Esc）。
+          </p>
+          <div class="bg-gradient-to-br from-surface-secondary to-surface-tertiary rounded-lg p-4 border border-stroke-light mb-4">
+            <div class="flex flex-wrap items-start gap-6">
+              <div class="space-y-2">
+                <ChptNumpad
+                  v-model="form.reportQty"
+                  label="報工數量"
+                  unit="pcs"
+                  :min="1"
+                  :max="500"
+                  :precision="0"
+                  :quick-values="[50, 100, 200]"
+                  @confirm="(v) => (numpadLog = `已報工 ${v} pcs`)"
+                />
+                <p class="text-sm text-content-secondary" aria-live="polite">{{ numpadLog || '按確定送出' }}</p>
+              </div>
+              <div class="space-y-2">
+                <p class="text-sm text-content-secondary">搭配 ChptPopover：點欄位打開鍵盤，確定後關閉</p>
+                <ChptPopover v-model:open="ovenOpen" placement="bottom-start" :padded="false" aria-label="爐溫設定">
+                  <ChptButton is-outline icon="thermostat">爐溫 {{ form.ovenTemp }} °C</ChptButton>
+                  <template #content="{ close }">
+                    <ChptNumpad
+                      v-model="form.ovenTemp"
+                      label="爐溫設定"
+                      unit="°C"
+                      :min="-40"
+                      :max="250"
+                      :precision="1"
+                      size="sm"
+                      autofocus
+                      class="border-0"
+                      @confirm="close"
+                    />
+                  </template>
+                </ChptPopover>
+              </div>
+            </div>
+          </div>
+          <ChptCodeBlock :code="numpadSample" />
+          <ApiTable of="ChptNumpad" title="Props" :rows="numpadProps" />
+          <ApiTable of="ChptNumpad" title="Events" :rows="numpadEvents" />
+          <ApiTable of="ChptNumpad" title="方法（ref）" :rows="numpadMethods" />
+          <p class="text-sm text-content-secondary mt-4"><strong>注意：</strong>整組只佔一個 Tab 停駐點，點按鍵時焦點留在整組上（接著用實體鍵盤也可以）。
+            Esc 只有在改過值時才攔下（還原）；沒改過時照常往外傳，放在 Modal / Popover 裡可以直接關閉。
+            要做「打開就輸入」的欄位時，把它放進 ChptPopover 或 ChptDrawer，<code>@confirm</code> 時關閉即可。</p>
+        </section>
+
         <!-- ============ ChptSlider ============ -->
         <section id="chpt-slider" class="bg-surface-primary rounded-xl shadow-md p-6 lg:p-8 border border-stroke-light scroll-mt-24">
           <h2 class="text-2xl font-bold text-content-primary mb-1">ChptSlider 滑桿</h2>
@@ -257,6 +311,9 @@ import {
   ChptSelect,
   ChptDatePicker,
   ChptInputNumber,
+  ChptNumpad,
+  ChptPopover,
+  ChptButton,
   ChptSlider,
   ChptSegmented,
   ChptCheckbox,
@@ -272,6 +329,7 @@ const comps = [
   { id: 'chpt-switch', label: 'ChptSwitch' },
   { id: 'chpt-datepicker', label: 'ChptDatePicker' },
   { id: 'chpt-inputnumber', label: 'ChptInputNumber' },
+  { id: 'chpt-numpad', label: 'ChptNumpad' },
   { id: 'chpt-slider', label: 'ChptSlider' },
   { id: 'chpt-segmented', label: 'ChptSegmented' },
   { id: 'chpt-checkbox', label: 'ChptCheckbox' },
@@ -297,6 +355,8 @@ const form = reactive({
   qty: 1200,
   threshold: 98.5,
   lot: null,
+  reportQty: null,
+  ovenTemp: 185.5,
   opacity: 80,
   level: 3,
   period: '週',
@@ -338,6 +398,48 @@ const inputNumberProps = [
   { name: 'label / placeholder / errorText', type: 'string', def: "''", desc: '標籤／佔位符／錯誤訊息' },
   { name: 'disabled / readonly / fullWidth', type: 'boolean', def: 'false', desc: '禁用／唯讀／全寬' },
 ]
+const numpadLog = ref('')
+const ovenOpen = ref(false)
+const numpadSample = `<ChptNumpad v-model="qty" label="報工數量" unit="pcs" :min="1" :max="500" :precision="0"
+  :quick-values="[50, 100, 200]" size="lg" @confirm="report" />
+
+<!-- 點欄位打開鍵盤，確定後關閉 -->
+<ChptPopover v-model:open="open" :padded="false" aria-label="爐溫設定">
+  <ChptButton is-outline>爐溫 {{ temp }} °C</ChptButton>
+  <template #content="{ close }">
+    <ChptNumpad v-model="temp" unit="°C" :min="-40" :max="250" :precision="1"
+      size="sm" autofocus @confirm="close" />
+  </template>
+</ChptPopover>`
+const numpadProps = [
+  { name: 'modelValue', type: 'number | null', def: 'null', desc: '值（v-model）；按確定才更新' },
+  { name: 'min / max', type: 'number', def: '-Infinity / Infinity', desc: '範圍；按確定時檢查，超出時顯示原因、不送出（不夾限）' },
+  { name: 'precision', type: 'number', def: '—', desc: '最多幾位小數；0 = 只能整數（不顯示小數點鍵）' },
+  { name: 'allowNegative', type: 'boolean', def: '—', desc: '顯示 ± 鍵；不設定時有設 min 且 min < 0 才顯示' },
+  { name: 'maxDigits', type: 'number', def: '15', desc: '最多幾位數字（不含負號與小數點）' },
+  { name: 'allowEmpty', type: 'boolean', def: 'false', desc: '可以確定空白（送出 null）' },
+  { name: 'quickValues', type: 'number[]', def: '[]', desc: '常用值按鈕（填入、不直接確定）' },
+  { name: 'layout', type: "'calculator' | 'phone'", def: "'calculator'", desc: '789 在上（同實體數字鍵盤）或 123 在上' },
+  { name: 'size', type: "'sm' | 'md' | 'lg'", def: "'md'", desc: '按鍵高度 48 / 56 / 72px（lg 適合戴手套）' },
+  { name: 'showConfirm', type: 'boolean', def: 'true', desc: '顯示確定鍵；不顯示時用 Enter 或 ref 的 confirm()' },
+  { name: 'confirmText', type: 'string', def: '語系', desc: '確定鍵文字' },
+  { name: 'label / unit / placeholder', type: 'string', def: "''", desc: '標籤（也是 aria-label）／單位／空白時顯示' },
+  { name: 'disabled / readonly / fullWidth', type: 'boolean', def: 'false', desc: '禁用／唯讀／全寬' },
+  { name: 'autofocus', type: 'boolean', def: 'false', desc: '掛載時聚焦（放在 Popover / Drawer 裡打開就能用實體鍵盤）' },
+]
+const numpadEvents = [
+  { name: 'update:modelValue', params: '(value: number | null)', desc: '按確定且通過檢查、值有改變時' },
+  { name: 'confirm', params: '(value: number | null)', desc: '按確定且通過檢查時（值沒變也會送）' },
+  { name: 'input', params: '(value: number | null)', desc: '輸入中的值改變時（還沒確定）' },
+  { name: 'cancel', params: '()', desc: '按 Esc 還原時' },
+]
+const numpadMethods = [
+  { name: 'focus()', type: '() => void', desc: '聚焦（之後可用實體鍵盤）' },
+  { name: 'confirm()', type: '() => boolean', desc: '確定；回傳是否通過檢查並送出' },
+  { name: 'clear()', type: '() => void', desc: '清除輸入中的值' },
+  { name: 'cancel()', type: '() => void', desc: '還原成目前的 v-model 值' },
+]
+
 const inputNumberEvents = [
   { name: 'update:modelValue', params: '(value: number | null)', desc: '值確定改變時（不是每打一個字）' },
   { name: 'change', params: '(value, oldValue)', desc: '同上，帶舊值' },

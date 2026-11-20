@@ -42,6 +42,13 @@
 
 ### 新增
 
+- **ChptNumpad 數字鍵盤**：產線平板、觸控工作站用的大按鍵數字鍵盤（`size` sm / md / lg = 48 / 56 / 72px）。
+  原本的值是選取狀態，直接按數字就取代；按「確定」（或 Enter）才更新 v-model 並檢查 `min` / `max`，超出範圍時顯示原因、
+  不送出也不夾限。`precision`（0 = 只能整數）、`allowNegative`（有設負的 `min` 時自動顯示 ±）、`maxDigits`、
+  `quickValues` 常用值、`layout`（calculator / phone）、`autofocus`（放進 ChptPopover 打開就能用實體鍵盤）。
+  整組一個 Tab 停駐點，點按鍵不搶焦點；實體鍵盤支援數字、小數點（含逗號）、Backspace、Delete、Enter、Esc（只有改過時才攔下）。
+  新增 `shared/numpad.ts`（`applyNumpadKey()`、`parseNumpad()`、`numpadText()`、`numpadRangeError()`、`numpadKeyFromKeyboard()`）
+  與語系群組 `numpad`。
 - **ChptCameraScanner 相機掃碼**：用手機或平板的相機讀條碼與 QR Code。優先用瀏覽器內建的 BarcodeDetector
   （QR、Code128、Code39、EAN 等），沒有時退回 jsQR（動態載入，只能讀 QR，畫面會提示）。`v-model:active` 開關相機；
   同一個碼在 `dedupeMs` 內只送一次 `scan`；`continuous=false` 掃到一次就關。掃到時嗶聲 / 震動 / 閃一下（`feedback`），

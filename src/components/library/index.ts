@@ -26,6 +26,7 @@ export {
   ChptCopyButton, ChptCountdown, ChptEllipsis, ChptWatermark,
   ChptConfigProvider, ChptInputTag, ChptList, ChptQRCode, ChptSpace, ChptTour,
   ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode, ChptCameraScanner,
+  ChptNumpad,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -62,6 +63,8 @@ export type { KanbanCardLike } from './shared/kanban'
 export { isSafeUrl } from './shared/safeUrl'
 export { encodeBarcode, encodeCode128, encodeCode39, code39CheckChar, BarcodeError } from './shared/barcode'
 export type { BarcodeFormat, BarcodeResult } from './shared/barcode'
+export { applyNumpadKey, parseNumpad, numpadText, numpadRangeError, numpadKeyFromKeyboard } from './shared/numpad'
+export type { NumpadKey, NumpadBufferOptions } from './shared/numpad'
 export { createDetector, classifyCameraError, cameraAvailability, createDeduper } from './shared/cameraScan'
 export type { ScanFormat, DetectedCode, CameraErrorKind, CodeDetector, ScanFrame } from './shared/cameraScan'
 export { useConfig, useLocale, provideConfig, zhTW, enUS, mergeLocale } from './shared/config'
