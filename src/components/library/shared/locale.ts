@@ -681,6 +681,15 @@ export interface ChptLocale {
     title: string
     target: (value: string) => string
   }
+  calendarHeatmap: {
+    legend: string
+    less: string
+    more: string
+    noData: string
+    range: (from: string | null, to: string | null) => string
+    cell: (date: string, value: string) => string
+    ariaLabel: (title: string, start: string, end: string, days: number) => string
+  }
   funnel: {
     title: string
     rty: string
@@ -1464,6 +1473,15 @@ export const zhTW: ChptLocale = {
   bullet: {
     title: '子彈圖',
     target: (value) => `目標 ${value}`,
+  },
+  calendarHeatmap: {
+    legend: '圖例',
+    less: '少',
+    more: '多',
+    noData: '無資料',
+    range: (from, to) => (from === null && to === null ? '全部' : from === null ? `小於 ${to}` : to === null ? `${from} 以上` : `${from} – ${to}`),
+    cell: (date, value) => `${date}：${value}`,
+    ariaLabel: (title, start, end, days) => `${title || '日曆熱圖'}：${start} 至 ${end}，${days} 天有資料。方向鍵逐日移動`,
   },
   funnel: {
     title: '良率漏斗',
@@ -2255,6 +2273,15 @@ export const enUS: ChptLocale = {
   bullet: {
     title: 'Bullet chart',
     target: (value) => `target ${value}`,
+  },
+  calendarHeatmap: {
+    legend: 'Legend',
+    less: 'Less',
+    more: 'More',
+    noData: 'No data',
+    range: (from, to) => (from === null && to === null ? 'All' : from === null ? `Below ${to}` : to === null ? `${from} and above` : `${from} – ${to}`),
+    cell: (date, value) => `${date}: ${value}`,
+    ariaLabel: (title, start, end, days) => `${title || 'Calendar heatmap'}: ${start} to ${end}, ${days} days with data. Use arrow keys to move between days`,
   },
   funnel: {
     title: 'Yield funnel',
