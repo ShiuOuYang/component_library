@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">StatusScatterMap 狀態散佈圖</h1>
@@ -10,13 +10,13 @@
       </div>
 
       <!-- 基本示範 -->
-      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">基本示範</h2>
         <p class="text-sm text-content-secondary mb-4">
           點圖例可隱藏／顯示該狀態；滾輪以游標為中心縮放、拖曳平移、雙擊回到全覽。
           範圍用 <code>x-domain</code>／<code>y-domain</code> 指定板子尺寸，軸的兩端會標出端點值。
         </p>
-        <div class="grid lg:grid-cols-2 gap-6 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
             <div style="height: 520px">
               <StatusScatterMap
@@ -39,35 +39,39 @@
             <label for="ssm-key" class="text-content-secondary">點號</label>
             <input id="ssm-key" v-model="selectedKey" class="h-control-sm w-40 rounded-md border border-stroke-default bg-surface-primary px-2 text-content-primary" placeholder="例如 TP-0042" />
           </div>
-          <StatusScatterMap
-            :data="boardPoints"
-            :x-domain="[-15718.5, 15643]"
-            :y-domain="[-15718.5, 15643]"
-            :width="560"
-            :height="420"
-            :highlight-key="selectedKey || null"
-            :show-counts="true"
-            title="同一批資料（顯示筆數）"
-          />
+          <div class="max-lg:overflow-x-auto"><!-- 固定寬度的圖表：手機上在自己的框裡水平捲動，不把整頁撐寬 -->
+            <StatusScatterMap
+              :data="boardPoints"
+              :x-domain="[-15718.5, 15643]"
+              :y-domain="[-15718.5, 15643]"
+              :width="560"
+              :height="420"
+              :highlight-key="selectedKey || null"
+              :show-counts="true"
+              title="同一批資料（顯示筆數）"
+            />
+          </div>
         </div>
         <div class="mt-4 bg-surface-secondary rounded-xl p-4 border border-stroke-light">
           <p class="text-sm text-content-secondary mb-2">
             設定的範圍只是<strong>預設視窗</strong>：下圖聚焦在左上角，在圖上往外滾（或拖曳平移）就看得到範圍外的其他點，按「重設縮放」回到聚焦範圍。
           </p>
-          <StatusScatterMap
-            class="ssm-focus-demo"
-            :data="boardPoints"
-            :x-domain="[-13500, -8500]"
-            :y-domain="[8000, 15000]"
-            :width="560"
-            :height="420"
-            title="聚焦左上角（往外滾看全部）"
-          />
+          <div class="max-lg:overflow-x-auto"><!-- 固定寬度的圖表：手機上在自己的框裡水平捲動，不把整頁撐寬 -->
+            <StatusScatterMap
+              class="ssm-focus-demo"
+              :data="boardPoints"
+              :x-domain="[-13500, -8500]"
+              :y-domain="[8000, 15000]"
+              :width="560"
+              :height="420"
+              title="聚焦左上角（往外滾看全部）"
+            />
+          </div>
         </div>
       </section>
 
       <!-- 大量資料 -->
-      <section id="large" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="large" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">5 萬個點</h2>
         <p class="text-sm text-content-secondary mb-4">
           資料點畫在 Canvas 上，數萬點也能順暢縮放；滑鼠提示用座標命中測試，仍可指到每一筆。
@@ -86,7 +90,7 @@
         </div>
       </section>
 
-      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <ApiTable of="StatusScatterMap" title="Props" :rows="propsRows" />
         <ApiTable of="StatusScatterMap" title="Events" :rows="eventRows" />

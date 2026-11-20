@@ -12,7 +12,7 @@
     </div>
 
     <!-- ============ ChptForm ============ -->
-    <section id="chpt-form" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-form" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptForm / ChptFormItem 表單</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>需要驗證的表單。Form 管資料與規則，FormItem 管單一欄位的標籤、錯誤訊息與驗證時機。
@@ -30,7 +30,7 @@
 
       <div class="rounded-lg border border-stroke-light bg-surface-secondary p-6">
         <ChptForm ref="formRef" :model="order" :rules="rules" :label-position="labelPosition" label-width="7rem" @submit="onSubmit" @invalid="onInvalid">
-          <div class="grid gap-4 md:grid-cols-2">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <ChptFormItem prop="orderNo" label="工單號" hint="格式 WO-年份-四碼；WO-2026-0001 已存在（模擬非同步檢查）">
               <ChptInput v-model="order.orderNo" placeholder="WO-2026-0917" full-width />
             </ChptFormItem>
@@ -83,7 +83,7 @@
     </section>
 
     <!-- ============ ChptFormList ============ -->
-    <section id="chpt-form-list" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-form-list" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFormList 動態列</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>一筆單據裡有好幾列要輸入 —— 檢驗單的多筆量測值、工單的多個料號、出貨單的多個箱號。
@@ -106,7 +106,7 @@
             sortable
           >
             <template #default="{ path, index }">
-              <div class="grid gap-2 sm:grid-cols-2">
+              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <ChptFormItem :prop="path('point')" label="量測點">
                   <ChptInput v-model="inspection.measures[index].point" placeholder="例如 孔徑 A" />
                 </ChptFormItem>
@@ -133,7 +133,7 @@
     </section>
 
     <!-- ============ ChptSchemaForm ============ -->
-    <section id="chpt-schema-form" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-schema-form" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSchemaForm 依設定檔產生表單</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>欄位由後端或系統設定決定（不同產品的檢驗項目、不同站別的報工欄位），
@@ -170,7 +170,7 @@
     </section>
 
     <!-- ============ ChptRichTextEditor ============ -->
-    <section id="chpt-rich-text" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-rich-text" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptRichTextEditor 富文字編輯器</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>異常描述、改善報告、公告這類需要粗體、清單、連結的長文字（基於 Tiptap）。v-model 是 HTML 字串，清空時是空字串，
@@ -211,7 +211,7 @@
     </section>
 
     <!-- ============ ChptSignaturePad ============ -->
-    <section id="chpt-signature" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-signature" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSignaturePad 簽名板</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>簽收、點檢確認、放行簽核 —— 在平板上用手指或觸控筆簽名。線條平滑、粗細隨書寫速度（筆有壓力時隨壓力）變化；
@@ -221,7 +221,7 @@
       <p class="text-sm text-content-secondary mb-4">
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptSignaturePad } from '@/components/library'</code>
       </p>
-      <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div class="space-y-3">
           <ChptSignaturePad
             ref="signatureRef"
@@ -258,7 +258,7 @@
     </section>
 
     <!-- ============ ChptUpload ============ -->
-    <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>附件、圖片、報表等一般檔案上傳（要把 Excel 讀成資料請用 ChptExcelUploader）。
@@ -268,7 +268,7 @@
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptUpload } from '@/components/library'</code>
       </p>
 
-      <div class="grid gap-6 md:grid-cols-2">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
           <h3 class="text-sm font-semibold text-content-secondary mb-2">拖放 + 自動上傳（檔名含 fail 會模擬失敗）</h3>
           <ChptUpload

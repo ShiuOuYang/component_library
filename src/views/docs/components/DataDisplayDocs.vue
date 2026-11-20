@@ -12,7 +12,7 @@
     </div>
 
     <!-- ============ ChptStatistic ============ -->
-    <section id="chpt-statistic" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-statistic" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptStatistic 統計數值</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>儀表板上的關鍵數字與它和前期相比的變化。「變化的好壞」不一定等於「升降」：
@@ -22,7 +22,7 @@
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptStatistic } from '@/components/library'</code>
       </p>
 
-      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="rounded-lg border border-stroke-light bg-surface-secondary p-4">
           <ChptStatistic title="今日產出" :value="128450" suffix="pcs" :delta="4.2" description="較昨日" />
         </div>
@@ -53,7 +53,7 @@
     </section>
 
     <!-- ============ ChptDescriptions ============ -->
-    <section id="chpt-descriptions" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-descriptions" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDescriptions 描述清單</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>一筆資料的欄位與值 —— 工單明細、料號資訊、機台參數。語意上是
@@ -90,7 +90,7 @@
     </section>
 
     <!-- ============ ChptTimeline ============ -->
-    <section id="chpt-timeline" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-timeline" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTimeline 時間軸</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>依時間排列「已經發生的事」—— 工單流程紀錄、設備異常歷程、審核軌跡。
@@ -100,7 +100,7 @@
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptTimeline } from '@/components/library'</code>
       </p>
 
-      <div class="grid md:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <h3 class="text-sm font-semibold text-content-secondary mb-3">工單流程</h3>
           <ChptTimeline :items="flowItems" />
@@ -124,7 +124,7 @@
     </section>
 
     <!-- ============ ChptTree ============ -->
-    <section id="chpt-tree" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-tree" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTree 樹狀清單</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>有階層的資料 —— 組織／廠區／產線、料號 BOM、權限設定。
@@ -134,7 +134,7 @@
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptTree } from '@/components/library'</code>
       </p>
 
-      <div class="grid gap-6 md:grid-cols-2">
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div class="rounded-lg border border-stroke-light p-3">
           <div class="mb-2 flex items-center justify-between gap-2">
             <h3 class="text-sm font-semibold text-content-secondary">單選 + 篩選</h3>
@@ -168,7 +168,7 @@
     </section>
 
     <!-- ============ ChptImage ============ -->
-    <section id="chpt-image" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-image" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptImage 圖片 / ChptImageViewer 看圖</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>檢驗照片、瑕疵圖、產品圖。固定外框避免版面跳動，載入中顯示骨架、失敗時顯示圖示與替代文字；
@@ -208,13 +208,13 @@
     </section>
 
     <!-- ============ ChptList ============ -->
-    <section id="chpt-list" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-list" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptList 清單</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>通知、待辦、最近活動這類「一筆一行」的清單。給 <code>items</code>（title / description / extra / avatar）就有預設版面，
         也可以用插槽自己排；<code>hasMore</code> 接「載入更多」，加 <code>infinite</code> 捲到底自動載入。上萬筆請改用 ChptVirtualList。
       </p>
-      <div class="grid gap-6 lg:grid-cols-2">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ChptList :items="activities" header="最近活動" :has-more="activities.length < 9" :loading="listLoading" @load-more="loadActivities">
           <template #actions="{ item }">
             <ChptTag :label="item.level" :color="item.level === '警示' ? 'danger' : 'info'" size="xs" />
@@ -232,7 +232,7 @@
     </section>
 
     <!-- ============ ChptQRCode ============ -->
-    <section id="chpt-qrcode" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-qrcode" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptQRCode QR Code</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>工單、序號標籤、登入連結、報表分享。SVG 繪製任何尺寸都銳利；中文內容以 UTF-8 編碼，掃出來是原文。
@@ -255,7 +255,7 @@
     </section>
 
     <!-- ============ ChptBarcode ============ -->
-    <section id="chpt-barcode" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-barcode" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptBarcode 一維條碼</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>工單、批號、箱號、儲位標籤 —— 大部分掃描槍都讀得到一維條碼，不一定支援 QR Code。

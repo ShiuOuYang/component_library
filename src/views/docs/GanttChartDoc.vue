@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">GanttChart 甘特圖</h1>
@@ -10,7 +10,7 @@
       </div>
 
       <!-- 機台排程 -->
-      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">機台排程</h2>
         <p class="text-sm text-content-secondary mb-4">
           每台機台一列，一列排多張工單。滾輪捲動列；<kbd>Ctrl</kbd>（Mac 為 <kbd>⌘</kbd>）+ 滾輪或觸控板捏合縮放時間軸，
@@ -37,7 +37,7 @@
       </section>
 
       <!-- 專案進度 -->
-      <section id="project" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="project" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">專案進度與里程碑</h2>
         <p class="text-sm text-content-secondary mb-4">
           沒有列欄位時每個任務自成一列。長條底部的細線是進度；沒有結束時間（或 <code>milestone</code> 為真）的任務畫成菱形。
@@ -58,7 +58,7 @@
       </section>
 
       <!-- 編輯排程 -->
-      <section id="edit" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="edit" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">編輯排程</h2>
         <p class="text-sm text-content-secondary mb-4">
           開 <code>editable</code> 後：拖曳長條移動、拖兩端調整長短、<kbd>Esc</kbd> 取消；
@@ -107,7 +107,7 @@
       </section>
 
       <!-- 大量資料 -->
-      <section id="large" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="large" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">500 列、1 萬張工單</h2>
         <p class="text-sm text-content-secondary mb-4">
           只畫捲動視窗內的列與時間範圍內的任務，上千列也能順暢捲動。資料請用 <code>shallowRef</code> 或 <code>markRaw</code> 傳入。
@@ -139,7 +139,7 @@
         </div>
       </section>
 
-      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <ApiTable of="GanttChart" title="Props" :rows="propsRows" />
         <ApiTable of="GanttChart" title="Events" :rows="eventRows" />

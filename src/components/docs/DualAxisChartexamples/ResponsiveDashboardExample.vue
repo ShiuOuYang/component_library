@@ -6,7 +6,7 @@
       圖表會自動響應容器大小變化。試著調整瀏覽器視窗大小或使用開發者工具的響應式模式。
     </p>
     
-    <div class="grid lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="bg-surface-secondary rounded-xl p-4 border-2 border-stroke-light">
         <div style="width: 100%; height: 400px;">
           <DualAxisComboChart

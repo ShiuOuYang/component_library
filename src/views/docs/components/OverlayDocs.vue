@@ -12,7 +12,7 @@
     </div>
 
     <!-- ============ ChptModal ============ -->
-    <section id="chpt-modal" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-modal" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-2xl font-bold text-content-primary">ChptModal 模態框</h2>
         <div class="flex gap-2">
@@ -29,7 +29,7 @@
       </p>
 
       <!-- 模式說明 -->
-      <div class="grid md:grid-cols-2 gap-4 mb-6 text-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-sm">
         <div class="bg-accent-subtle rounded-lg p-4 border border-accent-subtle-border">
           <p class="font-semibold text-accent-on-subtle mb-2">mode="dialog"</p>
           <p class="text-content-secondary text-xs">簡潔置中的確認／編輯框。可調 size、遮罩點擊關閉，適合表單、確認、訊息對話框。</p>
@@ -115,7 +115,7 @@
     </section>
 
     <!-- ============ ChptDrawer ============ -->
-    <section id="chpt-drawer" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-drawer" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-2xl font-bold text-content-primary">ChptDrawer 側滑抽屜</h2>
         <div class="flex gap-2">
@@ -159,7 +159,7 @@
     </section>
 
     <!-- ============ ChptPopconfirm ============ -->
-    <section id="chpt-popconfirm" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-popconfirm" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptPopconfirm 彈出確認</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>對高風險操作（刪除、發布、送出）在觸發元素旁彈出輕量確認，不需整頁跳轉或開 Modal。
@@ -208,7 +208,7 @@
     </section>
 
     <!-- ============ ChptDropdown ============ -->
-    <section id="chpt-dropdown" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-dropdown" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDropdown 動作選單</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>把一組「動作」收進一顆按鈕 —— 表格列的「更多」、工具列的「匯出 ▾」。
@@ -251,7 +251,7 @@
     </section>
 
     <!-- ============ ChptPopover ============ -->
-    <section id="chpt-popover" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-popover" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptPopover 氣泡卡片</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>點（或滑過）一個元素時，在旁邊彈出一張可放任意內容的卡片 —— 欄位說明、使用者資訊、小表單。
@@ -309,7 +309,7 @@
     </section>
 
     <!-- ============ useConfirm ============ -->
-    <section id="use-confirm" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="use-confirm" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">useConfirm 確認對話框</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>「確定要刪除嗎？」這種一次性的問題。用 <code>await confirm(...)</code> 拿到使用者的答案，
@@ -342,7 +342,7 @@
     </section>
 
     <!-- ============ ChptModalDock ============ -->
-    <section id="chpt-modaldock" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-modaldock" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptModalDock 視窗口袋列</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>與 ChptModal 的 <code>window</code> 模式搭配，顯示被最小化的視窗；通常每頁掛載一次即可。
@@ -372,7 +372,7 @@
     </section>
 
     <!-- ============ ChptTour ============ -->
-    <section id="chpt-tour" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-tour" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTour 功能導覽</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>新功能上線、第一次使用的頁面，一步一步指出畫面上的元素。

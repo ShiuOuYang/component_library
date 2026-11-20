@@ -9,14 +9,32 @@
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-toast focus:rounded-md focus:bg-surface-primary focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-accent focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-stroke-focus"
       @click.prevent="focusMain"
     >跳到主要內容</a>
-    <!-- 左側導覽列 (Sidebar) -->
+    <!-- 手機 / 平板直式：側欄是抽屜，打開時後面加遮罩（點了關閉） -->
+    <div
+      v-if="isNarrow && drawerOpen"
+      class="fixed inset-0 z-backdrop bg-black/40"
+      aria-hidden="true"
+      @click="closeDrawer()"
+    ></div>
+
+    <!-- 左側導覽列 (Sidebar)
+         寬螢幕：固定在左側，可收合成圖示列。
+         窄螢幕（< 1024px）：原本也固定佔 288px，手機上內容區只剩一百多 px、每個區塊被擠到約 66px 寬；
+         改成從左側滑出的抽屜，關閉時用 inert 移出 Tab 順序與無障礙樹。 -->
     <aside
-      class="bg-surface-primary border-r border-stroke-light flex flex-col flex-shrink-0 transition-all duration-300"
-      :class="isSidebarCollapsed ? 'w-16' : 'w-72'"
+      id="docs-sidebar"
+      ref="sidebarRef"
+      class="bg-surface-primary border-r border-stroke-light flex flex-col flex-shrink-0"
+      :class="isNarrow
+        ? ['fixed inset-y-0 left-0 z-modal w-72 max-w-[85vw] shadow-xl transition-transform duration-200', drawerOpen ? 'translate-x-0' : '-translate-x-full']
+        : ['transition-all duration-300', collapsed ? 'w-16' : 'w-72']"
+      :inert="isNarrow && !drawerOpen ? true : undefined"
+      :aria-label="isNarrow ? '文件導覽' : undefined"
+      @keydown.esc="isNarrow && closeDrawer(true)"
     >
       <div class="sticky top-0 bg-surface-primary z-10 border-b border-stroke-light">
         <!-- 展開狀態的標題 -->
-        <div v-if="!isSidebarCollapsed" class="p-6 flex items-center justify-between">
+        <div v-if="!collapsed" class="p-6 flex items-center justify-between">
           <router-link to="/docs" class="flex items-center space-x-3 group">
             <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center shadow-sm shrink-0">
               <span class="text-white text-xl">🧩</span>
@@ -28,23 +46,31 @@
               <p class="text-xs text-content-tertiary">Vue 3 企業級組件</p>
             </div>
           </router-link>
-          <button type="button"
+          <button v-if="isNarrow" type="button"
+            @click="closeDrawer(true)"
+            class="p-2 text-content-tertiary hover:text-content-primary hover:bg-surface-tertiary rounded-lg transition-colors"
+            aria-label="關閉導覽"
+          >
+            <ChptIcon :size="20" color="current">close</ChptIcon>
+          </button>
+          <button v-else type="button"
             @click="toggleSidebar"
             class="p-2 text-content-tertiary hover:text-content-primary hover:bg-surface-tertiary rounded-lg transition-colors"
             title="收合側邊欄"
+            aria-label="收合側邊欄"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
             </svg>
           </button>
         </div>
 
         <!-- 指令面板入口：Ctrl / ⌘ + K 也能開 -->
-        <div v-if="!isSidebarCollapsed" class="px-4 pb-3">
+        <div v-if="!collapsed" class="px-4 pb-3">
           <button
             type="button"
             class="flex w-full items-center gap-2 rounded-lg border border-stroke-default bg-surface-secondary px-3 py-1.5 text-sm text-content-tertiary hover:border-stroke-medium hover:text-content-secondary"
-            @click="paletteOpen = true"
+            @click="openPalette"
           >
             <ChptIcon :size="18" color="current">search</ChptIcon>
             <span class="flex-1 text-left">搜尋文件…</span>
@@ -61,7 +87,7 @@
       </div>
 
       <!-- 導覽列表 (展開狀態) -->
-      <nav v-if="!isSidebarCollapsed" class="flex-1 overflow-y-auto p-4 space-y-1">
+      <nav v-if="!collapsed" class="flex-1 overflow-y-auto p-4 space-y-1">
         <!-- 首頁 -->
         <router-link to="/docs" class="nav-item" :class="{ 'nav-item-active': isActiveRoute('/docs', true) }">
           <span class="nav-icon">🏠</span>
@@ -134,7 +160,7 @@
       </nav>
 
       <!-- 收合狀態的快捷圖標列表 -->
-      <nav v-if="isSidebarCollapsed" class="flex-1 overflow-y-auto px-2 py-3 space-y-2 flex flex-col items-center">
+      <nav v-if="collapsed" class="flex-1 overflow-y-auto px-2 py-3 space-y-2 flex flex-col items-center">
         <button type="button"
           @click="toggleSidebar"
           class="p-2 text-content-tertiary hover:text-accent-on-subtle hover:bg-accent-subtle rounded-lg transition-colors"
@@ -158,7 +184,7 @@
       </nav>
 
       <!-- 底部版本資訊 -->
-      <div v-if="!isSidebarCollapsed" class="mt-auto border-t border-stroke-light bg-surface-primary">
+      <div v-if="!collapsed" class="mt-auto border-t border-stroke-light bg-surface-primary">
         <div class="px-6 py-4">
           <div class="flex items-center gap-2 mb-3">
             <span class="w-2 h-2 rounded-full bg-success-500"></span>
@@ -183,14 +209,39 @@
     <ChptCommandPalette v-model="paletteOpen" :commands="paletteCommands" recent-key="docs" placeholder="搜尋元件、頁面或動作…" />
 
     <!-- 右側內容區域 (Main Content) -->
-    <main id="main-content" ref="mainRef" tabindex="-1" class="flex-1 overflow-y-auto focus:outline-none">
-      <router-view />
-    </main>
+    <div class="flex min-w-0 flex-1 flex-col">
+      <!-- 窄螢幕的頂端列：開啟導覽、站名、搜尋 -->
+      <header v-if="isNarrow" class="flex flex-shrink-0 items-center gap-2 border-b border-stroke-light bg-surface-primary px-2 py-2">
+        <button
+          ref="menuButtonRef"
+          type="button"
+          class="rounded-lg p-2 text-content-secondary hover:bg-surface-tertiary hover:text-content-primary"
+          aria-label="開啟導覽"
+          aria-controls="docs-sidebar"
+          :aria-expanded="drawerOpen"
+          @click="openDrawer"
+        >
+          <ChptIcon :size="22" color="current">menu</ChptIcon>
+        </button>
+        <router-link to="/docs" class="min-w-0 flex-1 truncate text-base font-bold text-content-primary">組件庫文檔</router-link>
+        <button
+          type="button"
+          class="rounded-lg p-2 text-content-secondary hover:bg-surface-tertiary hover:text-content-primary"
+          aria-label="搜尋文件"
+          @click="openPalette"
+        >
+          <ChptIcon :size="22" color="current">search</ChptIcon>
+        </button>
+      </header>
+      <main id="main-content" ref="mainRef" tabindex="-1" class="min-w-0 flex-1 overflow-y-auto focus:outline-none">
+        <router-view />
+      </main>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, useTemplateRef, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ChptCommandPalette, ChptIcon, ChptToast, formatHotkey, useDarkMode } from '@/components/library';
 
@@ -208,7 +259,47 @@ const route = useRoute();
 const router = useRouter();
 
 const isSidebarCollapsed = ref(false);
-const toggleSidebar = () => { isSidebarCollapsed.value = !isSidebarCollapsed.value; };
+
+/** 窄螢幕（< 1024px，與 Tailwind 的 lg 相同）：側欄改成抽屜 */
+const NARROW_QUERY = '(max-width: 1023.98px)';
+const narrowMql = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(NARROW_QUERY) : null;
+const isNarrow = ref(narrowMql?.matches ?? false);
+const onNarrowChange = (e) => {
+  isNarrow.value = e.matches;
+  if (!e.matches) drawerOpen.value = false;
+};
+onMounted(() => narrowMql?.addEventListener('change', onNarrowChange));
+onBeforeUnmount(() => narrowMql?.removeEventListener('change', onNarrowChange));
+
+/** 抽屜狀態：只在窄螢幕有意義；抽屜裡永遠是展開的導覽（不顯示收合的圖示列） */
+const drawerOpen = ref(false);
+const collapsed = computed(() => !isNarrow.value && isSidebarCollapsed.value);
+const sidebarRef = useTemplateRef('sidebarRef');
+const menuButtonRef = useTemplateRef('menuButtonRef');
+function openDrawer() {
+  drawerOpen.value = true;
+  // 焦點移進抽屜（第一個可聚焦的元素：關閉鈕），鍵盤與螢幕閱讀器使用者才知道抽屜打開了
+  nextTick(() => sidebarRef.value?.querySelector('a, button')?.focus());
+}
+/** returnFocus：用 Esc 或關閉鈕關掉時，把焦點還給選單鈕；換頁關閉時焦點留在新頁面 */
+function closeDrawer(returnFocus = false) {
+  if (!drawerOpen.value) return;
+  drawerOpen.value = false;
+  if (returnFocus) nextTick(() => menuButtonRef.value?.focus());
+}
+const toggleSidebar = () => {
+  if (isNarrow.value) {
+    if (drawerOpen.value) closeDrawer(true);
+    else openDrawer();
+  } else {
+    isSidebarCollapsed.value = !isSidebarCollapsed.value;
+  }
+};
+/** 指令面板：窄螢幕時先關抽屜，面板才不會被抽屜蓋住 */
+function openPalette() {
+  closeDrawer();
+  paletteOpen.value = true;
+}
 
 /** 記錄各群組是否展開（key = 群組頁 to） */
 const expanded = ref({});
@@ -230,6 +321,7 @@ function toggleGroup(to) {
 /** 點子元件：確保在該頁，再捲動到錨點 */
 function jump(item, id) {
   activeAnchor.value = id;
+  closeDrawer();
   const go = () => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
@@ -572,6 +664,8 @@ watch(
     );
     expanded.value = next;
     activeAnchor.value = '';
+    // 窄螢幕：點了導覽連結、換到新頁面時關閉抽屜
+    closeDrawer();
   },
   { immediate: true }
 );

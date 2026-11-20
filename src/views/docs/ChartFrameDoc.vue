@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">ChptChartFrame 圖表外框與匯出</h1>
@@ -11,14 +11,14 @@
         </p>
       </div>
 
-      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">匯出圖片與資料</h2>
         <p class="text-sm text-content-secondary mb-4">
           右上角「匯出」：<strong>PNG</strong> 適合貼進通訊軟體與文件；<strong>SVG</strong> 是向量圖，貼進 PowerPoint 放大也清楚，
           而且是純 SVG（不靠 foreignObject），PowerPoint、Illustrator 都打得開；<strong>CSV</strong> 帶 BOM，Excel 直接開不會亂碼。
           圖例、標題這些 HTML 也會畫進圖片裡；工具列與重設縮放鈕不會。
         </p>
-        <div class="grid gap-6 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <ChptChartFrame
             title="本週不良原因"
             description="SMT 線 · 11/10–11/16 · 單位：件"
@@ -47,7 +47,7 @@
         <ChptCodeBlock class="mt-4" :code="basicCode" />
       </section>
 
-      <section id="states" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="states" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">載入中、沒有資料、錯誤</h2>
         <p class="text-sm text-content-secondary mb-4">
           三種狀態由外框統一處理，各圖表不必各自實作。重新查詢時舊的圖留在半透明遮罩下，不會整塊閃成空白；
@@ -68,13 +68,13 @@
         <ChptCodeBlock class="mt-4" :code="statesCode" />
       </section>
 
-      <section id="custom" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="custom" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">大量資料（Canvas）與自訂處理</h2>
         <p class="text-sm text-content-secondary mb-4">
           大量資料模式畫在 Canvas 上的點也會匯出。<code>:auto-download="false"</code> 時只送 <code>export</code> 事件、不下載 ——
           下面把匯出的 PNG 直接顯示出來（實務上可以上傳到伺服器、附在報告裡）。也可以用 ref 呼叫 <code>exportAs(format)</code> 取得 Blob。
         </p>
-        <div class="grid gap-6 lg:grid-cols-2">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <ChptChartFrame
             title="測試點分布"
             :description="`${scatterPoints.length.toLocaleString()} 個測試點（Canvas）`"
@@ -95,7 +95,7 @@
         <ChptCodeBlock class="mt-4" :code="customCode" />
       </section>
 
-      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-4">API</h2>
         <ApiTable of="ChptChartFrame" title="Props" :rows="frameProps" />
         <ApiTable of="ChptChartFrame" title="Events" :rows="frameEvents" />

@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">EnterpriseHeatmap 熱力圖</h1>
@@ -10,22 +10,24 @@
       </div>
 
       <!-- 基本示範 -->
-      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">基本示範</h2>
         <p class="text-sm text-content-secondary mb-4">
           data 為 <code>{ x, y, value }</code> 陣列；開啟 showCellValues 顯示數值，enableBrush 可框選縮放。
         </p>
-        <EnterpriseHeatmap
-          :data="matrixData"
-          :width="860"
-          :height="460"
-          title="各站每週良率（%）"
-          x-axis-label="週次"
-          y-axis-label="工作站"
-          :enable-brush="true"
-          :highlight-mode="'cell'"
-          :show-cell-values="false"
-        />
+        <div class="max-lg:overflow-x-auto"><!-- 固定寬度的圖表：手機上在自己的框裡水平捲動，不把整頁撐寬 -->
+          <EnterpriseHeatmap
+            :data="matrixData"
+            :width="860"
+            :height="460"
+            title="各站每週良率（%）"
+            x-axis-label="週次"
+            y-axis-label="工作站"
+            :enable-brush="true"
+            :highlight-mode="'cell'"
+            :show-cell-values="false"
+          />
+        </div>
         <div class="mt-4">
           <ChptCodeBlock
             language="html"
@@ -35,28 +37,30 @@
       </section>
 
       <!-- 自訂色階 / 高亮 -->
-      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">自訂色階與高亮模式</h2>
         <p class="text-sm text-content-secondary mb-4">
           colorRange 可指定 [起, 中, 終] 自訂色；highlightMode 支援 cell / row / column / both。
         </p>
-        <EnterpriseHeatmap
-          :data="matrixData"
-          :width="860"
-          :height="460"
-          title="客製色階（綠→黃→紅）"
-          :color-range="['#16a34a', '#eab308', '#dc2626']"
-          :highlight-mode="'both'"
-          :show-cell-values="true"
-          :value-domain="[0, 100]"
-        />
+        <div class="max-lg:overflow-x-auto"><!-- 固定寬度的圖表：手機上在自己的框裡水平捲動，不把整頁撐寬 -->
+          <EnterpriseHeatmap
+            :data="matrixData"
+            :width="860"
+            :height="460"
+            title="客製色階（綠→黃→紅）"
+            :color-range="['#16a34a', '#eab308', '#dc2626']"
+            :highlight-mode="'both'"
+            :show-cell-values="true"
+            :value-domain="[0, 100]"
+          />
+        </div>
         <div class="mt-4">
           <ChptCodeBlock language="html" :code="colorRangeSnippet" />
         </div>
       </section>
 
       <!-- Props -->
-      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">Props</h2>
         <ApiTable of="EnterpriseHeatmap" title="資料與尺寸 Props" :rows="dataProps" />
         <ApiTable of="EnterpriseHeatmap" title="座標軸 Props" :rows="axisProps" />
@@ -65,7 +69,7 @@
       </section>
 
       <!-- Events -->
-      <section class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8">
+      <section class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">事件</h2>
         <ApiTable of="EnterpriseHeatmap" title="Events" :rows="eventsList" />
       </section>

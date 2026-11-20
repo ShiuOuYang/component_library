@@ -13,7 +13,7 @@
     </div>
 
     <!-- ============ ChptAlert ============ -->
-    <section id="chpt-alert" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-alert" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAlert 提示條</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>頁面內「區塊級」訊息回饋（成功 / 資訊 / 警告 / 錯誤），可帶標題、
@@ -45,7 +45,7 @@
     </section>
 
     <!-- ============ ChptTag ============ -->
-    <section id="chpt-tag" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-tag" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTag 標籤</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>輕量的狀態／分類標記（膠囊樣式），例如審核狀態、欄位型別、可關閉的篩選條件。
@@ -81,7 +81,7 @@
     </section>
 
     <!-- ============ ChptBadge ============ -->
-    <section id="chpt-badge" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-badge" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptBadge 徽章</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>環繞子內容（按鈕／圖示／頭像）顯示未讀計數或線上狀態圓點；如通知數、購物車數量。
@@ -131,7 +131,7 @@
     </section>
 
     <!-- ============ ChptToast ============ -->
-    <section id="chpt-toast" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-toast" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptToast 全域提示</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>跨頁面的輕量操作回饋（成功／失敗／警告／資訊），自動淡入並於頂端堆疊。
@@ -161,7 +161,7 @@
     </section>
 
     <!-- ============ useNotification ============ -->
-    <section id="use-notification" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="use-notification" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">useNotification 角落通知</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>有標題、說明、可能還有動作按鈕的通知（「匯出完成 —— 下載」「SMT-02 停機 —— 查看」）。
@@ -190,7 +190,7 @@
     </section>
 
     <!-- ============ ChptProgress ============ -->
-    <section id="chpt-progress" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-progress" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptProgress 進度條</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>顯示 0–100 的完成度或工作進度；支援 v-model、多種語意色、粗細與百分比標籤。
@@ -230,7 +230,7 @@
     </section>
 
     <!-- ============ ChptSpinner ============ -->
-    <section id="chpt-spinner" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-spinner" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSpinner 載入指示器</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>等待非同步操作完成時的輕量指示器；<code>loading</code> 為 false 時完全不渲染。
@@ -266,7 +266,7 @@
     </section>
 
     <!-- ============ ChptEmpty ============ -->
-    <section id="chpt-empty" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-empty" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptEmpty 空狀態</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>表格／列表／搜尋結果沒有資料時的引導畫面；可自訂圖示、標題、說明與操作按鈕。
@@ -301,7 +301,7 @@
     </section>
 
     <!-- ============ ChptSkeleton ============ -->
-    <section id="chpt-skeleton" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-skeleton" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSkeleton 骨架屏</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>初次載入時以骨架佔位避免版面跳動；<code>loading</code> 為 false 時顯示
@@ -338,7 +338,7 @@
     </section>
 
     <!-- ============ ChptResult ============ -->
-    <section id="chpt-result" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-result" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptResult 結果頁</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>一整塊區域就是一個結果 —— 送出成功、匯入失敗、沒有權限、找不到頁面，通常附上下一步的按鈕。

@@ -12,7 +12,7 @@
     </div>
 
     <!-- ============ ChptCard ============ -->
-    <section id="chpt-card" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-card" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptCard 卡片</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>將同主題的內容／操作收進一個區塊容器；可帶標題列、右上角額外區（如狀態標籤）與底部列。
@@ -21,7 +21,7 @@
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptCard } from '@/components/library'</code>
       </p>
 
-      <div class="grid md:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <ChptCard title="基本卡片" icon="inbox">
           <p class="text-sm text-content-secondary">透過 <code>title</code> / <code>icon</code> 與 <code>#extra</code> 插槽自訂標題列。</p>
           <template #extra>
@@ -51,7 +51,7 @@
     </section>
 
     <!-- ============ ChptCollapse ============ -->
-    <section id="chpt-collapse" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-collapse" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptCollapse 摺疊面板</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>把 FAQ、群組設定等內容垂直摺疊；一次只開一個（預設）或多個同時展開（multiple）。
@@ -76,7 +76,7 @@
     </section>
 
     <!-- ============ ChptBreadcrumb ============ -->
-    <section id="chpt-breadcrumb" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-breadcrumb" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptBreadcrumb 麵包屑</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>顯示目前頁面的階層路徑；每項可為純文字或 <code>to</code>（RouterLink），並支援點擊事件與自訂分隔符。
@@ -101,7 +101,7 @@
     </section>
 
     <!-- ============ ChptSteps ============ -->
-    <section id="chpt-steps" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-steps" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSteps 步驟條</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>引導多步驟流程（表單分頁、申請流程）；以狀態區分 done / process / pending。
@@ -131,7 +131,7 @@
     </section>
 
     <!-- ============ ChptDivider ============ -->
-    <section id="chpt-divider" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-divider" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDivider 分隔線</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>水平／垂直分隔區塊；水平時中間可放文字（如「或」），例如登入頁切換登入方式的隔線。
@@ -163,7 +163,7 @@
       </p>
     </section>
 
-    <section id="chpt-dashboard-grid" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-dashboard-grid" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDashboardGrid 儀表板格線</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>戰情室、產線看板這類「每個人想看的東西不一樣」的頁面。打開編輯模式後，
@@ -219,7 +219,7 @@
     </section>
 
     <!-- ============ ChptEquipmentWall ============ -->
-    <section id="chpt-equipment-wall" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-equipment-wall" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptEquipmentWall 機台狀態牆</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>產線看板、值班畫面 —— 一眼看出哪幾台停了、停多久、為什麼。每台一張卡：狀態（顏色 + 圖示 + 文字）、

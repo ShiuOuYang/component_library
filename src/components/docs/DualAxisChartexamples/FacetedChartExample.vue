@@ -6,13 +6,14 @@
       每個分面皆可獨立設定其 Y 軸比例尺、領域與圖層。
     </p>
 
-    <div class="grid lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
         <!--
           寬度跟著欄位走（原本寫死 600px，比雙欄版面的一欄寬）。
           X 軸是月份名稱，要用 band；FacetedChart 預設 time，原本整張圖畫不出任何長條
         -->
-        <div style="width: 100%; height: 500px;">
+        <!-- FacetedChart 最小寬 400px（分面才看得清楚）：手機上在框裡水平捲動 -->
+        <div class="max-lg:overflow-x-auto" style="width: 100%; height: 500px;">
           <FacetedChart :facets="facets" x-scale-type="band" auto-resize title="區域銷售分面" />
         </div>
       </div>

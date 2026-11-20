@@ -16,7 +16,7 @@
       </span>
     </div>
 
-    <div class="grid lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div class="relative bg-surface-secondary rounded-xl p-4 border border-stroke-light">
         <div style="width: 100%; height: 420px;">
           <DualAxisComboChart

@@ -8,7 +8,7 @@
     </div>
 
     <!-- ============ ChptMenu ============ -->
-    <section id="chpt-menu" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-menu" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptMenu 導覽選單</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>整個系統的側欄（可收合成只剩圖示）或頂部選單。一組「動作」請用 ChptDropdown；頁內切換請用 ChptTabs。
@@ -22,8 +22,8 @@
           <ChptSwitch v-model="collapsed" label="收合側欄" />
           <span class="text-sm text-content-secondary">作用中：<span class="font-mono">{{ active }}</span></span>
         </div>
-        <div class="flex gap-4">
-          <div class="h-[26rem] overflow-visible rounded-lg border border-stroke-light">
+        <div class="flex flex-col gap-4 md:flex-row">
+          <div class="h-[26rem] self-start overflow-visible rounded-lg border border-stroke-light">
             <ChptMenu v-model="active" :items="sideItems" :collapsed="collapsed" aria-label="示範側欄" class="h-full rounded-lg" />
           </div>
           <div class="min-w-0 flex-1">
@@ -51,7 +51,7 @@
     </section>
 
     <!-- ============ ChptAnchor ============ -->
-    <section id="chpt-anchor" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-anchor" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAnchor 頁內目錄</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>長頁面旁的「本頁內容」—— 規格書、SOP、報表說明。點了捲到該段，捲動時自動標示讀到哪裡。
@@ -83,7 +83,7 @@
     </section>
 
     <!-- ============ ChptBackTop ============ -->
-    <section id="chpt-backtop" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-backtop" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptBackTop 回到頂端</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>很長的清單或報表頁。捲超過一定距離才出現在右下角 —— 這一頁往下捲就看得到。
@@ -99,7 +99,7 @@
       </p>
     </section>
 
-    <section id="chpt-command-palette" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-command-palette" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptCommandPalette 指令面板</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>系統頁面一多，選單要點好幾層才找得到。按 <kbd class="rounded border border-stroke-default px-1 text-xs">Ctrl</kbd> /

@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">DualAxisComboChart 雙軸組合圖</h1>
@@ -10,12 +10,12 @@
       </div>
 
       <!-- 基本示範 -->
-      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">基本示範</h2>
         <p class="text-sm text-content-secondary mb-4">
           layers 陣列定義多個圖層；每個圖層可為 bar / stacked-bar / line / area / scatter，指定左（left）或右（right）軸（省略時為左軸）。
         </p>
-        <div class="grid lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
             <!-- 寬度跟著欄位走：寫死 560px 會超出雙欄版面的一欄 -->
             <div style="width: 100%; height: 400px;">
@@ -35,7 +35,7 @@
       </section>
 
       <!-- 進階範例 -->
-      <section id="examples" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="examples" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">進階範例</h2>
         <p class="text-sm text-content-secondary mb-4">SalesReport／ProductionMonitor／ControlChart／TimeSeries／ScatterPlot／ResponsiveDashboard／FacetedChart 等組合示範。</p>
         <SalesReportExample />
@@ -49,7 +49,7 @@
       </section>
 
       <!-- 連動高亮 -->
-      <section id="highlight" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="highlight" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">連動高亮（highlightKey）</h2>
         <p class="text-sm text-content-secondary mb-4">
           傳入 <code>highlightKey</code>，鍵相同的點與長條會畫上標記、其餘淡化。每筆資料的鍵來自圖層的
@@ -59,7 +59,7 @@
         <div class="mb-3">
           <ChptSegmented v-model="highlightMonth" :options="highlightOptions" aria-label="高亮月份" />
         </div>
-        <div class="grid lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
             <div style="width: 100%; height: 360px;">
               <DualAxisComboChart
@@ -79,7 +79,7 @@
       </section>
 
       <!-- 多張圖同步 -->
-      <section id="sync" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="sync" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">多張圖同步（十字線、縮放、高亮）</h2>
         <p class="text-sm text-content-secondary mb-4">
           同一條時間軸的好幾張圖上下排在一起時，用 <code>useChartSync()</code> 把它們連起來：在任一張框選或滾輪縮放，其他張縮到同一段；
@@ -114,7 +114,7 @@
       </section>
 
       <!-- 大量資料與縮放 API -->
-      <section id="large-data-api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="large-data-api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">大量資料與滾輪縮放</h2>
         <p class="text-sm text-content-secondary">
           10 萬筆等級的資料請用 <code>shallowRef</code> 或 <code>markRaw</code> 傳入，避免 Vue 把每一筆包成響應式代理。
@@ -131,7 +131,7 @@
       </section>
 
       <!-- 完整 Props -->
-      <section id="props" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="props" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">Props</h2>
         <p class="text-sm text-content-secondary mb-4">
           大量資料、滾輪縮放與連動高亮的 props 另見上方各區段。
@@ -142,7 +142,7 @@
       </section>
 
       <!-- 事件 -->
-      <section id="events" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="events" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">事件</h2>
         <p class="text-sm text-content-secondary mb-4">
           payload 的型別都可從 <code>@/components/library</code> 以 <code>import type</code> 取得。

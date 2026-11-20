@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-surface-secondary p-8">
+  <div class="min-h-screen bg-surface-secondary p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       <div class="mb-8">
         <h1 class="text-4xl font-bold text-content-primary mb-2">StateTimeline 機台狀態時間軸</h1>
@@ -11,7 +11,7 @@
         </p>
       </div>
 
-      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="basic" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">產線一天的狀態</h2>
         <p class="text-sm text-content-secondary mb-4">
           資料只有 <code>start</code>（狀態開始的時間）：下一筆開始就是這一筆結束，每台最後一筆畫到 <code>open-end-time</code>。
@@ -36,7 +36,7 @@
         <ChptCodeBlock class="mt-4" :code="basicCode" />
       </section>
 
-      <section id="summary" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="summary" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">找出停最久的機台</h2>
         <p class="text-sm text-content-secondary mb-4">
           <code>sort-rows="downTime"</code> 把停機時間最多的排最上面（<code>"utilization"</code> 依稼動率由低到高）。
@@ -73,7 +73,7 @@
         <ChptCodeBlock class="mt-4" :code="summaryCode" />
       </section>
 
-      <section id="large" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="large" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">大量資料：30 台 × 7 天</h2>
         <p class="text-sm text-content-secondary mb-4">
           {{ largeData.length.toLocaleString() }} 筆狀態紀錄。每列依像素合併後最多畫「寬度」個矩形，縮放時重新合併，資料再多也不卡。
@@ -99,7 +99,7 @@
         <ChptCodeBlock class="mt-4" :code="largeCode" />
       </section>
 
-      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-6 mb-8 scroll-mt-24">
+      <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-4">API</h2>
         <ApiTable of="StateTimeline" title="Props" :rows="propsRows" />
         <ApiTable of="StateTimeline" title="Events" :rows="eventRows" />

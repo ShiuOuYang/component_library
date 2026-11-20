@@ -1,8 +1,9 @@
 <template>
   <div class="w-full font-sans mb-5 flex flex-col" :class="[props.containerBgColor, props.containerRounded, props.containerShadow, props.fontSize]">
     <!-- 搜尋和分頁控制區 -->
-    <div class="flex justify-between items-center px-3 py-2 border-b border-stroke-light" :class="props.controlBgColor">
-      <div class="flex items-center gap-2.5">
+    <!-- flex-wrap：窄螢幕（手機、平板直式）時工具列換行，不會把分頁與欄位設定推到表格外面 -->
+    <div class="flex flex-wrap justify-between items-center gap-2 px-3 py-2 border-b border-stroke-light" :class="props.controlBgColor">
+      <div class="flex flex-wrap items-center gap-2.5">
         <!-- 搜尋容器 -->
         <div class="relative flex items-center">
           <input
@@ -31,7 +32,7 @@
         <slot name="left-controls"></slot>
       </div>
 
-      <div class="flex items-center gap-2.5">
+      <div class="ml-auto flex flex-wrap items-center justify-end gap-2.5">
         <!-- 分頁控制區 (top 或 both 時顯示) -->
         <!-- 虛擬捲動不分頁：只顯示總筆數 -->
         <span v-if="props.virtual" class="text-xs text-content-secondary" aria-live="polite">{{ locale.pagination.total(totalItems) }}</span>
@@ -402,12 +403,12 @@
     </div>
 
     <!-- 分頁控制區 (下方) -->
-    <div v-if="paginationPosition === 'bottom' || paginationPosition === 'both'" class="flex justify-between items-center px-3 py-2 border-t border-stroke-light" :class="props.bottomControlBgColor">
-      <div class="flex items-center gap-2.5">
+    <div v-if="paginationPosition === 'bottom' || paginationPosition === 'both'" class="flex flex-wrap justify-between items-center gap-2 px-3 py-2 border-t border-stroke-light" :class="props.bottomControlBgColor">
+      <div class="flex flex-wrap items-center gap-2.5">
         <slot name="bottom-left-controls"></slot>
       </div>
 
-      <div class="flex items-center gap-2.5">
+      <div class="ml-auto flex flex-wrap items-center justify-end gap-2.5">
         <ChptPagination
           v-if="!props.virtual"
           variant="compact"

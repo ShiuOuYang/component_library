@@ -12,7 +12,7 @@
     </div>
 
     <!-- ============ 主要示範 ============ -->
-    <section id="excel-demo" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="excel-demo" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">完整試算表示範</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>需要在網頁內直接編輯表格資料（如報表填寫、資料匯入前檢核）。
@@ -43,9 +43,9 @@
     </section>
 
     <!-- ============ 功能特色 ============ -->
-    <section id="excel-features" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="excel-features" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">功能特色</h2>
-      <div class="grid md:grid-cols-2 gap-4 text-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
         <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
           <p class="font-semibold text-content-primary mb-1">📑 多工作表</p>
           <p class="text-xs text-content-secondary">可新增／重新命名／刪除工作表，底部頁籤切換。</p>
@@ -97,7 +97,7 @@
     </section>
 
     <!-- ============ 匯出 / 匯入按鈕 ============ -->
-    <section id="excel-io" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="excel-io" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptExcelExporter / ChptExcelUploader</h2>
       <p class="text-sm text-content-secondary mb-4">
         不需要編輯器、只要「把表格資料匯出成 .xlsx」或「讓使用者上傳 Excel 讀成資料」時，用這兩顆按鈕。

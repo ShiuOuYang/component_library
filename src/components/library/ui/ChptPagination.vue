@@ -45,7 +45,8 @@
   </div>
 
   <!-- Compact 模式（原 PaginationControls） -->
-  <nav v-else :aria-label="props.ariaLabel || t.nav" class="flex items-center gap-2.5">
+  <!-- flex-wrap：放在窄的表格工具列裡時換行，不會超出容器 -->
+  <nav v-else :aria-label="props.ariaLabel || t.nav" class="flex flex-wrap items-center justify-end gap-2.5">
     <div v-if="showSummary && totalItems > 0" class="text-xs text-content-tertiary mr-1 px-2 rounded h-control-sm flex items-center border border-stroke-default" :class="bgColor">{{ t.total(totalItems) }}</div>
 
     <div v-if="showPageSize" class="flex items-center gap-1 text-xs text-content-primary border border-stroke-default rounded px-2 h-control-sm" :class="bgColor">

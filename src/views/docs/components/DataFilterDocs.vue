@@ -12,7 +12,7 @@
     </div>
 
     <!-- ============ ChptTable ============ -->
-    <section id="chpt-table" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-table" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTable 通用表格</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>以 <code>columns</code>＋<code>data</code> 驅動的中型資料表格；
@@ -211,7 +211,7 @@
     </section>
 
     <!-- ============ ChptFixedTable ============ -->
-    <section id="chpt-fixedtable" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-fixedtable" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFixedTable 固定欄位表格</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>欄位多、需左右捲動的大表格；可固定表頭與特定欄位、逐欄篩選、全文搜尋，
@@ -250,7 +250,7 @@
     </section>
 
     <!-- ============ ChptPagination ============ -->
-    <section id="chpt-pagination" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-pagination" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptPagination 分頁</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>資料量大時切頁瀏覽；可獨立使用（<code>variant</code>：full／compact），
@@ -260,7 +260,7 @@
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptPagination } from '@/components/library'</code>
       </p>
 
-      <div class="grid md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
           <p class="text-sm font-semibold text-content-primary mb-2">variant="full"</p>
           <ChptPagination
@@ -302,7 +302,7 @@
     </section>
 
     <!-- ============ ChptFilter ============ -->
-    <section id="chpt-filter" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-filter" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFilter 過濾選擇</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>單一欄位的過濾器；以 <code>type</code> 切換三種樣式——
@@ -312,7 +312,7 @@
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptFilter } from '@/components/library'</code>
       </p>
 
-      <div class="grid md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
           <p class="text-sm font-semibold text-content-primary mb-2">select（單選）</p>
           <ChptFilter v-model="filterSelect" type="select" label="部門" :options="deptOptions" />
@@ -343,7 +343,7 @@
     </section>
 
     <!-- ============ ChptFilterBar ============ -->
-    <section id="chpt-filterbar" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="chpt-filterbar" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFilterBar 多欄位過濾橫列</h2>
       <p class="text-sm text-content-secondary mb-4">
         <strong>使用時機：</strong>一次展示多個「單選過濾器」的橫列工具列；以 <code>filters</code> 描述欄位、

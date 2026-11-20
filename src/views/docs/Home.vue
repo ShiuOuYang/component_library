@@ -48,7 +48,7 @@
       <div class="w-full">
         <h2 class="text-3xl font-bold text-content-primary text-center mb-12">元件總覽</h2>
 
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <router-link
             v-for="group in groups"
             :key="group.to"

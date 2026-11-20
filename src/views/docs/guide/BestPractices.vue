@@ -11,14 +11,14 @@
     </div>
 
     <!-- ============ 設計令牌 ============ -->
-    <section id="tokens" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="tokens" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">設計令牌是唯一真實來源</h2>
       <p class="text-sm text-content-secondary mb-4">
         所有顏色 / 尺寸 / 圓角 / 動效都由 <code class="bg-surface-tertiary px-1 py-0.5 rounded">src/design/tokens.js</code>
         定義，CSS 變數與 Tailwind utility 都是從它衍生的。
       </p>
 
-      <div class="grid md:grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="rounded-lg border border-success-subtle-border bg-success-subtle p-4">
           <p class="text-sm font-semibold text-success-on-subtle mb-2">✅ 這樣寫</p>
           <ChptCodeBlock language="css" :code="tokenGood" />
@@ -36,7 +36,7 @@
     </section>
 
     <!-- ============ 深色模式 ============ -->
-    <section id="dark-mode" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="dark-mode" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">深色模式：優先用會自動翻轉的變數</h2>
       <p class="text-sm text-content-secondary mb-4">
         文字 / 背景 / 邊框 / 圖表軸線的 CSS 變數會在 <code class="bg-surface-tertiary px-1 py-0.5 rounded">.dark</code>
@@ -55,7 +55,7 @@
     </section>
 
     <!-- ============ 無障礙 ============ -->
-    <section id="a11y" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="a11y" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">無障礙：三個最容易踩的坑</h2>
 
       <h3 class="text-base font-semibold text-content-primary mt-5 mb-2">1. 不要只寫 focus:outline-none</h3>
@@ -95,7 +95,7 @@
     </section>
 
     <!-- ============ 組件庫邊界 ============ -->
-    <section id="boundary" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="boundary" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">組件庫邊界</h2>
       <p class="text-sm text-content-secondary mb-4">
         <code class="bg-surface-tertiary px-1 py-0.5 rounded">src/components/library/</code>
@@ -114,7 +114,7 @@
     </section>
 
     <!-- ============ 相容層 ============ -->
-    <section id="legacy" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="legacy" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">只用 Chpt* 元件</h2>
       <p class="text-sm text-content-secondary mb-4">
         舊的非 Chpt 元件（CommonTable、FilterBar、Pagination…）與
@@ -136,7 +136,7 @@
     </section>
 
     <!-- ============ 常見錯誤 ============ -->
-    <section id="pitfalls" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+    <section id="pitfalls" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">這個倉庫實際踩過的坑</h2>
       <p class="text-sm text-content-secondary mb-4">
         以下每一項都曾經真的存在於程式碼中。
