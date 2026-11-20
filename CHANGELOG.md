@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptEquipmentWall 機台狀態牆**：產線看板、值班畫面用。每台一張卡：狀態（顏色 + 圖示 + 文字）、已持續多久、警報原因、
+  工單 / 料號、稼動率與最多三個數值；停機的卡片整張帶紅。工具列的各狀態數量也是篩選（可多選），可搜尋名稱、編號、工單、料號，
+  顯示平均稼動率。依 `group` 分組（標題顯示各狀態數量）、`sortBy="status"` 停機排前面、`density="compact"`。
+  狀態改變時卡片閃外框，變成 `announceStatuses`（預設停機）時以 aria-live 念出。整面牆一個 Tab 停駐點、方向鍵依視覺位置移動。
+  狀態名稱與 StateTimeline 相同（另有 offline）。新增 `shared/equipment.ts`（`EquipmentItem`、`EquipmentStatus`、
+  `filterEquipment()`、`sortEquipment()`、`groupEquipment()`、`countEquipment()`、`averageUtilization()`）與語系群組 `equipment`。
 - **CalendarHeatmap 日曆熱圖**（charts）：每天一格、顏色深淺代表數值；一欄一週、一列一個星期幾（`weekStart` 週一 / 週日），
   週期性規律一眼可見。預設把最小～最大值等分成 5 級（主色由淺到深），可用 `thresholds` + `colors` 改成門檻分級、
   `domain` 固定刻度；同一天多筆加總，沒有資料的日子只畫外框（和 0 不同），今天加粗外框。範圍比容器寬時可水平捲動、

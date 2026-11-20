@@ -403,6 +403,7 @@ const navSections = [
           { label: 'ChptSteps', id: 'chpt-steps' },
           { label: 'ChptDivider', id: 'chpt-divider' },
           { label: 'ChptDashboardGrid', id: 'chpt-dashboard-grid' },
+          { label: 'ChptEquipmentWall', id: 'chpt-equipment-wall' },
         ],
       },
       {
