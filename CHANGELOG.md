@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **ChptBarcode 一維條碼**（Code 128 / Code 39）：工單、批號、箱號標籤用。Code 128 可編完整 ASCII、自動切換字集
+  （連續數字兩位一組）；Code 39 可加 mod 43 檢查碼。SVG 繪製、模組寬度取整數像素、左右留靜區，深色模式不反轉；
+  內容含無法編碼的字元時顯示錯誤。`toSVG()` 取得 SVG 原始碼。編碼純函式（`encodeBarcode`、`encodeCode128`、
+  `encodeCode39`…）在 `shared/barcode.ts` 並匯出；以 ZXing 解碼器驗證過各種字集切換的情況都能正確讀回。新增語系群組 `barcode`。
 - **ChptRichTextEditor 富文字編輯器**（Tiptap）：v-model 是 HTML（清空時為空字串，`required` 規則照常運作）。
   工具列可自訂（粗體、斜體、底線、刪除線、H2 / H3、清單、引用、程式碼區塊、連結、復原 / 重做、清除格式），
   按鈕以 aria-pressed 表示目前格式、左右方向鍵在按鈕間移動；連結輸入框在工具列下方，只接受 http / https / mailto 與站內路徑。

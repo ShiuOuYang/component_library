@@ -254,6 +254,48 @@
       <ApiTable of="ChptQRCode" title="Props" :rows="qrProps" />
     </section>
 
+    <!-- ============ ChptBarcode ============ -->
+    <section id="chpt-barcode" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptBarcode 一維條碼</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>工單、批號、箱號、儲位標籤 —— 大部分掃描槍都讀得到一維條碼，不一定支援 QR Code。
+        Code 128（預設）可編完整 ASCII，連續數字自動兩位一組；Code 39 給只吃這種格式的舊系統或標籤機。
+        SVG 繪製、模組寬度取整數像素（列印不糊）；白底黑條、左右留靜區，深色模式也不反轉。內容含無法編碼的字元時顯示錯誤，不會畫出掃不出來的條碼。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptBarcode } from '@/components/library'</code>
+      </p>
+      <div class="flex flex-wrap items-start gap-6">
+        <div class="space-y-3">
+          <ChptBarcode ref="barcodeRef" :value="barcodeValue" :format="barcodeFormat" :check-digit="barcodeFormat === 'code39'" />
+          <div class="flex flex-wrap items-center gap-2">
+            <ChptSegmented v-model="barcodeFormat" :options="[{ label: 'Code 128', value: 'code128' }, { label: 'Code 39', value: 'code39' }]" aria-label="條碼格式" size="xs" />
+            <ChptButton size="sm" is-outline @click="downloadBarcode">下載 SVG</ChptButton>
+          </div>
+          <ChptInput v-model="barcodeValue" label="內容" class="w-72" />
+        </div>
+        <!-- 出貨箱標籤：條碼 + QR Code + 文字。印出來的標籤是白紙黑字，深色模式也不翻轉（用 style 而不是主題 class） -->
+        <div class="w-[340px] rounded-md border border-stroke-default p-3" style="background: #fff; color: #000" aria-label="出貨箱標籤範例">
+          <div class="flex items-start justify-between gap-2 border-b border-black pb-1 text-xs">
+            <span class="font-semibold">出貨箱 CARTON</span>
+            <span>2026/11/20</span>
+          </div>
+          <div class="mt-2 flex gap-3">
+            <div class="flex-1 text-xs leading-5">
+              <div>料號 P/N：<strong>PCB-A12-R3</strong></div>
+              <div>數量 QTY：<strong>480</strong></div>
+              <div>批號 LOT：<strong>2611A07</strong></div>
+            </div>
+            <ChptQRCode value="CTN-2611-00172|PCB-A12-R3|480|2611A07" :size="72" />
+          </div>
+          <ChptBarcode value="CTN-2611-00172" :module-width="1" :height="44" :font-size="12" class="mt-2" />
+        </div>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="barcodeSample" />
+      <ApiTable of="ChptBarcode" title="Props" :rows="barcodeProps" />
+      <ApiTable of="ChptBarcode" title="方法（ref）" :rows="barcodeMethods" />
+    </section>
+
   </div>
 </template>
 
@@ -270,6 +312,8 @@ import {
   ChptImage,
   ChptList,
   ChptQRCode,
+  ChptBarcode,
+  ChptSegmented,
   ChptButton,
   ChptSwitch,
 } from '@/components/library'
@@ -530,6 +574,38 @@ const listProps = [
 ]
 
 // ===== ChptQRCode =====
+// ---- ChptBarcode ----
+const barcodeRef = useTemplateRef('barcodeRef')
+const barcodeValue = ref('WO-2611-0042')
+const barcodeFormat = ref('code128')
+function downloadBarcode() {
+  const svg = barcodeRef.value?.toSVG()
+  if (!svg) return
+  const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${barcodeValue.value}.svg`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+const barcodeSample = `<ChptBarcode value="WO-2611-0042" />
+<ChptBarcode value="CTN-2611-00172" :module-width="1" :height="44" />
+<!-- 只吃 Code 39 的標籤機：加 mod 43 檢查碼 -->
+<ChptBarcode value="LOT2611A07" format="code39" check-digit />`
+const barcodeProps = [
+  { name: 'value', type: 'string', def: '—', desc: '要編碼的內容' },
+  { name: 'format', type: "'code128' | 'code39'", def: "'code128'", desc: 'Code 128：完整 ASCII、自動切換字集；Code 39：大寫英數與 - . 空白 $ / + %（小寫自動轉大寫）' },
+  { name: 'moduleWidth', type: 'number', def: '2', desc: '一個窄模組的寬度（px，取整數）；標籤列印建議 2 以上' },
+  { name: 'height', type: 'number', def: '60', desc: '條的高度（px）' },
+  { name: 'quietZone', type: 'number', def: '10', desc: '左右靜區（模組數）；太窄掃描槍會找不到起點' },
+  { name: 'showText / text', type: 'boolean / string', def: 'true / 內容', desc: '在條碼下方顯示文字；自訂顯示的文字' },
+  { name: 'fontSize / textGap', type: 'number', def: '14 / 4', desc: '文字大小；條與文字的間距（px）' },
+  { name: 'color / background', type: 'string', def: "'#000000' / '#ffffff'", desc: '條與背景的顏色（請維持深條淺底）' },
+  { name: 'padding', type: 'number', def: '0', desc: '外框留白（px）' },
+  { name: 'checkDigit', type: 'boolean', def: 'false', desc: 'Code 39 加上 mod 43 檢查碼（顯示在文字最後）' },
+]
+const barcodeMethods = [{ name: 'toSVG()', type: '() => string', desc: '目前條碼的 SVG 原始碼（列印、下載用）；無法編碼時為空字串' }]
+
 const qrRef = useTemplateRef('qrRef')
 const qrValue = ref('https://example.com/wo/2609-101')
 const qrExpired = ref(true)

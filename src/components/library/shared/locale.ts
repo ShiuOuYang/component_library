@@ -684,6 +684,11 @@ export interface ChptLocale {
     count: (n: number, max?: number) => string
     overLimit: (max: number) => string
   }
+  barcode: {
+    label: (value: string) => string
+    empty: string
+    invalid: (chars: string) => string
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1391,6 +1396,11 @@ export const zhTW: ChptLocale = {
     count: (n, max) => (max ? `${n} / ${max} 字` : `${n} 字`),
     overLimit: (max) => `超過 ${max} 字`,
   },
+  barcode: {
+    label: (value) => `條碼：${value}`,
+    empty: '沒有內容',
+    invalid: (chars) => `含有無法編碼的字元：${chars}`,
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -2097,6 +2107,11 @@ export const enUS: ChptLocale = {
     clear: 'Clear formatting',
     count: (n, max) => (max ? `${n} / ${max} characters` : `${n} characters`),
     overLimit: (max) => `Over the ${max}-character limit`,
+  },
+  barcode: {
+    label: (value) => `Barcode: ${value}`,
+    empty: 'No value',
+    invalid: (chars) => `Contains characters that can't be encoded: ${chars}`,
   },
 }
 
