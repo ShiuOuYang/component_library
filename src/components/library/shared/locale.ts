@@ -689,6 +689,19 @@ export interface ChptLocale {
     empty: string
     invalid: (chars: string) => string
   }
+  cameraScanner: {
+    title: string
+    starting: string
+    hint: string
+    hintQrOnly: string
+    scanned: (value: string) => string
+    start: string
+    stop: string
+    switchCamera: string
+    retry: string
+    stopped: string
+    errors: { denied: string; notFound: string; inUse: string; insecure: string; unsupported: string; unknown: string }
+  }
 }
 
 export const zhTW: ChptLocale = {
@@ -1401,6 +1414,26 @@ export const zhTW: ChptLocale = {
     empty: '沒有內容',
     invalid: (chars) => `含有無法編碼的字元：${chars}`,
   },
+  cameraScanner: {
+    title: '相機掃碼',
+    starting: '正在開啟相機…',
+    hint: '把條碼或 QR Code 對準框內',
+    hintQrOnly: '把 QR Code 對準框內（這個瀏覽器只能讀 QR Code）',
+    scanned: (value) => `已掃到 ${value}`,
+    start: '開啟相機',
+    stop: '關閉相機',
+    switchCamera: '切換鏡頭',
+    retry: '重試',
+    stopped: '相機已關閉',
+    errors: {
+      denied: '沒有相機權限：請在瀏覽器的網站設定允許這個網頁使用相機',
+      notFound: '找不到相機',
+      inUse: '相機正被其他程式使用，請先關閉該程式',
+      insecure: '相機只能在 HTTPS（或 localhost）的網頁使用',
+      unsupported: '這個瀏覽器不支援相機掃碼',
+      unknown: '無法開啟相機',
+    },
+  },
 }
 
 export const enUS: ChptLocale = {
@@ -2112,6 +2145,26 @@ export const enUS: ChptLocale = {
     label: (value) => `Barcode: ${value}`,
     empty: 'No value',
     invalid: (chars) => `Contains characters that can't be encoded: ${chars}`,
+  },
+  cameraScanner: {
+    title: 'Camera scanner',
+    starting: 'Starting camera…',
+    hint: 'Point the camera at a barcode or QR code',
+    hintQrOnly: 'Point the camera at a QR code (this browser can only read QR codes)',
+    scanned: (value) => `Scanned ${value}`,
+    start: 'Start camera',
+    stop: 'Stop camera',
+    switchCamera: 'Switch camera',
+    retry: 'Try again',
+    stopped: 'Camera is off',
+    errors: {
+      denied: 'Camera permission denied: allow camera access for this site in your browser settings',
+      notFound: 'No camera found',
+      inUse: 'The camera is being used by another app',
+      insecure: 'The camera only works on HTTPS (or localhost) pages',
+      unsupported: "This browser doesn't support camera scanning",
+      unknown: "Couldn't start the camera",
+    },
   },
 }
 
