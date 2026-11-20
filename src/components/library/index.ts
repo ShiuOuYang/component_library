@@ -27,6 +27,7 @@ export {
   ChptConfigProvider, ChptInputTag, ChptList, ChptQRCode, ChptSpace, ChptTour,
   ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode, ChptCameraScanner,
   ChptDefectAnnotator,
+  ChptSignaturePad,
   ChptNumpad,
 } from './ui/index.js'
 
@@ -70,6 +71,8 @@ export { createDetector, classifyCameraError, cameraAvailability, createDeduper 
 export type { ScanFormat, DetectedCode, CameraErrorKind, CodeDetector, ScanFrame } from './shared/cameraScan'
 export { rectFromCorners, moveMark, nextMarkId, countByType, markCenter } from './shared/defectMarks'
 export type { DefectMark, DefectType } from './shared/defectMarks'
+export { createWidthTracker, signatureBounds, signatureToSVG, exportRect as signatureExportRect } from './shared/signature'
+export type { SignaturePoint, SignatureStroke, SignatureWidthOptions, SignatureInput, SignatureBounds, SignatureSvgOptions } from './shared/signature'
 export { useConfig, useLocale, provideConfig, zhTW, enUS, mergeLocale } from './shared/config'
 export type { ChptConfig, ChptConfigInput, ChptLocale, ChptLocaleInput, ConfigSize } from './shared/config'
 export type { NotificationOptions, NotificationAction, NotificationType } from './shared/useNotification'

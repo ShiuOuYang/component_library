@@ -210,6 +210,53 @@
       </p>
     </section>
 
+    <!-- ============ ChptSignaturePad ============ -->
+    <section id="chpt-signature" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSignaturePad 簽名板</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>簽收、點檢確認、放行簽核 —— 在平板上用手指或觸控筆簽名。線條平滑、粗細隨書寫速度（筆有壓力時隨壓力）變化；
+        簽名中不會捲動頁面、多指觸控只取第一根手指。每簽完一筆更新 v-model（PNG data URL，空白為 null），也可以輸出 SVG 或只裁出有簽名的範圍。
+        簽名區固定白底黑字（像一張紙），深色模式也不反轉。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptSignaturePad } from '@/components/library'</code>
+      </p>
+      <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
+        <div class="space-y-3">
+          <ChptSignaturePad
+            ref="signatureRef"
+            v-model="signature"
+            label="品保放行簽名"
+            :height="180"
+            trim
+            :error-text="signatureError"
+            @begin="signatureError = ''"
+          />
+          <div class="flex flex-wrap gap-2">
+            <ChptButton size="sm" icon="verified" @click="releaseLot">放行</ChptButton>
+            <ChptButton size="sm" is-outline icon="download" :disabled="!signature" @click="downloadSignature">下載 SVG</ChptButton>
+          </div>
+        </div>
+        <div class="rounded-lg border border-stroke-light bg-surface-secondary p-3 text-sm">
+          <p class="mb-2 font-medium text-content-primary">v-model 預覽（trim）</p>
+          <!-- 簽名圖是透明底深色筆跡：預覽時放在白底上 -->
+          <div class="flex h-24 items-center justify-center rounded border border-stroke-light" style="background: #fff">
+            <img v-if="signature" :src="signature" alt="簽名預覽" class="max-h-20 max-w-full" />
+            <span v-else class="text-xs" style="color: #6b7280">尚未簽名</span>
+          </div>
+          <p class="mt-2 text-xs text-content-tertiary" aria-live="polite">{{ releaseMsg }}</p>
+        </div>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="signatureSample" />
+      <ApiTable of="ChptSignaturePad" title="Props" :rows="signatureProps" />
+      <ApiTable of="ChptSignaturePad" title="Events" :rows="signatureEvents" />
+      <ApiTable of="ChptSignaturePad" title="方法（ref）" :rows="signatureMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>簽名只能用指標（手指、筆、滑鼠）完成；無法使用指標的使用者需要另一種確認方式（例如輸入工號與密碼），
+        請在流程上提供替代方案。存檔時建議存 v-model 的圖片；要做筆跡比對或之後重新編輯時，另外存 <code>getStrokes()</code> 的資料。
+      </p>
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -263,6 +310,7 @@ import {
   ChptFormList,
   ChptSchemaForm,
   ChptRichTextEditor,
+  ChptSignaturePad,
   ChptInput,
   ChptSelect,
   ChptInputNumber,
@@ -275,6 +323,62 @@ import {
   ChptCodeBlock,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+
+// ---- ChptSignaturePad ----
+const signatureRef = ref(null)
+const signature = ref(null)
+const signatureError = ref('')
+const releaseMsg = ref('')
+function releaseLot() {
+  if (!signature.value) {
+    signatureError.value = '放行前請先簽名'
+    return
+  }
+  releaseMsg.value = `已放行（簽名圖 ${Math.round(signature.value.length / 1024)} KB）`
+}
+function downloadSignature() {
+  const svg = signatureRef.value?.toSVG({ trim: true })
+  if (!svg) return
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+  a.download = 'signature.svg'
+  a.click()
+  URL.revokeObjectURL(a.href)
+}
+const signatureSample = `<ChptFormItem prop="signature" label="品保放行簽名">
+  <ChptSignaturePad v-model="form.signature" :height="180" trim />
+</ChptFormItem>
+
+<!-- 輸出 SVG（向量，列印清楚） / 筆跡資料（存回後端可再載入） -->
+const svg = padRef.value.toSVG({ trim: true })
+const strokes = padRef.value.getStrokes()`
+const signatureProps = [
+  { name: 'modelValue', type: 'string | null', def: 'null', desc: '簽名圖（data URL）；每簽完一筆更新，空白為 null。傳入既有圖片時顯示在底下' },
+  { name: 'height', type: 'number', def: '200', desc: '簽名區高度（px）' },
+  { name: 'width', type: 'string', def: "'100%'", desc: '寬度（CSS 值）' },
+  { name: 'penColor', type: 'string', def: "'#111827'", desc: '筆跡顏色（簽名區固定白底，請用深色）' },
+  { name: 'minWidth / maxWidth', type: 'number', def: '0.8 / 2.8', desc: '線寬範圍（px）：寫得快變細、慢變粗' },
+  { name: 'trim', type: 'boolean', def: 'false', desc: 'v-model 只輸出有簽名的範圍（四周留 8px）' },
+  { name: 'exportBackground', type: 'string | null', def: 'null', desc: '輸出的背景色；不給為透明' },
+  { name: 'exportType', type: "'image/png' | 'image/jpeg' | 'image/webp'", def: "'image/png'", desc: 'v-model 的圖片格式（JPEG 沒有透明，請搭配 exportBackground）' },
+  { name: 'label / placeholder', type: 'string', def: '語系', desc: '螢幕閱讀器念的名稱／空白時的提示' },
+  { name: 'showToolbar', type: 'boolean', def: 'true', desc: '顯示提示與復原、清除按鈕' },
+  { name: 'errorText', type: 'string', def: "''", desc: '錯誤訊息（邊框變紅、以 alert 念出）' },
+  { name: 'disabled / readonly', type: 'boolean', def: 'false', desc: '禁用／唯讀（顯示簽名，不能再畫）' },
+]
+const signatureEvents = [
+  { name: 'update:modelValue', params: '(value: string | null)', desc: '每簽完一筆、復原、清除時' },
+  { name: 'begin', params: '()', desc: '開始一筆（可用來清掉錯誤訊息）' },
+  { name: 'end', params: '(strokeCount: number)', desc: '完成一筆' },
+  { name: 'clear', params: '()', desc: '清除時' },
+]
+const signatureMethods = [
+  { name: 'toDataURL(options?)', type: '({ type, quality, trim, background }) => string', desc: '輸出圖片；空白時為空字串' },
+  { name: 'toSVG(options?)', type: '({ trim, background }) => string', desc: '輸出 SVG（只含這次畫的筆跡）' },
+  { name: 'getStrokes() / setStrokes(strokes)', type: 'SignatureStroke[]', desc: '取得／載入筆跡資料' },
+  { name: 'undo() / clear()', type: '() => void', desc: '復原上一筆／清除' },
+  { name: 'isEmpty()', type: '() => boolean', desc: '是否空白' },
+]
 
 // ---- ChptFormList ----
 const inspectRef = ref(null)

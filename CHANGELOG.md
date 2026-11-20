@@ -47,7 +47,11 @@
   （縮圖、全螢幕、列印都落在同一位置）。鍵盤：標註區按 Enter 於中央新增，標記是按鈕、方向鍵微調（Shift 加大）、Delete 刪除；
   新增 / 刪除以 aria-live 念出。`readonly` 只檢視。新增 `shared/defectMarks.ts`（`DefectMark`、`DefectType`、`rectFromCorners()`、
   `moveMark()`、`nextMarkId()`、`countByType()`、`markCenter()`）與語系群組 `defect`。
-
+- **ChptSignaturePad 簽名板**：簽收、點檢確認、放行簽核用。線條平滑（二次貝茲曲線）、粗細隨書寫速度變化（筆有壓力值時隨壓力），
+  高解析度螢幕不糊；簽名中不捲動頁面、多指觸控只取第一根手指。每簽完一筆更新 v-model（PNG data URL，空白為 null），
+  可復原上一筆、清除；`trim` 只輸出有簽名的範圍、`exportBackground` / `exportType` 決定輸出格式；ref 方法 `toDataURL()`、
+  `toSVG()`（向量）、`getStrokes()` / `setStrokes()`。v-model 傳入既有簽名圖時顯示在底下。簽名區固定白底（深色模式不反轉）。
+  新增 `shared/signature.ts`（`createWidthTracker()`、`signatureBounds()`、`signatureToSVG()`、`signatureExportRect()`）與語系群組 `signature`。
 - **ChptNumpad 數字鍵盤**：產線平板、觸控工作站用的大按鍵數字鍵盤（`size` sm / md / lg = 48 / 56 / 72px）。
   原本的值是選取狀態，直接按數字就取代；按「確定」（或 Enter）才更新 v-model 並檢查 `min` / `max`，超出範圍時顯示原因、
   不送出也不夾限。`precision`（0 = 只能整數）、`allowNegative`（有設負的 `min` 時自動顯示 ±）、`maxDigits`、

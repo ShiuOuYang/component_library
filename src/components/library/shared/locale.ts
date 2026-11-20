@@ -208,6 +208,16 @@ export interface ChptLocale {
     notePlaceholder: string
     noteLabel: (n: number) => string
   }
+  signature: {
+    label: string
+    placeholder: string
+    hint: string
+    undo: string
+    clear: string
+    empty: string
+    signed: string
+    status: (label: string, state: string) => string
+  }
   numpad: {
     label: string
     backspace: string
@@ -909,6 +919,16 @@ export const zhTW: ChptLocale = {
     empty: '尚未標記',
     notePlaceholder: '備註',
     noteLabel: (n) => `第 ${n} 處的備註`,
+  },
+  signature: {
+    label: '簽名',
+    placeholder: '請在此簽名',
+    hint: '用手指、觸控筆或滑鼠簽名',
+    undo: '復原上一筆',
+    clear: '清除',
+    empty: '尚未簽名',
+    signed: '已簽名',
+    status: (label, state) => `${label}：${state}`,
   },
   numpad: {
     label: '數字鍵盤',
@@ -1676,6 +1696,16 @@ export const enUS: ChptLocale = {
     empty: 'No marks yet',
     notePlaceholder: 'Note',
     noteLabel: (n) => `Note for #${n}`,
+  },
+  signature: {
+    label: 'Signature',
+    placeholder: 'Sign here',
+    hint: 'Sign with your finger, a stylus or the mouse',
+    undo: 'Undo last stroke',
+    clear: 'Clear',
+    empty: 'Not signed',
+    signed: 'Signed',
+    status: (label, state) => `${label}: ${state}`,
   },
   numpad: {
     label: 'Number pad',
