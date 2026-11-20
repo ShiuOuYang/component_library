@@ -268,7 +268,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, toRaw, watch } from 'vue'
 import * as d3 from 'd3'
 import { chartTheme } from './chartTheme'
-import { resolveCanvasColor } from './utils/largeData'
+import { resolveCanvasColor, wheelModifierPressed } from './utils/largeData'
 import { zoomBounds } from './utils/statusScatter'
 import {
   DAY,
@@ -1404,11 +1404,6 @@ let zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown> | null = null
 /** 縮放中看到的時間範圍（範圍或尺寸改變後用來還原畫面） */
 let lastVisible: [number, number] | null = null
 
-function wheelModifierPressed(event: WheelEvent): boolean {
-  if (props.wheelZoomModifier === 'ctrl') return event.ctrlKey || event.metaKey
-  if (props.wheelZoomModifier === 'alt') return event.altKey
-  return true
-}
 
 /** 以水平為主的滾輪（觸控板左右滑、Shift + 滾輪）：平移時間軸，不縮放 */
 function horizontalDelta(event: WheelEvent): number {
@@ -1444,7 +1439,7 @@ function setupZoom(): void {
       if (!props.enableZoom) return false
       if (event.type === 'wheel') {
         const we = event as WheelEvent
-        return horizontalDelta(we) === 0 && wheelModifierPressed(we)
+        return horizontalDelta(we) === 0 && wheelModifierPressed(we, props.wheelZoomModifier)
       }
       if (event.type === 'dblclick') return false // 雙擊改為重設縮放
       // 可編輯時，在任務上按下是拖曳任務，不是平移

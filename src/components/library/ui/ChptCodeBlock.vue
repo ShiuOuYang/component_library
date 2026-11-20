@@ -23,6 +23,8 @@
       <slot name="tip">
         <p :class="['text-xs', tipTextClass]">
           <strong>{{ props.tipTitle ?? t.codeBlock.tipTitle }}{{ t.codeBlock.colon }}</strong><br />
+          <!-- tip 是開發者寫的說明，允許 <code>、<a> 這類標記；不要放使用者輸入的內容 -->
+          <!-- eslint-disable-next-line vue/no-v-html -->
           <span v-html="props.tip" />
         </p>
       </slot>
@@ -52,7 +54,7 @@ interface ChptCodeBlockProps {
   language?: string
   /** 是否移除多餘的縮排 */
   trimIndent?: boolean
-  /** 提示信息 */
+  /** 提示信息（HTML：可含 <code> 等標記；不要放使用者輸入的內容） */
   tip?: string
   /** 提示類型 */
   tipType?: CodeTipType

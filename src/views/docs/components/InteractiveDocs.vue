@@ -1,8 +1,5 @@
 ﻿<template>
   <div class="w-full px-8 py-12">
-    <!-- 全域 Toast 容器：示範用在此頁掛載一次（正式應用請於 App.vue 掛載） -->
-    <ChptToast />
-
     <div class="mb-12">
       <div class="flex items-center space-x-4 mb-4">
         <span class="text-3xl">🖱️</span>
@@ -238,7 +235,6 @@
 import { ref } from 'vue'
 import {
   ChptTabs,
-  ChptToast,
   useToast,
   ChptButton,
   ChptProgress,

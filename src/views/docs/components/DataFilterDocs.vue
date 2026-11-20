@@ -385,6 +385,10 @@ import {
   ChptCodeBlock,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+import { useToast } from '@/components/library'
+
+/** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */
+const toast = useToast()
 
 // ===== ChptTable / ChptFixedTable 共用資料 =====
 const tableColumns = [
@@ -404,7 +408,7 @@ const tableData = [
   { id: 7, name: '鄭十', department: '業務部', position: '業務代表', status: '啟用' },
 ]
 function onSearch(q) {
-  console.log('搜尋：', q)
+  toast.info(`搜尋：${q}`)
 }
 
 // ===== ChptTable 進階：勾選 / 展開 / 點列 / 欄寬 =====
@@ -590,7 +594,7 @@ const page = ref(1)
 const pageC = ref(1)
 const pageSize = ref(20)
 function onPageChange(p) {
-  console.log('切換到第', p, '頁')
+  toast.info(`切換到第 ${p} 頁`)
 }
 
 // ===== ChptFilter =====

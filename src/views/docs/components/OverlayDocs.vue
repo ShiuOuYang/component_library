@@ -416,6 +416,10 @@ import {
 } from '@/components/library'
 import { useModalManager } from '@/components/library/shared/useModalManager'
 import ApiTable from './_ApiTable.vue'
+import { useToast } from '@/components/library'
+
+/** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */
+const toast = useToast()
 
 // ---- useConfirm ----
 const { confirm, alert } = useConfirm()
@@ -581,13 +585,13 @@ function openDrawer(placement) {
 }
 
 function onConfirmDelete() {
-  console.log('已刪除')
+  toast.success('已刪除')
 }
 function onPublish() {
-  console.log('已發布')
+  toast.success('已發布')
 }
 function onCancel() {
-  console.log('已取消')
+  toast.info('已取消')
 }
 
 // ---- 程式碼範例（字串，避免模板解析） ----

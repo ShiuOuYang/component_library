@@ -6,6 +6,7 @@ import {
   rectIndexAt,
   resolveCanvasColor,
   zoomBandWindow,
+  wheelModifierPressed,
   zoomContinuousDomain,
 } from '@/components/library/charts/utils/largeData'
 
@@ -201,5 +202,18 @@ describe('zoomBandWindow：游標底下的類別留在畫面上', () => {
       expect(under(win)).toBe(3)
     }
     expect(win.length).toBe(2)
+  })
+})
+
+describe('wheelModifierPressed', () => {
+  const ev = (m: Partial<Record<'ctrlKey' | 'metaKey' | 'altKey', boolean>> = {}) => ({ ctrlKey: false, metaKey: false, altKey: false, ...m })
+  it("'none' 一律成立；'ctrl' 也接受 ⌘；'alt'", () => {
+    expect(wheelModifierPressed(ev())).toBe(true)
+    expect(wheelModifierPressed(ev(), 'none')).toBe(true)
+    expect(wheelModifierPressed(ev(), 'ctrl')).toBe(false)
+    expect(wheelModifierPressed(ev({ ctrlKey: true }), 'ctrl')).toBe(true)
+    expect(wheelModifierPressed(ev({ metaKey: true }), 'ctrl')).toBe(true)
+    expect(wheelModifierPressed(ev({ ctrlKey: true }), 'alt')).toBe(false)
+    expect(wheelModifierPressed(ev({ altKey: true }), 'alt')).toBe(true)
   })
 })

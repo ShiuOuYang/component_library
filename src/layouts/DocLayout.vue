@@ -178,6 +178,8 @@
       </div>
     </aside>
 
+    <!-- 全域 Toast：整個文件站掛載一次（各頁的示範與事件回饋都用 useToast()） -->
+    <ChptToast />
     <ChptCommandPalette v-model="paletteOpen" :commands="paletteCommands" recent-key="docs" placeholder="搜尋元件、頁面或動作…" />
 
     <!-- 右側內容區域 (Main Content) -->
@@ -190,7 +192,7 @@
 <script setup>
 import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ChptCommandPalette, ChptIcon, formatHotkey, useDarkMode } from '@/components/library';
+import { ChptCommandPalette, ChptIcon, ChptToast, formatHotkey, useDarkMode } from '@/components/library';
 
 // 版本與更新日期在建置時帶入（vite.config.js 的 define）；版本號還沒啟用（0.0.0）時顯示「未發布」
 const docsVersion = __DOCS_VERSION__ === '0.0.0' ? '未發布' : `v${__DOCS_VERSION__}`;

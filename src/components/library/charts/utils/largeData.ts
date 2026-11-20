@@ -139,6 +139,19 @@ export function resolveCanvasColor(color: string, host: Element | null): string 
 
 // === 滾輪縮放 ===
 
+/** 滾輪縮放要按住的修飾鍵（各圖表的 wheelZoomModifier prop） */
+export type WheelZoomModifier = 'none' | 'ctrl' | 'alt'
+
+/**
+ * 滾輪事件是否按著指定的修飾鍵（'ctrl' 也接受 Mac 的 ⌘）；'none' 一律成立。
+ * 原本 DualAxisComboChart、GanttChart、StateTimeline、StatusScatterMap 各寫一份
+ */
+export function wheelModifierPressed(event: Pick<WheelEvent, 'ctrlKey' | 'metaKey' | 'altKey'>, modifier: WheelZoomModifier = 'none'): boolean {
+  if (modifier === 'ctrl') return event.ctrlKey || event.metaKey
+  if (modifier === 'alt') return event.altKey
+  return true
+}
+
 /**
  * 以 anchor 為中心縮放一段連續 domain。
  *

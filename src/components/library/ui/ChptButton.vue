@@ -84,6 +84,7 @@ interface ChptButtonProps {
 
 const props = withDefaults(defineProps<ChptButtonProps>(), {
   label: '',
+  class: '',
   icon: '',
   iconPosition: 'left',
   iconColor: '',

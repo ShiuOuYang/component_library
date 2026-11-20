@@ -115,11 +115,15 @@
 import { ref } from 'vue'
 import { ChptExcelEditor, ChptCodeBlock } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+import { useToast } from '@/components/library'
+
+/** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */
+const toast = useToast()
 
 const editorRef = ref(null)
 
 function handleExport(payload) {
-  console.log('匯出完成:', payload)
+  toast.success(`匯出完成：${payload.filename}`)
 }
 
 // ---- 程式碼範例（字串，避免模板解析） ----

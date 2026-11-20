@@ -115,7 +115,7 @@
 import { computed, onMounted, onUnmounted, ref, shallowRef, toRaw, useId, watch, watchEffect } from 'vue'
 import * as d3 from 'd3'
 import { chartTheme } from './chartTheme'
-import { resolveCanvasColor } from './utils/largeData'
+import { resolveCanvasColor, wheelModifierPressed } from './utils/largeData'
 import {
   equalAspectRect,
   extentWithPadding,
@@ -772,11 +772,6 @@ watchEffect(() => {
 
 let zoomBehavior: d3.ZoomBehavior<SVGRectElement, unknown> | null = null
 
-function wheelModifierPressed(event: WheelEvent): boolean {
-  if (props.wheelZoomModifier === 'ctrl') return event.ctrlKey || event.metaKey
-  if (props.wheelZoomModifier === 'alt') return event.altKey
-  return true
-}
 
 function setupZoom(): void {
   const el = surfaceRef.value
@@ -801,7 +796,7 @@ function setupZoom(): void {
     // ✅ 已在全覽還往外滾時 d3.zoom 不會攔截，頁面照常捲動
     .filter((event: Event) => {
       if (!props.enableZoom) return false
-      if (event.type === 'wheel') return wheelModifierPressed(event as WheelEvent)
+      if (event.type === 'wheel') return wheelModifierPressed(event as WheelEvent, props.wheelZoomModifier)
       if (event.type === 'dblclick') return false // 雙擊改為重設縮放
       return !(event as MouseEvent).button
     })

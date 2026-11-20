@@ -1,7 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import '@/styles/index.css'
-import '@fortawesome/fontawesome-free/css/all.min.css'
 import 'material-symbols/outlined.css'
 import { initDarkMode } from '@/components/library/shared/useDarkMode'
 import App from './App.vue'
