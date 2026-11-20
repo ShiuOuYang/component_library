@@ -197,6 +197,20 @@ export interface ChptLocale {
     signed: string
     status: (label: string, state: string) => string
   }
+  numpad: {
+    label: string
+    backspace: string
+    clear: string
+    confirm: string
+    negate: string
+    decimal: string
+    range: (min: string, max: string) => string
+    min: (min: string) => string
+    max: (max: string) => string
+    below: (min: string) => string
+    above: (max: string) => string
+    empty: string
+  }
   inputTag: {
     placeholder: string
     hint: string
@@ -873,6 +887,20 @@ export const zhTW: ChptLocale = {
     empty: '尚未簽名',
     signed: '已簽名',
     status: (label, state) => `${label}：${state}`,
+  },
+  numpad: {
+    label: '數字鍵盤',
+    backspace: '刪除一位',
+    clear: '清除',
+    confirm: '確定',
+    negate: '正負號',
+    decimal: '小數點',
+    range: (min, max) => `範圍 ${min} – ${max}`,
+    min: (min) => `最小 ${min}`,
+    max: (max) => `最大 ${max}`,
+    below: (min) => `不能小於 ${min}`,
+    above: (max) => `不能大於 ${max}`,
+    empty: '請輸入數值',
   },
   inputTag: {
     placeholder: '輸入後按 Enter',
@@ -1615,6 +1643,20 @@ export const enUS: ChptLocale = {
     empty: 'Not signed',
     signed: 'Signed',
     status: (label, state) => `${label}: ${state}`,
+  },
+  numpad: {
+    label: 'Number pad',
+    backspace: 'Delete last digit',
+    clear: 'Clear',
+    confirm: 'OK',
+    negate: 'Plus/minus',
+    decimal: 'Decimal point',
+    range: (min, max) => `Range ${min} – ${max}`,
+    min: (min) => `Min ${min}`,
+    max: (max) => `Max ${max}`,
+    below: (min) => `Must be at least ${min}`,
+    above: (max) => `Must be at most ${max}`,
+    empty: 'Enter a value',
   },
   inputTag: {
     placeholder: 'Type and press Enter',

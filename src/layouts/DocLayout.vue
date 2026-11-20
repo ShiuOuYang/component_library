@@ -259,6 +259,7 @@ const navSections = [
           { label: 'ChptSwitch', id: 'chpt-switch' },
           { label: 'ChptDatePicker', id: 'chpt-datepicker' },
           { label: 'ChptInputNumber', id: 'chpt-inputnumber' },
+          { label: 'ChptNumpad', id: 'chpt-numpad' },
           { label: 'ChptSlider', id: 'chpt-slider' },
           { label: 'ChptSegmented', id: 'chpt-segmented' },
           { label: 'ChptCheckbox', id: 'chpt-checkbox' },
