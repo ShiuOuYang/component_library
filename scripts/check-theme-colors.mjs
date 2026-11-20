@@ -83,6 +83,8 @@ const ALLOWED_FILES = new Set([
   'src/components/library/viewer/GerberViewer.vue',
   // 全螢幕看圖：黑底（照片的標準做法，兩個主題都一樣），上面的按鈕是白色系
   'src/components/library/ui/ChptImageViewer.vue',
+  // 相機畫面：黑色的影片底上疊白色的對準框、按鈕與說明，兩個主題都一樣
+  'src/components/library/ui/ChptCameraScanner.vue',
   // 疊在圖片上的控制鈕（箭頭、指示點）：底下是任意照片，固定用半透明黑底白字才看得到
   'src/components/library/ui/ChptCarousel.vue',
   'src/components/library/viewer/PcbLayout.vue',

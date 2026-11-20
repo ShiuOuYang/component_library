@@ -295,6 +295,7 @@ const navSections = [
         anchors: [
           { label: '掃描站', id: 'station' },
           { label: '全頁接收', id: 'global' },
+          { label: '相機掃碼', id: 'camera' },
           { label: '常見問題', id: 'tips' },
           { label: 'API', id: 'api' },
         ],

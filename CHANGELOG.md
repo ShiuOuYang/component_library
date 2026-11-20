@@ -49,6 +49,13 @@
   整組一個 Tab 停駐點，點按鍵不搶焦點；實體鍵盤支援數字、小數點（含逗號）、Backspace、Delete、Enter、Esc（只有改過時才攔下）。
   新增 `shared/numpad.ts`（`applyNumpadKey()`、`parseNumpad()`、`numpadText()`、`numpadRangeError()`、`numpadKeyFromKeyboard()`）
   與語系群組 `numpad`。
+- **ChptCameraScanner 相機掃碼**：用手機或平板的相機讀條碼與 QR Code。優先用瀏覽器內建的 BarcodeDetector
+  （QR、Code128、Code39、EAN 等），沒有時退回 jsQR（動態載入，只能讀 QR，畫面會提示）。`v-model:active` 開關相機；
+  同一個碼在 `dedupeMs` 內只送一次 `scan`；`continuous=false` 掃到一次就關。掃到時嗶聲 / 震動 / 閃一下（`feedback`），
+  並以 aria-live 念出。權限被拒、找不到相機、相機被占用、非 HTTPS 都有說明（可重試的才有重試鈕）；
+  有多顆鏡頭時可切換；分頁切到背景時自動關相機、回來再開。新增 `shared/cameraScan.ts`
+  （`createDetector()`、`classifyCameraError()`、`cameraAvailability()`、`createDeduper()`）與語系群組 `cameraScanner`；
+  `jsqr` 從 devDependencies 移到 dependencies。
 
 - **ChptBarcode 一維條碼**（Code 128 / Code 39）：工單、批號、箱號標籤用。Code 128 可編完整 ASCII、自動切換字集
   （連續數字兩位一組）；Code 39 可加 mod 43 檢查碼。SVG 繪製、模組寬度取整數像素、左右留靜區，深色模式不反轉；
