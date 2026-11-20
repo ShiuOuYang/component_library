@@ -42,6 +42,13 @@
 
 ### 新增
 
+- **ChptEquipmentWall 機台狀態牆**：產線看板、值班畫面用。每台一張卡：狀態（顏色 + 圖示 + 文字）、已持續多久、警報原因、
+  工單 / 料號、稼動率與最多三個數值；停機的卡片整張帶紅。工具列的各狀態數量也是篩選（可多選），可搜尋名稱、編號、工單、料號，
+  顯示平均稼動率。依 `group` 分組（標題顯示各狀態數量）、`sortBy="status"` 停機排前面、`density="compact"`。
+  狀態改變時卡片閃外框，變成 `announceStatuses`（預設停機）時以 aria-live 念出。整面牆一個 Tab 停駐點、方向鍵依視覺位置移動。
+  狀態名稱與 StateTimeline 相同（另有 offline）。新增 `shared/equipment.ts`（`EquipmentItem`、`EquipmentStatus`、
+  `filterEquipment()`、`sortEquipment()`、`groupEquipment()`、`countEquipment()`、`averageUtilization()`）與語系群組 `equipment`。
+
 - **ChptDefectAnnotator 缺陷標註**：在產品照片、PCB 圖上標出缺陷位置與類型。點一下放編號標記、或切到「框」拖出範圍；
   標記可拖曳移動，選類型會套用到選取中的標記，工具列顯示各類型數量；旁邊的清單可改備註、刪除。座標存成 0–1 的比例
   （縮圖、全螢幕、列印都落在同一位置）。鍵盤：標註區按 Enter 於中央新增，標記是按鈕、方向鍵微調（Shift 加大）、Delete 刪除；

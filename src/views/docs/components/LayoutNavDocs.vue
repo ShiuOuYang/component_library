@@ -217,11 +217,45 @@
       <ApiTable of="ChptDashboardGrid" title="Slots" :rows="dashboardSlots" />
       <ApiTable of="ChptDashboardGrid" title="方法（ref）" :rows="dashboardMethods" />
     </section>
+
+    <!-- ============ ChptEquipmentWall ============ -->
+    <section id="chpt-equipment-wall" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptEquipmentWall 機台狀態牆</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>產線看板、值班畫面 —— 一眼看出哪幾台停了、停多久、為什麼。每台一張卡：狀態（顏色 + 圖示 + 文字）、
+        已持續多久、警報原因、工單、稼動率與其他數值；停機的卡片整張帶紅。工具列的狀態數量也是篩選，可搜尋名稱、工單、料號。
+        狀態改變時卡片閃一下外框，變成停機時以 aria-live 念出。鍵盤：整面牆一個 Tab 停駐點，方向鍵在卡片間移動。
+        狀態名稱與 StateTimeline 相同，同一份 MES 資料可以兩邊共用。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptEquipmentWall } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-4">
+          <ChptSwitch v-model="wallLive" label="模擬即時更新（每 3 秒）" />
+          <ChptSwitch v-model="wallCompact" label="精簡" />
+          <ChptSwitch v-model="wallSortStatus" label="停機排前面" />
+        </div>
+        <ChptEquipmentWall
+          :items="machines"
+          :density="wallCompact ? 'compact' : 'comfortable'"
+          :sort-by="wallSortStatus ? 'status' : 'none'"
+          @item-click="(m) => (pickedMachine = m.name)"
+        />
+        <p class="mt-3 text-sm text-content-secondary" aria-live="polite">{{ pickedMachine ? `開啟 ${pickedMachine} 的明細` : '點一張卡片開啟明細' }}</p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="wallSample" />
+      <ApiTable of="ChptEquipmentWall" title="Props" :rows="wallProps" />
+      <ApiTable of="-" title="EquipmentItem（items 的每一筆）" :rows="wallItemRows" />
+      <ApiTable of="ChptEquipmentWall" title="Events" :rows="wallEvents" />
+      <ApiTable of="ChptEquipmentWall" title="Slots" :rows="wallSlots" />
+      <ApiTable of="ChptEquipmentWall" title="方法（ref）" :rows="wallMethods" />
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 import {
   ChptCard,
   ChptCollapse,
@@ -233,8 +267,82 @@ import {
   ChptCodeBlock,
   ChptDashboardGrid,
   ChptSwitch,
+  ChptEquipmentWall,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+
+// ---- ChptEquipmentWall ----
+const minutesAgo = (m) => Date.now() - m * 60_000
+const machines = ref([
+  { id: 'm1', name: 'SMT-01 印刷機', group: 'SMT 一線', status: 'run', since: minutesAgo(184), utilization: 92, workOrder: 'WO-2611-0042', product: 'PCB-A12', metrics: [{ label: '產出', value: 1260, unit: 'pcs' }, { label: 'CT', value: 21.4, unit: 's' }] },
+  { id: 'm2', name: 'SMT-02 貼片機', group: 'SMT 一線', status: 'down', since: minutesAgo(25), alarm: '吸嘴 N3 真空異常', utilization: 71, workOrder: 'WO-2611-0042', product: 'PCB-A12' },
+  { id: 'm3', name: 'SMT-03 貼片機', group: 'SMT 一線', status: 'run', since: minutesAgo(312), utilization: 88, workOrder: 'WO-2611-0042', metrics: [{ label: '拋料率', value: 0.12, unit: '%' }] },
+  { id: 'm4', name: 'SMT-04 回焊爐', group: 'SMT 一線', status: 'run', since: minutesAgo(600), utilization: 95, metrics: [{ label: '峰溫', value: 245, unit: '°C' }] },
+  { id: 'm5', name: 'SMT-05 印刷機', group: 'SMT 二線', status: 'idle', since: minutesAgo(12), alarm: '等待物料', utilization: 64, workOrder: 'WO-2611-0051' },
+  { id: 'm6', name: 'SMT-06 貼片機', group: 'SMT 二線', status: 'maintenance', since: minutesAgo(95), alarm: '週保養', utilization: 40 },
+  { id: 'm7', name: 'SMT-07 貼片機', group: 'SMT 二線', status: 'run', since: minutesAgo(48), utilization: 83, workOrder: 'WO-2611-0051', product: 'PCB-B07' },
+  { id: 'm8', name: 'SMT-08 回焊爐', group: 'SMT 二線', status: 'run', since: minutesAgo(1500), utilization: 90 },
+  { id: 'm9', name: 'AOI-01', group: '檢測', status: 'run', since: minutesAgo(130), utilization: 86, metrics: [{ label: '誤判', value: 3.1, unit: '%' }] },
+  { id: 'm10', name: 'AOI-02', group: '檢測', status: 'offline', since: minutesAgo(8) },
+  { id: 'm11', name: 'ICT-01', group: '檢測', status: 'run', since: minutesAgo(75), utilization: 78, workOrder: 'WO-2611-0042' },
+  { id: 'm12', name: 'FCT-01', group: '檢測', status: 'idle', since: minutesAgo(3), utilization: 58 },
+])
+const wallLive = ref(false)
+const wallCompact = ref(false)
+const wallSortStatus = ref(false)
+const pickedMachine = ref('')
+const ALARMS = ['吸嘴真空異常', '飛達卡料', '軌道卡板', '溫度超出規格']
+let wallTimer = null
+let tick = 0
+watch(wallLive, (on) => {
+  clearInterval(wallTimer)
+  if (!on) return
+  wallTimer = setInterval(() => {
+    // 固定的輪替（不用亂數）：每次改一台機台的狀態
+    tick++
+    const m = machines.value[(tick * 5) % machines.value.length]
+    const next = m.status === 'run' ? (tick % 3 === 0 ? 'down' : 'idle') : 'run'
+    m.status = next
+    m.since = Date.now()
+    m.alarm = next === 'down' ? ALARMS[tick % ALARMS.length] : next === 'idle' ? '等待物料' : undefined
+  }, 3000)
+})
+onBeforeUnmount(() => clearInterval(wallTimer))
+const wallSample = `<ChptEquipmentWall :items="machines" sort-by="status" @item-click="openDetail">
+  <template #extra="{ item }">
+    <ChptButton v-if="item.status === 'down'" size="xs" @click.stop="callTech(item)">呼叫技術員</ChptButton>
+  </template>
+</ChptEquipmentWall>
+
+// machines：[{ id: 'm2', name: 'SMT-02 貼片機', group: 'SMT 一線', status: 'down',
+//              since: '2026-11-20T08:35:00', alarm: '吸嘴 N3 真空異常', utilization: 71,
+//              workOrder: 'WO-2611-0042', metrics: [{ label: '產出', value: 1260, unit: 'pcs' }] }]`
+const wallProps = [
+  { name: 'items', type: 'EquipmentItem[]', def: '—', desc: '機台清單；狀態改變時傳新陣列或直接改物件都可以' },
+  { name: 'groupBy', type: 'boolean', def: '有 group 就分組', desc: '依 group（產線、區域）分組，每組標題顯示各狀態數量' },
+  { name: 'sortBy', type: "'none' | 'status' | 'name'", def: "'none'", desc: '排序：保持原順序／停機 > 保養 > 待機 > 離線 > 運轉／名稱（數字自然排序）' },
+  { name: 'minCardWidth', type: 'number', def: '200', desc: '卡片最小寬度（px），欄數依容器寬度自動決定' },
+  { name: 'density', type: "'comfortable' | 'compact'", def: "'comfortable'", desc: '精簡模式只顯示名稱、狀態、時間與警報' },
+  { name: 'showToolbar / searchable', type: 'boolean', def: 'true', desc: '工具列（狀態數量＝篩選、平均稼動率）／搜尋框' },
+  { name: 'announceStatuses', type: 'EquipmentStatus[]', def: "['down']", desc: '變成這些狀態時以 aria-live 念出' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '計算持續時間用的現在時間；不給時每 30 秒自己更新' },
+]
+const wallItemRows = [
+  { name: 'id / name', type: 'string', def: '—', desc: '唯一鍵／顯示名稱' },
+  { name: 'status', type: "'run' | 'idle' | 'maintenance' | 'down' | 'offline'", def: '—', desc: '狀態（顏色 + 圖示 + 文字）' },
+  { name: 'group', type: 'string', def: '—', desc: '分組（產線、區域）' },
+  { name: 'since', type: 'string | number | Date', def: '—', desc: '進入目前狀態的時間（顯示「已停機 25 分」）' },
+  { name: 'alarm', type: 'string', def: '—', desc: '警報或停機原因（停機時紅字）' },
+  { name: 'utilization', type: 'number（0–100）', def: '—', desc: '稼動率（進度條）' },
+  { name: 'workOrder / product', type: 'string', def: '—', desc: '目前工單／料號（可搜尋）' },
+  { name: 'metrics', type: '{ label, value, unit? }[]', def: '—', desc: '其他數值，顯示前三個' },
+]
+const wallEvents = [{ name: 'item-click', params: '(item: EquipmentItem)', desc: '點擊或 Enter 一張卡片（有綁時卡片是按鈕）' }]
+const wallSlots = [{ name: 'extra', params: '{ item }', desc: '卡片最下方的自訂內容（按鈕請加 @click.stop）' }]
+const wallMethods = [
+  { name: 'setStatusFilter(statuses)', type: '(statuses: EquipmentStatus[]) => void', desc: '設定狀態篩選（空陣列為全部）' },
+  { name: 'setQuery(q)', type: '(q: string) => void', desc: '設定搜尋文字' },
+]
 import { useToast } from '@/components/library'
 
 /** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */

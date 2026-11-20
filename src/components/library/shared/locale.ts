@@ -187,6 +187,20 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  equipment: {
+    status: { run: string; idle: string; maintenance: string; down: string; offline: string }
+    filterLabel: string
+    search: string
+    avgUtilization: string
+    empty: string
+    ungrouped: string
+    since: (status: string, duration: string) => string
+    duration: (d: number, h: number, m: number) => string
+    workOrder: string
+    utilization: string
+    changed: (name: string, status: string, alarm: string) => string
+    separator: string
+  }
   defect: {
     regionLabel: string
     regionWithAlt: (alt: string) => string
@@ -899,6 +913,20 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  equipment: {
+    status: { run: '運轉', idle: '待機', maintenance: '保養', down: '停機', offline: '離線' },
+    filterLabel: '依狀態篩選',
+    search: '搜尋機台、工單、料號',
+    avgUtilization: '平均稼動率',
+    empty: '沒有符合條件的機台',
+    ungrouped: '未分組',
+    since: (status, duration) => `已${status} ${duration}`,
+    duration: (d, h, m) => (d ? `${d} 天 ${h} 小時` : h ? `${h} 小時 ${m} 分` : m ? `${m} 分` : '不到 1 分'),
+    workOrder: '工單',
+    utilization: '稼動率',
+    changed: (name, status, alarm) => `${name} ${status}${alarm ? `：${alarm}` : ''}`,
+    separator: '；',
+  },
   defect: {
     regionLabel: '缺陷標註區',
     regionWithAlt: (alt) => `缺陷標註區：${alt}`,
@@ -1676,6 +1704,20 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  equipment: {
+    status: { run: 'Running', idle: 'Idle', maintenance: 'Maintenance', down: 'Down', offline: 'Offline' },
+    filterLabel: 'Filter by status',
+    search: 'Search machine, work order, part',
+    avgUtilization: 'Avg. utilization',
+    empty: 'No machines match',
+    ungrouped: 'Ungrouped',
+    since: (status, duration) => `${status} for ${duration}`,
+    duration: (d, h, m) => (d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : m ? `${m} min` : 'under 1 min'),
+    workOrder: 'WO',
+    utilization: 'Utilization',
+    changed: (name, status, alarm) => `${name} ${status}${alarm ? `: ${alarm}` : ''}`,
+    separator: '; ',
+  },
   defect: {
     regionLabel: 'Defect annotation area',
     regionWithAlt: (alt) => `Defect annotation area: ${alt}`,
