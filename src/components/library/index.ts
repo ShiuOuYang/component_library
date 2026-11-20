@@ -25,7 +25,7 @@ export {
   ChptAffix, ChptCarousel, ChptNotificationHost, ChptSplitter, ChptVirtualList,
   ChptCopyButton, ChptCountdown, ChptEllipsis, ChptWatermark,
   ChptConfigProvider, ChptInputTag, ChptList, ChptQRCode, ChptSpace, ChptTour,
-  ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor,
+  ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode,
 } from './ui/index.js'
 
 // ===== charts =====
@@ -60,6 +60,8 @@ export type { GridItem, GridCompact } from './shared/gridLayout'
 export { moveCard, groupCards, indexInColumn, dropIndex } from './shared/kanban'
 export type { KanbanCardLike } from './shared/kanban'
 export { isSafeUrl } from './shared/safeUrl'
+export { encodeBarcode, encodeCode128, encodeCode39, code39CheckChar, BarcodeError } from './shared/barcode'
+export type { BarcodeFormat, BarcodeResult } from './shared/barcode'
 export { useConfig, useLocale, provideConfig, zhTW, enUS, mergeLocale } from './shared/config'
 export type { ChptConfig, ChptConfigInput, ChptLocale, ChptLocaleInput, ConfigSize } from './shared/config'
 export type { NotificationOptions, NotificationAction, NotificationType } from './shared/useNotification'

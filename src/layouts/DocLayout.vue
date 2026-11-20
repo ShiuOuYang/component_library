@@ -318,6 +318,7 @@ const navSections = [
           { label: 'ChptImage', id: 'chpt-image' },
           { label: 'ChptList', id: 'chpt-list' },
           { label: 'ChptQRCode', id: 'chpt-qrcode' },
+          { label: 'ChptBarcode', id: 'chpt-barcode' },
         ],
       },
       {
