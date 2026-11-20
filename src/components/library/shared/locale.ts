@@ -187,6 +187,16 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  signature: {
+    label: string
+    placeholder: string
+    hint: string
+    undo: string
+    clear: string
+    empty: string
+    signed: string
+    status: (label: string, state: string) => string
+  }
   numpad: {
     label: string
     backspace: string
@@ -868,6 +878,16 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  signature: {
+    label: '簽名',
+    placeholder: '請在此簽名',
+    hint: '用手指、觸控筆或滑鼠簽名',
+    undo: '復原上一筆',
+    clear: '清除',
+    empty: '尚未簽名',
+    signed: '已簽名',
+    status: (label, state) => `${label}：${state}`,
+  },
   numpad: {
     label: '數字鍵盤',
     backspace: '刪除一位',
@@ -1614,6 +1634,16 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  signature: {
+    label: 'Signature',
+    placeholder: 'Sign here',
+    hint: 'Sign with your finger, a stylus or the mouse',
+    undo: 'Undo last stroke',
+    clear: 'Clear',
+    empty: 'Not signed',
+    signed: 'Signed',
+    status: (label, state) => `${label}: ${state}`,
+  },
   numpad: {
     label: 'Number pad',
     backspace: 'Delete last digit',
