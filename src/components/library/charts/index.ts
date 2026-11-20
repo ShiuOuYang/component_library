@@ -61,6 +61,7 @@ export type {
 } from './utils/spc'
 export type { StateTimelineEvent, StateTimelineTooltip, StateTimelineRowInput } from './StateTimeline.vue'
 export type { StateDef, StateSummary } from './utils/stateTimeline'
+export type { DualAxisComboChartProps } from './DualAxisComboChart.vue'
 export type { WaferBin, WaferDieInfo } from './WaferMap.vue'
 export type { BulletItem } from './BulletChart.vue'
 export type { FunnelStep, FunnelRow, FunnelResult } from './utils/bullet'
