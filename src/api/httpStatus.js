@@ -25,12 +25,6 @@ export const HTTP_STATUS = {
   GATEWAY_TIMEOUT: 504
 }
 
-// 狀態碼分類函數
-export const isSuccessStatus = (status) => status >= 200 && status < 300
-export const isRedirectStatus = (status) => status >= 300 && status < 400
-export const isClientErrorStatus = (status) => status >= 400 && status < 500
-export const isServerErrorStatus = (status) => status >= 500 && status < 600
-
 // 狀態碼訊息映射
 export const getStatusMessage = (status) => {
   const messages = {

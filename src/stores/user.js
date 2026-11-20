@@ -224,7 +224,6 @@ export const useUserStore = defineStore("user", {
     async logout() {
       try {
         await authApi.logout();
-        console.log("✅ 登出成功");
       } catch (error) {
         console.error("❌ 登出過程發生錯誤:", error);
       } finally {
@@ -245,7 +244,6 @@ export const useUserStore = defineStore("user", {
       localStorage.removeItem("auth_time");
       localStorage.removeItem("user_info");
 
-      console.log("🔓 認證狀態已清除");
     },
   },
 });

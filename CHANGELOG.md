@@ -254,6 +254,9 @@
 
 ### 移除
 
+- 文件站外殼：`GlobalNotifications.vue` 與 `composables/useApi.js`（全域 API 狀態）。唯一會改變那份狀態的 `useApiCall()` 從來沒有人呼叫，
+  通知元件永遠不會出現；`httpStatus.js` 只被它用到的四個分類函式一併移除。
+- `useAuth()` 的 `getAvatarUrl()` 與沒有人用的 `useUser()`：預設頭像會把使用者名稱送到第三方網站（ui-avatars.com）。
 - 沒有程式使用的相依套件：`lodash`、`plotly.js-dist-min`。
 - 文件站不再載入 FontAwesome：全站只有全域通知用到 4 個圖示，改用組件庫統一的 Material Symbols（入口 CSS 少約 100 KB，另有字型檔）。
 - ChptExcelExporter `rawData`、EnterprisePareto `highlightMode` / `customRenderers` 與其型別（見上方破壞性變更）。
@@ -262,6 +265,10 @@
 
 ### 文件與工具
 
+- 文件站外殼不再於啟動時初始化認證：原本 `App.vue` 呼叫 `useAuth()`，每次打開文件站都載入使用者 store 與 axios，
+  瀏覽器存著舊 token 時還會打一次後端驗證。需要登入的頁面由路由守衛延遲初始化（行為不變）。
+- 移除外殼程式（App、路由守衛、使用者 store、API 攔截器）的除錯用 `console.log`，以及把使用者資料與權限印到 console 的警告；
+  錯誤仍以 `console.error` / `console.warn` 記錄。
 - **DualAxisComboChart 拆分**（行為不變）：原本 3,340 行的單一檔案拆成元件本身（props、狀態、生命週期、主渲染循環，約 790 行）
   與 `charts/composables/dualAxis/` 下的模組 —— `useBrushZoom`（框選、重設）、`useAxisDrag`（拖曳座標軸）、
   `useWheelZoom`（滾輪縮放、中鍵平移）、`useLargeData`（Canvas 與命中測試）、`useHighlight`（連動高亮）、
