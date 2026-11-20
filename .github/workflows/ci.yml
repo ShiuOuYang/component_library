@@ -52,10 +52,6 @@ jobs:
       - name: Library boundary
         run: npm run check:boundary
 
-      # legacy 相容元件必須維持薄包裝，不得又長回第二份實作
-      - name: Legacy shims stay thin
-        run: npm run check:legacy
-
       # 文件站不得出現佔位頁、斷掉的元件引用或沒人連得到的孤兒頁
       - name: Docs routes
         run: npm run check:docs

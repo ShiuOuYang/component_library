@@ -22,7 +22,6 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "vue-tsc --noEmit",
     "check:boundary": "node scripts/check-library-boundary.mjs",
-    "check:legacy": "node scripts/check-legacy-thin.mjs",
     "check:docs": "node scripts/check-docs-routes.mjs",
     "check:doc-api": "node scripts/check-doc-api.mjs",
     "check:buttons": "node scripts/check-button-type.mjs",
@@ -31,7 +30,7 @@
     "check:i18n": "node scripts/check-i18n.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "verify": "npm run typecheck && npm run check:boundary && npm run check:legacy && npm run check:docs && npm run check:doc-api && npm run check:buttons && npm run check:contrast && npm run check:theme && npm run check:i18n && npm run lint && npm run test:coverage && npm run build"
+    "verify": "npm run typecheck && npm run check:boundary && npm run check:docs && npm run check:doc-api && npm run check:buttons && npm run check:contrast && npm run check:theme && npm run check:i18n && npm run lint && npm run test:coverage && npm run build"
   },
   "peerDependencies": {
     "vue": "^3.5.0",

@@ -115,24 +115,23 @@
 
     <!-- ============ 相容層 ============ -->
     <section id="legacy" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
-      <h2 class="text-2xl font-bold text-content-primary mb-2">相容層只能轉發，不能實作</h2>
+      <h2 class="text-2xl font-bold text-content-primary mb-2">只用 Chpt* 元件</h2>
       <p class="text-sm text-content-secondary mb-4">
-        legacy 元件全部是薄包裝，只把 props / emits / slots 轉發給 canonical。
-        <code class="bg-surface-tertiary px-1 py-0.5 rounded">npm run check:legacy</code>
-        會檢查行數上限並確認每一個都有 import 對應的 canonical。
+        舊的非 Chpt 元件（CommonTable、FilterBar、Pagination…）與
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">@/components/common</code> 入口已移除。
+        它們原本只是轉發給 Chpt 元件的薄包裝；換成對應的 Chpt 元件即可。
       </p>
       <ChptAlert type="info">
-        收斂前這些檔案合計 1830 行的重複邏輯，修一個 bug 要記得修兩邊。
-        收斂後剩 455 行的轉發層。
+        收斂前這些舊元件合計 1830 行的重複邏輯，修一個 bug 要記得修兩邊；收斂成薄包裝之後再整批移除。
       </ChptAlert>
       <p class="text-sm text-content-secondary mt-4">
-        新程式請直接用 canonical（<code>Chpt*</code>）。對照表見
+        對照表見
         <a
-          href="https://github.com/ShiuOuYang/component_library#legacy-對照表"
+          href="https://github.com/ShiuOuYang/component_library#舊元件遷移對照表"
           target="_blank"
           rel="noopener noreferrer"
           class="text-accent hover:text-accent underline"
-        >README 的 Legacy 對照表</a>。
+        >README 的舊元件遷移對照表</a>。
       </p>
     </section>
 

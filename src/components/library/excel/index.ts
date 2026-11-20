@@ -12,8 +12,3 @@ export type {
   ExporterSize as ExcelExporterSize,
   ExporterVariant as ExcelExporterVariant,
 } from './ChptExcelExporter.vue'
-
-// 相容 alias stub（@deprecated — 請改用 ChptExcel*）
-export { default as ExcelEditor } from './ExcelEditor.vue'
-export { default as ExcelExporter } from './ExcelExporter.vue'
-export { default as ExcelUploader } from './ExcelUploader.vue'

@@ -25,7 +25,7 @@
 
       <ChptAlert type="info" class="mt-4">
         品質檢查一次跑完：<code>npm run verify</code>
-        （typecheck → 組件庫邊界 → legacy 相容層 → lint → build），CI 跑的就是這串。
+        （typecheck → 組件庫邊界 → 文件檢查 → lint → 測試 → build），CI 跑的就是這串。
       </ChptAlert>
     </section>
 
@@ -33,9 +33,9 @@
     <section id="import" class="mb-12 bg-surface-primary rounded-xl shadow-md p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">引入元件</h2>
       <p class="text-sm text-content-secondary mb-4">
-        正式入口是 <code class="bg-surface-tertiary px-1 py-0.5 rounded">@/components/library</code>。
-        舊程式若使用 <code class="bg-surface-tertiary px-1 py-0.5 rounded">@/components/common</code> 仍可運作（相容 facade），
-        但新程式請改用正式入口。
+        一律由 <code class="bg-surface-tertiary px-1 py-0.5 rounded">@/components/library</code> 引入。
+        舊的 <code class="bg-surface-tertiary px-1 py-0.5 rounded">@/components/common</code> 入口與非 Chpt 的舊元件（CommonTable、FilterBar…）已移除，
+        對應的元件見 README 的「舊元件遷移對照表」。
       </p>
 
       <ChptCodeBlock language="vue" :code="importCode" />

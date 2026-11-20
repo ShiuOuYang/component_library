@@ -10,6 +10,12 @@
 
 ### ⚠️ 破壞性變更
 
+- **移除舊的非 Chpt 元件與 `@/components/common` 入口**：`CodeBlock`、`CommonTable`、`CommonTooltip`、`DraggableModal`、
+  `FilterBar`、`FilterDropdown`、`FilterSelect`、`TagFilterDropdown`、`HeaderLogoutButton`、`ModalDock`、`PageSwitcher`、
+  `Pagination`、`PaginationControls`、`SimpleDarkModeToggle`、`TabNavigation`，別名 `FixedTable`、`ExcelEditor`、
+  `ExcelExporter`、`ExcelUploader`，以及 `@/components/common`（相容 facade）。它們原本都只是轉發給 Chpt 元件的薄包裝、
+  開發模式下會印棄用警告。改用對應的 Chpt 元件即可，對照表見 README 的「舊元件遷移對照表」；
+  `npm run check:legacy` 隨之移除（`verify` 與 CI 不再執行）。`warnDeprecated()` 保留，供之後的棄用使用。
 - **內建文字的 prop 預設值改為 `undefined`**（多語系）：原本寫死中文預設值的 prop —— 例如 ChptPopconfirm 的
   `message` / `confirmText` / `cancelText`、ChptTransfer 的 `titles` / `buttonTexts`、ChptUpload 的 `buttonText`、
   各圖表的 `emptyText`、GanttChart 的 `statuses`、StateTimeline 的 `states`、ParetoChart 的各種 label ——
