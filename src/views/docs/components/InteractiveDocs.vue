@@ -273,6 +273,40 @@
         <code>defectTypes</code> 的顏色是任何 CSS 顏色，建議選在照片上分得出來的飽和色；圓點有白邊，在深色背景上也看得到。
       </p>
     </section>
+
+    <!-- ============ ChptShiftRoster ============ -->
+    <section id="chpt-shift-roster" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptShiftRoster 排班表</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>產線、品保、設備課的輪班表。<strong>填入</strong>：選好班別後點格子，按住拖曳填一整段、Shift + 點填到上一次點的位置；
+        <strong>交換</strong>：把一格拖到同一天另一個人身上互換。下方是每天每班排了幾人 / 需要幾人（不足紅字 ▲）；
+        兩班之間休息不足（例如中班接隔天早班只隔 8 小時）、連續上班太多天會標 ⚠ 提醒（不阻止）。
+        鍵盤：方向鍵移動、按班別快捷鍵（D / E / N / O）直接填入、Delete 清除；交換模式空白鍵拿起、上下移動、空白鍵放下。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptShiftRoster } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptShiftRoster
+          v-model="roster"
+          :people="rosterPeople"
+          :shifts="rosterShifts"
+          start="2026-11-23"
+          :days="7"
+          :requirements="rosterRequirement"
+          label="SMT 一線 11/23 週排班"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="rosterSample" />
+      <ApiTable of="ChptShiftRoster" title="Props" :rows="rosterProps" />
+      <ApiTable of="-" title="RosterShift / RosterPerson" :rows="rosterDataRows" />
+      <ApiTable of="ChptShiftRoster" title="Events" :rows="rosterEvents" />
+      <ApiTable of="ChptShiftRoster" title="方法（ref）" :rows="rosterMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>休息時間用班別的 <code>start</code> / <code>end</code> 計算（下班時間 ≤ 上班時間表示跨夜，例如夜班 22:00 – 06:00）；
+        沒給時間的班別不檢查。規則只提醒不阻止 —— 調班、支援常有例外，由排班的人決定。
+      </p>
+    </section>
   </div>
 </template>
 
@@ -291,8 +325,80 @@ import {
   ChptTag,
   ChptDefectAnnotator,
   ChptSwitch,
+  ChptShiftRoster,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+
+// ---- ShiftRoster ----
+const rosterShifts = [
+  { code: 'D', label: '早班', start: '06:00', end: '14:00' },
+  { code: 'E', label: '中班', start: '14:00', end: '22:00' },
+  { code: 'N', label: '夜班', start: '22:00', end: '06:00' },
+  { code: 'O', label: '休', off: true },
+]
+const rosterPeople = [
+  { id: 'p1', name: '王小明', group: '領班' },
+  { id: 'p2', name: '陳怡君', group: '操作員' },
+  { id: 'p3', name: '林志豪', group: '操作員' },
+  { id: 'p4', name: '張雅婷', group: '操作員' },
+  { id: 'p5', name: '李承恩', group: '操作員' },
+  { id: 'p6', name: '黃柏翰', group: '技術員' },
+  { id: 'p7', name: '吳佩珊', group: '技術員' },
+]
+const rosterDays = ['2026-11-23', '2026-11-24', '2026-11-25', '2026-11-26', '2026-11-27', '2026-11-28', '2026-11-29']
+const rows = {
+  p1: 'DDDDDOO',
+  p2: 'DDDDOOD',
+  p3: 'EEEEEOO',
+  p4: 'EEDOOEE', // 中班接隔天早班：只休息 8 小時（提醒）
+  p5: 'NNNNNOO',
+  p6: 'NNOONND',
+  p7: 'DDDDDDD', // 連續上班 7 天：第 7 天超過上限 6 天（提醒）
+}
+const roster = ref(Object.fromEntries(Object.entries(rows).map(([id, codes]) => [id, Object.fromEntries([...codes].map((c, i) => [rosterDays[i], c]))])))
+// 平日早班 3 人、中班 / 夜班 2 人；週末各 1 人
+const rosterRequirement = (date, code) => {
+  const weekend = [0, 6].includes(new Date(`${date}T00:00:00`).getDay())
+  return weekend ? 1 : code === 'D' ? 3 : 2
+}
+const rosterSample = `<ChptShiftRoster
+  v-model="roster"
+  :people="[{ id: 'p1', name: '王小明', group: '領班' }, …]"
+  :shifts="[
+    { code: 'D', label: '早班', start: '06:00', end: '14:00' },
+    { code: 'E', label: '中班', start: '14:00', end: '22:00' },
+    { code: 'N', label: '夜班', start: '22:00', end: '06:00' },   // 跨夜
+    { code: 'O', label: '休', off: true },
+  ]"
+  start="2026-11-23" :days="7"
+  :requirements="{ D: 3, E: 2, N: 2 }"
+  :rules="{ minRestHours: 11, maxConsecutive: 6 }"
+/>
+
+// roster：{ p1: { '2026-11-23': 'D', '2026-11-24': 'D', … }, … }`
+const rosterProps = [
+  { name: 'people', type: 'RosterPerson[]', def: '—', desc: '人員（列）' },
+  { name: 'shifts', type: 'RosterShift[]', def: '—', desc: '班別：代碼、名稱、顏色、上下班時間、是否休假、快捷鍵' },
+  { name: 'modelValue', type: 'Roster', def: '{}', desc: '{ [人員 id]: { \'YYYY-MM-DD\': 班別代碼 } }（v-model）' },
+  { name: 'start / days', type: 'string | Date / number', def: '— / 7', desc: '第一天與天數' },
+  { name: 'requirements', type: 'Record<code, number> | (date, code) => number', def: '—', desc: '每天每班需要幾人（不足時紅字 ▲）' },
+  { name: 'rules', type: '{ minRestHours?, maxConsecutive? }', def: '{ 11, 6 }', desc: '規則提醒；0 為不檢查' },
+  { name: 'showStats / showWarnings', type: 'boolean', def: 'true', desc: '右側統計欄／下方列出規則提醒' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '唯讀（只能瀏覽）' },
+  { name: 'label', type: 'string', def: '語系', desc: '表格名稱（螢幕閱讀器）' },
+]
+const rosterDataRows = [
+  { name: 'RosterShift', type: '{ code, label, color?, start?, end?, off?, key? }', def: '—', desc: 'start / end 為 HH:mm，end ≤ start 表示跨夜；key 為鍵盤快捷鍵（預設代碼第一個字）' },
+  { name: 'RosterPerson', type: '{ id, name, group? }', def: '—', desc: 'group 顯示在名字下面' },
+]
+const rosterEvents = [
+  { name: 'update:modelValue', params: '(roster: Roster)', desc: '班表改變' },
+  { name: 'change', params: '(cells: { personId, date, code }[])', desc: '一次操作改到的格子（填一段、交換兩格都只送一次）' },
+]
+const rosterMethods = [
+  { name: 'shortages()', type: '() => { date, code, have, need }[]', desc: '目前人力不足的格子' },
+  { name: 'warnings()', type: '() => RosterWarning[]', desc: '目前的規則提醒（休息不足、連續上班）' },
+]
 
 // ---- DefectAnnotator ----
 /** 範例用的 PCB 示意圖（SVG） */

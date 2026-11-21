@@ -446,6 +446,7 @@ const navSections = [
           { label: 'ChptTooltip', id: 'chpt-tooltip' },
           { label: 'ChptKanban', id: 'chpt-kanban' },
           { label: 'ChptDefectAnnotator', id: 'chpt-defect-annotator' },
+          { label: 'ChptShiftRoster', id: 'chpt-shift-roster' },
         ],
       },
       {
