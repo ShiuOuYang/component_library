@@ -28,6 +28,7 @@ export {
   ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode, ChptCameraScanner,
   ChptDefectAnnotator,
   ChptEquipmentWall,
+  ChptFloorPlan,
   ChptLogViewer,
   ChptLotTrace,
   ChptChecklist,
@@ -75,7 +76,9 @@ export { createDetector, classifyCameraError, cameraAvailability, createDeduper 
 export type { ScanFormat, DetectedCode, CameraErrorKind, CodeDetector, ScanFrame } from './shared/cameraScan'
 export { rectFromCorners, moveMark, nextMarkId, countByType, markCenter } from './shared/defectMarks'
 export type { DefectMark, DefectType } from './shared/defectMarks'
-export { filterEquipment, sortEquipment, groupEquipment, countEquipment, averageUtilization, EQUIPMENT_STATUSES } from './shared/equipment'
+export { filterEquipment, sortEquipment, groupEquipment, countEquipment, averageUtilization, EQUIPMENT_STATUSES, EQUIPMENT_STATUS_COLOR, EQUIPMENT_STATUS_ICON } from './shared/equipment'
+export { fitTransform, zoomAt, clampPan } from './shared/floorPlan'
+export type { FloorPlanItem, FloorZone, ViewTransform } from './shared/floorPlan'
 export type { EquipmentItem, EquipmentStatus, EquipmentMetric } from './shared/equipment'
 export { parseLogLine, compileSearch as compileLogSearch, filterLogs, countLevels as countLogLevels, formatLogLine, formatLogTime, LOG_LEVELS } from './shared/logViewer'
 export type { LogEntry, LogLevel, LogMatcher } from './shared/logViewer'

@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptFloorPlan 廠區配置圖**：把機台畫在廠區平面圖上。狀態資料與 ChptEquipmentWall 相同（`EquipmentItem` 加上 `x` / `y` / `w` / `h`），
+  同一份資料可以兩種方式看。平面圖可用背景圖片（`backgroundSrc`）或區域（`zones`），座標用自己的單位。停機的外圈閃動（減少動態效果時不閃）；
+  Ctrl + 滾輪 / 兩指縮放、拖曳平移、右下角按鈕（一般滾輪照常捲動頁面）；點機台看明細卡（`#detail` 插槽）；圖例可只突顯某個狀態。
+  名稱放不下時縮短（放大後看到全名）、手機上框高跟著平面圖比例。鍵盤：方向鍵依位置移到最近的機台（移到畫面外會自動平移）、
+  Enter / Esc、+ / − / 0 縮放。新增 `shared/floorPlan.ts`（`fitTransform()`、`zoomAt()`、`clampPan()`）與語系群組 `floorPlan`；
+  狀態顏色與圖示移到 `shared/equipment.ts`（`EQUIPMENT_STATUS_COLOR`、`EQUIPMENT_STATUS_ICON`）與狀態牆共用。
 - **ChptLogViewer 設備日誌**：設備、通訊、排程的即時日誌。固定列高的虛擬捲動（只畫看得到的列，幾萬筆也順）；等級篩選（含各等級筆數，
   debug 預設隱藏）、搜尋並標出關鍵字（`/pattern/i` 為正規式，寫錯時提示並退回一般搜尋）。跟隨最新：新紀錄進來時自動捲到底，
   往上捲就暫停並顯示「N 筆新紀錄」；以「上一次最後一筆」偵測新紀錄，呼叫端只保留最後 N 筆（筆數不變）時也正確。

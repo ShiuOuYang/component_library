@@ -37,6 +37,24 @@ export interface EquipmentItem {
 export const STATUS_PRIORITY: Record<EquipmentStatus, number> = { down: 0, maintenance: 1, idle: 2, offline: 3, run: 4 }
 export const EQUIPMENT_STATUSES: EquipmentStatus[] = ['run', 'idle', 'maintenance', 'down', 'offline']
 
+const role = (name: string) => `rgb(var(--t-${name}))`
+/** 狀態顏色（主題化角色，深色模式跟著變）—— 狀態牆與廠區配置圖共用 */
+export const EQUIPMENT_STATUS_COLOR: Record<EquipmentStatus, string> = {
+  run: role('success-solid'),
+  idle: role('warning-solid'),
+  maintenance: role('info-solid'),
+  down: role('danger-solid'),
+  offline: role('stroke-dark'),
+}
+/** 狀態圖示（Material Symbols）：狀態不能只靠顏色分辨 */
+export const EQUIPMENT_STATUS_ICON: Record<EquipmentStatus, string> = {
+  run: 'play_circle',
+  idle: 'pause_circle',
+  maintenance: 'build',
+  down: 'error',
+  offline: 'cloud_off',
+}
+
 /** 依狀態與關鍵字篩選（關鍵字比對名稱、id、工單、料號，不分大小寫） */
 export function filterEquipment(items: EquipmentItem[], statuses: EquipmentStatus[] | null, query = ''): EquipmentItem[] {
   const q = query.trim().toLowerCase()
