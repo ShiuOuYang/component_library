@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptLotTrace 批號追溯圖**：客訴、召回、異常調查用。資料是「投入 → 產出」的關係（`links: { from, to, qty, unit }`），
+  可往上游（用了哪些料）、下游（做成了什麼、出給誰）或雙向追溯。圖形檢視：查詢的批號在中間、上游在左、下游在右，連線標用量，
+  依鄰居位置排序減少交叉；點一個批號高亮它與查詢批號之間的所有路徑。hold（隔離）紅框 + HOLD、suspect（可疑）虛線黃框；
+  搜尋時其他批號變淡。清單檢視：上游、下游各一棵 ChptTree（循環資料只展開一次）。鍵盤：方向鍵沿著連線 / 同一欄移動、Enter 選取。
+  新增 `shared/lotTrace.ts`（`traceLayers()`、`layoutTrace()`、`tracePath()`、`traceTree()`）與語系群組 `lotTrace`。
 - **ChptChecklist 點檢表**：設備點檢、首件檢查、IPQC 巡檢用。三種項目：check（合格 / 不合格 / 不適用，大按鍵、顏色 + 圖示 + 文字、
   radiogroup 鍵盤操作）、measure（填量測值，依 `lsl` / `usl` 自動判定，可選 `numpad` 數字鍵盤）、text（記錄批號等）。
   不合格時出現原因欄（`requireNoteOnNg` 預設必填）；`allowPhotos` 可附照片（`photoReader` 可改成上傳後存網址）。
