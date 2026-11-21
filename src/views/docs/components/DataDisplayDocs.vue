@@ -296,6 +296,45 @@
       <ApiTable of="ChptBarcode" title="方法（ref）" :rows="barcodeMethods" />
     </section>
 
+    <!-- ============ ChptLotTrace ============ -->
+    <section id="chpt-lot-trace" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptLotTrace 批號追溯圖</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>客訴、召回、異常調查。資料是「投入 → 產出」的關係（<code>links: { from, to, qty }</code>）：
+        往<strong>上游</strong>追這個批號用了哪些料（找原因），往<strong>下游</strong>找它做成了哪些產品、出給誰（找影響範圍）。
+        查詢的批號在中間，上游在左、下游在右；點一個批號會高亮它與查詢批號之間的所有路徑。隔離（hold）與可疑（suspect）批號有標記；
+        「清單」檢視是上游、下游各一棵樹。鍵盤：Tab 進入圖形後方向鍵移動、Enter 選取。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptLotTrace } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light space-y-3">
+        <div class="flex flex-wrap items-center gap-2 text-sm text-content-secondary">
+          <span>查詢批號：</span>
+          <ChptSegmented v-model="traceRoot" :options="traceRoots" aria-label="查詢批號" size="xs" />
+        </div>
+        <ChptLotTrace
+          :key="traceRoot"
+          v-model:selected="traceSelected"
+          :nodes="traceNodes"
+          :links="traceLinks"
+          :root-id="traceRoot"
+          :kinds="traceKinds"
+          :default-direction="traceRoot === 'SP-2610-33' ? 'forward' : 'both'"
+        />
+        <p class="text-sm text-content-secondary" aria-live="polite">選取：<span class="font-mono">{{ traceSelected ?? '（無）' }}</span></p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="traceSample" />
+      <ApiTable of="ChptLotTrace" title="Props" :rows="traceProps" />
+      <ApiTable of="-" title="TraceNode / TraceLink" :rows="traceDataRows" />
+      <ApiTable of="ChptLotTrace" title="Events" :rows="traceEvents" />
+      <ApiTable of="ChptLotTrace" title="方法（ref）" :rows="traceMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>同一個批號被好幾個產品用到時，在清單檢視會出現在好幾個分支；資料有循環（A 用了 B、B 又用了 A）時只展開一次並標示。
+        追溯範圍很大時用 <code>max-depth</code> 限制層數。
+      </p>
+    </section>
+
   </div>
 </template>
 
@@ -316,6 +355,7 @@ import {
   ChptSegmented,
   ChptButton,
   ChptSwitch,
+  ChptLotTrace,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -604,6 +644,78 @@ const barcodeProps = [
   { name: 'padding', type: 'number', def: '0', desc: '外框留白（px）' },
   { name: 'checkDigit', type: 'boolean', def: 'false', desc: 'Code 39 加上 mod 43 檢查碼（顯示在文字最後）' },
 ]
+// ---- ChptLotTrace ----
+const traceKinds = {
+  material: { label: '原料' },
+  wip: { label: '半成品' },
+  product: { label: '成品' },
+  shipment: { label: '出貨' },
+}
+const traceNodes = [
+  { id: 'PCB-R3-2609A', label: 'PCB-R3-2609A', kind: 'material', sublabel: '板廠 A' },
+  { id: 'IC-7731-L22', label: 'IC-7731-L22', kind: 'material', sublabel: 'MCU' },
+  { id: 'RES-0402-R88', label: 'RES-0402-R88', kind: 'material', sublabel: '電阻料捲' },
+  { id: 'SP-2610-33', label: 'SP-2610-33', kind: 'material', sublabel: '錫膏', status: 'suspect' },
+  { id: 'PCBA-2611-A07', label: 'PCBA-2611-A07', kind: 'wip', sublabel: 'SMT 一線' },
+  { id: 'PCBA-2611-A09', label: 'PCBA-2611-A09', kind: 'wip', sublabel: 'SMT 二線' },
+  { id: 'HSG-2610-12', label: 'HSG-2610-12', kind: 'material', sublabel: '外殼' },
+  { id: 'FG-2611-0042', label: 'FG-2611-0042', kind: 'product', sublabel: '控制器 C12' },
+  { id: 'FG-2611-0051', label: 'FG-2611-0051', kind: 'product', sublabel: '控制器 C12', status: 'hold' },
+  { id: 'DN-88120', label: 'DN-88120', kind: 'shipment', sublabel: '客戶 甲' },
+  { id: 'DN-88131', label: 'DN-88131', kind: 'shipment', sublabel: '客戶 乙' },
+]
+const traceLinks = [
+  { from: 'PCB-R3-2609A', to: 'PCBA-2611-A07', qty: 480, unit: 'pcs' },
+  { from: 'IC-7731-L22', to: 'PCBA-2611-A07', qty: 480, unit: 'pcs' },
+  { from: 'RES-0402-R88', to: 'PCBA-2611-A07', qty: 9600, unit: 'pcs' },
+  { from: 'SP-2610-33', to: 'PCBA-2611-A07', qty: 1.2, unit: 'kg' },
+  { from: 'SP-2610-33', to: 'PCBA-2611-A09', qty: 0.8, unit: 'kg' },
+  { from: 'PCB-R3-2609A', to: 'PCBA-2611-A09', qty: 320, unit: 'pcs' },
+  { from: 'PCBA-2611-A07', to: 'FG-2611-0042', qty: 480, unit: 'pcs' },
+  { from: 'HSG-2610-12', to: 'FG-2611-0042', qty: 480, unit: 'pcs' },
+  { from: 'PCBA-2611-A09', to: 'FG-2611-0051', qty: 320, unit: 'pcs' },
+  { from: 'FG-2611-0042', to: 'DN-88120', qty: 300, unit: 'pcs' },
+  { from: 'FG-2611-0042', to: 'DN-88131', qty: 180, unit: 'pcs' },
+]
+const traceRoots = [
+  { label: '成品 FG-2611-0042（客訴）', value: 'FG-2611-0042' },
+  { label: '錫膏 SP-2610-33（可疑料）', value: 'SP-2610-33' },
+]
+const traceRoot = ref('FG-2611-0042')
+const traceSelected = ref(null)
+const traceSample = `<ChptLotTrace
+  v-model:selected="selected"
+  :nodes="nodes"
+  :links="links"
+  root-id="FG-2611-0042"
+  :kinds="{ material: { label: '原料' }, wip: { label: '半成品' }, product: { label: '成品' } }"
+/>
+
+// nodes：[{ id: 'SP-2610-33', label: 'SP-2610-33', kind: 'material', sublabel: '錫膏', status: 'suspect' }, ...]
+// links：[{ from: 'SP-2610-33', to: 'PCBA-2611-A07', qty: 1.2, unit: 'kg' }, ...]  // from 投入 → to 產出`
+const traceProps = [
+  { name: 'nodes / links', type: 'TraceNode[] / TraceLink[]', def: '—', desc: '批號與「投入 → 產出」關係' },
+  { name: 'rootId', type: 'string', def: '—', desc: '查詢的批號（放在中間）' },
+  { name: 'selected', type: 'string | null', def: 'null', desc: '選取的批號（v-model:selected）；高亮它與查詢批號之間的路徑' },
+  { name: 'defaultDirection', type: "'backward' | 'forward' | 'both'", def: "'both'", desc: '預設追溯方向（工具列可切換）' },
+  { name: 'defaultView', type: "'graph' | 'list'", def: "'graph'", desc: '預設檢視方式（工具列可切換）' },
+  { name: 'maxDepth', type: 'number', def: 'Infinity', desc: '最多追幾層' },
+  { name: 'kinds', type: 'Record<string, { label, color? }>', def: '{}', desc: '種類名稱與顏色（node.kind）；沒給顏色時依序用圖表色' },
+  { name: 'showQty', type: 'boolean', def: 'true', desc: '連線上顯示用量' },
+]
+const traceDataRows = [
+  { name: 'TraceNode.id / label', type: 'string', def: '—', desc: '批號／顯示名稱' },
+  { name: 'TraceNode.kind / sublabel', type: 'string', def: '—', desc: '種類（顏色）／第二行小字' },
+  { name: 'TraceNode.status', type: "'normal' | 'hold' | 'suspect'", def: '—', desc: '隔離（紅框、HOLD）／可疑（虛線黃框）' },
+  { name: 'TraceLink.from / to', type: 'string', def: '—', desc: '投入的批號 → 產出的批號' },
+  { name: 'TraceLink.qty / unit', type: 'number / string', def: '—', desc: '用量（連線上與清單裡顯示）' },
+]
+const traceEvents = [
+  { name: 'update:selected', params: '(id: string | null)', desc: '選取改變' },
+  { name: 'node-click', params: '(node: TraceNode)', desc: '點選（或 Enter）一個批號' },
+]
+const traceMethods = [{ name: 'select(id)', type: '(id: string | null) => void', desc: '選取某個批號；null 取消選取' }]
+
 const barcodeMethods = [{ name: 'toSVG()', type: '() => string', desc: '目前條碼的 SVG 原始碼（列印、下載用）；無法編碼時為空字串' }]
 
 const qrRef = useTemplateRef('qrRef')

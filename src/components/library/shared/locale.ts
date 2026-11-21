@@ -187,6 +187,27 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  lotTrace: {
+    direction: string
+    backward: string
+    both: string
+    forward: string
+    view: string
+    graph: string
+    list: string
+    search: string
+    upstream: string
+    downstream: string
+    legend: string
+    hold: string
+    suspect: string
+    repeat: string
+    root: string
+    upLevel: (n: number) => string
+    downLevel: (n: number) => string
+    graphLabel: (root: string) => string
+    summary: (up: number, down: number, hold: number) => string
+  }
   equipment: {
     status: { run: string; idle: string; maintenance: string; down: string; offline: string }
     filterLabel: string
@@ -922,6 +943,27 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  lotTrace: {
+    direction: '追溯方向',
+    backward: '上游',
+    both: '雙向',
+    forward: '下游',
+    view: '檢視方式',
+    graph: '圖形',
+    list: '清單',
+    search: '搜尋批號',
+    upstream: '上游（用了哪些料）',
+    downstream: '下游（做成了什麼）',
+    legend: '種類',
+    hold: '隔離',
+    suspect: '可疑',
+    repeat: '（循環，已在上層出現）',
+    root: '查詢的批號',
+    upLevel: (n) => `上游第 ${n} 層`,
+    downLevel: (n) => `下游第 ${n} 層`,
+    graphLabel: (root) => `${root} 的追溯圖`,
+    summary: (up, down, hold) => `上游 ${up} 個、下游 ${down} 個批號${hold ? `，隔離 ${hold} 個` : ''}`,
+  },
   equipment: {
     status: { run: '運轉', idle: '待機', maintenance: '保養', down: '停機', offline: '離線' },
     filterLabel: '依狀態篩選',
@@ -1722,6 +1764,27 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  lotTrace: {
+    direction: 'Trace direction',
+    backward: 'Upstream',
+    both: 'Both',
+    forward: 'Downstream',
+    view: 'View',
+    graph: 'Graph',
+    list: 'List',
+    search: 'Search lots',
+    upstream: 'Upstream (what went in)',
+    downstream: 'Downstream (what it became)',
+    legend: 'Kinds',
+    hold: 'Hold',
+    suspect: 'Suspect',
+    repeat: '(cycle, shown above)',
+    root: 'Queried lot',
+    upLevel: (n) => `Upstream level ${n}`,
+    downLevel: (n) => `Downstream level ${n}`,
+    graphLabel: (root) => `Trace graph of ${root}`,
+    summary: (up, down, hold) => `${up} upstream, ${down} downstream lots${hold ? `, ${hold} on hold` : ''}`,
+  },
   equipment: {
     status: { run: 'Running', idle: 'Idle', maintenance: 'Maintenance', down: 'Down', offline: 'Offline' },
     filterLabel: 'Filter by status',
