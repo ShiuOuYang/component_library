@@ -29,6 +29,7 @@ export {
   ChptDefectAnnotator,
   ChptEquipmentWall,
   ChptLotTrace,
+  ChptChecklist,
   ChptSignaturePad,
   ChptNumpad,
 } from './ui/index.js'
@@ -77,6 +78,8 @@ export { filterEquipment, sortEquipment, groupEquipment, countEquipment, average
 export type { EquipmentItem, EquipmentStatus, EquipmentMetric } from './shared/equipment'
 export { traceLayers, traceTree, tracePath, layoutTrace } from './shared/lotTrace'
 export type { TraceNode, TraceLink, TraceDirection, TraceLayout, TraceTreeNode } from './shared/lotTrace'
+export { judgeMeasure, itemStatus as checklistItemStatus, itemIssue as checklistItemIssue, checklistSummary, updateResult as updateChecklistResult, groupChecklist } from './shared/checklist'
+export type { ChecklistItem, ChecklistItemType, ChecklistStatus, ChecklistResult, ChecklistResults, ChecklistSummary } from './shared/checklist'
 export { createWidthTracker, signatureBounds, signatureToSVG, exportRect as signatureExportRect } from './shared/signature'
 export type { SignaturePoint, SignatureStroke, SignatureWidthOptions, SignatureInput, SignatureBounds, SignatureSvgOptions } from './shared/signature'
 export { useConfig, useLocale, provideConfig, zhTW, enUS, mergeLocale } from './shared/config'

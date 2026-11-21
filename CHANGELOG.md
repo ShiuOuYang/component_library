@@ -47,6 +47,11 @@
   依鄰居位置排序減少交叉；點一個批號高亮它與查詢批號之間的所有路徑。hold（隔離）紅框 + HOLD、suspect（可疑）虛線黃框；
   搜尋時其他批號變淡。清單檢視：上游、下游各一棵 ChptTree（循環資料只展開一次）。鍵盤：方向鍵沿著連線 / 同一欄移動、Enter 選取。
   新增 `shared/lotTrace.ts`（`traceLayers()`、`layoutTrace()`、`tracePath()`、`traceTree()`）與語系群組 `lotTrace`。
+- **ChptChecklist 點檢表**：設備點檢、首件檢查、IPQC 巡檢用。三種項目：check（合格 / 不合格 / 不適用，大按鍵、顏色 + 圖示 + 文字、
+  radiogroup 鍵盤操作）、measure（填量測值，依 `lsl` / `usl` 自動判定，可選 `numpad` 數字鍵盤）、text（記錄批號等）。
+  不合格時出現原因欄（`requireNoteOnNg` 預設必填）；`allowPhotos` 可附照片（`photoReader` 可改成上傳後存網址）。
+  上方進度條與不合格數，可篩選待處理 / 不合格；`validate()` 標出未填與缺原因的項目並捲到、聚焦第一個；`#footer` 插槽放簽名與送出。
+  新增 `shared/checklist.ts`（`ChecklistItem`、`ChecklistResult`、`judgeMeasure()`、`checklistSummary()` 等）與語系群組 `checklist`。
 
 - **ChptEquipmentWall 機台狀態牆**：產線看板、值班畫面用。每台一張卡：狀態（顏色 + 圖示 + 文字）、已持續多久、警報原因、
   工單 / 料號、稼動率與最多三個數值；停機的卡片整張帶紅。工具列的各狀態數量也是篩選（可多選），可搜尋名稱、編號、工單、料號，

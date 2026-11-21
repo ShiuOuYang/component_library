@@ -380,6 +380,7 @@ const navSections = [
           { label: 'ChptSchemaForm', id: 'chpt-schema-form' },
           { label: 'ChptRichTextEditor', id: 'chpt-rich-text' },
           { label: 'ChptSignaturePad', id: 'chpt-signature' },
+          { label: 'ChptChecklist', id: 'chpt-checklist' },
           { label: 'ChptUpload', id: 'chpt-upload' },
         ],
       },

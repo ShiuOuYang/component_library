@@ -208,6 +208,36 @@ export interface ChptLocale {
     graphLabel: (root: string) => string
     summary: (up: number, down: number, hold: number) => string
   }
+  checklist: {
+    status: { ok: string; ng: string; na: string }
+    progress: (done: number, total: number) => string
+    progressLabel: string
+    ngCount: (n: number) => string
+    naCount: (n: number) => string
+    filterLabel: string
+    filterAll: string
+    filterTodo: string
+    filterNg: string
+    required: string
+    requiredSr: string
+    value: string
+    spec: (range: string) => string
+    specWithTarget: (range: string, target: string) => string
+    inSpec: string
+    outOfSpec: string
+    numpadFor: (label: string) => string
+    ngReason: string
+    note: string
+    notePlaceholder: string
+    addPhoto: string
+    photoAlt: (label: string, n: number) => string
+    removePhoto: (label: string, n: number) => string
+    missing: string
+    noteRequired: string
+    allDone: string
+    noNg: string
+    issues: (n: number) => string
+  }
   equipment: {
     status: { run: string; idle: string; maintenance: string; down: string; offline: string }
     filterLabel: string
@@ -963,6 +993,36 @@ export const zhTW: ChptLocale = {
     downLevel: (n) => `下游第 ${n} 層`,
     graphLabel: (root) => `${root} 的追溯圖`,
     summary: (up, down, hold) => `上游 ${up} 個、下游 ${down} 個批號${hold ? `，隔離 ${hold} 個` : ''}`,
+  },
+  checklist: {
+    status: { ok: '合格', ng: '不合格', na: '不適用' },
+    progress: (done, total) => `已完成 ${done} / ${total}`,
+    progressLabel: '點檢進度',
+    ngCount: (n) => `不合格 ${n}`,
+    naCount: (n) => `不適用 ${n}`,
+    filterLabel: '顯示項目',
+    filterAll: '全部',
+    filterTodo: '待處理',
+    filterNg: '不合格',
+    required: '必填',
+    requiredSr: '（必填）',
+    value: '量測值',
+    spec: (range) => `規格 ${range}`,
+    specWithTarget: (range, target) => `規格 ${range}（目標 ${target}）`,
+    inSpec: '規格內',
+    outOfSpec: '超出規格',
+    numpadFor: (label) => `用數字鍵盤輸入：${label}`,
+    ngReason: '不合格原因 / 處置',
+    note: '備註',
+    notePlaceholder: '例如：皮帶磨損，已通知保養',
+    addPhoto: '拍照 / 加入照片',
+    photoAlt: (label, n) => `${label} 的照片 ${n}`,
+    removePhoto: (label, n) => `移除 ${label} 的照片 ${n}`,
+    missing: '尚未填寫',
+    noteRequired: '不合格需要填寫原因',
+    allDone: '全部完成',
+    noNg: '沒有不合格的項目',
+    issues: (n) => `還有 ${n} 項需要處理`,
   },
   equipment: {
     status: { run: '運轉', idle: '待機', maintenance: '保養', down: '停機', offline: '離線' },
@@ -1784,6 +1844,36 @@ export const enUS: ChptLocale = {
     downLevel: (n) => `Downstream level ${n}`,
     graphLabel: (root) => `Trace graph of ${root}`,
     summary: (up, down, hold) => `${up} upstream, ${down} downstream lots${hold ? `, ${hold} on hold` : ''}`,
+  },
+  checklist: {
+    status: { ok: 'OK', ng: 'NG', na: 'N/A' },
+    progress: (done, total) => `${done} / ${total} done`,
+    progressLabel: 'Checklist progress',
+    ngCount: (n) => `${n} NG`,
+    naCount: (n) => `${n} N/A`,
+    filterLabel: 'Show items',
+    filterAll: 'All',
+    filterTodo: 'To do',
+    filterNg: 'NG',
+    required: 'Required',
+    requiredSr: '(required)',
+    value: 'Value',
+    spec: (range) => `Spec ${range}`,
+    specWithTarget: (range, target) => `Spec ${range} (target ${target})`,
+    inSpec: 'In spec',
+    outOfSpec: 'Out of spec',
+    numpadFor: (label) => `Enter with number pad: ${label}`,
+    ngReason: 'NG reason / action',
+    note: 'Note',
+    notePlaceholder: 'e.g. Belt worn, maintenance notified',
+    addPhoto: 'Take / add photo',
+    photoAlt: (label, n) => `Photo ${n} of ${label}`,
+    removePhoto: (label, n) => `Remove photo ${n} of ${label}`,
+    missing: 'Not filled in',
+    noteRequired: 'NG items need a reason',
+    allDone: 'All done',
+    noNg: 'No NG items',
+    issues: (n) => `${n} item(s) need attention`,
   },
   equipment: {
     status: { run: 'Running', idle: 'Idle', maintenance: 'Maintenance', down: 'Down', offline: 'Offline' },
