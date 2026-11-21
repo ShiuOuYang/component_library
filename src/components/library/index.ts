@@ -28,6 +28,7 @@ export {
   ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode, ChptCameraScanner,
   ChptDefectAnnotator,
   ChptEquipmentWall,
+  ChptChecklist,
   ChptSignaturePad,
   ChptNumpad,
 } from './ui/index.js'
@@ -74,6 +75,8 @@ export { rectFromCorners, moveMark, nextMarkId, countByType, markCenter } from '
 export type { DefectMark, DefectType } from './shared/defectMarks'
 export { filterEquipment, sortEquipment, groupEquipment, countEquipment, averageUtilization, EQUIPMENT_STATUSES } from './shared/equipment'
 export type { EquipmentItem, EquipmentStatus, EquipmentMetric } from './shared/equipment'
+export { judgeMeasure, itemStatus as checklistItemStatus, itemIssue as checklistItemIssue, checklistSummary, updateResult as updateChecklistResult, groupChecklist } from './shared/checklist'
+export type { ChecklistItem, ChecklistItemType, ChecklistStatus, ChecklistResult, ChecklistResults, ChecklistSummary } from './shared/checklist'
 export { createWidthTracker, signatureBounds, signatureToSVG, exportRect as signatureExportRect } from './shared/signature'
 export type { SignaturePoint, SignatureStroke, SignatureWidthOptions, SignatureInput, SignatureBounds, SignatureSvgOptions } from './shared/signature'
 export { useConfig, useLocale, provideConfig, zhTW, enUS, mergeLocale } from './shared/config'
