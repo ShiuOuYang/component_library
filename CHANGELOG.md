@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **RadarChart 雷達圖**（charts）：同時比較幾個對象在多個指標上的表現（供應商評分、各線 OEE 三率）。每一軸有自己的範圍
+  （不給 max 時取最大值取整，`max` 讓所有軸共用刻度）；`lowerIsBetter` 的指標反轉方向、軸名稱標 ↓，整張圖「越大越好」一致。
+  滑過點看數值、滑過圖例突顯、點圖例顯示 / 隱藏（aria-pressed，`visibility-change` 事件）；沒有值的軸畫在中心、不畫點。
+  附隱藏的資料表（指標 × 系列）給螢幕閱讀器。新增 `charts/utils/radar.ts`（`radarScales()`、`radarRatio()`）與語系群組 `radar`。
+
 - **ChptFloorPlan 廠區配置圖**：把機台畫在廠區平面圖上。狀態資料與 ChptEquipmentWall 相同（`EquipmentItem` 加上 `x` / `y` / `w` / `h`），
   同一份資料可以兩種方式看。平面圖可用背景圖片（`backgroundSrc`）或區域（`zones`），座標用自己的單位。停機的外圈閃動（減少動態效果時不閃）；
   Ctrl + 滾輪 / 兩指縮放、拖曳平移、右下角按鈕（一般滾輪照常捲動頁面）；點機台看明細卡（`#detail` 插槽）；圖例可只突顯某個狀態。

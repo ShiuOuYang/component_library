@@ -577,7 +577,7 @@ const navSections = [
       },
       {
         to: '/docs/components/kpi-charts', icon: '🎛️', label: 'KPI 卡片與小圖',
-        anchors: [{ label: 'KPI 卡片', id: 'cards' }, { label: '迷你趨勢線', id: 'sparkline' }, { label: '儀表', id: 'gauge' }, { label: '子彈圖', id: 'bullet' }, { label: '良率漏斗', id: 'funnel' }, { label: '日曆熱圖', id: 'calendar' }, { label: 'API', id: 'api' }],
+        anchors: [{ label: 'KPI 卡片', id: 'cards' }, { label: '迷你趨勢線', id: 'sparkline' }, { label: '儀表', id: 'gauge' }, { label: '子彈圖', id: 'bullet' }, { label: '良率漏斗', id: 'funnel' }, { label: '日曆熱圖', id: 'calendar' }, { label: '雷達圖', id: 'radar' }, { label: 'API', id: 'api' }],
       },
     ],
   },

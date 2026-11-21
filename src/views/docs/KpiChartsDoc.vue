@@ -168,6 +168,28 @@
         <ChptCodeBlock class="mt-4" :code="calendarCode" />
       </section>
 
+      <section id="radar" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">RadarChart 雷達圖</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          同時比較幾個對象在多個指標上的表現：一個對象一個多邊形，「哪一項特別弱」一眼看出來。每一軸有自己的範圍；
+          <code>lowerIsBetter</code> 的指標（不良率、交期天數）反轉方向 —— 越好越靠外圈，整張圖「越大越好」才一致，軸名稱標 ↓。
+          滑過點看數值、滑過圖例突顯、點圖例顯示 / 隱藏。指標超過 8 個或系列超過 4 個時建議改用長條圖。
+        </p>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
+            <div style="height: 360px">
+              <RadarChart :axes="supplierAxes" :series="supplierSeries" title="供應商評分（2026 Q3）" auto-resize />
+            </div>
+          </div>
+          <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
+            <div style="height: 360px">
+              <RadarChart :axes="oeeAxes" :series="oeeSeries" :max="100" :levels="5" title="各線 OEE 三率（%）" auto-resize />
+            </div>
+          </div>
+        </div>
+        <ChptCodeBlock class="mt-4" :code="radarCode" />
+      </section>
+
       <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <h3 class="text-lg font-semibold text-content-primary mt-4">ChptKpiCard</h3>
@@ -192,6 +214,10 @@
         <ApiTable of="CalendarHeatmap" title="Props" :rows="calendarProps" />
         <ApiTable of="CalendarHeatmap" title="Events" :rows="calendarEvents" />
         <ApiTable of="CalendarHeatmap" title="方法（ref）" :rows="calendarMethods" />
+        <h3 class="text-lg font-semibold text-content-primary mt-6">RadarChart</h3>
+        <ApiTable of="RadarChart" title="Props" :rows="radarProps" />
+        <ApiTable of="-" title="RadarAxis / RadarSeries" :rows="radarDataRows" />
+        <ApiTable of="RadarChart" title="Events" :rows="radarEvents" />
       </section>
     </div>
   </div>
@@ -199,7 +225,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { BulletChart, CalendarHeatmap, ChptButton, ChptCodeBlock, ChptKpiCard, GaugeChart, SparklineChart, YieldFunnel } from '@/components/library'
+import { BulletChart, CalendarHeatmap, RadarChart, ChptButton, ChptCodeBlock, ChptKpiCard, GaugeChart, SparklineChart, YieldFunnel } from '@/components/library'
 import ApiTable from './components/_ApiTable.vue'
 
 // ---- CalendarHeatmap：固定種子的示範資料（每次重新整理都一樣） ----
@@ -219,6 +245,64 @@ const defectDays = dayList('2026-11-20', 182)
 const rnd2 = seeded(42)
 const yieldDays = dayList('2026-11-20', 120).map((dt) => ({ date: keyOf(dt), value: Math.round((99.2 - rnd2() ** 3 * 7) * 10) / 10 }))
 const pickedDay = ref(null)
+
+// ---- RadarChart ----
+const supplierAxes = [
+  { key: 'quality', label: '品質分數', max: 100 },
+  { key: 'otd', label: '準時交貨率', max: 100, unit: '%' },
+  { key: 'price', label: '價格競爭力', max: 100 },
+  { key: 'service', label: '服務', max: 100 },
+  { key: 'ppm', label: '不良率', max: 1500, unit: 'ppm', lowerIsBetter: true },
+  { key: 'lead', label: '交期', max: 30, unit: '天', lowerIsBetter: true },
+]
+const supplierSeries = [
+  { name: '板廠 A', values: { quality: 92, otd: 96, price: 70, service: 85, ppm: 320, lead: 12 } },
+  { name: '板廠 B', values: { quality: 78, otd: 88, price: 92, service: 70, ppm: 900, lead: 9 } },
+  { name: '板廠 C', values: { quality: 85, otd: 72, price: 80, service: 90, ppm: 540, lead: 21 } },
+]
+const oeeAxes = [
+  { key: 'avail', label: '稼動率', unit: '%' },
+  { key: 'perf', label: '性能稼動率', unit: '%' },
+  { key: 'quality', label: '良品率', unit: '%' },
+  { key: 'oee', label: 'OEE', unit: '%' },
+]
+const oeeSeries = [
+  { name: 'SMT 一線', values: { avail: 92, perf: 88, quality: 99.1, oee: 80.2 } },
+  { name: 'SMT 二線', values: { avail: 78, perf: 91, quality: 98.4, oee: 69.9 } },
+]
+const radarCode = `<RadarChart
+  :axes="[
+    { key: 'quality', label: '品質分數', max: 100 },
+    { key: 'ppm', label: '不良率', max: 1500, unit: 'ppm', lowerIsBetter: true },   // 越小越好：反轉方向
+    …
+  ]"
+  :series="[{ name: '板廠 A', values: { quality: 92, ppm: 320, … } }, …]"
+  title="供應商評分" auto-resize
+/>
+
+<!-- 同一單位的指標：max 讓所有軸刻度一致 -->
+<RadarChart :axes="oeeAxes" :series="lines" :max="100" :levels="5" />`
+const radarProps = [
+  { name: 'axes', type: 'RadarAxis[]', def: '—', desc: '指標（每一軸）' },
+  { name: 'series', type: 'RadarSeries[]', def: '—', desc: '比較的對象（每個一個多邊形）' },
+  { name: 'width / height', type: 'number', def: '480 / 400', desc: '尺寸（autoResize 時跟著容器）' },
+  { name: 'autoResize / debounceDelay', type: 'boolean / number', def: 'false / 100', desc: '跟著容器大小（容器要有高度）／防抖毫秒' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'levels', type: 'number', def: '4', desc: '網格圈數' },
+  { name: 'max', type: 'number | null', def: 'null', desc: '所有軸共用的最大值（軸自己的 max 優先）' },
+  { name: 'fillOpacity', type: 'number', def: '0.18', desc: '填色透明度' },
+  { name: 'showLegend', type: 'boolean', def: 'true', desc: '圖例（點選顯示 / 隱藏、滑過突顯）' },
+  { name: 'valueFormat', type: '(v, axis) => string', def: '千分位', desc: 'tooltip 與資料表的數值格式' },
+  { name: 'emptyText', type: 'string', def: '語系', desc: '沒有資料時的文字' },
+]
+const radarDataRows = [
+  { name: 'RadarAxis', type: '{ key, label, min?, max?, unit?, lowerIsBetter? }', def: '—', desc: '沒給 max 時取所有系列的最大值再取整；lowerIsBetter 反轉方向' },
+  { name: 'RadarSeries', type: '{ name, values: Record<key, number | null>, color? }', def: '—', desc: '沒有值的軸畫在中心、資料表顯示 —' },
+]
+const radarEvents = [
+  { name: 'visibility-change', params: '(visible: string[])', desc: '點圖例後目前顯示的系列' },
+  { name: 'chart-resize', params: '({ width, height })', desc: 'autoResize 時尺寸改變' },
+]
 const calendarCode = `<CalendarHeatmap :data="rows" title="SMT 每日異常件數" unit="件" @cell-click="openDay" />
 <!-- rows：[{ date: '2026-11-20', value: 12 }, ...]（同一天多筆會加總） -->
 
