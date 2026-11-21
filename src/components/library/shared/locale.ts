@@ -752,6 +752,16 @@ export interface ChptLocale {
     title: string
     target: (value: string) => string
   }
+  sankey: {
+    title: string
+    empty: string
+    source: string
+    target: string
+    value: string
+    inflow: (v: string) => string
+    outflow: (v: string) => string
+    share: (source: string, pct: string) => string
+  }
   calendarHeatmap: {
     legend: string
     less: string
@@ -1615,6 +1625,16 @@ export const zhTW: ChptLocale = {
   bullet: {
     title: '子彈圖',
     target: (value) => `目標 ${value}`,
+  },
+  sankey: {
+    title: '流向圖',
+    empty: '沒有資料',
+    source: '來源',
+    target: '去向',
+    value: '數量',
+    inflow: (v) => `流入 ${v}`,
+    outflow: (v) => `流出 ${v}`,
+    share: (source, pct) => `佔 ${source} 流出的 ${pct}`,
   },
   calendarHeatmap: {
     legend: '圖例',
@@ -2486,6 +2506,16 @@ export const enUS: ChptLocale = {
   bullet: {
     title: 'Bullet chart',
     target: (value) => `target ${value}`,
+  },
+  sankey: {
+    title: 'Flow chart',
+    empty: 'No data',
+    source: 'From',
+    target: 'To',
+    value: 'Amount',
+    inflow: (v) => `In ${v}`,
+    outflow: (v) => `Out ${v}`,
+    share: (source, pct) => `${pct} of ${source} outflow`,
   },
   calendarHeatmap: {
     legend: 'Legend',
