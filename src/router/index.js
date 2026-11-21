@@ -158,6 +158,14 @@ const routes = [
         },
       },
       {
+        path: "components/sankey-chart",
+        name: "SankeyChartDoc",
+        component: () => import("../views/docs/SankeyChartDoc.vue"),
+        meta: {
+          title: "流向圖",
+        },
+      },
+      {
         path: "components/waterfall-chart",
         name: "WaterfallChartDoc",
         component: () => import("../views/docs/WaterfallChartDoc.vue"),

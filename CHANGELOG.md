@@ -42,6 +42,13 @@
 
 ### 新增
 
+- **SankeyChart 流向圖**（charts）：數量從哪裡流到哪裡 —— 各站流向與損失、不良品處置去向、物料到各線。線寬 = 數量；
+  欄依最長路徑自動排、垂直位置來回調整減少交叉（自己實作，不引入 d3-sankey）；有循環的連線略過並以 `cycle` 事件回報。
+  滑過節點高亮經過它的所有上下游流向、滑過連線看數量與佔來源流出比例；`linkColor`（來源 / 目標 / 中性）、`align`（justify / left）、
+  節點自訂顏色、`autoResize`。窄的時候名稱依欄距截斷（完整名稱在 tooltip 與 aria-label）。鍵盤：↑↓ 同一欄、←→ 沿最大流量移動、
+  Enter 點擊；附隱藏的資料表給螢幕閱讀器。新增 `charts/utils/sankey.ts`（`sankeyLayout()`、`sankeyLinkPath()`）、
+  文件頁「流向圖」與語系群組 `sankey`。
+
 - **ChptChecklist 點檢表**：設備點檢、首件檢查、IPQC 巡檢用。三種項目：check（合格 / 不合格 / 不適用，大按鍵、顏色 + 圖示 + 文字、
   radiogroup 鍵盤操作）、measure（填量測值，依 `lsl` / `usl` 自動判定，可選 `numpad` 數字鍵盤）、text（記錄批號等）。
   不合格時出現原因欄（`requireNoteOnNg` 預設必填）；`allowPhotos` 可附照片（`photoReader` 可改成上傳後存網址）。
