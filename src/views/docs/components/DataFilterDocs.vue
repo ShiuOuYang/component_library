@@ -369,13 +369,45 @@
         選項可附 <code>count</code> 顯示數量；目前選取結果由 <code>modelValue</code>（Record key→value）維護。
       </p>
     </section>
+
+    <!-- ============ ChptLogViewer ============ -->
+    <section id="chpt-log-viewer" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptLogViewer 設備日誌</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>設備、通訊、排程的即時日誌。只畫看得到的列，幾萬筆也順。等級篩選（含各等級筆數）、搜尋並標出關鍵字
+        （寫成 <code>/pattern/i</code> 是正規式）。<strong>跟隨最新</strong>：新紀錄進來時自動捲到底，往上捲就暫停並顯示「N 筆新紀錄」。
+        點一列看完整內容；可以複製或下載篩選後的紀錄。新的錯誤以 aria-live 念出。鍵盤：↑↓、PageUp / PageDown、Home / End、Enter 看內容。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptLogViewer, parseLogLine } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-3">
+          <ChptSwitch v-model="logLive" label="模擬即時日誌（每 0.4 秒）" />
+          <span class="text-xs text-content-secondary">目前 {{ logEntries.length.toLocaleString() }} 筆（最多保留 20,000 筆）</span>
+        </div>
+        <ChptLogViewer :entries="logEntries" :height="320" file-name="smt-line1" label="SMT 一線設備日誌" />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="logSample" />
+      <ApiTable of="ChptLogViewer" title="Props" :rows="logProps" />
+      <ApiTable of="-" title="LogEntry" :rows="logEntryRows" />
+      <ApiTable of="ChptLogViewer" title="Events" :rows="logEvents" />
+      <ApiTable of="ChptLogViewer" title="方法（ref）" :rows="logMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>元件不會自己丟掉資料：長時間串流請在呼叫端只保留最後 N 筆（例如 <code>entries.splice(0, entries.length - 20000)</code>）。
+        純文字日誌可以用 <code>parseLogLine()</code> 解析時間、等級與來源。
+      </p>
+    </section>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUnmount, ref, watch } from 'vue'
 import {
   ChptTable,
+  ChptLogViewer,
+  ChptSwitch,
+  parseLogLine,
   ChptButton,
   ChptTag,
   ChptFixedTable,
@@ -389,6 +421,79 @@ import { useToast } from '@/components/library'
 
 /** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */
 const toast = useToast()
+
+// ===== ChptLogViewer =====
+// 固定種子的示範資料：每次重新整理都一樣
+let logSeed = 20261121
+const logRand = () => ((logSeed = (logSeed * 1103515245 + 12345) % 2147483648) / 2147483648)
+const LOG_SOURCES = ['SMT-01', 'SMT-02', 'SMT-03', 'REFLOW', 'AOI-01', 'MES']
+const LOG_MESSAGES = [
+  ['debug', 'heartbeat ok, latency {n} ms'],
+  ['info', '工單 WO-2611-00{n} 開始生產'],
+  ['info', '換線完成，程式 PCB-A12-R3 載入'],
+  ['info', '產出 +{n} pcs'],
+  ['warn', '吸嘴 N{n} 真空偏低（-62 kPa）'],
+  ['warn', '飛達 F{n} 剩餘料量 < 5%'],
+  ['error', '軌道卡板，感測器 S{n} 逾時'],
+  ['error', 'MES 回報失敗：HTTP 503（重試 {n}）'],
+  ['fatal', '急停按下，所有軸停止\n位置：Z{n}\n操作員：工號 1{n}'],
+]
+function makeLog(time) {
+  const r = logRand()
+  // 越嚴重越少見
+  const pick = r < 0.25 ? 0 : r < 0.5 ? 1 : r < 0.6 ? 2 : r < 0.8 ? 3 : r < 0.87 ? 4 : r < 0.93 ? 5 : r < 0.97 ? 6 : r < 0.995 ? 7 : 8
+  const [level, msg] = LOG_MESSAGES[pick]
+  const n = Math.floor(logRand() * 90) + 10
+  return { id: `${time}-${n}-${pick}`, time, level, source: LOG_SOURCES[Math.floor(logRand() * LOG_SOURCES.length)], message: msg.replace(/\{n\}/g, n) }
+}
+const logStart = new Date('2026-11-21T00:00:00').getTime()
+const logEntries = ref(Array.from({ length: 20000 }, (_, i) => makeLog(logStart + i * 1700)))
+// 純文字也可以：parseLogLine('2026-11-21 08:30:01.123 [WARN] (SMT-02) 吸嘴真空低')
+const parsedExample = parseLogLine('2026-11-21 08:30:01.123 [WARN] (SMT-02) 吸嘴真空低')
+// 依時間插在正確的位置（紀錄要照時間順序）
+const parsedAt = logEntries.value.findIndex((e) => e.time > new Date(parsedExample.time).getTime())
+logEntries.value.splice(parsedAt, 0, { id: 'parsed', time: parsedExample.time, level: parsedExample.level, source: parsedExample.source, message: `${parsedExample.message}（由 parseLogLine 解析）` })
+const logLive = ref(false)
+let logTimer = null
+watch(logLive, (on) => {
+  clearInterval(logTimer)
+  if (!on) return
+  logTimer = setInterval(() => {
+    const list = logEntries.value
+    list.push(makeLog(Date.now()))
+    if (list.length > 20000) list.splice(0, list.length - 20000)
+  }, 400)
+})
+onBeforeUnmount(() => clearInterval(logTimer))
+const logSample = `<ChptLogViewer :entries="entries" :height="320" file-name="smt-line1" />
+
+// entries：[{ id, time: '2026-11-21T08:30:01.123', level: 'warn', source: 'SMT-02', message: '吸嘴真空低' }, ...]
+// 串流：收到一筆就 push，只保留最後 20,000 筆
+socket.onmessage = (e) => {
+  entries.value.push(parseLogLine(e.data))   // 純文字 → { time, level, source, message }
+  if (entries.value.length > 20000) entries.value.splice(0, entries.value.length - 20000)
+}`
+const logProps = [
+  { name: 'entries', type: 'LogEntry[]', def: '—', desc: '紀錄（照時間順序，最新的在最後）' },
+  { name: 'height / rowHeight', type: 'number', def: '360 / 24', desc: '清單高度／每列高度（px）' },
+  { name: 'defaultLevels', type: 'LogLevel[]', def: "['info','warn','error','fatal']", desc: '預設顯示的等級（debug 預設隱藏）' },
+  { name: 'defaultFollow', type: 'boolean', def: 'true', desc: '預設跟隨最新' },
+  { name: 'announceLevels', type: 'LogLevel[]', def: "['error','fatal']", desc: '新紀錄是這些等級時以 aria-live 念出' },
+  { name: 'timeFormat', type: '(time: Date) => string', def: 'HH:mm:ss.SSS', desc: '清單裡的時間格式' },
+  { name: 'fileName', type: 'string', def: 'log-時間', desc: '下載的檔名（不含 .log）' },
+  { name: 'label', type: 'string', def: '語系', desc: '清單名稱（螢幕閱讀器）' },
+]
+const logEntryRows = [
+  { name: 'time', type: 'string | number | Date', def: '—', desc: '時間' },
+  { name: 'level', type: "'debug' | 'info' | 'warn' | 'error' | 'fatal'", def: '—', desc: '等級（顏色 + 文字）' },
+  { name: 'message', type: 'string', def: '—', desc: '訊息（可以有換行，點開看完整內容）' },
+  { name: 'source / id', type: 'string', def: '—', desc: '來源（機台、模組）／唯一鍵（建議給，串流時比較順）' },
+]
+const logEvents = [{ name: 'select', params: '(entry: LogEntry | null)', desc: '選取一筆（再點一次或 Esc 取消）' }]
+const logMethods = [
+  { name: 'scrollToEnd()', type: '() => void', desc: '捲到最新一筆' },
+  { name: 'visibleEntries()', type: '() => LogEntry[]', desc: '目前篩選後的紀錄' },
+]
 
 // ===== ChptTable / ChptFixedTable 共用資料 =====
 const tableColumns = [

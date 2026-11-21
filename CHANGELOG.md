@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptLogViewer 設備日誌**：設備、通訊、排程的即時日誌。固定列高的虛擬捲動（只畫看得到的列，幾萬筆也順）；等級篩選（含各等級筆數，
+  debug 預設隱藏）、搜尋並標出關鍵字（`/pattern/i` 為正規式，寫錯時提示並退回一般搜尋）。跟隨最新：新紀錄進來時自動捲到底，
+  往上捲就暫停並顯示「N 筆新紀錄」；以「上一次最後一筆」偵測新紀錄，呼叫端只保留最後 N 筆（筆數不變）時也正確。
+  點一列看完整內容（多行訊息），可複製單筆或篩選後的全部、下載 .log。listbox + aria-activedescendant 鍵盤操作；新的 error / fatal 以
+  aria-live 念出。新增 `shared/logViewer.ts`（`parseLogLine()`、`compileLogSearch()`、`filterLogs()`、`formatLogLine()` 等）與語系群組 `logViewer`。
+
 - **ChptLotTrace 批號追溯圖**：客訴、召回、異常調查用。資料是「投入 → 產出」的關係（`links: { from, to, qty, unit }`），
   可往上游（用了哪些料）、下游（做成了什麼、出給誰）或雙向追溯。圖形檢視：查詢的批號在中間、上游在左、下游在右，連線標用量，
   依鄰居位置排序減少交叉；點一個批號高亮它與查詢批號之間的所有路徑。hold（隔離）紅框 + HOLD、suspect（可疑）虛線黃框；
