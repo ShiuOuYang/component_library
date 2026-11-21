@@ -251,11 +251,34 @@
       <ApiTable of="ChptEquipmentWall" title="Slots" :rows="wallSlots" />
       <ApiTable of="ChptEquipmentWall" title="方法（ref）" :rows="wallMethods" />
     </section>
+
+    <!-- ============ ChptFloorPlan ============ -->
+    <section id="chpt-floor-plan" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFloorPlan 廠區配置圖</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>把機台畫在廠區平面圖上，一眼看出停機的在哪一區。資料和上面的 ChptEquipmentWall <strong>是同一份</strong>
+        （EquipmentItem 加上 <code>x</code> / <code>y</code>）—— 打開上面的「模擬即時更新」，這裡也會跟著變。平面圖可以是背景圖片或區域（zones），
+        座標用自己的單位（這裡是公尺）。Ctrl + 滾輪或兩指縮放、拖曳平移；點機台看明細；圖例可只突顯某個狀態。
+        鍵盤：Tab 進入後方向鍵依位置移動（移到畫面外會自動平移）、Enter 看明細、+ / − / 0 縮放。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptFloorPlan } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptFloorPlan :items="placedMachines" :plan-width="60" :plan-height="32" :zones="floorZones" :height="380" label="二廠 1F 配置圖" />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="floorSample" />
+      <ApiTable of="ChptFloorPlan" title="Props" :rows="floorProps" />
+      <ApiTable of="-" title="FloorPlanItem / FloorZone" :rows="floorDataRows" />
+      <ApiTable of="ChptFloorPlan" title="Events" :rows="floorEvents" />
+      <ApiTable of="ChptFloorPlan" title="Slots" :rows="floorSlots" />
+      <ApiTable of="ChptFloorPlan" title="方法（ref）" :rows="floorMethods" />
+    </section>
   </div>
 </template>
 
 <script setup>
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import {
   ChptCard,
   ChptCollapse,
@@ -268,6 +291,7 @@ import {
   ChptDashboardGrid,
   ChptSwitch,
   ChptEquipmentWall,
+  ChptFloorPlan,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -308,6 +332,55 @@ watch(wallLive, (on) => {
   }, 3000)
 })
 onBeforeUnmount(() => clearInterval(wallTimer))
+// ---- ChptFloorPlan：同一份 machines 資料加上位置（公尺） ----
+const machinePos = {
+  m1: [4, 5], m2: [10, 5], m3: [16, 5], m4: [22, 4.5, 8, 4],
+  m5: [4, 15], m6: [10, 15], m7: [16, 15], m8: [22, 14.5, 8, 4],
+  m9: [38, 6], m10: [44, 6], m11: [38, 15], m12: [44, 15],
+}
+const placedMachines = computed(() =>
+  machines.value.map((m) => {
+    const [x, y, w, h] = machinePos[m.id]
+    return { ...m, x, y, w: w ?? 5, h: h ?? 3 }
+  })
+)
+const floorZones = [
+  { id: 'z1', label: 'SMT 一線', x: 2, y: 2, w: 30, h: 8 },
+  { id: 'z2', label: 'SMT 二線', x: 2, y: 12, w: 30, h: 8 },
+  { id: 'z3', label: '檢測區', x: 36, y: 2, w: 16, h: 18 },
+  { id: 'z4', label: '物料倉', x: 2, y: 23, w: 22, h: 7, color: 'rgb(var(--t-surface-muted))' },
+  { id: 'z5', label: '出貨區', x: 36, y: 23, w: 22, h: 7, color: 'rgb(var(--t-surface-muted))' },
+]
+const floorSample = `<ChptFloorPlan :items="machines" :plan-width="60" :plan-height="32" :zones="zones" @item-click="openDetail">
+  <template #detail="{ item }">…自訂明細…</template>
+</ChptFloorPlan>
+
+// machines：ChptEquipmentWall 的資料加上位置（平面圖單位）
+//   { id: 'm2', name: 'SMT-02 貼片機', status: 'down', since, alarm, x: 10, y: 5, w: 5, h: 3 }
+// zones：[{ id: 'z1', label: 'SMT 一線', x: 2, y: 2, w: 30, h: 8 }]
+// 或用平面圖圖片：background-src="/floor-2f.png"`
+const floorProps = [
+  { name: 'items', type: 'FloorPlanItem[]', def: '—', desc: 'EquipmentItem 加上 x / y（左上角）與 w / h（預設 4 × 3）' },
+  { name: 'planWidth / planHeight', type: 'number', def: '—', desc: '平面圖大小（自己的單位：公尺、格）' },
+  { name: 'zones', type: 'FloorZone[]', def: '[]', desc: '區域（產線、倉庫）：虛線框與名稱' },
+  { name: 'backgroundSrc', type: 'string', def: "''", desc: '平面圖圖片（拉伸到 planWidth × planHeight）' },
+  { name: 'height', type: 'number', def: '420', desc: '高度（px），寬度跟著容器' },
+  { name: 'minZoom / maxZoom', type: 'number', def: '0.5 / 8', desc: '相對於「整張」的縮放範圍' },
+  { name: 'showLegend', type: 'boolean', def: 'true', desc: '圖例（各狀態數量，點了只突顯該狀態）' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '計算持續時間用的現在時間；不給時每 30 秒更新' },
+  { name: 'label', type: 'string', def: '語系', desc: '圖的名稱（螢幕閱讀器）' },
+]
+const floorDataRows = [
+  { name: 'FloorPlanItem', type: 'EquipmentItem & { x, y, w?, h? }', def: '—', desc: '狀態欄位與 ChptEquipmentWall 相同' },
+  { name: 'FloorZone', type: '{ id, label, x, y, w, h, color? }', def: '—', desc: '區域；color 為底色（任何 CSS 顏色）' },
+]
+const floorEvents = [{ name: 'item-click', params: '(item: FloorPlanItem)', desc: '點擊或 Enter 一台機台' }]
+const floorSlots = [{ name: 'detail', params: '{ item }', desc: '明細卡的內容（預設：狀態、持續時間、警報、工單、稼動率）' }]
+const floorMethods = [
+  { name: 'fit()', type: '() => void', desc: '回到整張平面圖' },
+  { name: 'select(id)', type: '(id: string | null) => void', desc: '選取並聚焦某一台；null 關閉明細' },
+]
+
 const wallSample = `<ChptEquipmentWall :items="machines" sort-by="status" @item-click="openDetail">
   <template #extra="{ item }">
     <ChptButton v-if="item.status === 'down'" size="xs" @click.stop="callTech(item)">呼叫技術員</ChptButton>

@@ -212,6 +212,14 @@ export interface ChptLocale {
     picked: (name: string, date: string) => string
     cancelled: string
   }
+  floorPlan: {
+    label: string
+    hint: string
+    zoomIn: string
+    zoomOut: string
+    fit: string
+    close: string
+  }
   logViewer: {
     label: string
     levels: string
@@ -1052,6 +1060,14 @@ export const zhTW: ChptLocale = {
     swapped: (a, b, date) => `${date} ${a} 與 ${b} 已互換`,
     picked: (name, date) => `已拿起 ${name} ${date}，上下移到要交換的人再按空白鍵`,
     cancelled: '已取消',
+  },
+  floorPlan: {
+    label: '廠區配置圖',
+    hint: 'Ctrl + 滾輪或兩指縮放、拖曳平移；Tab 進入後方向鍵移動、Enter 看明細',
+    zoomIn: '放大',
+    zoomOut: '縮小',
+    fit: '顯示整張',
+    close: '關閉明細',
   },
   logViewer: {
     label: '日誌',
@@ -1958,6 +1974,14 @@ export const enUS: ChptLocale = {
     swapped: (a, b, date) => `${date}: swapped ${a} and ${b}`,
     picked: (name, date) => `Picked up ${name} ${date}; move up or down and press Space to swap`,
     cancelled: 'Cancelled',
+  },
+  floorPlan: {
+    label: 'Floor plan',
+    hint: 'Ctrl + wheel or pinch to zoom, drag to pan; Tab in, then arrow keys to move and Enter for details',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    fit: 'Fit to view',
+    close: 'Close details',
   },
   logViewer: {
     label: 'Log',

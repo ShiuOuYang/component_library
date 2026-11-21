@@ -29,6 +29,7 @@ export {
   ChptDefectAnnotator,
   ChptEquipmentWall,
   ChptShiftRoster,
+  ChptFloorPlan,
   ChptLogViewer,
   ChptLotTrace,
   ChptChecklist,
@@ -76,7 +77,9 @@ export { createDetector, classifyCameraError, cameraAvailability, createDeduper 
 export type { ScanFormat, DetectedCode, CameraErrorKind, CodeDetector, ScanFrame } from './shared/cameraScan'
 export { rectFromCorners, moveMark, nextMarkId, countByType, markCenter } from './shared/defectMarks'
 export type { DefectMark, DefectType } from './shared/defectMarks'
-export { filterEquipment, sortEquipment, groupEquipment, countEquipment, averageUtilization, EQUIPMENT_STATUSES } from './shared/equipment'
+export { filterEquipment, sortEquipment, groupEquipment, countEquipment, averageUtilization, EQUIPMENT_STATUSES, EQUIPMENT_STATUS_COLOR, EQUIPMENT_STATUS_ICON } from './shared/equipment'
+export { fitTransform, zoomAt, clampPan } from './shared/floorPlan'
+export type { FloorPlanItem, FloorZone, ViewTransform } from './shared/floorPlan'
 export type { EquipmentItem, EquipmentStatus, EquipmentMetric } from './shared/equipment'
 export { rosterDates, coverage as rosterCoverage, shortages as rosterShortages, rosterWarnings, personStats as rosterPersonStats, setShift, fillRange as fillShiftRange, swapShifts } from './shared/shiftRoster'
 export type { RosterShift, RosterPerson, Roster, ShiftRequirement, RosterRules, RosterWarning } from './shared/shiftRoster'
