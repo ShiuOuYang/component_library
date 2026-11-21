@@ -795,6 +795,15 @@ export interface ChptLocale {
     outflow: (v: string) => string
     share: (source: string, pct: string) => string
   }
+  radar: {
+    title: string
+    empty: string
+    legend: string
+    metric: string
+    lowerIsBetterLabel: (label: string) => string
+    point: (axis: string, value: string) => string
+    ariaLabel: (title: string, axes: string[], series: string[]) => string
+  }
   calendarHeatmap: {
     legend: string
     less: string
@@ -1701,6 +1710,15 @@ export const zhTW: ChptLocale = {
     inflow: (v) => `流入 ${v}`,
     outflow: (v) => `流出 ${v}`,
     share: (source, pct) => `佔 ${source} 流出的 ${pct}`,
+  },
+  radar: {
+    title: '雷達圖',
+    empty: '沒有資料',
+    legend: '圖例（點選顯示 / 隱藏）',
+    metric: '指標',
+    lowerIsBetterLabel: (label) => `${label}（越小越好）`,
+    point: (axis, value) => `${axis}：${value}`,
+    ariaLabel: (title, axes, series) => `${title}：比較 ${series.join('、')} 的 ${axes.join('、')}。數值見下方資料表`,
   },
   calendarHeatmap: {
     legend: '圖例',
@@ -2615,6 +2633,15 @@ export const enUS: ChptLocale = {
     inflow: (v) => `In ${v}`,
     outflow: (v) => `Out ${v}`,
     share: (source, pct) => `${pct} of ${source} outflow`,
+  },
+  radar: {
+    title: 'Radar chart',
+    empty: 'No data',
+    legend: 'Legend (click to show / hide)',
+    metric: 'Metric',
+    lowerIsBetterLabel: (label) => `${label} (lower is better)`,
+    point: (axis, value) => `${axis}: ${value}`,
+    ariaLabel: (title, axes, series) => `${title}: comparing ${series.join(', ')} on ${axes.join(', ')}. Values are in the table below`,
   },
   calendarHeatmap: {
     legend: 'Legend',
