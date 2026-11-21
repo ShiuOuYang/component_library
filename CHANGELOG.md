@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptLogViewer 設備日誌**：設備、通訊、排程的即時日誌。固定列高的虛擬捲動（只畫看得到的列，幾萬筆也順）；等級篩選（含各等級筆數，
+  debug 預設隱藏）、搜尋並標出關鍵字（`/pattern/i` 為正規式，寫錯時提示並退回一般搜尋）。跟隨最新：新紀錄進來時自動捲到底，
+  往上捲就暫停並顯示「N 筆新紀錄」；以「上一次最後一筆」偵測新紀錄，呼叫端只保留最後 N 筆（筆數不變）時也正確。
+  點一列看完整內容（多行訊息），可複製單筆或篩選後的全部、下載 .log。listbox + aria-activedescendant 鍵盤操作；新的 error / fatal 以
+  aria-live 念出。新增 `shared/logViewer.ts`（`parseLogLine()`、`compileLogSearch()`、`filterLogs()`、`formatLogLine()` 等）與語系群組 `logViewer`。
 - **SankeyChart 流向圖**（charts）：數量從哪裡流到哪裡 —— 各站流向與損失、不良品處置去向、物料到各線。線寬 = 數量；
   欄依最長路徑自動排、垂直位置來回調整減少交叉（自己實作，不引入 d3-sankey）；有循環的連線略過並以 `cycle` 事件回報。
   滑過節點高亮經過它的所有上下游流向、滑過連線看數量與佔來源流出比例；`linkColor`（來源 / 目標 / 中性）、`align`（justify / left）、

@@ -28,6 +28,7 @@ export {
   ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode, ChptCameraScanner,
   ChptDefectAnnotator,
   ChptEquipmentWall,
+  ChptLogViewer,
   ChptLotTrace,
   ChptChecklist,
   ChptSignaturePad,
@@ -76,6 +77,8 @@ export { rectFromCorners, moveMark, nextMarkId, countByType, markCenter } from '
 export type { DefectMark, DefectType } from './shared/defectMarks'
 export { filterEquipment, sortEquipment, groupEquipment, countEquipment, averageUtilization, EQUIPMENT_STATUSES } from './shared/equipment'
 export type { EquipmentItem, EquipmentStatus, EquipmentMetric } from './shared/equipment'
+export { parseLogLine, compileSearch as compileLogSearch, filterLogs, countLevels as countLogLevels, formatLogLine, formatLogTime, LOG_LEVELS } from './shared/logViewer'
+export type { LogEntry, LogLevel, LogMatcher } from './shared/logViewer'
 export { traceLayers, traceTree, tracePath, layoutTrace } from './shared/lotTrace'
 export type { TraceNode, TraceLink, TraceDirection, TraceLayout, TraceTreeNode } from './shared/lotTrace'
 export { judgeMeasure, itemStatus as checklistItemStatus, itemIssue as checklistItemIssue, checklistSummary, updateResult as updateChecklistResult, groupChecklist } from './shared/checklist'

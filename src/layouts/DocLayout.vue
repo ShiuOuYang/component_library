@@ -402,6 +402,7 @@ const navSections = [
           { label: 'ChptPagination', id: 'chpt-pagination' },
           { label: 'ChptFilter', id: 'chpt-filter' },
           { label: 'ChptFilterBar', id: 'chpt-filterbar' },
+          { label: 'ChptLogViewer', id: 'chpt-log-viewer' },
         ],
       },
       {

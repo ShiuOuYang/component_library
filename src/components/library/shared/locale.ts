@@ -187,6 +187,26 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  logViewer: {
+    label: string
+    levels: string
+    level: { debug: string; info: string; warn: string; error: string; fatal: string }
+    search: string
+    searchPlaceholder: string
+    regexError: (msg: string) => string
+    follow: string
+    paused: string
+    copy: string
+    copyOne: string
+    download: string
+    copied: (n: number) => string
+    copyFailed: string
+    empty: string
+    noMatch: string
+    newEntries: (n: number) => string
+    showing: (shown: number, total: number) => string
+    announce: (n: number, message: string) => string
+  }
   lotTrace: {
     direction: string
     backward: string
@@ -983,6 +1003,26 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  logViewer: {
+    label: '日誌',
+    levels: '依等級篩選',
+    level: { debug: '除錯', info: '資訊', warn: '警告', error: '錯誤', fatal: '嚴重' },
+    search: '搜尋日誌',
+    searchPlaceholder: '搜尋…（/正規式/i）',
+    regexError: (msg) => `正規式有誤，改用一般文字搜尋：${msg}`,
+    follow: '跟隨最新',
+    paused: '已暫停跟隨（捲到最下面就會繼續）',
+    copy: '複製',
+    copyOne: '複製這筆',
+    download: '下載',
+    copied: (n) => `已複製 ${n} 筆`,
+    copyFailed: '無法複製（瀏覽器不允許存取剪貼簿）',
+    empty: '還沒有紀錄',
+    noMatch: '沒有符合條件的紀錄',
+    newEntries: (n) => `${n} 筆新紀錄`,
+    showing: (shown, total) => `顯示 ${shown.toLocaleString()} / 共 ${total.toLocaleString()} 筆`,
+    announce: (n, message) => (n > 1 ? `${n} 筆新的錯誤，最新：${message}` : `新的錯誤：${message}`),
+  },
   lotTrace: {
     direction: '追溯方向',
     backward: '上游',
@@ -1844,6 +1884,26 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  logViewer: {
+    label: 'Log',
+    levels: 'Filter by level',
+    level: { debug: 'Debug', info: 'Info', warn: 'Warn', error: 'Error', fatal: 'Fatal' },
+    search: 'Search log',
+    searchPlaceholder: 'Search… (/regex/i)',
+    regexError: (msg) => `Invalid regex, searching as plain text: ${msg}`,
+    follow: 'Follow latest',
+    paused: 'Following paused (scroll to the bottom to resume)',
+    copy: 'Copy',
+    copyOne: 'Copy entry',
+    download: 'Download',
+    copied: (n) => `Copied ${n} ${n === 1 ? 'entry' : 'entries'}`,
+    copyFailed: "Couldn't copy (clipboard access was blocked)",
+    empty: 'No entries yet',
+    noMatch: 'No matching entries',
+    newEntries: (n) => `${n} new`,
+    showing: (shown, total) => `Showing ${shown.toLocaleString()} of ${total.toLocaleString()}`,
+    announce: (n, message) => (n > 1 ? `${n} new errors, latest: ${message}` : `New error: ${message}`),
+  },
   lotTrace: {
     direction: 'Trace direction',
     backward: 'Upstream',
