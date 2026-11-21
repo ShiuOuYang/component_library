@@ -187,6 +187,31 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  shiftRoster: {
+    label: string
+    mode: string
+    fill: string
+    swap: string
+    brush: string
+    clear: string
+    person: string
+    stats: string
+    none: string
+    workDays: (n: number) => string
+    coverageLabel: (date: string, shift: string, have: number, need: number) => string
+    restWarning: (name: string, date: string, hours: number) => string
+    consecutiveWarning: (name: string, date: string, days: number) => string
+    allGood: string
+    summary: (short: number, warn: number) => string
+    more: (n: number) => string
+    hintFill: string
+    hintSwap: string
+    assigned: (name: string, date: string, shift: string) => string
+    filled: (name: string, from: string, to: string, shift: string) => string
+    swapped: (a: string, b: string, date: string) => string
+    picked: (name: string, date: string) => string
+    cancelled: string
+  }
   floorPlan: {
     label: string
     hint: string
@@ -1011,6 +1036,31 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  shiftRoster: {
+    label: '排班表',
+    mode: '操作方式',
+    fill: '填入',
+    swap: '交換',
+    brush: '要填入的班別',
+    clear: '清除',
+    person: '人員',
+    stats: '統計',
+    none: '未排班',
+    workDays: (n) => `上班 ${n} 天`,
+    coverageLabel: (date, shift, have, need) => (need ? `${date} ${shift}：${have} / ${need} 人${have < need ? '，不足' : ''}` : `${date} ${shift}：${have} 人`),
+    restWarning: (name, date, hours) => `${name} ${date}：與前一班只隔 ${hours} 小時`,
+    consecutiveWarning: (name, date, days) => `${name} ${date}：已連續上班 ${days} 天`,
+    allGood: '人力足夠，沒有規則提醒',
+    summary: (short, warn) => [short ? `人力不足 ${short} 格` : '', warn ? `規則提醒 ${warn} 項` : ''].filter(Boolean).join(' · '),
+    more: (n) => `還有 ${n} 項`,
+    hintFill: '選好班別後點格子；按住拖曳填一整段，Shift + 點填到上一次點的位置。鍵盤：方向鍵移動、按班別快捷鍵或空白鍵填入、Delete 清除',
+    hintSwap: '把一格拖到同一天另一個人身上互換班別。鍵盤：空白鍵拿起、上下移動、空白鍵放下，Esc 取消',
+    assigned: (name, date, shift) => `${name} ${date}：${shift}`,
+    filled: (name, from, to, shift) => `${name} ${from} 到 ${to}：${shift}`,
+    swapped: (a, b, date) => `${date} ${a} 與 ${b} 已互換`,
+    picked: (name, date) => `已拿起 ${name} ${date}，上下移到要交換的人再按空白鍵`,
+    cancelled: '已取消',
+  },
   floorPlan: {
     label: '廠區配置圖',
     hint: 'Ctrl + 滾輪或兩指縮放、拖曳平移；Tab 進入後方向鍵移動、Enter 看明細',
@@ -1900,6 +1950,31 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  shiftRoster: {
+    label: 'Shift roster',
+    mode: 'Editing mode',
+    fill: 'Fill',
+    swap: 'Swap',
+    brush: 'Shift to fill',
+    clear: 'Clear',
+    person: 'Person',
+    stats: 'Stats',
+    none: 'Unassigned',
+    workDays: (n) => `${n} work days`,
+    coverageLabel: (date, shift, have, need) => (need ? `${date} ${shift}: ${have} of ${need}${have < need ? ', short' : ''}` : `${date} ${shift}: ${have}`),
+    restWarning: (name, date, hours) => `${name} ${date}: only ${hours} h since the previous shift`,
+    consecutiveWarning: (name, date, days) => `${name} ${date}: ${days} days in a row`,
+    allGood: 'Fully staffed, no rule warnings',
+    summary: (short, warn) => [short ? `${short} short` : '', warn ? `${warn} rule warning(s)` : ''].filter(Boolean).join(' · '),
+    more: (n) => `${n} more`,
+    hintFill: 'Pick a shift, then click cells; drag to fill a range, Shift + click to fill from the last cell. Keyboard: arrows to move, shift key or Space to fill, Delete to clear',
+    hintSwap: 'Drag a cell onto another person on the same day to swap. Keyboard: Space to pick up, Up/Down to move, Space to drop, Esc to cancel',
+    assigned: (name, date, shift) => `${name} ${date}: ${shift}`,
+    filled: (name, from, to, shift) => `${name} ${from} to ${to}: ${shift}`,
+    swapped: (a, b, date) => `${date}: swapped ${a} and ${b}`,
+    picked: (name, date) => `Picked up ${name} ${date}; move up or down and press Space to swap`,
+    cancelled: 'Cancelled',
+  },
   floorPlan: {
     label: 'Floor plan',
     hint: 'Ctrl + wheel or pinch to zoom, drag to pan; Tab in, then arrow keys to move and Enter for details',

@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptShiftRoster 排班表**：人員 × 日期的輪班表（v-model：`{ [人員 id]: { 'YYYY-MM-DD': 班別代碼 } }`）。填入模式：選筆刷後點格子、
+  按住拖曳填一整段、Shift + 點填到上一次點的位置、橡皮擦清除（觸控拖曳是捲動，不填）；交換模式：拖到同一天另一個人身上互換。
+  下方顯示每天每班排了幾人 / 需要幾人（`requirements` 可為函式，不足時紅字 ▲）；規則提醒（`rules`：兩班之間最少休息時數，含跨夜班；
+  最多連續上班天數）以 ⚠ 標在格子上並列在下方，只提醒不阻止。右側統計上班天數。role="grid" 鍵盤操作：方向鍵、班別快捷鍵、
+  Delete 清除、交換模式空白鍵拿起 / 放下；變更以 aria-live 念出。新增 `shared/shiftRoster.ts`（型別 `RosterShift`、`Roster` 與
+  `rosterDates()`、`rosterCoverage()`、`rosterWarnings()`、`swapShifts()` 等）與語系群組 `shiftRoster`。
 - **ChptFloorPlan 廠區配置圖**：把機台畫在廠區平面圖上。狀態資料與 ChptEquipmentWall 相同（`EquipmentItem` 加上 `x` / `y` / `w` / `h`），
   同一份資料可以兩種方式看。平面圖可用背景圖片（`backgroundSrc`）或區域（`zones`），座標用自己的單位。停機的外圈閃動（減少動態效果時不閃）；
   Ctrl + 滾輪 / 兩指縮放、拖曳平移、右下角按鈕（一般滾輪照常捲動頁面）；點機台看明細卡（`#detail` 插槽）；圖例可只突顯某個狀態。
