@@ -42,6 +42,13 @@
 
 ### 新增
 
+- **ChptFloorPlan 廠區配置圖**：把機台畫在廠區平面圖上。狀態資料與 ChptEquipmentWall 相同（`EquipmentItem` 加上 `x` / `y` / `w` / `h`），
+  同一份資料可以兩種方式看。平面圖可用背景圖片（`backgroundSrc`）或區域（`zones`），座標用自己的單位。停機的外圈閃動（減少動態效果時不閃）；
+  Ctrl + 滾輪 / 兩指縮放、拖曳平移、右下角按鈕（一般滾輪照常捲動頁面）；點機台看明細卡（`#detail` 插槽）；圖例可只突顯某個狀態。
+  名稱放不下時縮短（放大後看到全名）、手機上框高跟著平面圖比例。鍵盤：方向鍵依位置移到最近的機台（移到畫面外會自動平移）、
+  Enter / Esc、+ / − / 0 縮放。新增 `shared/floorPlan.ts`（`fitTransform()`、`zoomAt()`、`clampPan()`）與語系群組 `floorPlan`；
+  狀態顏色與圖示移到 `shared/equipment.ts`（`EQUIPMENT_STATUS_COLOR`、`EQUIPMENT_STATUS_ICON`）與狀態牆共用。
+
 - **SankeyChart 流向圖**（charts）：數量從哪裡流到哪裡 —— 各站流向與損失、不良品處置去向、物料到各線。線寬 = 數量；
   欄依最長路徑自動排、垂直位置來回調整減少交叉（自己實作，不引入 d3-sankey）；有循環的連線略過並以 `cycle` 事件回報。
   滑過節點高亮經過它的所有上下游流向、滑過連線看數量與佔來源流出比例；`linkColor`（來源 / 目標 / 中性）、`align`（justify / left）、

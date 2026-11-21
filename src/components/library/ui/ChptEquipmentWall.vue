@@ -105,6 +105,8 @@ import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, ref
 import { useLocale } from '../shared/config'
 import {
   EQUIPMENT_STATUSES,
+  EQUIPMENT_STATUS_COLOR,
+  EQUIPMENT_STATUS_ICON,
   averageUtilization,
   countEquipment,
   durationParts,
@@ -170,21 +172,9 @@ const emit = defineEmits<{
 const instance = getCurrentInstance()
 const clickable = computed(() => !!instance?.vnode.props?.onItemClick)
 
-const role = (name: string) => `rgb(var(--t-${name}))`
-const STATUS_COLOR: Record<EquipmentStatus, string> = {
-  run: role('success-solid'),
-  idle: role('warning-solid'),
-  maintenance: role('info-solid'),
-  down: role('danger-solid'),
-  offline: role('stroke-dark'),
-}
-const STATUS_ICON: Record<EquipmentStatus, string> = {
-  run: 'play_circle',
-  idle: 'pause_circle',
-  maintenance: 'build',
-  down: 'error',
-  offline: 'cloud_off',
-}
+// 狀態顏色與圖示與 ChptFloorPlan 共用（shared/equipment.ts）
+const STATUS_COLOR = EQUIPMENT_STATUS_COLOR
+const STATUS_ICON = EQUIPMENT_STATUS_ICON
 const tint = (s: EquipmentStatus, pct: number) => `color-mix(in srgb, ${STATUS_COLOR[s]} ${pct}%, transparent)`
 const clampPct = (v: number) => Math.min(100, Math.max(0, v))
 

@@ -187,6 +187,14 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  floorPlan: {
+    label: string
+    hint: string
+    zoomIn: string
+    zoomOut: string
+    fit: string
+    close: string
+  }
   lotTrace: {
     direction: string
     backward: string
@@ -983,6 +991,14 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  floorPlan: {
+    label: '廠區配置圖',
+    hint: 'Ctrl + 滾輪或兩指縮放、拖曳平移；Tab 進入後方向鍵移動、Enter 看明細',
+    zoomIn: '放大',
+    zoomOut: '縮小',
+    fit: '顯示整張',
+    close: '關閉明細',
+  },
   lotTrace: {
     direction: '追溯方向',
     backward: '上游',
@@ -1844,6 +1860,14 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  floorPlan: {
+    label: 'Floor plan',
+    hint: 'Ctrl + wheel or pinch to zoom, drag to pan; Tab in, then arrow keys to move and Enter for details',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    fit: 'Fit to view',
+    close: 'Close details',
+  },
   lotTrace: {
     direction: 'Trace direction',
     backward: 'Upstream',
