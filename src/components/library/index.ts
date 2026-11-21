@@ -29,6 +29,7 @@ export {
   ChptDefectAnnotator,
   ChptEquipmentWall,
   ChptFloorPlan,
+  ChptLogViewer,
   ChptLotTrace,
   ChptChecklist,
   ChptSignaturePad,
@@ -79,6 +80,8 @@ export { filterEquipment, sortEquipment, groupEquipment, countEquipment, average
 export { fitTransform, zoomAt, clampPan } from './shared/floorPlan'
 export type { FloorPlanItem, FloorZone, ViewTransform } from './shared/floorPlan'
 export type { EquipmentItem, EquipmentStatus, EquipmentMetric } from './shared/equipment'
+export { parseLogLine, compileSearch as compileLogSearch, filterLogs, countLevels as countLogLevels, formatLogLine, formatLogTime, LOG_LEVELS } from './shared/logViewer'
+export type { LogEntry, LogLevel, LogMatcher } from './shared/logViewer'
 export { traceLayers, traceTree, tracePath, layoutTrace } from './shared/lotTrace'
 export type { TraceNode, TraceLink, TraceDirection, TraceLayout, TraceTreeNode } from './shared/lotTrace'
 export { judgeMeasure, itemStatus as checklistItemStatus, itemIssue as checklistItemIssue, checklistSummary, updateResult as updateChecklistResult, groupChecklist } from './shared/checklist'
