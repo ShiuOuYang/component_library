@@ -257,6 +257,45 @@
       </p>
     </section>
 
+    <!-- ============ ChptChecklist ============ -->
+    <section id="chpt-checklist" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptChecklist 點檢表</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>設備日常點檢、首件檢查、IPQC 巡檢 —— 平板上逐項確認、量測、拍照。目視項目選合格 / 不合格 / 不適用（大按鍵）；
+        量測項目填數值後<strong>依上下限自動判定</strong>，作業員不能自己選合格。不合格時必須填原因；可以附照片。
+        上方有進度與不合格數，可以只看待處理或不合格的項目。<code>validate()</code> 標出未填與缺原因的項目並捲到第一個；
+        <code>#footer</code> 插槽放簽名與送出按鈕。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptChecklist } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptChecklist ref="checklistRef" v-model="checkResults" :items="checkItems" numpad allow-photos>
+          <template #footer="{ summary }">
+            <div class="mt-2 grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+              <ChptSignaturePad v-model="checkSignature" label="點檢人員簽名" :height="120" :error-text="checkSignError" @begin="checkSignError = ''" />
+              <div class="flex flex-col items-start gap-2 md:items-end">
+                <ChptButton icon="task_alt" @click="submitChecklist">送出點檢（{{ summary.done }}/{{ summary.total }}）</ChptButton>
+                <ChptButton size="sm" is-outline @click="checklistRef?.reset(); checkSignature = null; checkMsg = ''">清除重填</ChptButton>
+              </div>
+            </div>
+            <p class="mt-2 text-sm text-content-secondary" aria-live="polite">{{ checkMsg }}</p>
+          </template>
+        </ChptChecklist>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="checklistSample" />
+      <ApiTable of="ChptChecklist" title="Props" :rows="checklistProps" />
+      <ApiTable of="-" title="ChecklistItem（items 的每一筆）" :rows="checklistItemRows" />
+      <ApiTable of="-" title="ChecklistResult（v-model 的每一項）" :rows="checklistResultRows" />
+      <ApiTable of="ChptChecklist" title="Events" :rows="checklistEvents" />
+      <ApiTable of="ChptChecklist" title="Slots" :rows="checklistSlots" />
+      <ApiTable of="ChptChecklist" title="方法（ref）" :rows="checklistMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>量測項目的合格與否由上下限決定（等於界限算合格），存進 v-model 的 status 也會跟著數值重算。
+        照片預設讀成 data URL 存在結果裡，檔案大時請用 <code>photo-reader</code> 先上傳、只存網址。
+      </p>
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -311,6 +350,7 @@ import {
   ChptSchemaForm,
   ChptRichTextEditor,
   ChptSignaturePad,
+  ChptChecklist,
   ChptInput,
   ChptSelect,
   ChptInputNumber,
@@ -378,6 +418,90 @@ const signatureMethods = [
   { name: 'getStrokes() / setStrokes(strokes)', type: 'SignatureStroke[]', desc: '取得／載入筆跡資料' },
   { name: 'undo() / clear()', type: '() => void', desc: '復原上一筆／清除' },
   { name: 'isEmpty()', type: '() => boolean', desc: '是否空白' },
+]
+
+// ---- ChptChecklist ----
+const checklistRef = ref(null)
+const checkItems = [
+  { id: 'a1', section: '外觀與安全', label: '安全門連鎖正常', description: '打開安全門，機台應立即停止' },
+  { id: 'a2', section: '外觀與安全', label: '刮刀無缺口、無殘膏' },
+  { id: 'a3', section: '外觀與安全', label: '鋼板張力與清潔', description: '目視無破孔、無堵孔', allowNA: false },
+  { id: 'm1', section: '量測', type: 'measure', label: '刮刀壓力', lsl: 4.5, usl: 6.5, target: 5.5, unit: 'kg', precision: 1 },
+  { id: 'm2', section: '量測', type: 'measure', label: '印刷速度', lsl: 20, usl: 60, unit: 'mm/s' },
+  { id: 'm3', section: '量測', type: 'measure', label: '錫膏回溫時間', lsl: 4, unit: 'h', precision: 1 },
+  { id: 't1', section: '記錄', type: 'text', label: '錫膏批號' },
+  { id: 't2', section: '記錄', type: 'text', label: '備註', required: false },
+]
+const checkResults = ref({ a1: { status: 'ok' }, m1: { value: 5.6, status: 'ok' } })
+const checkSignature = ref(null)
+const checkSignError = ref('')
+const checkMsg = ref('')
+function submitChecklist() {
+  const summary = checklistRef.value.validate()
+  if (!summary.complete) {
+    checkMsg.value = `還有 ${summary.missing.length + summary.noteRequired.length} 項需要處理`
+    return
+  }
+  if (!checkSignature.value) {
+    checkSignError.value = '送出前請簽名'
+    checkMsg.value = ''
+    return
+  }
+  checkMsg.value = `已送出：合格 ${summary.ok}、不合格 ${summary.ng}、不適用 ${summary.na}`
+}
+const checklistSample = `<ChptChecklist ref="checklistRef" v-model="results" :items="items" numpad allow-photos>
+  <template #footer="{ summary }">
+    <ChptSignaturePad v-model="signature" label="點檢人員簽名" />
+    <ChptButton @click="submit">送出（{{ summary.done }}/{{ summary.total }}）</ChptButton>
+  </template>
+</ChptChecklist>
+
+const items = [
+  { id: 'a1', section: '外觀與安全', label: '安全門連鎖正常' },
+  { id: 'm1', section: '量測', type: 'measure', label: '刮刀壓力', lsl: 4.5, usl: 6.5, unit: 'kg', precision: 1 },
+  { id: 't1', section: '記錄', type: 'text', label: '錫膏批號' },
+]
+function submit() {
+  const summary = checklistRef.value.validate()   // 標出問題並捲到第一個
+  if (summary.complete) save(results.value)
+}`
+const checklistProps = [
+  { name: 'items', type: 'ChecklistItem[]', def: '—', desc: '點檢項目（依 section 分組）' },
+  { name: 'modelValue', type: 'Record<string, ChecklistResult>', def: '{}', desc: '各項結果（v-model）' },
+  { name: 'requireNoteOnNg', type: 'boolean', def: 'true', desc: '不合格時必須填寫原因' },
+  { name: 'allowPhotos', type: 'boolean', def: 'false', desc: 'check 與 measure 項目可附照片（手機會開相機）；個別項目可用 photos 覆寫' },
+  { name: 'photoReader', type: '(file: File) => Promise<string>', def: '讀成 data URL', desc: '改成上傳後回傳網址' },
+  { name: 'numpad', type: 'boolean', def: 'false', desc: '量測項目旁邊顯示數字鍵盤按鈕' },
+  { name: 'showFilter', type: 'boolean', def: 'true', desc: '顯示「全部 / 待處理 / 不合格」篩選' },
+  { name: 'readonly / disabled', type: 'boolean', def: 'false', desc: '唯讀（檢視結果）／禁用' },
+]
+const checklistItemRows = [
+  { name: 'id / label', type: 'string', def: '—', desc: '唯一鍵／項目名稱' },
+  { name: 'type', type: "'check' | 'measure' | 'text'", def: "'check'", desc: '目視確認／量測值（自動判定）／文字記錄' },
+  { name: 'section / description', type: 'string', def: '—', desc: '分組標題／說明（方法、判定標準）' },
+  { name: 'required', type: 'boolean', def: 'true', desc: '必填' },
+  { name: 'allowNA', type: 'boolean', def: 'true', desc: 'check 項目可以選「不適用」' },
+  { name: 'photos', type: 'boolean', def: '依 allowPhotos', desc: '這一項可以附照片（text 項目預設不附）' },
+  { name: 'lsl / usl / target', type: 'number', def: '—', desc: 'measure：下限／上限（含等於）／目標值' },
+  { name: 'unit / precision', type: 'string / number', def: '—', desc: 'measure：單位／小數位數' },
+]
+const checklistResultRows = [
+  { name: 'status', type: "'ok' | 'ng' | 'na' | null", def: '—', desc: 'check 為選擇；measure、text 依內容自動計算' },
+  { name: 'value / text', type: 'number / string', def: '—', desc: 'measure 的數值／text 的內容' },
+  { name: 'note', type: 'string', def: '—', desc: '備註；不合格時的原因與處置' },
+  { name: 'photos', type: 'string[]', def: '—', desc: '照片（data URL 或網址）' },
+  { name: 'at', type: 'string（ISO）', def: '—', desc: '最後填寫時間' },
+]
+const checklistEvents = [
+  { name: 'update:modelValue', params: '(results)', desc: '任何一項改變時' },
+  { name: 'change', params: '(itemId: string, result: ChecklistResult)', desc: '某一項改變' },
+]
+const checklistSlots = [{ name: 'footer', params: '{ summary, validate }', desc: '表單下方（簽名、送出按鈕）' }]
+const checklistMethods = [
+  { name: 'validate()', type: '() => ChecklistSummary', desc: '標出未填與缺原因的項目、捲到並聚焦第一個；回傳摘要（complete 為可送出）' },
+  { name: 'focusItem(id)', type: '(id: string) => void', desc: '捲到並聚焦某一項' },
+  { name: 'reset()', type: '() => void', desc: '清除所有結果' },
+  { name: 'summary()', type: '() => ChecklistSummary', desc: '目前的完成數、合格／不合格／不適用數與問題清單' },
 ]
 
 // ---- ChptFormList ----
