@@ -957,6 +957,20 @@ export interface ChptLocale {
     metricLine: (label: string, value: string) => string
     ariaLabel: (title: string, path: string, n: number, total: string) => string
   }
+  correlation: {
+    title: string
+    empty: string
+    method: string
+    pearson: string
+    spearman: string
+    cluster: string
+    faded: (alpha: number) => string
+    self: (name: string) => string
+    noData: (a: string, b: string, n: number) => string
+    cell: (a: string, b: string, r: string, n: number, p: string, significant: boolean) => string
+    pair: (x: string, y: string) => string
+    closePair: string
+  }
   radar: {
     title: string
     empty: string
@@ -2034,6 +2048,20 @@ export const zhTW: ChptLocale = {
     valueShare: (v, share) => `${v}（${share}）`,
     metricLine: (label, v) => `${label}：${v}`,
     ariaLabel: (title, path, n, total) => `${title}：${path}，${n} 項，合計 ${total}。數值見下方資料表`,
+  },
+  correlation: {
+    title: '相關矩陣',
+    empty: '沒有資料（至少要兩個參數）',
+    method: '相關係數',
+    pearson: 'Pearson（線性）',
+    spearman: 'Spearman（等級）',
+    cluster: '依相關性排序',
+    faded: (alpha) => `淡色：不顯著（p ≥ ${alpha}）`,
+    self: (name) => `${name}（自己）`,
+    noData: (a, b, n) => `${a} 與 ${b}：資料不足（n = ${n}）`,
+    cell: (a, b, r, n, p, sig) => `${a} 與 ${b}：r = ${r}，n = ${n}，p ${String(p).startsWith('<') ? p : `= ${p}`}${sig ? '' : '（不顯著）'}`,
+    pair: (x, y) => `${y} 對 ${x}`,
+    closePair: '關閉',
   },
   radar: {
     title: '雷達圖',
@@ -3119,6 +3147,20 @@ export const enUS: ChptLocale = {
     valueShare: (v, share) => `${v} (${share})`,
     metricLine: (label, v) => `${label}: ${v}`,
     ariaLabel: (title, path, n, total) => `${title}: ${path}, ${n} items, total ${total}. Values in the table below`,
+  },
+  correlation: {
+    title: 'Correlation matrix',
+    empty: 'No data (at least two parameters are needed)',
+    method: 'Coefficient',
+    pearson: 'Pearson (linear)',
+    spearman: 'Spearman (rank)',
+    cluster: 'Order by correlation',
+    faded: (alpha) => `Faded: not significant (p ≥ ${alpha})`,
+    self: (name) => `${name} (itself)`,
+    noData: (a, b, n) => `${a} and ${b}: not enough data (n = ${n})`,
+    cell: (a, b, r, n, p, sig) => `${a} and ${b}: r = ${r}, n = ${n}, p ${String(p).startsWith('<') ? p : `= ${p}`}${sig ? '' : ' (not significant)'}`,
+    pair: (x, y) => `${y} vs ${x}`,
+    closePair: 'Close',
   },
   radar: {
     title: 'Radar chart',

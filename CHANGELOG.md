@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **CorrelationMatrix 相關矩陣**（charts）：找出哪些參數彼此相關、哪些跟良率有關。Pearson（線性）或 Spearman（等級，同分取平均排名），
+  成對完整（缺值只排除那一對）；p 值用 t 分配（不完全 Beta 函數），不顯著（p ≥ `alpha`）的格子淡化。發散色階（`colors`），
+  `v-model:clustered` 依相關性排序（平均連結聚類，距離 1 − |r|），`triangle="lower"` 只畫下三角。點一格（或 Enter）在下方畫這兩個參數的
+  ScatterChart 與迴歸線、送出 `cell-click`。HTML 表格（`role="grid"`）：方向鍵、Home / End 移動，每一格有完整的 aria-label，
+  目前格子的說明以 aria-live 念出；欄名直書，格子大小依寬度調整。新增 `charts/utils/correlation.ts`（`correlationMatrix`、
+  `correlationPValue`、`correlationClusterOrder`）與語系群組 `correlation`；文件在「散佈圖、迴歸與相關」頁。
 - **ChptPivotTable 樞紐分析表**：交叉分析（不良數依「線 × 不良代碼」、產量依「日期 × 機台」）。欄位拖到列、欄、值，或用欄位旁的按鈕
   （鍵盤可操作；區內可前後移、移除）；`v-model:config` 記住設定。值：加總、平均、計數、最小、最大、不重複計數（分組欄位只能計數），可同時多個。
   列可以多層，每一層小計、可展開收合（`defaultExpandDepth`）；多層欄合併標題；總計欄與總計列（`showTotals`）。熱度依數值深淺上色；
