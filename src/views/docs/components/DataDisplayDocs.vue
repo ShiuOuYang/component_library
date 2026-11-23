@@ -335,6 +335,37 @@
       </p>
     </section>
 
+    <!-- ============ ChptDiffViewer ============ -->
+    <section id="chpt-diff-viewer" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptDiffViewer 參數比對</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>比對兩組巢狀參數 —— 配方 A / B、機台設定修改前後、兩條線同一台機的參數。
+        狀態分為<strong>變更</strong>、<strong>新增</strong>（右邊才有）、<strong>刪除</strong>（左邊才有）、<strong>容許內</strong>（數值差在 <code>tolerance</code> 範圍內）與相同；
+        數值顯示差值與百分比。依路徑設定容許差與單位（<code>oven.zones[*].temp</code>、<code>conveyor.*</code>）。
+        樹狀顯示，群組摺疊時也標出底下有幾處不同；預設只顯示差異。上方各狀態數量也是篩選，搜尋比對路徑、名稱與值。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptDiffViewer } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptDiffViewer
+          v-model:only-diff="diffOnly"
+          :left="recipeA"
+          :right="recipeB"
+          left-label="REF-A12 v3（量產）"
+          right-label="REF-A12 v4（試產）"
+          :tolerances="recipeTolerances"
+          :units="recipeUnits"
+          :labels="recipeLabels"
+          :max-height="480"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="diffSample" />
+      <ApiTable of="ChptDiffViewer" title="Props" :rows="diffProps" />
+      <ApiTable of="ChptDiffViewer" title="Events" :rows="diffEvents" />
+      <ApiTable of="ChptDiffViewer" title="方法（ref）" :rows="diffMethods" />
+    </section>
+
   </div>
 </template>
 
@@ -356,6 +387,7 @@ import {
   ChptButton,
   ChptSwitch,
   ChptLotTrace,
+  ChptDiffViewer,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -736,5 +768,54 @@ const qrProps = [
   { name: 'ref: toDataURL(scale) / download(filename)', type: '—', def: '—', desc: '輸出 PNG' },
   { name: 'bordered', type: 'boolean', def: 'true', desc: '外框' },
   { name: '@refresh', type: 'event', def: '—', desc: 'status 為 expired 時按「重新產生」' },
+]
+// ---- ChptDiffViewer ----
+const recipeA = {
+  product: 'PCB-A12',
+  revision: 3,
+  oven: { profile: 'SAC305-std', conveyorSpeed: 85, zones: [{ temp: 150 }, { temp: 175 }, { temp: 190 }, { temp: 220 }, { temp: 245 }], nitrogen: true },
+  printer: { squeegeePressure: 6.5, speed: 40, separation: { speed: 1.5, distance: 2 }, cleanEvery: 5 },
+  mounter: { nozzles: ['N1', 'N2', 'N3'], vacuumLimit: -60, placementOffset: { x: 0, y: 0 } },
+  aoi: { program: 'A12-R3', falseCallLimit: 3 },
+}
+const recipeB = {
+  product: 'PCB-A12',
+  revision: 4,
+  oven: { profile: 'SAC305-lowvoid', conveyorSpeed: 82, zones: [{ temp: 150 }, { temp: 176 }, { temp: 192 }, { temp: 228 }, { temp: 247 }], nitrogen: true },
+  printer: { squeegeePressure: 6.5, speed: 35, separation: { speed: 1.5, distance: 2 } },
+  mounter: { nozzles: ['N1', 'N2', 'N3', 'N4'], vacuumLimit: -60, placementOffset: { x: 0.02, y: 0 } },
+  aoi: { program: 'A12-R4', falseCallLimit: 3, ignoreFiducial: true },
+}
+const recipeTolerances = { 'oven.zones[*].temp': 2, 'mounter.placementOffset.*': 0.05 }
+const recipeUnits = { 'oven.zones[*].temp': '°C', 'oven.conveyorSpeed': 'cm/min', 'printer.squeegeePressure': 'kg', 'printer.speed': 'mm/s', 'mounter.vacuumLimit': 'kPa', 'mounter.placementOffset.*': 'mm' }
+const recipeLabels = { 'oven.conveyorSpeed': '輸送帶速度', 'printer.squeegeePressure': '刮刀壓力', 'printer.speed': '印刷速度', 'printer.cleanEvery': '每幾片擦網', 'aoi.falseCallLimit': '誤判上限（%）' }
+const diffOnly = ref(true)
+const diffSample = `<ChptDiffViewer
+  v-model:only-diff="onlyDiff"
+  :left="recipeV3"
+  :right="recipeV4"
+  left-label="v3（量產）"
+  right-label="v4（試產）"
+  :tolerances="{ 'oven.zones[*].temp': 2 }"
+  :units="{ 'oven.zones[*].temp': '°C' }"
+  :labels="{ 'oven.conveyorSpeed': '輸送帶速度' }"
+/>`
+const diffProps = [
+  { name: 'left / right', type: 'ParamValue', def: '—', desc: '兩邊的參數（物件、陣列可巢狀）' },
+  { name: 'leftLabel / rightLabel', type: 'string', def: '語系', desc: '欄位標題' },
+  { name: 'tolerance', type: 'number', def: '0', desc: '數值的容許差（絕對值），差在範圍內算「容許內」' },
+  { name: 'tolerances', type: 'Record<string, number>', def: '—', desc: "依路徑的容許差；* 對任何一段、[*] 對任何 index、結尾 .* 對底下所有路徑" },
+  { name: 'units', type: 'Record<string, string>', def: '—', desc: '依路徑的單位（規則同 tolerances）' },
+  { name: 'labels', type: 'Record<string, string>', def: '—', desc: '完整路徑 → 顯示名稱（顯示在路徑下方，也可搜尋）' },
+  { name: 'v-model:onlyDiff', type: 'boolean', def: 'true', desc: '只顯示有差異的（包含容許內）' },
+  { name: 'searchable', type: 'boolean', def: 'true', desc: '顯示搜尋框' },
+  { name: 'maxHeight', type: 'number', def: '0', desc: '最大高度（px），超過時捲動（標題列固定）' },
+  { name: 'defaultExpandDepth', type: 'number', def: 'Infinity', desc: '預設展開幾層' },
+  { name: 'label', type: 'string', def: '語系', desc: '表格名稱（螢幕閱讀器）' },
+]
+const diffEvents = [{ name: 'update:onlyDiff', params: '(value: boolean)', desc: '切換「只顯示差異」' }]
+const diffMethods = [
+  { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 摺疊' },
+  { name: 'rows', type: 'DiffRow[]', desc: '比對結果（含相同的列）：{ path, left, right, status, delta?, pct? }' },
 ]
 </script>

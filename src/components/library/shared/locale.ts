@@ -187,6 +187,23 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  diffViewer: {
+    label: string
+    filterLabel: string
+    status: Record<'changed' | 'added' | 'removed' | 'within' | 'same', string>
+    onlyDiff: string
+    expandAll: string
+    collapseAll: string
+    search: string
+    param: string
+    left: string
+    right: string
+    diff: string
+    groupChanges: (n: number) => string
+    empty: string
+    noDiff: string
+    noMatch: string
+  }
   imageCompare: {
     label: string
     before: string
@@ -1109,6 +1126,23 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  diffViewer: {
+    label: '參數比對',
+    filterLabel: '依狀態篩選',
+    status: { changed: '變更', added: '新增', removed: '刪除', within: '容許內', same: '相同' },
+    onlyDiff: '只顯示差異',
+    expandAll: '全部展開',
+    collapseAll: '全部摺疊',
+    search: '搜尋參數或值',
+    param: '參數',
+    left: '基準',
+    right: '比對',
+    diff: '差異',
+    groupChanges: (n) => `${n} 處不同`,
+    empty: '沒有參數',
+    noDiff: '兩邊完全相同',
+    noMatch: '沒有符合條件的參數',
+  },
   imageCompare: {
     label: '影像比對',
     before: '基準',
@@ -2096,6 +2130,23 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  diffViewer: {
+    label: 'Parameter comparison',
+    filterLabel: 'Filter by status',
+    status: { changed: 'Changed', added: 'Added', removed: 'Removed', within: 'Within tolerance', same: 'Same' },
+    onlyDiff: 'Differences only',
+    expandAll: 'Expand all',
+    collapseAll: 'Collapse all',
+    search: 'Search parameter or value',
+    param: 'Parameter',
+    left: 'Reference',
+    right: 'Compared',
+    diff: 'Difference',
+    groupChanges: (n) => `${n} difference${n === 1 ? '' : 's'}`,
+    empty: 'No parameters',
+    noDiff: 'Both sides are identical',
+    noMatch: 'No matching parameters',
+  },
   imageCompare: {
     label: 'Image comparison',
     before: 'Reference',
