@@ -29,6 +29,7 @@ export {
   ChptDefectAnnotator,
   ChptImageCompare,
   ChptEquipmentWall,
+  ChptAlarmCenter,
   ChptShiftRoster,
   ChptFloorPlan,
   ChptLogViewer,
@@ -86,6 +87,8 @@ export { rosterDates, coverage as rosterCoverage, shortages as rosterShortages, 
 export type { RosterShift, RosterPerson, Roster, ShiftRequirement, RosterRules, RosterWarning } from './shared/shiftRoster'
 export { fitImage, clampImageView, zoomImageTo, viewOf as imageViewOf, zoomOf as imageZoomOf } from './shared/imageCompare'
 export type { ImageView, ImageZoom, CompareMode } from './shared/imageCompare'
+export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
+export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
 export { parseLogLine, compileSearch as compileLogSearch, filterLogs, countLevels as countLogLevels, formatLogLine, formatLogTime, LOG_LEVELS } from './shared/logViewer'
 export type { LogEntry, LogLevel, LogMatcher } from './shared/logViewer'
 export { traceLayers, traceTree, tracePath, layoutTrace } from './shared/lotTrace'

@@ -47,6 +47,12 @@
   用差異混合：相同處變黑、缺件偏移發亮）。三種方式與並排兩格共用同一個縮放與位置 —— 縮放以「相對倍數 + 畫面中心的影像座標」記錄，
   切換方式、視窗縮放時看的仍是同一塊。雙擊放大 / 還原、Ctrl + 滾輪或兩指縮放、放大後拖曳平移（不會拖出空白）；
   鍵盤 + / − / 0、方向鍵，分隔線是 `role="slider"`。新增 `shared/imageCompare.ts` 與語系群組 `imageCompare`。
+- **ChptAlarmCenter 警報中心**：要有人處理的設備 / 品質警報（v-model：`AlarmItem[]`）。依「未確認 → 已確認 → 暫停 → 已結束」、
+  再依嚴重度與時間排序；嚴重度同時用顏色、圖示與文字。確認（記下 `operator` 與時間）、暫停（`shelveOptions` 分鐘，時間到自動回來）、
+  升級；條件已恢復但沒人確認的仍算未確認、標「已恢復」。上方是各嚴重度未確認數量（也是篩選），檢視切換未處理 / 未確認 / 暫停 / 全部、
+  搜尋訊息 / 代碼 / 來源、全部確認。未確認的嚴重警報色條閃動（`prefers-reduced-motion` 時不閃），新警報以 aria-live 念出；
+  `sound` 時有未確認的嚴重 / 重要警報就定時響（可靜音）。鍵盤：↑↓ 移動、A 確認、S 暫停、E 升級、Enter 展開說明。
+  事件 `ack` / `shelve` / `unshelve` / `escalate` 給後端；狀態與操作函式（`alarmState`、`sortAlarms`、`filterAlarms`、`ackAlarms`…）一併匯出。
 - **RadarChart 雷達圖**（charts）：同時比較幾個對象在多個指標上的表現（供應商評分、各線 OEE 三率）。每一軸有自己的範圍
   （不給 max 時取最大值取整，`max` 讓所有軸共用刻度）；`lowerIsBetter` 的指標反轉方向、軸名稱標 ↓，整張圖「越大越好」一致。
   滑過點看數值、滑過圖例突顯、點圖例顯示 / 隱藏（aria-pressed，`visibility-change` 事件）；沒有值的軸畫在中心、不畫點。

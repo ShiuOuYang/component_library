@@ -203,6 +203,38 @@ export interface ChptLocale {
     loadError: (name: string) => string
     hint: string
   }
+  alarm: {
+    label: string
+    filterLabel: string
+    viewLabel: string
+    view: Record<'open' | 'unacked' | 'shelved' | 'all', string>
+    severity: Record<'critical' | 'major' | 'minor' | 'info', string>
+    state: Record<'unacked' | 'acked' | 'shelved' | 'closed', string>
+    search: string
+    empty: string
+    noMatch: string
+    ack: string
+    ackAll: (n: number) => string
+    shelve: string
+    shelveFor: (minutes: number) => string
+    cancel: string
+    unshelve: string
+    escalate: string
+    escalatedN: (n: number) => string
+    cleared: string
+    mute: string
+    unmute: string
+    since: (duration: string) => string
+    raisedAt: (time: string) => string
+    ackedBy: (who: string, time: string) => string
+    clearedAt: (time: string) => string
+    shelvedUntil: (time: string) => string
+    ackedN: (n: number) => string
+    shelvedN: (n: number, minutes: number) => string
+    escalatedAnnounce: (n: number) => string
+    newAlarm: (severity: string, source: string, title: string, n: number) => string
+    hint: string
+  }
   shiftRoster: {
     label: string
     mode: string
@@ -1076,6 +1108,38 @@ export const zhTW: ChptLocale = {
     divider: '分隔線位置',
     loadError: (name) => `${name}影像載入失敗`,
     hint: '拖曳移動分隔線、雙擊放大 / 還原、Ctrl + 滾輪或兩指縮放、放大後拖曳平移；鍵盤 + / − / 0 縮放、方向鍵平移',
+  },
+  alarm: {
+    label: '警報',
+    filterLabel: '依嚴重度篩選',
+    viewLabel: '顯示',
+    view: { open: '未處理', unacked: '未確認', shelved: '暫停', all: '全部' },
+    severity: { critical: '嚴重', major: '重要', minor: '次要', info: '提示' },
+    state: { unacked: '未確認', acked: '已確認', shelved: '暫停中', closed: '已結束' },
+    search: '搜尋訊息、代碼、來源',
+    empty: '目前沒有警報',
+    noMatch: '沒有符合條件的警報',
+    ack: '確認',
+    ackAll: (n) => (n ? `全部確認（${n}）` : '全部確認'),
+    shelve: '暫停',
+    shelveFor: (m) => (m >= 60 && m % 60 === 0 ? `暫停 ${m / 60} 小時` : `暫停 ${m} 分鐘`),
+    cancel: '取消',
+    unshelve: '恢復提醒',
+    escalate: '升級',
+    escalatedN: (n) => (n > 1 ? `已升級 ${n} 次` : '已升級'),
+    cleared: '已恢復',
+    mute: '靜音',
+    unmute: '取消靜音',
+    since: (d) => `${d}前`,
+    raisedAt: (time) => `發生：${time}`,
+    ackedBy: (who, time) => `確認：${who ? `${who}，` : ''}${time}`,
+    clearedAt: (time) => `恢復：${time}`,
+    shelvedUntil: (time) => `暫停到：${time}`,
+    ackedN: (n) => `已確認 ${n} 筆警報`,
+    shelvedN: (n, m) => `已暫停 ${n} 筆警報 ${m} 分鐘`,
+    escalatedAnnounce: (n) => `已升級 ${n} 筆警報`,
+    newAlarm: (sev, src, title, n) => `新${sev}警報：${src ? `${src} ` : ''}${title}${n > 1 ? `，另有 ${n - 1} 筆` : ''}`,
+    hint: '↑↓ 移動、A 確認、S 暫停、E 升級、Enter 展開說明',
   },
   shiftRoster: {
     label: '排班表',
@@ -2015,6 +2079,38 @@ export const enUS: ChptLocale = {
     divider: 'Divider position',
     loadError: (name) => `${name} image failed to load`,
     hint: 'Drag to move the divider, double-click to zoom / reset, Ctrl + wheel or pinch to zoom, drag to pan when zoomed; keys + / − / 0 zoom, arrows pan',
+  },
+  alarm: {
+    label: 'Alarms',
+    filterLabel: 'Filter by severity',
+    viewLabel: 'Show',
+    view: { open: 'Open', unacked: 'Unacked', shelved: 'Shelved', all: 'All' },
+    severity: { critical: 'Critical', major: 'Major', minor: 'Minor', info: 'Info' },
+    state: { unacked: 'Unacked', acked: 'Acked', shelved: 'Shelved', closed: 'Closed' },
+    search: 'Search message, code, source',
+    empty: 'No alarms',
+    noMatch: 'No matching alarms',
+    ack: 'Ack',
+    ackAll: (n) => (n ? `Ack all (${n})` : 'Ack all'),
+    shelve: 'Shelve',
+    shelveFor: (m) => (m >= 60 && m % 60 === 0 ? `Shelve ${m / 60} h` : `Shelve ${m} min`),
+    cancel: 'Cancel',
+    unshelve: 'Unshelve',
+    escalate: 'Escalate',
+    escalatedN: (n) => (n > 1 ? `Escalated ×${n}` : 'Escalated'),
+    cleared: 'Cleared',
+    mute: 'Mute',
+    unmute: 'Unmute',
+    since: (d) => `${d} ago`,
+    raisedAt: (time) => `Raised: ${time}`,
+    ackedBy: (who, time) => `Acked: ${who ? `${who}, ` : ''}${time}`,
+    clearedAt: (time) => `Cleared: ${time}`,
+    shelvedUntil: (time) => `Shelved until: ${time}`,
+    ackedN: (n) => `Acknowledged ${n} alarm${n === 1 ? '' : 's'}`,
+    shelvedN: (n, m) => `Shelved ${n} alarm${n === 1 ? '' : 's'} for ${m} min`,
+    escalatedAnnounce: (n) => `Escalated ${n} alarm${n === 1 ? '' : 's'}`,
+    newAlarm: (sev, src, title, n) => `New ${String(sev).toLowerCase()} alarm: ${src ? `${src} ` : ''}${title}${n > 1 ? `, and ${n - 1} more` : ''}`,
+    hint: '↑↓ move, A ack, S shelve, E escalate, Enter details',
   },
   shiftRoster: {
     label: 'Shift roster',

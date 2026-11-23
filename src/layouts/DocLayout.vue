@@ -502,6 +502,7 @@ const navSections = [
           { label: 'ChptDashboardGrid', id: 'chpt-dashboard-grid' },
           { label: 'ChptEquipmentWall', id: 'chpt-equipment-wall' },
           { label: 'ChptFloorPlan', id: 'chpt-floor-plan' },
+          { label: 'ChptAlarmCenter', id: 'chpt-alarm-center' },
         ],
       },
       {
