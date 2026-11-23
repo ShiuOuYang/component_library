@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **TreemapChart 矩形樹圖**（charts）：階層的組成（不良依「廠 → 線 → 站 → 代碼」、成本依「部門 → 科目」）。面積是數量；
+  點有子節點的方塊往下鑽，麵包屑回上層（`v-model:path`），最底層送出 `node-click`；`levels="2"` 一次看兩層（第一層有標題列）。
+  `colorBy="group"` 每個子節點一個類別色，`"metric"` 依 `metric` 上色（群組依 value 加權平均）；`metricCenter` 設定時為發散色階
+  （例如以目標值為中心），色階用 CSS `color-mix` 在主題色之間混色，亮 / 暗主題自動正確。放不下的方塊不放文字，文字有底色描邊。
+  鍵盤：方向鍵依位置移動、Enter 往下、Esc / Backspace 回上層並把焦點放回原本那塊；附隱藏的資料表。
+  新增 `charts/utils/treemap.ts`、語系群組 `treemap` 與文件頁「矩形樹圖」。
 - **ScatterChart 散佈圖與迴歸**（charts）：看兩個變數的關係（爐溫與空焊率、錫膏厚度與良率）。分類用不同顏色、圖例可顯示 / 隱藏；
   直線迴歸 `regression`：`'all'`（全部一條虛線）/ `'category'`（每個分類一條）/ `'none'`，顯示迴歸式、R²、n；
   `showBand` 畫平均反應的 95% 信賴帶（t 分配）。拖曳框選 → `select` 事件，沒選到的點變淡並顯示選取數與平均；點一個點 → `point-click`。

@@ -876,6 +876,21 @@ export interface ChptLocale {
     statsCaption: (title: string) => string
     ariaLabel: (title: string, n: number, x: string, y: string, fits: string[]) => string
   }
+  treemap: {
+    title: string
+    empty: string
+    breadcrumb: string
+    hint: string
+    name: string
+    value: string
+    share: string
+    metric: string
+    center: (value: string) => string
+    drillable: (n: number) => string
+    valueShare: (value: string, share: string) => string
+    metricLine: (label: string, value: string) => string
+    ariaLabel: (title: string, path: string, n: number, total: string) => string
+  }
   radar: {
     title: string
     empty: string
@@ -1872,6 +1887,21 @@ export const zhTW: ChptLocale = {
     tipLine: (name, value) => `${name}：${value}`,
     statsCaption: (title) => `${title}的迴歸統計`,
     ariaLabel: (title, n, x, y, fits) => `${title}：${n} 個點，X 軸 ${x}、Y 軸 ${y}${fits.length ? `；${fits.join('、')}` : ''}`,
+  },
+  treemap: {
+    title: '矩形樹圖',
+    empty: '沒有資料',
+    breadcrumb: '目前位置',
+    hint: '點方塊往下一層、點上方路徑回上層；鍵盤方向鍵移動、Enter 往下、Esc 回上層',
+    name: '名稱',
+    value: '數量',
+    share: '佔比',
+    metric: '指標',
+    center: (v) => `中心 ${v}`,
+    drillable: (n) => `有 ${n} 項，可往下看`,
+    valueShare: (v, share) => `${v}（${share}）`,
+    metricLine: (label, v) => `${label}：${v}`,
+    ariaLabel: (title, path, n, total) => `${title}：${path}，${n} 項，合計 ${total}。數值見下方資料表`,
   },
   radar: {
     title: '雷達圖',
@@ -2876,6 +2906,21 @@ export const enUS: ChptLocale = {
     tipLine: (name, value) => `${name}: ${value}`,
     statsCaption: (title) => `${title} regression statistics`,
     ariaLabel: (title, n, x, y, fits) => `${title}: ${n} points, X axis ${x}, Y axis ${y}${fits.length ? `; ${fits.join(', ')}` : ''}`,
+  },
+  treemap: {
+    title: 'Treemap',
+    empty: 'No data',
+    breadcrumb: 'Current level',
+    hint: 'Click a tile to drill down, the path above to go back; arrow keys move, Enter drills down, Esc goes up',
+    name: 'Name',
+    value: 'Value',
+    share: 'Share',
+    metric: 'Metric',
+    center: (v) => `center ${v}`,
+    drillable: (n) => `${n} item${n === 1 ? '' : 's'} inside, can drill down`,
+    valueShare: (v, share) => `${v} (${share})`,
+    metricLine: (label, v) => `${label}: ${v}`,
+    ariaLabel: (title, path, n, total) => `${title}: ${path}, ${n} items, total ${total}. Values in the table below`,
   },
   radar: {
     title: 'Radar chart',
