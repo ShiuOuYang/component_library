@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptTimeScrubber 時間軸回放**：把一段時間的資料重播（異常前後參數怎麼變、一個班怎麼演變）。播放頭（v-model，毫秒）可拖曳、
+  點軌道跳過去；播放（`v-model:playing`）依倍速（`v-model:speed`、`speeds`）往前走，到結尾自動停止或 `loop`；分頁切走再回來時一次最多推進 250ms。
+  事件標記（`events`：時間、說明、嚴重度或顏色）點了跳過去，另有上一個 / 下一個事件按鈕。範圍（`v-model:range`）拖兩端把手只看一段、播放只在範圍內。
+  `sync` 傳入 `useChartSync()` 的結果時，播放頭同步到圖表十字線、範圍同步到 X 軸。播放頭與範圍把手都是 `role="slider"`：
+  ←→（Shift ×10，步進依總長度自動取好讀的單位）、Home / End、PageUp / PageDown 跳事件、空白鍵播放。
+  新增 `shared/timeScrubber.ts` 與語系群組 `timeScrubber`。
 - **TreemapChart 矩形樹圖**（charts）：階層的組成（不良依「廠 → 線 → 站 → 代碼」、成本依「部門 → 科目」）。面積是數量；
   點有子節點的方塊往下鑽，麵包屑回上層（`v-model:path`），最底層送出 `node-click`；`levels="2"` 一次看兩層（第一層有標題列）。
   `colorBy="group"` 每個子節點一個類別色，`"metric"` 依 `metric` 上色（群組依 value 加權平均）；`metricCenter` 設定時為發散色階
