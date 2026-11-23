@@ -166,6 +166,14 @@ const routes = [
         },
       },
       {
+        path: "components/treemap-chart",
+        name: "TreemapChartDoc",
+        component: () => import("../views/docs/TreemapChartDoc.vue"),
+        meta: {
+          title: "矩形樹圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),
