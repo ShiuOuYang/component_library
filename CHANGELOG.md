@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptAndonBoard 安東看板**：產線大螢幕的呼叫看板（維修、缺料、品質、主管，`types` 可自訂）。每站一張卡片：正常為綠；呼叫中依等待時間由藍轉黃轉紅
+  （紅色閃動，`prefers-reduced-motion` 時不閃）；有人處理且未超時時為中性灰。未回應依「等了多久」、處理中依「處理了多久」升級（`thresholds`，分鐘）。
+  呼叫、回應、完成都在卡片上操作（v-model 是呼叫清單；`raise` / `respond` / `resolve` 事件；同一站同一原因進行中時不重複）。
+  `tv` 電視模式字更大、全螢幕按鈕、`activeFirst` 有呼叫的站排前面；新呼叫與「轉紅」以 aria-live 念出，`sound` 時響（可靜音）。
+  新增 `shared/andon.ts` 與語系群組 `andon`。
 - **CorrelationMatrix 相關矩陣**（charts）：找出哪些參數彼此相關、哪些跟良率有關。Pearson（線性）或 Spearman（等級，同分取平均排名），
   成對完整（缺值只排除那一對）；p 值用 t 分配（不完全 Beta 函數），不顯著（p ≥ `alpha`）的格子淡化。發散色階（`colors`），
   `v-model:clustered` 依相關性排序（平均連結聚類，距離 1 − |r|），`triangle="lower"` 只畫下三角。點一格（或 Enter）在下方畫這兩個參數的
