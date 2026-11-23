@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptWorkInstruction 作業指導書**（ui）：現場一步一步照著做（換線、保養、首件檢驗）。每一步有圖片（`marks` 編號標記）、說明、
+  注意事項與規格；要勾選確認（`check.kind: 'confirm'`）或輸入量測值（`'measure'`，超出 `lsl` / `usl` 不能下一步）才能前進，
+  `minSeconds` 要求至少停留幾秒。完成的步驟可以回去看、未完成的不能跳過；平板左右滑動、鍵盤 ← → 切換。
+  `v-model:record` 保存每一步的時間與量測值（中斷後接著做），完成時送出 `complete(summary)`。另匯出
+  `workInstructionBlockers`、`summarizeWorkInstruction`、`inSpec` 與型別 `WiStep` 等。
+
 - **CorrelationMatrix 相關矩陣**（charts）：找出哪些參數彼此相關、哪些跟良率有關。Pearson（線性）或 Spearman（等級，同分取平均排名），
   成對完整（缺值只排除那一對）；p 值用 t 分配（不完全 Beta 函數），不顯著（p ≥ `alpha`）的格子淡化。發散色階（`colors`），
   `v-model:clustered` 依相關性排序（平均連結聚類，距離 1 − |r|），`triangle="lower"` 只畫下三角。點一格（或 Enter）在下方畫這兩個參數的
