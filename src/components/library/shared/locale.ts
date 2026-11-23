@@ -187,6 +187,48 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  storage: {
+    search: string
+    searchPlaceholder: string
+    found: (n: number) => string
+    prevHit: string
+    nextHit: string
+    colorBy: string
+    modes: { utilization: string; item: string; expiry: string }
+    used: (used: number, total: number) => string
+    utilization: (pct: string) => string
+    expiredCount: (n: number) => string
+    soonCount: (n: number, days: number) => string
+    blockedCount: (n: number) => string
+    legend: string
+    empty: string
+    filled: string
+    over: string
+    others: string
+    expiryState: { ok: string; soon: string; expired: string }
+    mixed: (n: number) => string
+    daysShort: (days: number) => string
+    levelShort: (level: number) => string
+    cellLabel: (parts: string[]) => string
+    noBins: string
+    detail: string
+    pickBin: string
+    where: (zone: string, rack: string, level: number, position: number) => string
+    blocked: string
+    capacity: string
+    capacityUsage: (qty: string, capacity: string, pct: string) => string
+    lot: (lot: string) => string
+    expiredAgo: (days: number) => string
+    expiresIn: (days: number) => string
+    emptyBin: string
+    move: string
+    moveOne: (item: string) => string
+    moveAll: string
+    pickTarget: (what: string) => string
+    cancel: string
+    moved: (to: string) => string
+    reject: { blocked: (to: string) => string; overCapacity: (to: string) => string; unknown: (to: string) => string }
+  }
   workInstruction: {
     label: string
     progress: (n: number, total: number) => string
@@ -1279,6 +1321,52 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  storage: {
+    search: '搜尋儲位、料號、批號',
+    searchPlaceholder: '搜尋儲位 / 料號 / 品名 / 批號',
+    found: (n) => (Number(n) ? `找到 ${n} 個儲位` : '找不到'),
+    prevHit: '上一個',
+    nextHit: '下一個',
+    colorBy: '上色方式',
+    modes: { utilization: '使用率', item: '料號', expiry: '效期' },
+    used: (used, total) => `使用中 ${used} / ${total} 格`,
+    utilization: (pct) => `使用率 ${pct}`,
+    expiredCount: (n) => `已過期 ${n} 筆`,
+    soonCount: (n, days) => `${days} 天內到期 ${n} 筆`,
+    blockedCount: (n) => `停用 ${n} 格`,
+    legend: '圖例',
+    empty: '空',
+    filled: '使用中（高度 = 使用率）',
+    over: '超過容量',
+    others: '其他',
+    expiryState: { ok: '效期正常', soon: '快到期', expired: '已過期' },
+    mixed: (n) => `${n} 種`,
+    daysShort: (days) => (Number(days) <= 0 ? '過期' : `${days} 天`),
+    levelShort: (level) => `${level}F`,
+    cellLabel: (parts) => parts.join('，'),
+    noBins: '沒有儲位',
+    detail: '儲位明細',
+    pickBin: '點選儲位查看庫存',
+    where: (zone, rack, level, position) => `${zone} · ${rack} · 第 ${level} 層第 ${position} 格`,
+    blocked: '停用',
+    capacity: '容量',
+    capacityUsage: (qty, capacity, pct) => `${qty} / ${capacity}（${pct}）`,
+    lot: (lot) => `批號 ${lot}`,
+    expiredAgo: (days) => (Number(days) <= 0 ? '今天到期' : `已過期 ${days} 天`),
+    expiresIn: (days) => `${days} 天後到期`,
+    emptyBin: '空儲位',
+    move: '移動',
+    moveOne: (item) => `移動 ${item}`,
+    moveAll: '整格移動',
+    pickTarget: (what) => `移動 ${what}：請點選目的儲位（Esc 取消），也可以直接拖曳`,
+    cancel: '取消',
+    moved: (to) => `已移到 ${to}`,
+    reject: {
+      blocked: (to) => `${to} 已停用，不能移入`,
+      overCapacity: (to) => `${to} 容量不足`,
+      unknown: (to) => `找不到儲位 ${to}`,
+    },
+  },
   workInstruction: {
     label: '作業指導書',
     progress: (n, total) => `步驟 ${n} / ${total}`,
@@ -2436,6 +2524,52 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  storage: {
+    search: 'Search bins, parts, lots',
+    searchPlaceholder: 'Search bin / part / name / lot',
+    found: (n) => (Number(n) ? `${n} bin${Number(n) === 1 ? '' : 's'} found` : 'No match'),
+    prevHit: 'Previous',
+    nextHit: 'Next',
+    colorBy: 'Color by',
+    modes: { utilization: 'Utilization', item: 'Part', expiry: 'Expiry' },
+    used: (used, total) => `${used} / ${total} bins in use`,
+    utilization: (pct) => `${pct} full`,
+    expiredCount: (n) => `${n} expired`,
+    soonCount: (n, days) => `${n} expiring within ${days} days`,
+    blockedCount: (n) => `${n} blocked`,
+    legend: 'Legend',
+    empty: 'Empty',
+    filled: 'In use (height = utilization)',
+    over: 'Over capacity',
+    others: 'Others',
+    expiryState: { ok: 'In date', soon: 'Expiring soon', expired: 'Expired' },
+    mixed: (n) => `${n} parts`,
+    daysShort: (days) => (Number(days) <= 0 ? 'Exp.' : `${days}d`),
+    levelShort: (level) => `L${level}`,
+    cellLabel: (parts) => parts.join(', '),
+    noBins: 'No bins',
+    detail: 'Bin details',
+    pickBin: 'Select a bin to see its stock',
+    where: (zone, rack, level, position) => `${zone} · ${rack} · level ${level}, position ${position}`,
+    blocked: 'Blocked',
+    capacity: 'Capacity',
+    capacityUsage: (qty, capacity, pct) => `${qty} / ${capacity} (${pct})`,
+    lot: (lot) => `Lot ${lot}`,
+    expiredAgo: (days) => (Number(days) <= 0 ? 'Expires today' : `Expired ${days} days ago`),
+    expiresIn: (days) => `Expires in ${days} days`,
+    emptyBin: 'Empty bin',
+    move: 'Move',
+    moveOne: (item) => `Move ${item}`,
+    moveAll: 'Move all',
+    pickTarget: (what) => `Moving ${what}: select the target bin (Esc to cancel), or drag it there`,
+    cancel: 'Cancel',
+    moved: (to) => `Moved to ${to}`,
+    reject: {
+      blocked: (to) => `${to} is blocked`,
+      overCapacity: (to) => `${to} does not have enough room`,
+      unknown: (to) => `Bin ${to} not found`,
+    },
+  },
   workInstruction: {
     label: 'Work instruction',
     progress: (n, total) => `Step ${n} of ${total}`,

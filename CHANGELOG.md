@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptStorageMap 儲位圖**（ui）：倉庫 / 線邊倉的儲位配置與庫存。區 → 料架 → 層 → 格（缺的格位留空），依使用率、料號或效期上色（`v-model:mode`）；
+  搜尋料號 / 品名 / 批號 / 儲位標出位置（`locate()` 可接掃描）。點儲位看明細；拖曳庫存或整格、或按「移動」再點目的儲位即可移庫
+  （檢查停用與容量，`allowOverCapacity`），送出 `move` / `move-reject`。快到期（`warnDays`）與已過期標示；方向鍵在料架內移動。
+  另匯出 `buildStorageLayout`、`searchStorageBins`、`checkStorageMove`、`moveStorageStocks`、`storageExpiryStatus` 與型別 `StorageBin`、`StorageStock` 等。
+
 - **ChptWorkInstruction 作業指導書**（ui）：現場一步一步照著做（換線、保養、首件檢驗）。每一步有圖片（`marks` 編號標記）、說明、
   注意事項與規格；要勾選確認（`check.kind: 'confirm'`）或輸入量測值（`'measure'`，超出 `lsl` / `usl` 不能下一步）才能前進，
   `minSeconds` 要求至少停留幾秒。完成的步驟可以回去看、未完成的不能跳過；平板左右滑動、鍵盤 ← → 切換。

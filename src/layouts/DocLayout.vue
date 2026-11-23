@@ -507,6 +507,7 @@ const navSections = [
           { label: 'ChptFloorPlan', id: 'chpt-floor-plan' },
           { label: 'ChptAlarmCenter', id: 'chpt-alarm-center' },
           { label: 'ChptAndonBoard', id: 'chpt-andon-board' },
+          { label: 'ChptStorageMap', id: 'chpt-storage-map' },
           { label: 'ChptApprovalFlow', id: 'chpt-approval-flow' },
         ],
       },
