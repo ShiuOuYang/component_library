@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptTimeScrubber 時間軸回放**：把一段時間的資料重播（異常前後參數怎麼變、一個班怎麼演變）。播放頭（v-model，毫秒）可拖曳、
+  點軌道跳過去；播放（`v-model:playing`）依倍速（`v-model:speed`、`speeds`）往前走，到結尾自動停止或 `loop`；分頁切走再回來時一次最多推進 250ms。
+  事件標記（`events`：時間、說明、嚴重度或顏色）點了跳過去，另有上一個 / 下一個事件按鈕。範圍（`v-model:range`）拖兩端把手只看一段、播放只在範圍內。
+  `sync` 傳入 `useChartSync()` 的結果時，播放頭同步到圖表十字線、範圍同步到 X 軸。播放頭與範圍把手都是 `role="slider"`：
+  ←→（Shift ×10，步進依總長度自動取好讀的單位）、Home / End、PageUp / PageDown 跳事件、空白鍵播放。
+  新增 `shared/timeScrubber.ts` 與語系群組 `timeScrubber`。
 - **ChptApprovalFlow 簽核流程**：工程變更、異常處理單、採購單的簽核進度與簽核動作（v-model：`ApprovalFlowData`）。
   關卡依序進行；多人關卡可以是會簽（`mode: 'all'`，全部同意）或或簽（`'any'`，一人同意即可），任一人退回整份退回、後面的關卡不需簽核。
   每一關顯示花了 / 已經等了多久，超過 `slaHours` 標示逾時。委託（代理）：簽核人把這一關交給別人，由代理人決定。

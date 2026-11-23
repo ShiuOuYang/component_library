@@ -300,6 +300,53 @@
       </p>
     </section>
 
+    <!-- ============ ChptTimeScrubber ============ -->
+    <section id="chpt-time-scrubber" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptTimeScrubber 時間軸回放</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>把一段時間的資料「重播」—— 異常前後機台參數怎麼變、一個班的狀態怎麼演變。
+        拖曳播放頭或點軌道跳到某個時間；按播放依倍速往前走（60× = 1 秒播 1 分鐘）。軌道上的菱形是事件（警報、換線），點了跳過去，
+        也可以用「上一個 / 下一個事件」。拖兩端的把手只看一段，播放只在範圍內。
+        傳入 <code>useChartSync()</code> 的結果，播放頭就是圖表的十字線、範圍就是圖表的 X 軸。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptTimeScrubber } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptTimeScrubber
+          v-model="replayAt"
+          v-model:range="replayRange"
+          v-model:playing="replayPlaying"
+          :start="replayStart"
+          :end="replayEnd"
+          :events="replayEvents"
+          :speeds="[60, 300, 900]"
+          :speed="300"
+          :sync="replaySync"
+          @event-click="(e) => toast.info(e.label)"
+        />
+        <p class="mt-3 text-sm text-content-secondary">{{ replayReadout }}</p>
+        <div v-for="c in replayCharts" :key="c.key" class="mt-2" style="height: 170px">
+          <DualAxisComboChart
+            v-bind="replaySync.bind()"
+            auto-resize
+            :layers="c.layers"
+            x-scale-type="time"
+            :x-axis-format="replayHHmm"
+            :y-left-axis-label="c.label"
+            :y-left-domain="c.domain"
+            :margin="{ top: 12, right: 16, bottom: 32, left: 64 }"
+            :animation-duration="0"
+          />
+        </div>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="replaySample" />
+      <ApiTable of="ChptTimeScrubber" title="Props" :rows="replayProps" />
+      <ApiTable of="-" title="TimelineEvent（events 的每一筆）" :rows="replayEventRows" />
+      <ApiTable of="ChptTimeScrubber" title="Events" :rows="replayEmits" />
+      <ApiTable of="ChptTimeScrubber" title="方法（ref）" :rows="replayMethods" />
+    </section>
+
     <!-- ============ ChptShiftRoster ============ -->
     <section id="chpt-shift-roster" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptShiftRoster 排班表</h2>
@@ -337,7 +384,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import {
   ChptTabs,
   useToast,
@@ -351,6 +398,9 @@ import {
   ChptTag,
   ChptDefectAnnotator,
   ChptImageCompare,
+  ChptTimeScrubber,
+  DualAxisComboChart,
+  useChartSync,
   ChptSwitch,
   ChptShiftRoster,
 } from '@/components/library'
@@ -594,6 +644,86 @@ const tabs = [
 ]
 
 const toast = useToast()
+// ---- ChptTimeScrubber：回放一個班的爐溫與不良率 ----
+const replayStart = (() => {
+  const d = new Date()
+  d.setHours(8, 0, 0, 0)
+  return d.getTime()
+})()
+const replayEnd = replayStart + 8 * 3_600_000
+const replaySeries = (() => {
+  let seed = 3
+  const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296)
+  return Array.from({ length: 8 * 60 + 1 }, (_, i) => {
+    const t = new Date(replayStart + i * 60_000)
+    const spike = Math.exp(-(((i - 150) / 12) ** 2))
+    return { t, key: String(i), temp: 245 + Math.sin(i / 40) * 2 + spike * 16 + (rand() - 0.5) * 1.5, defect: 0.5 + spike * 2.8 + rand() * 0.3 }
+  })
+})()
+const replayLine = (field, color) => ({ type: 'line', data: replaySeries, xValue: (d) => d.t, yValue: (d) => d[field], keyFn: (d) => d.key, color, showDots: false, legend: { show: false } })
+const replayCharts = [
+  { key: 'temp', label: '爐溫 (°C)', domain: [238, 266], layers: [replayLine('temp', 'rgb(var(--t-chart-1))')] },
+  { key: 'defect', label: '不良率 (%)', domain: null, layers: [replayLine('defect', 'rgb(var(--t-chart-4))')] },
+]
+const replayHHmm = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+const replayEvents = [
+  { time: replayStart + 132 * 60_000, label: '爐溫偏高（第 6 區）', severity: 'major' },
+  { time: replayStart + 148 * 60_000, label: '爐溫超限，自動降速', severity: 'critical' },
+  { time: replayStart + 175 * 60_000, label: 'AOI 不良率超標', severity: 'critical' },
+  { time: replayStart + 300 * 60_000, label: '換線 PCB-A12 → B07', severity: 'info' },
+  { time: replayStart + 410 * 60_000, label: '吸嘴更換', severity: 'minor' },
+]
+const replayAt = ref(replayStart + 120 * 60_000)
+const replayRange = ref(null)
+const replayPlaying = ref(false)
+const replaySync = useChartSync({ zoom: true, crosshair: true })
+const replayReadout = computed(() => {
+  const i = Math.max(0, Math.min(replaySeries.length - 1, Math.round((replayAt.value - replayStart) / 60_000)))
+  const d = replaySeries[i]
+  return `${replayHHmm(d.t)} · 爐溫 ${d.temp.toFixed(1)} °C · 不良率 ${d.defect.toFixed(2)} %`
+})
+const replaySample = `const sync = useChartSync({ zoom: true, crosshair: true })
+
+<ChptTimeScrubber
+  v-model="at" v-model:range="range" v-model:playing="playing"
+  :start="shiftStart" :end="shiftEnd"
+  :events="[{ time: '2026-11-23T10:28', label: '爐溫超限', severity: 'critical' }, …]"
+  :sync="sync"
+/>
+<DualAxisComboChart v-bind="sync.bind()" :layers="tempLayers" x-scale-type="time" />
+<DualAxisComboChart v-bind="sync.bind()" :layers="defectLayers" x-scale-type="time" />`
+const replayProps = [
+  { name: 'start / end', type: 'string | number | Date', def: '—', desc: '整段時間' },
+  { name: 'v-model', type: 'number（毫秒）', def: 'start', desc: '播放頭的時間' },
+  { name: 'v-model:range', type: '[number, number] | null', def: 'null', desc: '只看這一段；播放只在範圍內；拉回全部時為 null' },
+  { name: 'v-model:playing', type: 'boolean', def: 'false', desc: '播放中' },
+  { name: 'v-model:speed', type: 'number', def: '60', desc: '倍速（1 = 真實時間；60 = 1 秒播 1 分鐘）' },
+  { name: 'speeds', type: 'number[]', def: '[1, 10, 60, 600, 3600]', desc: '倍速選項' },
+  { name: 'events', type: 'TimelineEvent[]', def: '[]', desc: '事件標記（警報、換線、停機）' },
+  { name: 'loop', type: 'boolean', def: 'false', desc: '播到結尾時從頭開始' },
+  { name: 'step', type: 'number | null', def: 'null', desc: '鍵盤步進（毫秒）；不給時依總長度（約 1/100，取好讀的單位）' },
+  { name: 'rangeSelectable', type: 'boolean', def: 'true', desc: '顯示範圍把手' },
+  { name: 'sync', type: 'ChartSync | null', def: 'null', desc: 'useChartSync() 的結果：播放頭 → 十字線、範圍 → X 軸' },
+  { name: 'timeFormat', type: '(ms) => string', def: 'null', desc: '時間格式（目前時間、刻度、事件）' },
+  { name: 'label', type: 'string', def: '語系', desc: '區塊名稱（螢幕閱讀器）' },
+]
+const replayEventRows = [
+  { name: 'time', type: 'string | number | Date', def: '—', desc: '發生時間' },
+  { name: 'label', type: 'string', def: '—', desc: '說明（提示、螢幕閱讀器）' },
+  { name: 'severity', type: "'critical' | 'major' | 'minor' | 'info'", def: "'info'", desc: '決定顏色（同 ChptAlarmCenter）' },
+  { name: 'color / id', type: 'string / string | number', def: '—', desc: '自訂顏色、識別碼' },
+]
+const replayEmits = [
+  { name: 'update:modelValue', params: '(ms: number)', desc: '播放頭移動（拖曳、播放、跳事件）' },
+  { name: 'update:range', params: '(range: [number, number] | null)', desc: '範圍改變' },
+  { name: 'update:playing', params: '(playing: boolean)', desc: '開始 / 停止播放（播到結尾會自動停止）' },
+  { name: 'update:speed', params: '(speed: number)', desc: '切換倍速' },
+  { name: 'event-click', params: '(event: TimelineEvent)', desc: '點一個事件標記' },
+]
+const replayMethods = [
+  { name: 'play() / pause()', type: '() => void', desc: '播放 / 暫停' },
+  { name: 'seek(ms)', type: '(ms: number) => void', desc: '跳到某個時間（限制在範圍內）' },
+]
 const progress = ref(30)
 const progress2 = ref(72)
 

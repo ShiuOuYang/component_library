@@ -448,6 +448,7 @@ const navSections = [
           { label: 'ChptKanban', id: 'chpt-kanban' },
           { label: 'ChptDefectAnnotator', id: 'chpt-defect-annotator' },
           { label: 'ChptImageCompare', id: 'chpt-image-compare' },
+          { label: 'ChptTimeScrubber', id: 'chpt-time-scrubber' },
           { label: 'ChptShiftRoster', id: 'chpt-shift-roster' },
         ],
       },

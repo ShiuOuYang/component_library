@@ -187,6 +187,22 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  timeScrubber: {
+    label: string
+    play: string
+    pause: string
+    prevEvent: string
+    nextEvent: string
+    speed: string
+    speedOption: (x: number) => string
+    playhead: string
+    rangeStart: string
+    rangeEnd: string
+    range: (from: string, to: string) => string
+    clearRange: string
+    eventLabel: (time: string, label: string) => string
+    hint: string
+  }
   approval: {
     label: string
     flow: Record<'approved' | 'rejected' | 'in-progress', string>
@@ -1167,6 +1183,22 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  timeScrubber: {
+    label: '時間軸回放',
+    play: '播放',
+    pause: '暫停',
+    prevEvent: '上一個事件',
+    nextEvent: '下一個事件',
+    speed: '播放倍速',
+    speedOption: (x) => `${x}×`,
+    playhead: '目前時間',
+    rangeStart: '範圍開始',
+    rangeEnd: '範圍結束',
+    range: (from, to) => `範圍 ${from} – ${to}`,
+    clearRange: '看全部',
+    eventLabel: (time, label) => `${time} ${label}`,
+    hint: '拖曳或點軌道跳到某個時間、拖兩端把手只看一段；播放頭可用 ←→（Shift 加大）、PageUp / PageDown 跳事件、空白鍵播放',
+  },
   approval: {
     label: '簽核流程',
     flow: { approved: '已核准', rejected: '已退回', 'in-progress': '簽核中' },
@@ -2212,6 +2244,22 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  timeScrubber: {
+    label: 'Timeline playback',
+    play: 'Play',
+    pause: 'Pause',
+    prevEvent: 'Previous event',
+    nextEvent: 'Next event',
+    speed: 'Playback speed',
+    speedOption: (x) => `${x}×`,
+    playhead: 'Current time',
+    rangeStart: 'Range start',
+    rangeEnd: 'Range end',
+    range: (from, to) => `Range ${from} – ${to}`,
+    clearRange: 'Show all',
+    eventLabel: (time, label) => `${time} ${label}`,
+    hint: 'Drag or click the track to seek, drag the end handles to focus on a range; on the playhead use ←→ (Shift for bigger steps), PageUp / PageDown for events, Space to play',
+  },
   approval: {
     label: 'Approval flow',
     flow: { approved: 'Approved', rejected: 'Rejected', 'in-progress': 'In progress' },
