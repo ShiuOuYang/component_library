@@ -274,6 +274,42 @@
       <ApiTable of="ChptFloorPlan" title="Slots" :rows="floorSlots" />
       <ApiTable of="ChptFloorPlan" title="方法（ref）" :rows="floorMethods" />
     </section>
+
+    <!-- ============ ChptAlarmCenter ============ -->
+    <section id="chpt-alarm-center" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAlarmCenter 警報中心</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>要有人處理的設備 / 品質警報（ChptLogViewer 是原始紀錄，這裡是待辦清單）。
+        排序是「未確認 → 已確認 → 暫停 → 已結束」，同狀態再依嚴重度與時間；嚴重度同時用顏色、圖示與文字。
+        可以<strong>確認</strong>（記下確認人與時間）、<strong>暫停</strong>一段時間（時間到自動回來）、<strong>升級</strong>（通知上一層）。
+        條件已恢復但還沒人確認的警報仍算未確認、標「已恢復」—— 短暫的異常也要讓人知道發生過；確認後才結束。
+        未確認的嚴重警報色條閃動（系統設定減少動態效果時不閃），新警報以 aria-live 念出；開啟 <code>sound</code> 時有未確認的嚴重 / 重要警報就定時響，可靜音。
+        鍵盤：↑↓ 在警報間移動、A 確認、S 暫停、E 升級、Enter 展開說明。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptAlarmCenter } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-4">
+          <ChptSwitch v-model="alarmLive" label="模擬新警報（每 5 秒）" />
+          <ChptSwitch v-model="alarmSound" label="警報音" />
+        </div>
+        <ChptAlarmCenter
+          v-model="alarms"
+          operator="王小明"
+          :sound="alarmSound"
+          :max-height="460"
+          @ack="(ids) => toast.success(`已確認 ${ids.length} 筆`)"
+          @escalate="(ids) => toast.info(`已通知課長（${ids.length} 筆）`)"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="alarmSample" />
+      <ApiTable of="ChptAlarmCenter" title="Props" :rows="alarmProps" />
+      <ApiTable of="-" title="AlarmItem（v-model 的每一筆）" :rows="alarmItemRows" />
+      <ApiTable of="ChptAlarmCenter" title="Events" :rows="alarmEvents" />
+      <ApiTable of="ChptAlarmCenter" title="Slots" :rows="alarmSlots" />
+      <ApiTable of="ChptAlarmCenter" title="方法（ref）" :rows="alarmMethods" />
+    </section>
   </div>
 </template>
 
@@ -292,6 +328,7 @@ import {
   ChptSwitch,
   ChptEquipmentWall,
   ChptFloorPlan,
+  ChptAlarmCenter,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -420,6 +457,82 @@ import { useToast } from '@/components/library'
 
 /** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */
 const toast = useToast()
+
+// ---- ChptAlarmCenter ----
+const alarms = ref([
+  { id: 'a1', title: '吸嘴 N3 真空異常', severity: 'critical', code: 'E-1023', source: 'SMT-02 貼片機', group: 'SMT 一線', raisedAt: minutesAgo(25), count: 3, detail: '真空值低於 -60 kPa 持續 5 秒。\n建議：檢查吸嘴是否堵塞、真空管是否脫落。' },
+  { id: 'a2', title: '回焊爐第 6 區溫度偏高', severity: 'major', code: 'T-0602', source: 'SMT-08 回焊爐', group: 'SMT 二線', raisedAt: minutesAgo(9), cleared: true, clearedAt: minutesAgo(4), detail: '實測 252 °C，上限 250 °C（已回到規格內，仍需確認）。' },
+  { id: 'a3', title: '飛達 F12 即將缺料', severity: 'minor', code: 'M-0112', source: 'SMT-07 貼片機', group: 'SMT 二線', raisedAt: minutesAgo(6) },
+  { id: 'a4', title: 'AOI-02 通訊中斷', severity: 'major', code: 'N-0001', source: 'AOI-02', group: '檢測', raisedAt: minutesAgo(8), acked: true, ackedBy: '陳技術員', ackedAt: minutesAgo(5) },
+  { id: 'a5', title: '週保養到期', severity: 'info', code: 'PM-W', source: 'SMT-06 貼片機', group: 'SMT 二線', raisedAt: minutesAgo(95), acked: true, ackedBy: '李組長', ackedAt: minutesAgo(90) },
+  { id: 'a6', title: '誤判率超過 3%', severity: 'minor', code: 'Q-0310', source: 'AOI-01', group: '檢測', raisedAt: minutesAgo(40), shelvedUntil: minutesAgo(-50) },
+  { id: 'a7', title: '軌道卡板', severity: 'major', code: 'E-2001', source: 'SMT-03 貼片機', group: 'SMT 一線', raisedAt: minutesAgo(130), acked: true, ackedBy: '陳技術員', ackedAt: minutesAgo(128), cleared: true, clearedAt: minutesAgo(120) },
+])
+const alarmLive = ref(false)
+const alarmSound = ref(false)
+const NEW_ALARMS = [
+  { title: '飛達卡料', severity: 'major', code: 'E-1101', source: 'SMT-01 印刷機', group: 'SMT 一線' },
+  { title: '錫膏黏度超出規格', severity: 'minor', code: 'Q-0021', source: 'SMT-05 印刷機', group: 'SMT 二線' },
+  { title: '緊急停止按鈕被按下', severity: 'critical', code: 'S-0000', source: 'SMT-04 回焊爐', group: 'SMT 一線' },
+  { title: 'ICT 治具計數到期', severity: 'info', code: 'PM-F', source: 'ICT-01', group: '檢測' },
+]
+let alarmTimer = null
+let alarmTick = 0
+watch(alarmLive, (on) => {
+  clearInterval(alarmTimer)
+  if (!on) return
+  alarmTimer = setInterval(() => {
+    // 固定輪替：新增一筆警報，並讓最舊的一筆未恢復警報恢復
+    alarmTick++
+    const base = NEW_ALARMS[alarmTick % NEW_ALARMS.length]
+    const open = alarms.value.find((a) => !a.cleared)
+    alarms.value = [
+      { ...base, id: `live-${alarmTick}`, raisedAt: Date.now() },
+      ...alarms.value.map((a) => (alarmTick % 2 === 0 && a === open ? { ...a, cleared: true, clearedAt: Date.now() } : a)),
+    ]
+  }, 5000)
+})
+onBeforeUnmount(() => clearInterval(alarmTimer))
+const alarmSample = `<ChptAlarmCenter v-model="alarms" :operator="user.name" sound @ack="(ids) => api.ack(ids)" @escalate="notifyManager" />
+
+// alarms：
+//   { id: 'a1', title: '吸嘴 N3 真空異常', severity: 'critical', code: 'E-1023', source: 'SMT-02 貼片機',
+//     raisedAt: '2026-11-23T08:15:00', count: 3, detail: '建議：檢查吸嘴是否堵塞' }
+// 設備回報恢復時：把該筆設成 cleared: true（確認過的就結束，沒確認的仍要人確認）`
+const alarmProps = [
+  { name: 'v-model', type: 'AlarmItem[]', def: '—', desc: '警報清單；確認、暫停、升級會直接改這份清單' },
+  { name: 'operator', type: 'string', def: "''", desc: '目前操作的人（確認時記在 ackedBy）' },
+  { name: 'shelveOptions', type: 'number[]', def: '[15, 60, 240]', desc: '暫停的選項（分鐘）；S 鍵用第一個' },
+  { name: 'sound', type: 'boolean', def: 'false', desc: '有未確認的嚴重 / 重要警報時定時響（瀏覽器要使用者先互動過才會出聲）' },
+  { name: 'soundInterval', type: 'number', def: '10000', desc: '響的間隔（毫秒）' },
+  { name: 'maxHeight', type: 'number', def: '0', desc: '清單最大高度（px），超過時捲動；0 為不限' },
+  { name: 'searchable', type: 'boolean', def: 'true', desc: '顯示搜尋框（比對訊息、代碼、來源）' },
+  { name: 'defaultView', type: "'open' | 'unacked' | 'shelved' | 'all'", def: "'open'", desc: '預設顯示；open = 未結束且未暫停' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只顯示，不能操作' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '計算時間用的現在時間；不給時每 15 秒更新' },
+  { name: 'label', type: 'string', def: '語系', desc: '清單名稱（螢幕閱讀器）' },
+]
+const alarmItemRows = [
+  { name: 'id / title', type: 'string', def: '—', desc: '識別碼、警報訊息' },
+  { name: 'severity', type: "'critical' | 'major' | 'minor' | 'info'", def: '—', desc: '嚴重度' },
+  { name: 'raisedAt', type: 'string | number | Date', def: '—', desc: '發生時間' },
+  { name: 'code / source / group', type: 'string', def: '—', desc: '警報代碼、來源（機台）、分組（產線）' },
+  { name: 'detail', type: 'string', def: '—', desc: '說明、建議處置（展開時顯示）' },
+  { name: 'count', type: 'number', def: '1', desc: '重複發生次數（大於 1 時顯示 ×n）' },
+  { name: 'acked / ackedBy / ackedAt', type: 'boolean / string / 時間', def: '—', desc: '確認狀態' },
+  { name: 'cleared / clearedAt', type: 'boolean / 時間', def: '—', desc: '條件已恢復（設備回報正常）' },
+  { name: 'shelvedUntil', type: '時間 | null', def: '—', desc: '暫停提醒到這個時間' },
+  { name: 'escalated', type: 'number', def: '0', desc: '已升級次數' },
+]
+const alarmEvents = [
+  { name: 'update:modelValue', params: '(alarms: AlarmItem[])', desc: '清單更新（v-model）' },
+  { name: 'ack', params: '(ids: string[])', desc: '確認了哪些警報（送給後端）' },
+  { name: 'shelve', params: '(ids: string[], minutes: number)', desc: '暫停' },
+  { name: 'unshelve', params: '(ids: string[])', desc: '恢復提醒' },
+  { name: 'escalate', params: '(ids: string[])', desc: '升級' },
+]
+const alarmSlots = [{ name: 'detail', params: '{ alarm }', desc: '展開時的自訂內容（例如趨勢圖、處置 SOP 連結）' }]
+const alarmMethods = [{ name: 'ack(ids?)', type: '(ids?: string[]) => void', desc: '確認指定的警報；不給時確認畫面上所有未確認的' }]
 
 // ---- DashboardGrid ----
 const defaultDashboard = () => [
