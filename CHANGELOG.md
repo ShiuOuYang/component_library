@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptFeederMap 上料防錯**（ui）：SMT / 插件線上料、換料防錯。掃站位（或點選）→ 掃料盤，跟 BOM 比對料號（含 `alternates` 代用料）：
+  正確就上料並嗶一聲；錯料時紅色警示 + 警報音，必須確認才能繼續（`mismatch` 事件）。同一盤不能同時裝在兩個站位。
+  站位圖依 `group` 分區，顯示料盤、剩餘數量（`lowQty` 低料、0 用完）、估計還能生產幾片（`perBoard`），可只看需要處理的。
+  `v-model:loads`、`v-model:log`（含錯料）、匯出 CSV；`parseReel` 自訂料盤條碼格式。另匯出 `parseReelCode`、`feederSummary` 與型別 `FeederSlot` 等。
+
 - **ChptAndonBoard 安東看板**：產線大螢幕的呼叫看板（維修、缺料、品質、主管，`types` 可自訂）。每站一張卡片：正常為綠；呼叫中依等待時間由藍轉黃轉紅
   （紅色閃動，`prefers-reduced-motion` 時不閃）；有人處理且未超時時為中性灰。未回應依「等了多久」、處理中依「處理了多久」升級（`thresholds`，分鐘）。
   呼叫、回應、完成都在卡片上操作（v-model 是呼叫清單；`raise` / `respond` / `resolve` 事件；同一站同一原因進行中時不重複）。

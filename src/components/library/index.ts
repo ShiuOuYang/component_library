@@ -40,6 +40,7 @@ export {
   ChptLotTrace,
   ChptDiffViewer,
   ChptChecklist,
+  ChptFeederMap,
   ChptSignaturePad,
   ChptNumpad,
 } from './ui/index.js'
@@ -94,6 +95,8 @@ export { fitImage, clampImageView, zoomImageTo, viewOf as imageViewOf, zoomOf as
 export type { ImageView, ImageZoom, CompareMode } from './shared/imageCompare'
 export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
+export { parseReelCode, matchesSlot as feederMatchesSlot, feederSummary, boardsLeft as feederBoardsLeft } from './shared/feeder'
+export type { FeederSlot, FeederReel, FeederLoad, FeederLoads, FeederLogEntry, FeederStock, FeederSummary } from './shared/feeder'
 export { DEFAULT_ANDON_TYPES, DEFAULT_ANDON_THRESHOLDS, callStatus as andonCallStatus, callLevel as andonCallLevel, raiseCall as raiseAndonCall, respondCall as respondAndonCall, resolveCall as resolveAndonCall } from './shared/andon'
 export type { AndonCallType, AndonStation, AndonCall, AndonStatus, AndonLevel, AndonThresholds } from './shared/andon'
 export { computePivot, moveField as movePivotField, PIVOT_AGGS } from './shared/pivot'
@@ -137,7 +140,7 @@ export type {
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
-  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps,
+  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, FeederRejectReason, ChptFeederMapProps,
   SchemaFormField, SchemaFieldType, SchemaFieldOption, CommandItem, DashboardItem, KanbanColumn, KanbanMoveEvent, RichTextTool,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'
