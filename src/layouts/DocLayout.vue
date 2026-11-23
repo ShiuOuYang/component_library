@@ -568,6 +568,10 @@ const navSections = [
         anchors: [{ label: '良率損失', id: 'yield' }, { label: '小計與成本', id: 'subtotal' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/treemap-chart', icon: '🧱', label: '矩形樹圖',
+        anchors: [{ label: '鑽取與分組顏色', id: 'group' }, { label: '依指標上色', id: 'metric' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },

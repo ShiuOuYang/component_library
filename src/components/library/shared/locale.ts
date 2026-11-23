@@ -860,6 +860,21 @@ export interface ChptLocale {
     outflow: (v: string) => string
     share: (source: string, pct: string) => string
   }
+  treemap: {
+    title: string
+    empty: string
+    breadcrumb: string
+    hint: string
+    name: string
+    value: string
+    share: string
+    metric: string
+    center: (value: string) => string
+    drillable: (n: number) => string
+    valueShare: (value: string, share: string) => string
+    metricLine: (label: string, value: string) => string
+    ariaLabel: (title: string, path: string, n: number, total: string) => string
+  }
   radar: {
     title: string
     empty: string
@@ -1840,6 +1855,21 @@ export const zhTW: ChptLocale = {
     inflow: (v) => `流入 ${v}`,
     outflow: (v) => `流出 ${v}`,
     share: (source, pct) => `佔 ${source} 流出的 ${pct}`,
+  },
+  treemap: {
+    title: '矩形樹圖',
+    empty: '沒有資料',
+    breadcrumb: '目前位置',
+    hint: '點方塊往下一層、點上方路徑回上層；鍵盤方向鍵移動、Enter 往下、Esc 回上層',
+    name: '名稱',
+    value: '數量',
+    share: '佔比',
+    metric: '指標',
+    center: (v) => `中心 ${v}`,
+    drillable: (n) => `有 ${n} 項，可往下看`,
+    valueShare: (v, share) => `${v}（${share}）`,
+    metricLine: (label, v) => `${label}：${v}`,
+    ariaLabel: (title, path, n, total) => `${title}：${path}，${n} 項，合計 ${total}。數值見下方資料表`,
   },
   radar: {
     title: '雷達圖',
@@ -2828,6 +2858,21 @@ export const enUS: ChptLocale = {
     inflow: (v) => `In ${v}`,
     outflow: (v) => `Out ${v}`,
     share: (source, pct) => `${pct} of ${source} outflow`,
+  },
+  treemap: {
+    title: 'Treemap',
+    empty: 'No data',
+    breadcrumb: 'Current level',
+    hint: 'Click a tile to drill down, the path above to go back; arrow keys move, Enter drills down, Esc goes up',
+    name: 'Name',
+    value: 'Value',
+    share: 'Share',
+    metric: 'Metric',
+    center: (v) => `center ${v}`,
+    drillable: (n) => `${n} item${n === 1 ? '' : 's'} inside, can drill down`,
+    valueShare: (v, share) => `${v} (${share})`,
+    metricLine: (label, v) => `${label}: ${v}`,
+    ariaLabel: (title, path, n, total) => `${title}: ${path}, ${n} items, total ${total}. Values in the table below`,
   },
   radar: {
     title: 'Radar chart',

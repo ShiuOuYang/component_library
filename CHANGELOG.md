@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **TreemapChart 矩形樹圖**（charts）：階層的組成（不良依「廠 → 線 → 站 → 代碼」、成本依「部門 → 科目」）。面積是數量；
+  點有子節點的方塊往下鑽，麵包屑回上層（`v-model:path`），最底層送出 `node-click`；`levels="2"` 一次看兩層（第一層有標題列）。
+  `colorBy="group"` 每個子節點一個類別色，`"metric"` 依 `metric` 上色（群組依 value 加權平均）；`metricCenter` 設定時為發散色階
+  （例如以目標值為中心），色階用 CSS `color-mix` 在主題色之間混色，亮 / 暗主題自動正確。放不下的方塊不放文字，文字有底色描邊。
+  鍵盤：方向鍵依位置移動、Enter 往下、Esc / Backspace 回上層並把焦點放回原本那塊；附隱藏的資料表。
+  新增 `charts/utils/treemap.ts`、語系群組 `treemap` 與文件頁「矩形樹圖」。
 - **ChptDiffViewer 參數比對**：比對兩組巢狀參數（配方 A / B、機台設定修改前後）。巢狀物件與陣列攤平成路徑比對，
   狀態分為變更、新增、刪除、容許內（數值差在 `tolerance` 內）與相同；數值顯示差值與百分比。`tolerances` / `units` 依路徑設定
   （`oven.zones[*].temp`、`conveyor.*`），`labels` 給路徑顯示名稱。樹狀顯示（只有一個子節點的群組併成一列，例如 `[1].temp`），
