@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **ChptFeederMap 上料防錯**（ui）：SMT / 插件線上料、換料防錯。掃站位（或點選）→ 掃料盤，跟 BOM 比對料號（含 `alternates` 代用料）：
+  正確就上料並嗶一聲；錯料時紅色警示 + 警報音，必須確認才能繼續（`mismatch` 事件）。同一盤不能同時裝在兩個站位。
+  站位圖依 `group` 分區，顯示料盤、剩餘數量（`lowQty` 低料、0 用完）、估計還能生產幾片（`perBoard`），可只看需要處理的。
+  `v-model:loads`、`v-model:log`（含錯料）、匯出 CSV；`parseReel` 自訂料盤條碼格式。另匯出 `parseReelCode`、`feederSummary` 與型別 `FeederSlot` 等。
 - **ChptWorkInstruction 作業指導書**（ui）：現場一步一步照著做（換線、保養、首件檢驗）。每一步有圖片（`marks` 編號標記）、說明、
   注意事項與規格；要勾選確認（`check.kind: 'confirm'`）或輸入量測值（`'measure'`，超出 `lsl` / `usl` 不能下一步）才能前進，
   `minSeconds` 要求至少停留幾秒。完成的步驟可以回去看、未完成的不能跳過；平板左右滑動、鍵盤 ← → 切換。
