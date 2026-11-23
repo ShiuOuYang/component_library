@@ -418,6 +418,7 @@ const navSections = [
           { label: 'ChptBarcode', id: 'chpt-barcode' },
           { label: 'ChptLotTrace', id: 'chpt-lot-trace' },
           { label: 'ChptDiffViewer', id: 'chpt-diff-viewer' },
+          { label: 'ChptPivotTable', id: 'chpt-pivot-table' },
         ],
       },
       {
