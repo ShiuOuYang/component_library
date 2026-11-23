@@ -203,6 +203,32 @@ export interface ChptLocale {
     eventLabel: (time: string, label: string) => string
     hint: string
   }
+  approval: {
+    label: string
+    flow: Record<'approved' | 'rejected' | 'in-progress', string>
+    submitted: (who: string, time: string) => string
+    elapsed: (duration: string) => string
+    total: (duration: string) => string
+    mode: Record<'single' | 'all' | 'any', string>
+    step: Record<'approved' | 'rejected' | 'current' | 'upcoming' | 'cancelled', string>
+    waiting: (duration: string) => string
+    took: (duration: string) => string
+    overdue: (hours: number) => string
+    delegatedTo: (name: string) => string
+    approver: Record<'approved' | 'rejected' | 'pending' | 'waiting' | 'skipped', string>
+    yourTurn: string
+    actOnBehalf: (name: string) => string
+    comment: string
+    commentPlaceholder: string
+    approve: string
+    reject: string
+    delegate: string
+    delegatePick: string
+    rejectNeedsComment: string
+    approvedAnnounce: string
+    rejectedAnnounce: string
+    delegatedAnnounce: (name: string) => string
+  }
   diffViewer: {
     label: string
     filterLabel: string
@@ -1172,6 +1198,32 @@ export const zhTW: ChptLocale = {
     clearRange: '看全部',
     eventLabel: (time, label) => `${time} ${label}`,
     hint: '拖曳或點軌道跳到某個時間、拖兩端把手只看一段；播放頭可用 ←→（Shift 加大）、PageUp / PageDown 跳事件、空白鍵播放',
+  },
+  approval: {
+    label: '簽核流程',
+    flow: { approved: '已核准', rejected: '已退回', 'in-progress': '簽核中' },
+    submitted: (who, time) => `${who ? `${who} ` : ''}送出於 ${time}`,
+    elapsed: (d) => `已進行 ${d}`,
+    total: (d) => `共花了 ${d}`,
+    mode: { single: '單人', all: '會簽（全部同意）', any: '或簽（一人同意即可）' },
+    step: { approved: '已通過', rejected: '已退回', current: '簽核中', upcoming: '未開始', cancelled: '不需簽核' },
+    waiting: (d) => `已等 ${d}`,
+    took: (d) => `花了 ${d}`,
+    overdue: (h) => `逾時（時限 ${h} 小時）`,
+    delegatedTo: (name) => `${name}（代理）`,
+    approver: { approved: '同意', rejected: '退回', pending: '待簽', waiting: '尚未輪到', skipped: '不需簽' },
+    yourTurn: '輪到你簽核',
+    actOnBehalf: (name) => `代理 ${name} 簽核`,
+    comment: '意見',
+    commentPlaceholder: '同意可以不寫；退回請寫原因',
+    approve: '同意',
+    reject: '退回',
+    delegate: '委託',
+    delegatePick: '委託給：',
+    rejectNeedsComment: '退回請寫原因',
+    approvedAnnounce: '已同意',
+    rejectedAnnounce: '已退回',
+    delegatedAnnounce: (name) => `已委託給 ${name}`,
   },
   diffViewer: {
     label: '參數比對',
@@ -2207,6 +2259,32 @@ export const enUS: ChptLocale = {
     clearRange: 'Show all',
     eventLabel: (time, label) => `${time} ${label}`,
     hint: 'Drag or click the track to seek, drag the end handles to focus on a range; on the playhead use ←→ (Shift for bigger steps), PageUp / PageDown for events, Space to play',
+  },
+  approval: {
+    label: 'Approval flow',
+    flow: { approved: 'Approved', rejected: 'Rejected', 'in-progress': 'In progress' },
+    submitted: (who, time) => `${who ? `Submitted by ${who}` : 'Submitted'} on ${time}`,
+    elapsed: (d) => `in progress for ${d}`,
+    total: (d) => `took ${d} in total`,
+    mode: { single: 'Single', all: 'All must approve', any: 'Any one approves' },
+    step: { approved: 'Approved', rejected: 'Rejected', current: 'In review', upcoming: 'Not started', cancelled: 'Not needed' },
+    waiting: (d) => `waiting ${d}`,
+    took: (d) => `took ${d}`,
+    overdue: (h) => `Overdue (${h} h SLA)`,
+    delegatedTo: (name) => `${name} (delegate)`,
+    approver: { approved: 'Approved', rejected: 'Rejected', pending: 'Pending', waiting: 'Not yet', skipped: 'Not needed' },
+    yourTurn: 'Your approval is needed',
+    actOnBehalf: (name) => `Acting on behalf of ${name}`,
+    comment: 'Comment',
+    commentPlaceholder: 'Optional when approving; required when rejecting',
+    approve: 'Approve',
+    reject: 'Reject',
+    delegate: 'Delegate',
+    delegatePick: 'Delegate to:',
+    rejectNeedsComment: 'Please give a reason for rejecting',
+    approvedAnnounce: 'Approved',
+    rejectedAnnounce: 'Rejected',
+    delegatedAnnounce: (name) => `Delegated to ${name}`,
   },
   diffViewer: {
     label: 'Parameter comparison',
