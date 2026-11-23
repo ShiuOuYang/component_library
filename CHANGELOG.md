@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **CorrelationMatrix 相關矩陣**（charts）：找出哪些參數彼此相關、哪些跟良率有關。Pearson（線性）或 Spearman（等級，同分取平均排名），
+  成對完整（缺值只排除那一對）；p 值用 t 分配（不完全 Beta 函數），不顯著（p ≥ `alpha`）的格子淡化。發散色階（`colors`），
+  `v-model:clustered` 依相關性排序（平均連結聚類，距離 1 − |r|），`triangle="lower"` 只畫下三角。點一格（或 Enter）在下方畫這兩個參數的
+  ScatterChart 與迴歸線、送出 `cell-click`。HTML 表格（`role="grid"`）：方向鍵、Home / End 移動，每一格有完整的 aria-label，
+  目前格子的說明以 aria-live 念出；欄名直書，格子大小依寬度調整。新增 `charts/utils/correlation.ts`（`correlationMatrix`、
+  `correlationPValue`、`correlationClusterOrder`）與語系群組 `correlation`；文件在「散佈圖、迴歸與相關」頁。
 - **ParallelCoordinatesChart 平行座標圖**（charts）：多參數的製程視窗（哪些溫度 + 速度 + 壓力的組合良率高）。每個參數一條軸
   （`domain` 不給時依資料取整、`reverse` 越小越好），每一筆一條折線（缺值的軸斷開）。在軸上拖曳框選範圍、可多條軸一起框，
   拖動框選區平移、點一下軸清除；所有條件都符合的線保留顏色（`v-model:brushes`、`select`）。拖曳軸名稱換位置（`v-model:order`），

@@ -49,7 +49,7 @@ export {
   FacetedChart, GridFacetChart, StatusScatterMap, GanttChart,
   HorizontalBarChart, PieChart, SparklineChart, GaugeChart, ControlChart, CapabilityHistogram,
   StateTimeline, BoxPlotChart, WaterfallChart, ChptChartFrame, ChptKpiCard, WaferMap,
-  BulletChart, YieldFunnel, CalendarHeatmap, RadarChart, radarScales, radarRatio, ParallelCoordinatesChart, passesBrushes, TreemapChart, layoutTreemap, buildTreemapHierarchy, ScatterChart, linearRegression, regressionBand, tQuantile975, SankeyChart, sankeyLayout, sankeyLinkPath,
+  BulletChart, YieldFunnel, CalendarHeatmap, RadarChart, radarScales, radarRatio, CorrelationMatrix, correlationMatrix, correlationPValue, correlationClusterOrder, ParallelCoordinatesChart, passesBrushes, TreemapChart, layoutTreemap, buildTreemapHierarchy, ScatterChart, linearRegression, regressionBand, tQuantile975, SankeyChart, sankeyLayout, sankeyLinkPath,
   exportChart, elementToSvg, svgToPng, toCsv, csvBlob, downloadBlob, useChartSync,
 } from './charts/index.js'
 
@@ -156,7 +156,7 @@ export type {
   StateTimelineEvent, StateTimelineTooltip, StateTimelineRowInput, StateDef, StateSummary,
   DualAxisComboChartProps,
   WaferBin, WaferDieInfo, WaferGrid, WaferShape, WaferNotch, YieldSummary, RingYield,
-  BulletItem, FunnelStep, FunnelRow, FunnelResult, CalendarDatum, CalendarCell, RadarAxis, RadarSeries, RadarAxisScale, ParallelAxis, ParallelRow, ParallelBrushes, TreemapNode, TreemapTile, ScatterPoint, Regression, SankeyNodeInput, SankeyLinkInput, SankeyNode, SankeyLink, SankeyLayout, SankeyOptions, ChartSync, ChartSyncOptions, CrosshairValue,
+  BulletItem, FunnelStep, FunnelRow, FunnelResult, CalendarDatum, CalendarCell, RadarAxis, RadarSeries, RadarAxisScale, CorrelationMethod, CorrelationCell, ParallelAxis, ParallelRow, ParallelBrushes, TreemapNode, TreemapTile, ScatterPoint, Regression, SankeyNodeInput, SankeyLinkInput, SankeyNode, SankeyLink, SankeyLayout, SankeyOptions, ChartSync, ChartSyncOptions, CrosshairValue,
   BoxPlotGroupEvent, BoxPlotPointEvent, BoxPlotTooltip, BoxPlotReferenceLine, BoxPlotGroupInput, BoxStats, QuartileMethod,
   WaterfallEvent, WaterfallTooltip, WaterfallKind,
   ChartFrameExportFormat, ChptChartFrameProps, ChartExportFormat, ChartExportOptions, CsvColumn, KpiStatus, ChptKpiCardProps,

@@ -571,8 +571,8 @@ const navSections = [
         anchors: [{ label: '良率損失', id: 'yield' }, { label: '小計與成本', id: 'subtotal' }, { label: 'API', id: 'api' }],
       },
       {
-        to: '/docs/components/scatter-chart', icon: '⚬', label: '散佈圖與迴歸',
-        anchors: [{ label: '分類與迴歸', id: 'basic' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' }],
+        to: '/docs/components/scatter-chart', icon: '⚬', label: '散佈圖、迴歸與相關',
+        anchors: [{ label: '分類與迴歸', id: 'basic' }, { label: '大量資料', id: 'large' }, { label: '相關矩陣', id: 'correlation' }, { label: 'API', id: 'api' }],
       },
       {
         to: '/docs/components/treemap-chart', icon: '🧱', label: '矩形樹圖',
