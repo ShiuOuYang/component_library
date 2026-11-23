@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptAndonBoard 安東看板**：產線大螢幕的呼叫看板（維修、缺料、品質、主管，`types` 可自訂）。每站一張卡片：正常為綠；呼叫中依等待時間由藍轉黃轉紅
+  （紅色閃動，`prefers-reduced-motion` 時不閃）；有人處理且未超時時為中性灰。未回應依「等了多久」、處理中依「處理了多久」升級（`thresholds`，分鐘）。
+  呼叫、回應、完成都在卡片上操作（v-model 是呼叫清單；`raise` / `respond` / `resolve` 事件；同一站同一原因進行中時不重複）。
+  `tv` 電視模式字更大、全螢幕按鈕、`activeFirst` 有呼叫的站排前面；新呼叫與「轉紅」以 aria-live 念出，`sound` 時響（可靜音）。
+  新增 `shared/andon.ts` 與語系群組 `andon`。
 - **ParallelCoordinatesChart 平行座標圖**（charts）：多參數的製程視窗（哪些溫度 + 速度 + 壓力的組合良率高）。每個參數一條軸
   （`domain` 不給時依資料取整、`reverse` 越小越好），每一筆一條折線（缺值的軸斷開）。在軸上拖曳框選範圍、可多條軸一起框，
   拖動框選區平移、點一下軸清除；所有條件都符合的線保留顏色（`v-model:brushes`、`select`）。拖曳軸名稱換位置（`v-model:order`），
