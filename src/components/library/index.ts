@@ -41,6 +41,7 @@ export {
   ChptDiffViewer,
   ChptChecklist,
   ChptStorageMap,
+  ChptFeederMap,
   ChptWorkInstruction,
   ChptSignaturePad,
   ChptNumpad,
@@ -98,6 +99,8 @@ export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, a
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
 export { buildLayout as buildStorageLayout, searchBins as searchStorageBins, checkMove as checkStorageMove, moveStocks as moveStorageStocks, expiryStatus as storageExpiryStatus } from './shared/storage'
 export type { StorageBin, StorageStock, StorageExpiry, BinState as StorageBinState, RackLayout as StorageRackLayout, ZoneLayout as StorageZoneLayout, MoveCheck as StorageMoveCheck, StorageSummary } from './shared/storage'
+export { parseReelCode, matchesSlot as feederMatchesSlot, feederSummary, boardsLeft as feederBoardsLeft } from './shared/feeder'
+export type { FeederSlot, FeederReel, FeederLoad, FeederLoads, FeederLogEntry, FeederStock, FeederSummary } from './shared/feeder'
 export { blockers as workInstructionBlockers, summarize as summarizeWorkInstruction, inSpec } from './shared/workInstruction'
 export type { WiStep, WiMark, WiSpec, WiCheck, WiStepRecord, WiRecord, WiBlock, WiSummary } from './shared/workInstruction'
 export { DEFAULT_ANDON_TYPES, DEFAULT_ANDON_THRESHOLDS, callStatus as andonCallStatus, callLevel as andonCallLevel, raiseCall as raiseAndonCall, respondCall as respondAndonCall, resolveCall as resolveAndonCall } from './shared/andon'
@@ -143,7 +146,7 @@ export type {
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
-  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps,
+  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
   SchemaFormField, SchemaFieldType, SchemaFieldOption, CommandItem, DashboardItem, KanbanColumn, KanbanMoveEvent, RichTextTool,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'

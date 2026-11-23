@@ -347,6 +347,42 @@
       <ApiTable of="ChptAndonBoard" title="方法（ref）" :rows="andonMethods" />
     </section>
 
+    <!-- ============ ChptFeederMap ============ -->
+    <section id="chpt-feeder-map" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFeederMap 上料防錯</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>SMT / 插件線上料、換料時防止裝錯料。先掃站位（或點選站位），再掃料盤條碼，跟 BOM 比對料號（含代用料）：
+        正確就上料並嗶一聲；錯料時整塊變紅、響警報，必須按「已確認」才能繼續掃。同一盤料不能同時裝在兩個站位。
+        站位圖顯示每個站位裝的料盤、剩餘數量（低於 <code>lowQty</code> 為低料、0 為用完）與估計還能生產幾片（<code>perBoard</code>）；
+        數量由父層依生產扣減。上料紀錄（含錯料）用 <code>v-model:log</code> 保存，可匯出 CSV。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptFeederMap } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+          <ChptSwitch v-model="feederRunning" label="模擬生產（扣減數量）" />
+          <span class="text-content-secondary">沒有掃描槍？點這些條碼試試：</span>
+          <ChptButton v-for="c in feederCodes" :key="c.code" size="xs" is-outline @click="feederRef?.scan(c.code)">{{ c.label }}</ChptButton>
+        </div>
+        <ChptFeederMap
+          ref="feederRef"
+          v-model:loads="feederLoads"
+          v-model:log="feederLog"
+          :slots="feederSlots"
+          :low-qty="500"
+          operator="林作業員"
+          title="SMT-3 / 工單 WO-2611-0051"
+          @mismatch="(e) => toast.error(`${e.slot} 錯料：${e.partNo}`)"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="feederSample" />
+      <ApiTable of="ChptFeederMap" title="Props" :rows="feederProps" />
+      <ApiTable of="-" title="FeederSlot / FeederLoad / FeederLogEntry" :rows="feederDataRows" />
+      <ApiTable of="ChptFeederMap" title="Events" :rows="feederEvents" />
+      <ApiTable of="ChptFeederMap" title="方法（ref）" :rows="feederMethods" />
+    </section>
+
     <!-- ============ ChptStorageMap ============ -->
     <section id="chpt-storage-map" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptStorageMap 儲位圖</h2>
@@ -435,6 +471,7 @@ import {
   ChptFloorPlan,
   ChptAlarmCenter,
   ChptAndonBoard,
+  ChptFeederMap,
   ChptStorageMap,
   ChptApprovalFlow,
   ChptSegmented,
@@ -646,6 +683,103 @@ const storageMethods = [
   { name: 'locate(query)', type: '(query: string) => string[]', desc: '搜尋並選取第一個符合的儲位（例如接掃描）；回傳符合的儲位' },
   { name: 'select(id)', type: '(id: string | null) => void', desc: '選取儲位' },
   { name: 'startMove(stockIds) / cancelMove()', type: '—', desc: '開始 / 取消移庫（接著點目的儲位）' },
+]
+
+// ---- ChptFeederMap ----
+const feederSlots = [
+  { id: 'M1-F-01', group: 'M1 前側', partNo: 'RC0402-10K', description: '電阻 10KΩ 0402', perBoard: 12 },
+  { id: 'M1-F-02', group: 'M1 前側', partNo: 'RC0402-1K', description: '電阻 1KΩ 0402', perBoard: 8 },
+  { id: 'M1-F-03', group: 'M1 前側', partNo: 'CC0402-100N', description: '電容 100nF 0402', perBoard: 20, alternates: ['GRM155-100N'] },
+  { id: 'M1-F-04', group: 'M1 前側', partNo: 'CC0603-10U', description: '電容 10µF 0603', perBoard: 4 },
+  { id: 'M1-F-05', group: 'M1 前側', partNo: 'RC0402-10K', description: '電阻 10KΩ 0402', perBoard: 6 },
+  { id: 'M1-F-06', group: 'M1 前側', partNo: 'LED0603-G', description: 'LED 綠 0603', perBoard: 2 },
+  { id: 'M1-R-01', group: 'M1 後側', partNo: 'IC-SOT23-LDO', description: 'LDO 3.3V SOT-23', perBoard: 1 },
+  { id: 'M1-R-02', group: 'M1 後側', partNo: 'D-SOD323-1N4148', description: '二極體 SOD-323', perBoard: 3 },
+  { id: 'M1-R-03', group: 'M1 後側', partNo: 'Q-SOT23-2N7002', description: 'MOSFET SOT-23', perBoard: 2 },
+  { id: 'M1-R-04', group: 'M1 後側', partNo: 'X-3225-16M', description: '石英 16MHz 3225', perBoard: 1 },
+]
+const feederAt = Date.now() - 40 * 60_000
+const feederLoads = ref({
+  'M1-F-01': { reelId: 'R-231101', partNo: 'RC0402-10K', qty: 8200, lot: 'L2310A', loadedAt: feederAt },
+  'M1-F-02': { reelId: 'R-231102', partNo: 'RC0402-1K', qty: 430, lot: 'L2310A', loadedAt: feederAt },
+  'M1-F-03': { reelId: 'R-231103', partNo: 'GRM155-100N', qty: 9600, loadedAt: feederAt },
+  'M1-F-04': { reelId: 'R-231104', partNo: 'CC0603-10U', qty: 3100, loadedAt: feederAt },
+  'M1-F-06': { reelId: 'R-231106', partNo: 'LED0603-G', qty: 0, loadedAt: feederAt },
+  'M1-R-01': { reelId: 'R-231201', partNo: 'IC-SOT23-LDO', qty: 2400, loadedAt: feederAt },
+  'M1-R-02': { reelId: 'R-231202', partNo: 'D-SOD323-1N4148', qty: 2950, loadedAt: feederAt },
+  'M1-R-03': { reelId: 'R-231203', partNo: 'Q-SOT23-2N7002', qty: 1800, loadedAt: feederAt },
+  'M1-R-04': { reelId: 'R-231204', partNo: 'X-3225-16M', qty: 980, loadedAt: feederAt },
+})
+const feederLog = ref([])
+const feederRef = useTemplateRef('feederRef')
+const feederCodes = [
+  { label: '站位 M1-F-05', code: 'M1-F-05' },
+  { label: '料盤 RC0402-10K（正確）', code: 'RC0402-10K|5000|R-240001|L2311B' },
+  { label: '料盤 RC0402-1K（錯料）', code: 'RC0402-1K|5000|R-240002|L2311B' },
+  { label: '站位 M1-F-06', code: 'M1-F-06' },
+  { label: '料盤 LED0603-G', code: 'LED0603-G|4000|R-240003' },
+]
+const feederRunning = ref(false)
+let feederTimer = null
+watch(feederRunning, (on) => {
+  clearInterval(feederTimer)
+  if (!on) return
+  feederTimer = setInterval(() => {
+    const next = { ...feederLoads.value }
+    for (const s of feederSlots) {
+      const l = next[s.id]
+      if (l && l.qty > 0) next[s.id] = { ...l, qty: Math.max(0, l.qty - s.perBoard * 10) }
+    }
+    feederLoads.value = next
+  }, 1000)
+})
+onBeforeUnmount(() => clearInterval(feederTimer))
+const feederSample = `<ChptFeederMap
+  v-model:loads="loads"
+  v-model:log="log"
+  :slots="[
+    { id: 'M1-F-01', group: 'M1 前側', partNo: 'RC0402-10K', description: '電阻 10KΩ 0402', perBoard: 12 },
+    { id: 'M1-F-03', group: 'M1 前側', partNo: 'CC0402-100N', alternates: ['GRM155-100N'], perBoard: 20 },
+  ]"
+  :low-qty="500"
+  :parse-reel="(code) => myParser(code)"
+  operator="林作業員"
+  @load="(e) => api.saveLoading(e)"
+  @mismatch="(e) => api.reportMismatch(e)"
+/>`
+const feederProps = [
+  { name: 'slots', type: 'FeederSlot[]', def: '—', desc: '站位（BOM）：站位代碼、料號、代用料、說明、每片用量、分組' },
+  { name: 'v-model:loads', type: 'Record<slotId, FeederLoad>', def: '{}', desc: '每個站位目前裝的料盤；數量由父層依生產扣減' },
+  { name: 'v-model:log', type: 'FeederLogEntry[]', def: '[]', desc: '上料紀錄（含錯料）' },
+  { name: 'lowQty', type: 'number', def: '200', desc: '數量 ≤ 這個值算低料' },
+  { name: 'parseReel', type: '(code: string) => FeederReel | null', def: 'parseReelCode', desc: '料盤條碼解析；預設「料號|數量|料盤號[|批號]」（也接受 ; , Tab）' },
+  { name: 'operator', type: 'string', def: "''", desc: '操作員（寫進紀錄）' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'sound', type: 'boolean', def: 'true', desc: '正確嗶一聲、錯料響警報（可在畫面上靜音）' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只看（不能掃描、選站位）' },
+  { name: 'autofocus', type: 'boolean', def: 'false', desc: '掃描框自動取得焦點（產線專用畫面建議開）' },
+  { name: 'maxLog', type: 'number', def: '1000', desc: '紀錄最多保留幾筆' },
+  { name: 'filename', type: 'string', def: "'feeder-log'", desc: '匯出 CSV 的檔名' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '紀錄時間；不給時用 Date.now()' },
+]
+const feederDataRows = [
+  { name: 'FeederSlot', type: '{ id, partNo, group?, alternates?, description?, perBoard? }', def: '—', desc: 'id 就是站位條碼的內容（比對不分大小寫）' },
+  { name: 'FeederLoad', type: '{ reelId, partNo, qty, lot?, loadedAt, operator? }', def: '—', desc: '站位目前裝的料盤' },
+  { name: 'FeederLogEntry', type: "{ at, slot, expected, reelId, partNo, qty, lot?, result: 'ok' | 'mismatch', operator? }", def: '—', desc: '一筆上料紀錄' },
+]
+const feederEvents = [
+  { name: 'update:loads', params: '(loads)', desc: '上料正確後更新' },
+  { name: 'update:log', params: '(log)', desc: '新增一筆紀錄（正確或錯料）' },
+  { name: 'load', params: '(entry: FeederLogEntry)', desc: '料號正確，已上料' },
+  { name: 'mismatch', params: '(entry: FeederLogEntry)', desc: '料號不符 BOM（沒有上料）；畫面鎖住直到確認' },
+  { name: 'select', params: '(slotId: string | null)', desc: '選到的站位（掃描或點選）；取消或上料完成為 null' },
+  { name: 'reject', params: "({ reason, code })", desc: 'needSlot（先掃站位）、unknownCode、badReel（料盤條碼格式不符）、reelInUse（已裝在別的站位）、locked（錯料未確認）' },
+]
+const feederMethods = [
+  { name: 'scan(code)', type: '(code: string) => void', desc: '送入一筆條碼（站位或料盤），例如接 ChptCameraScanner' },
+  { name: 'selectSlot(id)', type: '(id: string | null) => void', desc: '選站位 / 取消' },
+  { name: 'acknowledge()', type: '() => void', desc: '確認錯料（已取下）' },
+  { name: 'exportCsv()', type: '() => void', desc: '下載上料紀錄 CSV' },
 ]
 
 // ---- ChptAndonBoard ----

@@ -229,6 +229,52 @@ export interface ChptLocale {
     moved: (to: string) => string
     reject: { blocked: (to: string) => string; overCapacity: (to: string) => string; unknown: (to: string) => string }
   }
+  feeder: {
+    ready: string
+    notReady: string
+    loaded: (loaded: number, total: number) => string
+    unloaded: string
+    ok: string
+    low: string
+    empty: string
+    wrong: string
+    minBoards: (n: string) => string
+    boards: (n: string) => string
+    qty: (n: string) => string
+    mute: string
+    unmute: string
+    exportCsv: string
+    steps: string
+    step1: string
+    step2: string
+    needs: (partNo: string) => string
+    cancel: string
+    scanSlot: string
+    scanReel: (slot: string) => string
+    placeholder: string
+    selected: (slot: string, partNo: string) => string
+    okTitle: string
+    okDetail: (slot: string, partNo: string, qty: string) => string
+    ngTitle: string
+    ngDetail: (slot: string, expected: string, actual: string) => string
+    acknowledge: string
+    reject: {
+      needSlot: string
+      unknownCode: (code: string) => string
+      badReel: (code: string) => string
+      reelInUse: (reel: string, slot: string) => string
+      locked: string
+    }
+    attentionOnly: string
+    allGood: string
+    noSlots: string
+    log: (n: number) => string
+    logEmpty: string
+    resultOk: string
+    resultNg: string
+    cols: { time: string; slot: string; result: string; expected: string; partNo: string; reelId: string; qty: string; lot: string; operator: string }
+    slotLabel: (slot: string, partNo: string, status: string, qty: string, boards: string) => string
+  }
   workInstruction: {
     label: string
     progress: (n: number, total: number) => string
@@ -1366,6 +1412,53 @@ export const zhTW: ChptLocale = {
       overCapacity: (to) => `${to} 容量不足`,
       unknown: (to) => `找不到儲位 ${to}`,
     },
+  },
+  feeder: {
+    ready: '可以生產',
+    notReady: '尚未備齊',
+    loaded: (loaded, total) => `已上料 ${loaded} / ${total}`,
+    unloaded: '未上料',
+    ok: '正常',
+    low: '低料',
+    empty: '用完',
+    wrong: '錯料',
+    minBoards: (n) => `最少可生產 ${n} 片`,
+    boards: (n) => `約 ${n} 片`,
+    qty: (n) => `剩 ${n}`,
+    mute: '靜音',
+    unmute: '開啟聲音',
+    exportCsv: '匯出紀錄',
+    steps: '上料步驟',
+    step1: '掃描站位',
+    step2: '掃描料盤',
+    needs: (partNo) => `需要 ${partNo}`,
+    cancel: '取消',
+    scanSlot: '請掃描站位條碼（或點選下方站位）',
+    scanReel: (slot) => `請掃描要裝在 ${slot} 的料盤`,
+    placeholder: '掃描條碼',
+    selected: (slot, partNo) => `已選站位 ${slot}，需要 ${partNo}，請掃描料盤`,
+    okTitle: '上料正確',
+    okDetail: (slot, partNo, qty) => `${slot} 已裝上 ${partNo} × ${qty}`,
+    ngTitle: '料號錯誤，不可上料！',
+    ngDetail: (slot, expected, actual) => `${slot} 需要 ${expected}，掃到的是 ${actual}`,
+    acknowledge: '已確認，取下錯料',
+    reject: {
+      needSlot: '請先掃描站位',
+      unknownCode: (code) => `無法辨識的條碼：${code}`,
+      badReel: (code) => `料盤條碼格式不符：${code}`,
+      reelInUse: (reel, slot) => `料盤 ${reel} 已裝在 ${slot}`,
+      locked: '請先確認錯料',
+    },
+    attentionOnly: '只看需要處理的',
+    allGood: '所有站位都正常',
+    noSlots: '沒有站位',
+    log: (n) => `上料紀錄（${n}）`,
+    logEmpty: '尚無紀錄',
+    resultOk: '正確',
+    resultNg: '錯料',
+    cols: { time: '時間', slot: '站位', result: '結果', expected: 'BOM 料號', partNo: '掃到料號', reelId: '料盤', qty: '數量', lot: '批號', operator: '操作員' },
+    slotLabel: (slot, partNo, status, qty, boards) =>
+      [`站位 ${slot}`, partNo, status, qty ? `剩 ${qty}` : '', boards ? `約 ${boards} 片` : ''].filter(Boolean).join('，'),
   },
   workInstruction: {
     label: '作業指導書',
@@ -2569,6 +2662,53 @@ export const enUS: ChptLocale = {
       overCapacity: (to) => `${to} does not have enough room`,
       unknown: (to) => `Bin ${to} not found`,
     },
+  },
+  feeder: {
+    ready: 'Ready to run',
+    notReady: 'Not ready',
+    loaded: (loaded, total) => `Loaded ${loaded} / ${total}`,
+    unloaded: 'Not loaded',
+    ok: 'OK',
+    low: 'Low',
+    empty: 'Empty',
+    wrong: 'Wrong part',
+    minBoards: (n) => `${n} boards left at least`,
+    boards: (n) => `~${n} boards`,
+    qty: (n) => `${n} left`,
+    mute: 'Mute',
+    unmute: 'Unmute',
+    exportCsv: 'Export log',
+    steps: 'Loading steps',
+    step1: 'Scan slot',
+    step2: 'Scan reel',
+    needs: (partNo) => `needs ${partNo}`,
+    cancel: 'Cancel',
+    scanSlot: 'Scan a slot barcode (or pick a slot below)',
+    scanReel: (slot) => `Scan the reel for ${slot}`,
+    placeholder: 'Scan barcode',
+    selected: (slot, partNo) => `Slot ${slot} selected, needs ${partNo}. Scan the reel.`,
+    okTitle: 'Correct part.',
+    okDetail: (slot, partNo, qty) => `${slot} loaded with ${partNo} × ${qty}`,
+    ngTitle: 'Wrong part. Do not load!',
+    ngDetail: (slot, expected, actual) => `${slot} needs ${expected}, scanned ${actual}`,
+    acknowledge: 'Acknowledged, reel removed',
+    reject: {
+      needSlot: 'Scan a slot first',
+      unknownCode: (code) => `Unrecognized barcode: ${code}`,
+      badReel: (code) => `Not a valid reel barcode: ${code}`,
+      reelInUse: (reel, slot) => `Reel ${reel} is already on ${slot}`,
+      locked: 'Acknowledge the wrong part first',
+    },
+    attentionOnly: 'Needs attention only',
+    allGood: 'All slots are OK',
+    noSlots: 'No slots',
+    log: (n) => `Loading log (${n})`,
+    logEmpty: 'No records yet',
+    resultOk: 'OK',
+    resultNg: 'Wrong part',
+    cols: { time: 'Time', slot: 'Slot', result: 'Result', expected: 'BOM part', partNo: 'Scanned part', reelId: 'Reel', qty: 'Qty', lot: 'Lot', operator: 'Operator' },
+    slotLabel: (slot, partNo, status, qty, boards) =>
+      [`Slot ${slot}`, partNo, status, qty ? `${qty} left` : '', boards ? `about ${boards} boards` : ''].filter(Boolean).join(', '),
   },
   workInstruction: {
     label: 'Work instruction',
