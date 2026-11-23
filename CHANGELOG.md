@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptImageCompare 影像比對**：比對兩張同視野的影像（標準樣品與待測品、修改前後）。三種方式（`v-model:mode`）：
+  滑桿（拖分隔線，`v-model:position`；沒放大時拖任何地方都會移動分隔線）、並排、疊圖（`v-model:opacity`，`v-model:difference`
+  用差異混合：相同處變黑、缺件偏移發亮）。三種方式與並排兩格共用同一個縮放與位置 —— 縮放以「相對倍數 + 畫面中心的影像座標」記錄，
+  切換方式、視窗縮放時看的仍是同一塊。雙擊放大 / 還原、Ctrl + 滾輪或兩指縮放、放大後拖曳平移（不會拖出空白）；
+  鍵盤 + / − / 0、方向鍵，分隔線是 `role="slider"`。新增 `shared/imageCompare.ts` 與語系群組 `imageCompare`。
 - **RadarChart 雷達圖**（charts）：同時比較幾個對象在多個指標上的表現（供應商評分、各線 OEE 三率）。每一軸有自己的範圍
   （不給 max 時取最大值取整，`max` 讓所有軸共用刻度）；`lowerIsBetter` 的指標反轉方向、軸名稱標 ↓，整張圖「越大越好」一致。
   滑過點看數值、滑過圖例突顯、點圖例顯示 / 隱藏（aria-pressed，`visibility-change` 事件）；沒有值的軸畫在中心、不畫點。
