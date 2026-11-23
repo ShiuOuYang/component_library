@@ -28,6 +28,7 @@ export {
   ChptScanInput, ChptFormList, ChptSchemaForm, ChptCommandPalette, ChptDashboardGrid, ChptKanban, ChptRichTextEditor, ChptBarcode, ChptCameraScanner,
   ChptDefectAnnotator,
   ChptEquipmentWall,
+  ChptAlarmCenter,
   ChptShiftRoster,
   ChptFloorPlan,
   ChptLogViewer,
@@ -83,6 +84,8 @@ export type { FloorPlanItem, FloorZone, ViewTransform } from './shared/floorPlan
 export type { EquipmentItem, EquipmentStatus, EquipmentMetric } from './shared/equipment'
 export { rosterDates, coverage as rosterCoverage, shortages as rosterShortages, rosterWarnings, personStats as rosterPersonStats, setShift, fillRange as fillShiftRange, swapShifts } from './shared/shiftRoster'
 export type { RosterShift, RosterPerson, Roster, ShiftRequirement, RosterRules, RosterWarning } from './shared/shiftRoster'
+export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
+export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
 export { parseLogLine, compileSearch as compileLogSearch, filterLogs, countLevels as countLogLevels, formatLogLine, formatLogTime, LOG_LEVELS } from './shared/logViewer'
 export type { LogEntry, LogLevel, LogMatcher } from './shared/logViewer'
 export { traceLayers, traceTree, tracePath, layoutTrace } from './shared/lotTrace'
