@@ -33,6 +33,7 @@ export {
   ChptFloorPlan,
   ChptLogViewer,
   ChptLotTrace,
+  ChptDiffViewer,
   ChptChecklist,
   ChptSignaturePad,
   ChptNumpad,
@@ -86,6 +87,8 @@ export { rosterDates, coverage as rosterCoverage, shortages as rosterShortages, 
 export type { RosterShift, RosterPerson, Roster, ShiftRequirement, RosterRules, RosterWarning } from './shared/shiftRoster'
 export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
+export { diffParams, flattenParams, buildDiffTree, countDiff, toleranceFor, DIFF_STATUSES } from './shared/paramDiff'
+export type { ParamValue, ParamObject, LeafValue, DiffStatus, DiffRow, DiffCounts, DiffTreeNode, ToleranceMap } from './shared/paramDiff'
 export { parseLogLine, compileSearch as compileLogSearch, filterLogs, countLevels as countLogLevels, formatLogLine, formatLogTime, LOG_LEVELS } from './shared/logViewer'
 export type { LogEntry, LogLevel, LogMatcher } from './shared/logViewer'
 export { traceLayers, traceTree, tracePath, layoutTrace } from './shared/lotTrace'
