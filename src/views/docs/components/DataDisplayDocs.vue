@@ -366,6 +366,28 @@
       <ApiTable of="ChptDiffViewer" title="方法（ref）" :rows="diffMethods" />
     </section>
 
+    <!-- ============ ChptPivotTable ============ -->
+    <section id="chpt-pivot-table" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptPivotTable 樞紐分析表</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>交叉分析 —— 不良數依「線 × 不良代碼」、產量依「日期 × 機台」。把欄位拖到<strong>列</strong>、<strong>欄</strong>、<strong>值</strong>
+        （或按欄位旁的「列 / 欄 / 值」；鍵盤也能操作），值可以加總、平均、計數、最小、最大、不重複計數。列可以多層，每一層有小計、可展開收合；
+        另有總計欄與總計列。「熱度」依數值深淺上色。目前的設定用 <code>v-model:config</code> 綁定，可以存起來下次還原。下面是 3,000 筆不良紀錄。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptPivotTable } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptPivotTable v-model:config="pivotConfig" :data="pivotData" :fields="pivotFields" :max-height="460" filename="不良分析" @cell-click="onPivotCell" />
+        <p class="mt-2 text-xs text-content-secondary" aria-live="polite">{{ pivotClicked || '（點一格看它是哪些條件）' }}</p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="pivotSample" />
+      <ApiTable of="ChptPivotTable" title="Props" :rows="pivotProps" />
+      <ApiTable of="-" title="PivotField / PivotConfig" :rows="pivotDataRows" />
+      <ApiTable of="ChptPivotTable" title="Events" :rows="pivotEvents" />
+      <ApiTable of="ChptPivotTable" title="方法（ref）" :rows="pivotMethods" />
+    </section>
+
   </div>
 </template>
 
@@ -388,6 +410,7 @@ import {
   ChptSwitch,
   ChptLotTrace,
   ChptDiffViewer,
+  ChptPivotTable,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -817,5 +840,87 @@ const diffEvents = [{ name: 'update:onlyDiff', params: '(value: boolean)', desc:
 const diffMethods = [
   { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 摺疊' },
   { name: 'rows', type: 'DiffRow[]', desc: '比對結果（含相同的列）：{ path, left, right, status, delta?, pct? }' },
+]
+// ---- ChptPivotTable ----
+const pivotData = (() => {
+  let seed = 21
+  const rand = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296)
+  const pick = (arr, w) => {
+    let r = rand() * w.reduce((a, b) => a + b, 0)
+    for (let i = 0; i < arr.length; i++) if ((r -= w[i]) <= 0) return arr[i]
+    return arr[arr.length - 1]
+  }
+  const lines = [['一廠', 'SMT 一線'], ['一廠', 'SMT 二線'], ['一廠', 'SMT 三線'], ['二廠', 'SMT 五線'], ['二廠', 'SMT 六線'], ['三廠', 'DIP 一線']]
+  const codes = ['空焊', '短路', '偏移', '立碑', '缺件', '錫珠', '極性反']
+  const stations = ['印刷', '貼片', '回焊', 'AOI', 'ICT']
+  return Array.from({ length: 3000 }, () => {
+    const [plant, line] = pick(lines, [5, 6, 3, 4, 2, 2])
+    const code = pick(codes, [8, 5, 4, 2, 3, 2, 1])
+    const qty = 1 + Math.floor(rand() * rand() * 12)
+    return {
+      month: `2026-${String(8 + Math.floor(rand() * 4)).padStart(2, '0')}`,
+      plant,
+      line,
+      station: pick(stations, [2, 3, 6, 4, 2]),
+      shift: pick(['D', 'E', 'N'], [5, 4, 3]),
+      code,
+      qty,
+      cost: Math.round(qty * (code === '缺件' ? 120 : 35) * (0.8 + rand() * 0.4)),
+      operator: `OP-${100 + Math.floor(rand() * 40)}`,
+    }
+  })
+})()
+const pivotFields = [
+  { key: 'plant', label: '廠區', order: ['一廠', '二廠', '三廠'] },
+  { key: 'line', label: '產線', order: ['SMT 一線', 'SMT 二線', 'SMT 三線', 'SMT 五線', 'SMT 六線', 'DIP 一線'] },
+  { key: 'station', label: '站別', order: ['印刷', '貼片', '回焊', 'AOI', 'ICT'] },
+  { key: 'code', label: '不良代碼' },
+  { key: 'month', label: '月份' },
+  { key: 'shift', label: '班別', order: ['D', 'E', 'N'] },
+  { key: 'operator', label: '作業員' },
+  { key: 'qty', label: '不良數', kind: 'measure' },
+  { key: 'cost', label: '損失金額', kind: 'measure', format: (v) => `$${Math.round(v).toLocaleString()}` },
+]
+const pivotConfig = ref({ rows: ['plant', 'line'], cols: ['month'], values: [{ field: 'qty', agg: 'sum' }] })
+const pivotClicked = ref('')
+function onPivotCell({ rowPath, colKey, value, result }) {
+  const where = [...rowPath, ...(colKey ?? ['全部月份'])].join(' / ') || '全部'
+  pivotClicked.value = `${where}：${value.field} ${value.agg} = ${result === null ? '—' : result.toLocaleString(undefined, { maximumFractionDigits: 2 })}`
+}
+const pivotSample = `<ChptPivotTable
+  v-model:config="config"
+  :data="defects"
+  :fields="[
+    { key: 'line', label: '產線' },
+    { key: 'shift', label: '班別', order: ['D', 'E', 'N'] },
+    { key: 'qty', label: '不良數', kind: 'measure' },
+    { key: 'cost', label: '損失金額', kind: 'measure', format: (v) => '$' + v.toLocaleString() },
+  ]"
+/>
+
+// config：{ rows: ['plant', 'line'], cols: ['month'], values: [{ field: 'qty', agg: 'sum' }] }`
+const pivotProps = [
+  { name: 'data', type: 'Record<string, unknown>[]', def: '—', desc: '原始資料（每筆一個物件）' },
+  { name: 'fields', type: 'PivotField[]', def: '—', desc: '可用的欄位' },
+  { name: 'v-model:config', type: 'PivotConfig', def: '{ rows: [], cols: [], values: [] }', desc: '列、欄、值的設定' },
+  { name: 'configurable', type: 'boolean', def: 'true', desc: '顯示欄位設定（可收起）' },
+  { name: 'heatmap', type: 'boolean', def: 'false', desc: '熱度上色的初始值（工具列可切換）' },
+  { name: 'showTotals', type: 'boolean', def: 'true', desc: '總計欄與總計列' },
+  { name: 'maxHeight', type: 'number', def: '520', desc: '表格最大高度（px）；列多於 200 時只畫看得到的部分；0 為不限' },
+  { name: 'defaultExpandDepth', type: 'number', def: 'Infinity', desc: '預設展開幾層' },
+  { name: 'filename', type: 'string', def: "'pivot'", desc: '匯出 CSV 的檔名（不含副檔名）' },
+  { name: 'label', type: 'string', def: '語系', desc: '表格名稱（螢幕閱讀器）' },
+]
+const pivotDataRows = [
+  { name: 'PivotField', type: "{ key, label, kind?: 'dimension' | 'measure', order?, format? }", def: '—', desc: 'measure 只能放到值；order 是分組值的自訂順序' },
+  { name: 'PivotConfig', type: '{ rows: string[], cols: string[], values: { field, agg }[] }', def: '—', desc: "agg：'sum' | 'avg' | 'count' | 'min' | 'max' | 'countDistinct'" },
+]
+const pivotEvents = [
+  { name: 'update:config', params: '(config: PivotConfig)', desc: '設定改變（v-model:config）' },
+  { name: 'cell-click', params: '({ rowPath, colKey, value, result })', desc: '點一格：rowPath 為 [] 是總計列、colKey 為 null 是總計欄' },
+]
+const pivotMethods = [
+  { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 收合' },
+  { name: 'exportCsv()', type: '() => void', desc: '匯出 CSV（最後一層的列與總計）' },
 ]
 </script>
