@@ -47,6 +47,11 @@
   拖動框選區平移、點一下軸清除；所有條件都符合的線保留顏色（`v-model:brushes`、`select`）。拖曳軸名稱換位置（`v-model:order`），
   鍵盤 ←→ 換位置、Delete 清除框選；窄的時候軸名稱上下交錯。`colorBy` 依數值（連續色階 `colorRange`）或文字（類別色）上色；
   線多於 `canvasThreshold` 時改畫在 Canvas。新增 `charts/utils/parallel.ts`、語系群組 `parallel` 與文件頁「平行座標圖」。
+- **ChptPivotTable 樞紐分析表**：交叉分析（不良數依「線 × 不良代碼」、產量依「日期 × 機台」）。欄位拖到列、欄、值，或用欄位旁的按鈕
+  （鍵盤可操作；區內可前後移、移除）；`v-model:config` 記住設定。值：加總、平均、計數、最小、最大、不重複計數（分組欄位只能計數），可同時多個。
+  列可以多層，每一層小計、可展開收合（`defaultExpandDepth`）；多層欄合併標題；總計欄與總計列（`showTotals`）。熱度依數值深淺上色；
+  `cell-click` 回傳這一格的條件與數值；匯出 CSV（最後一層的列 + 總計）。列多於 200 時只畫看得到的部分。
+  分組值依欄位的 `order`、數字大小或字串（數字感知）排序，空白排最後。新增 `shared/pivot.ts`（`computePivot`…）與語系群組 `pivot`。
 - **ChptTimeScrubber 時間軸回放**：把一段時間的資料重播（異常前後參數怎麼變、一個班怎麼演變）。播放頭（v-model，毫秒）可拖曳、
   點軌道跳過去；播放（`v-model:playing`）依倍速（`v-model:speed`、`speeds`）往前走，到結尾自動停止或 `loop`；分頁切走再回來時一次最多推進 250ms。
   事件標記（`events`：時間、說明、嚴重度或顏色）點了跳過去，另有上一個 / 下一個事件按鈕。範圍（`v-model:range`）拖兩端把手只看一段、播放只在範圍內。

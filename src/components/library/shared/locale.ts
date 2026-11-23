@@ -187,6 +187,30 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  pivot: {
+    label: string
+    configure: string
+    expandAll: string
+    collapseAll: string
+    heatmap: string
+    exportCsv: string
+    summary: (records: number, rows: number, cols: number) => string
+    zone: Record<'available' | 'rows' | 'cols' | 'values', string>
+    zoneShort: Record<'rows' | 'cols' | 'values', string>
+    dropHere: string
+    addTo: (field: string, zone: string) => string
+    aggFor: (field: string) => string
+    moveEarlier: (field: string) => string
+    moveLater: (field: string) => string
+    remove: (field: string) => string
+    agg: Record<'sum' | 'avg' | 'count' | 'min' | 'max' | 'countDistinct', string>
+    valueLabel: (agg: string, field: string) => string
+    total: string
+    grandTotal: string
+    blank: string
+    noValues: string
+    empty: string
+  }
   timeScrubber: {
     label: string
     play: string
@@ -1195,6 +1219,30 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  pivot: {
+    label: '樞紐分析表',
+    configure: '欄位設定',
+    expandAll: '全部展開',
+    collapseAll: '全部收合',
+    heatmap: '熱度',
+    exportCsv: '匯出 CSV',
+    summary: (records, rows, cols) => `${records.toLocaleString()} 筆資料 · ${rows} 列${cols ? ` × ${cols} 欄` : ''}`,
+    zone: { available: '可用欄位', rows: '列', cols: '欄', values: '值' },
+    zoneShort: { rows: '列', cols: '欄', values: '值' },
+    dropHere: '把欄位拖到這裡',
+    addTo: (field, zone) => `把「${field}」加到${zone}`,
+    aggFor: (field) => `「${field}」的彙總方式`,
+    moveEarlier: (field) => `「${field}」往前移`,
+    moveLater: (field) => `「${field}」往後移`,
+    remove: (field) => `移除「${field}」`,
+    agg: { sum: '加總', avg: '平均', count: '計數', min: '最小', max: '最大', countDistinct: '不重複計數' },
+    valueLabel: (agg, field) => `${field}（${agg}）`,
+    total: '總計',
+    grandTotal: '總計',
+    blank: '（空白）',
+    noValues: '把欄位拖到「值」開始分析',
+    empty: '沒有資料',
+  },
   timeScrubber: {
     label: '時間軸回放',
     play: '播放',
@@ -2268,6 +2316,30 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  pivot: {
+    label: 'Pivot table',
+    configure: 'Fields',
+    expandAll: 'Expand all',
+    collapseAll: 'Collapse all',
+    heatmap: 'Heat',
+    exportCsv: 'Export CSV',
+    summary: (records, rows, cols) => `${records.toLocaleString()} records · ${rows} rows${cols ? ` × ${cols} columns` : ''}`,
+    zone: { available: 'Fields', rows: 'Rows', cols: 'Columns', values: 'Values' },
+    zoneShort: { rows: 'Row', cols: 'Col', values: 'Val' },
+    dropHere: 'Drop fields here',
+    addTo: (field, zone) => `Add "${field}" to ${zone}`,
+    aggFor: (field) => `Aggregation for "${field}"`,
+    moveEarlier: (field) => `Move "${field}" earlier`,
+    moveLater: (field) => `Move "${field}" later`,
+    remove: (field) => `Remove "${field}"`,
+    agg: { sum: 'Sum', avg: 'Average', count: 'Count', min: 'Min', max: 'Max', countDistinct: 'Distinct count' },
+    valueLabel: (agg, field) => `${agg} of ${field}`,
+    total: 'Total',
+    grandTotal: 'Grand total',
+    blank: '(blank)',
+    noValues: 'Drag a field to "Values" to start',
+    empty: 'No data',
+  },
   timeScrubber: {
     label: 'Timeline playback',
     play: 'Play',
