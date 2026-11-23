@@ -57,6 +57,28 @@
         <ChptCodeBlock class="mt-4" :code="largeCode" />
       </section>
 
+      <section id="correlation" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">CorrelationMatrix 相關矩陣</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          先看全貌：十個製程參數兩兩之間的相關係數，紅色是正相關、藍色是負相關，越深越強；不顯著（p ≥ 0.05）的格子淡化。
+          打開「依相關性排序」，相關的參數會排在一起（例如爐溫的四個區、錫膏的三個量測各成一塊）。
+          點一格（或用方向鍵移到那一格按 Enter）在下方畫這兩個參數的散佈圖與迴歸線。
+          Spearman 用排名計算，對離群值與「單調但非線性」的關係比較穩。缺值只排除那一對，不會整筆丟掉。
+        </p>
+        <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
+          <CorrelationMatrix v-model:clustered="corrClustered" :data="corrData" :fields="corrFields" title="製程參數相關性（300 批）" @cell-click="(c) => (corrPicked = c)" />
+          <p class="mt-2 text-xs text-content-secondary">{{ corrPicked ? `cell-click：${corrPicked.y} × ${corrPicked.x}，r = ${corrPicked.r?.toFixed(3)}，n = ${corrPicked.n}` : '' }}</p>
+        </div>
+        <ChptCodeBlock class="mt-4" :code="corrCode" />
+        <ApiTable of="CorrelationMatrix" title="Props" :rows="corrProps" />
+        <ApiTable of="CorrelationMatrix" title="Events" :rows="corrEvents" />
+        <ApiTable of="CorrelationMatrix" title="方法（ref）" :rows="corrMethods" />
+        <p class="text-sm text-content-secondary mt-4">
+          <strong>注意：</strong>相關不等於因果；參數很多時（20 個以上）會有不少「碰巧顯著」的格子，請搭配製程知識判斷。
+          格子太小時不顯示數字，滑過或用鍵盤移到格子上看下方的說明（螢幕閱讀器也會念）。
+        </p>
+      </section>
+
       <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <ApiTable of="ScatterChart" title="Props" :rows="props" />
@@ -75,7 +97,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { ChptCodeBlock, ChptSegmented, ChptSwitch, ScatterChart } from '@/components/library'
+import { ChptCodeBlock, ChptSegmented, ChptSwitch, CorrelationMatrix, ScatterChart } from '@/components/library'
 import ApiTable from './components/_ApiTable.vue'
 
 /** 固定種子的亂數（每次開頁面都一樣） */
@@ -160,4 +182,70 @@ const methods = [
   { name: 'selected', type: 'ScatterPoint[]', desc: '目前框選的點' },
   { name: 'regressions', type: 'Array<Regression & { group: string | null }>', desc: '各組的迴歸結果（slope、intercept、r2、n、se…）' },
 ]
+// ---- CorrelationMatrix ----
+const corrData = (() => {
+  const r = rng(13)
+  return Array.from({ length: 300 }, () => {
+    const heat = r.normal() // 爐溫整體偏高 / 偏低
+    const paste = r.normal() // 錫膏量
+    const speed = r.normal()
+    const row = {
+      z1: 150 + heat * 3 + r.normal() * 1.2,
+      z3: 190 + heat * 3.5 + r.normal() * 1.5,
+      z5: 220 + heat * 4 + r.normal() * 1.5,
+      peak: 245 + heat * 4.5 - speed * 1.5 + r.normal(),
+      speed: 85 + speed * 4,
+      height: 110 + paste * 8 + r.normal() * 2,
+      area: 80 + paste * 6 + r.normal() * 2.5,
+      volume: 90 + paste * 9 + r.normal() * 3,
+      humidity: 45 + r.normal() * 8,
+    }
+    // 空洞率：峰溫越高越低、錫膏越多越高（非線性）
+    row.void = Math.max(1, 8 - (row.peak - 245) * 0.35 + Math.exp(paste * 0.6) * 1.2 + r.normal() * 0.8)
+    if (r.next() < 0.04) row.humidity = null // 偶爾沒有量測
+    return row
+  })
+})()
+const corrFields = [
+  { key: 'z1', label: '爐溫 1 區' },
+  { key: 'height', label: '錫膏高度' },
+  { key: 'z3', label: '爐溫 3 區' },
+  { key: 'speed', label: '輸送速度' },
+  { key: 'area', label: '錫膏面積' },
+  { key: 'z5', label: '爐溫 5 區' },
+  { key: 'humidity', label: '環境濕度' },
+  { key: 'peak', label: '峰溫' },
+  { key: 'volume', label: '錫膏體積' },
+  { key: 'void', label: '空洞率' },
+]
+const corrClustered = ref(false)
+const corrPicked = ref(null)
+const corrCode = `<CorrelationMatrix
+  :data="lots"
+  :fields="[{ key: 'peak', label: '峰溫' }, { key: 'speed', label: '輸送速度' }, { key: 'void', label: '空洞率' }, …]"
+  v-model:clustered="clustered"
+  method="spearman"
+  @cell-click="({ x, y, r, n, p }) => …"
+/>`
+const corrProps = [
+  { name: 'data', type: 'Record<string, unknown>[]', def: '—', desc: '每筆一個物件；非數值與缺值只排除那一對' },
+  { name: 'fields', type: '{ key, label }[]', def: '—', desc: '要比較的參數（至少兩個）' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'v-model:method', type: "'pearson' | 'spearman'", def: "'pearson'", desc: '相關係數（線性 / 等級）' },
+  { name: 'v-model:clustered', type: 'boolean', def: 'false', desc: '依相關性排序（平均連結聚類，距離 1 − |r|）' },
+  { name: 'triangle', type: "'full' | 'lower'", def: "'full'", desc: '只畫下三角（不重複）' },
+  { name: 'alpha', type: 'number', def: '0.05', desc: '顯著水準；p ≥ alpha 的格子淡化（0 為不淡化）' },
+  { name: 'showValues', type: 'boolean', def: 'true', desc: '格子夠大時顯示 r' },
+  { name: 'showControls', type: 'boolean', def: 'true', desc: '顯示相關係數切換與排序開關' },
+  { name: 'showScatter / scatterHeight', type: 'boolean / number', def: 'true / 260', desc: '點一格時在下方畫散佈圖' },
+  { name: 'colors', type: '{ negative?, positive? }', def: '圖表色 / 危險色', desc: '負 / 正相關的顏色' },
+  { name: 'minCell / maxCell', type: 'number', def: '22 / 56', desc: '格子邊長範圍（px），依寬度自動調整' },
+  { name: 'emptyText', type: 'string', def: '語系', desc: '沒有資料時的文字' },
+]
+const corrEvents = [
+  { name: 'update:method', params: '(method)', desc: '切換相關係數' },
+  { name: 'update:clustered', params: '(on: boolean)', desc: '切換排序' },
+  { name: 'cell-click', params: '({ x, y, r, n, p })', desc: '點一格（x 是欄、y 是列的參數 key）' },
+]
+const corrMethods = [{ name: 'matrix', type: '{ r, n, p }[][]', desc: '相關矩陣（依 fields 原本的順序）' }]
 </script>
