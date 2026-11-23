@@ -187,6 +187,22 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  imageCompare: {
+    label: string
+    before: string
+    after: string
+    modeLabel: string
+    mode: Record<'slider' | 'side' | 'overlay', string>
+    opacity: string
+    difference: string
+    diffTag: (before: string, after: string) => string
+    zoomIn: string
+    zoomOut: string
+    fit: string
+    divider: string
+    loadError: (name: string) => string
+    hint: string
+  }
   alarm: {
     label: string
     filterLabel: string
@@ -1077,6 +1093,22 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  imageCompare: {
+    label: '影像比對',
+    before: '基準',
+    after: '比對',
+    modeLabel: '比對方式',
+    mode: { slider: '滑桿', side: '並排', overlay: '疊圖' },
+    opacity: '透明度',
+    difference: '差異',
+    diffTag: (b, a) => `${b}與${a}的差異`,
+    zoomIn: '放大',
+    zoomOut: '縮小',
+    fit: '顯示整張',
+    divider: '分隔線位置',
+    loadError: (name) => `${name}影像載入失敗`,
+    hint: '拖曳移動分隔線、雙擊放大 / 還原、Ctrl + 滾輪或兩指縮放、放大後拖曳平移；鍵盤 + / − / 0 縮放、方向鍵平移',
+  },
   alarm: {
     label: '警報',
     filterLabel: '依嚴重度篩選',
@@ -2032,6 +2064,22 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  imageCompare: {
+    label: 'Image comparison',
+    before: 'Reference',
+    after: 'Sample',
+    modeLabel: 'Compare mode',
+    mode: { slider: 'Slider', side: 'Side by side', overlay: 'Overlay' },
+    opacity: 'Opacity',
+    difference: 'Difference',
+    diffTag: (b, a) => `Difference: ${b} vs ${a}`,
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    fit: 'Fit to view',
+    divider: 'Divider position',
+    loadError: (name) => `${name} image failed to load`,
+    hint: 'Drag to move the divider, double-click to zoom / reset, Ctrl + wheel or pinch to zoom, drag to pan when zoomed; keys + / − / 0 zoom, arrows pan',
+  },
   alarm: {
     label: 'Alarms',
     filterLabel: 'Filter by severity',

@@ -274,6 +274,32 @@
       </p>
     </section>
 
+    <!-- ============ ChptImageCompare ============ -->
+    <section id="chpt-image-compare" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptImageCompare 影像比對</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>比對兩張同視野的影像 —— 標準樣品與待測品、修改前後、上次與這次的 AOI 影像。
+        三種方式：<strong>滑桿</strong>（拖分隔線看左右）、<strong>並排</strong>、<strong>疊圖</strong>（調透明度；「差異」模式相同處變黑、不同處發亮，缺件、偏移一眼看出）。
+        三種方式與並排的兩格<strong>共用同一個縮放與位置</strong>：放大看某個零件後切換方式，看到的仍是同一塊。
+        雙擊放大 / 還原、Ctrl + 滾輪或兩指縮放、放大後拖曳平移；鍵盤 + / − / 0 縮放、方向鍵平移，分隔線可用方向鍵移動（Shift 一次 10%）。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptImageCompare } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptImageCompare v-model:mode="compareMode" :before="pcbImage" :after="pcbAfterImage" before-label="標準樣品" after-label="待測 #0427" />
+        <p class="mt-3 text-sm text-content-secondary">待測品的差異：右上 IC 偏移旋轉、下排第 4 顆電容缺件、中間 IC 左側錫橋 —— 切到「疊圖 → 差異」最明顯。</p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="compareSample" />
+      <ApiTable of="ChptImageCompare" title="Props" :rows="compareProps" />
+      <ApiTable of="ChptImageCompare" title="Events" :rows="compareEvents" />
+      <ApiTable of="ChptImageCompare" title="方法（ref）" :rows="compareMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>兩張影像要同視野、同解析度（相機固定、治具定位）；大小不同時 after 會拉伸到 before 的大小。
+        跨網域的影像不影響顯示（只用 CSS 疊合，不讀像素）。
+      </p>
+    </section>
+
     <!-- ============ ChptShiftRoster ============ -->
     <section id="chpt-shift-roster" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptShiftRoster 排班表</h2>
@@ -324,6 +350,7 @@ import {
   ChptKanban,
   ChptTag,
   ChptDefectAnnotator,
+  ChptImageCompare,
   ChptSwitch,
   ChptShiftRoster,
 } from '@/components/library'
@@ -413,6 +440,43 @@ const pcbSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400"
 <g fill="#e5e7eb">${Array.from({ length: 6 }, (_, i) => `<rect x="${90 + i * 32}" y="306" width="18" height="6"/><rect x="${90 + i * 32}" y="342" width="18" height="6"/>`).join('')}</g>
 <text x="460" y="370" font-family="monospace" font-size="16" fill="#f0fdf4">PCB-A12 R3</text></svg>`
 const pcbImage = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(pcbSvg)}`
+
+// ---- ImageCompare：待測品 = 標準樣品加上幾個缺陷 ----
+const pcbAfterSvg = pcbSvg
+  .replace('<rect x="460" y="70" width="90" height="40" rx="4" fill="#1f2937"/>', '<rect x="468" y="78" width="90" height="40" rx="4" fill="#1f2937" transform="rotate(6 513 98)"/>')
+  .replace('</svg>', '<rect x="184" y="304" width="22" height="48" fill="#166534"/><path d="M226 182h28v14h-28z" fill="#d1d5db"/></svg>')
+const pcbAfterImage = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(pcbAfterSvg)}`
+const compareMode = ref('slider')
+const compareSample = `<ChptImageCompare
+  v-model:mode="mode"
+  :before="goldenUrl"
+  :after="sampleUrl"
+  before-label="標準樣品"
+  after-label="待測 #0427"
+/>
+<!-- mode：'slider'（滑桿）| 'side'（並排）| 'overlay'（疊圖，可切「差異」） -->`
+const compareProps = [
+  { name: 'before / after', type: 'string', def: '—', desc: '基準影像（左邊 / 底層）與比對影像（右邊 / 上層）的網址' },
+  { name: 'beforeLabel / afterLabel', type: 'string', def: '語系', desc: '影像名稱（角落標籤、替代文字）' },
+  { name: 'v-model:mode', type: "'slider' | 'side' | 'overlay'", def: "'slider'", desc: '比對方式' },
+  { name: 'v-model:position', type: 'number', def: '50', desc: '滑桿分隔線位置（0–100）' },
+  { name: 'v-model:opacity', type: 'number', def: '50', desc: '疊圖時上層的不透明度（0–100）' },
+  { name: 'v-model:difference', type: 'boolean', def: 'false', desc: '疊圖時用差異混合（相同處變黑）' },
+  { name: 'height', type: 'number', def: '420', desc: '最大高度（px）；影像較扁時框會矮一點' },
+  { name: 'maxZoom', type: 'number', def: '8', desc: '最大放大倍數（相對於整張）' },
+  { name: 'showToolbar', type: 'boolean', def: 'true', desc: '顯示上方工具列（方式、透明度、縮放）' },
+  { name: 'label', type: 'string', def: '語系', desc: '比對區的名稱（螢幕閱讀器）' },
+]
+const compareEvents = [
+  { name: 'update:mode', params: '(mode: CompareMode)', desc: '切換比對方式' },
+  { name: 'update:position', params: '(position: number)', desc: '移動分隔線' },
+  { name: 'update:opacity', params: '(opacity: number)', desc: '調整透明度' },
+  { name: 'update:difference', params: '(on: boolean)', desc: '切換差異混合' },
+]
+const compareMethods = [
+  { name: 'fit()', type: '() => void', desc: '回到整張' },
+  { name: 'zoomTo(r)', type: '(r: number) => void', desc: '縮放到相對於整張的 r 倍（以畫面中心）' },
+]
 const defectTypes = [
   { value: 'short', label: '短路', color: '#ef4444' },
   { value: 'open', label: '空焊', color: '#f59e0b' },
