@@ -579,6 +579,10 @@ const navSections = [
         anchors: [{ label: '鑽取與分組顏色', id: 'group' }, { label: '依指標上色', id: 'metric' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/parallel-chart', icon: '🎚️', label: '平行座標圖',
+        anchors: [{ label: '找出製程視窗', id: 'window' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },

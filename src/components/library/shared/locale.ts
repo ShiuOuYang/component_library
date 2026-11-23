@@ -957,6 +957,18 @@ export interface ChptLocale {
     metricLine: (label: string, value: string) => string
     ariaLabel: (title: string, path: string, n: number, total: string) => string
   }
+  parallel: {
+    title: string
+    empty: string
+    selected: (n: number, total: number) => string
+    clear: string
+    hint: string
+    axis: (label: string, lo: string, hi: string, brushed: string) => string
+    brushed: (lo: string, hi: string) => string
+    row: (n: number) => string
+    value: (name: string, value: string) => string
+    ariaLabel: (title: string, axes: string[], n: number, selected: number) => string
+  }
   radar: {
     title: string
     empty: string
@@ -2034,6 +2046,18 @@ export const zhTW: ChptLocale = {
     valueShare: (v, share) => `${v}（${share}）`,
     metricLine: (label, v) => `${label}：${v}`,
     ariaLabel: (title, path, n, total) => `${title}：${path}，${n} 項，合計 ${total}。數值見下方資料表`,
+  },
+  parallel: {
+    title: '平行座標圖',
+    empty: '沒有資料（至少要兩條軸）',
+    selected: (n, total) => (n === total ? `共 ${total} 筆` : `選到 ${n} / ${total} 筆`),
+    clear: '清除框選',
+    hint: '在軸上拖曳框選範圍、拖動框選區平移、點一下軸清除；拖曳軸名稱換位置（鍵盤：←→ 換位置、Delete 清除框選）',
+    axis: (label, lo, hi, b) => `${label}，範圍 ${lo} 到 ${hi}${b ? `，${b}` : ''}`,
+    brushed: (lo, hi) => `已框選 ${lo} 到 ${hi}`,
+    row: (n) => `第 ${n} 筆`,
+    value: (name, v) => `${name}：${v}`,
+    ariaLabel: (title, axes, n, sel) => `${title}：${axes.join('、')}，${n} 筆資料${sel < n ? `，框選後 ${sel} 筆` : ''}`,
   },
   radar: {
     title: '雷達圖',
@@ -3119,6 +3143,18 @@ export const enUS: ChptLocale = {
     valueShare: (v, share) => `${v} (${share})`,
     metricLine: (label, v) => `${label}: ${v}`,
     ariaLabel: (title, path, n, total) => `${title}: ${path}, ${n} items, total ${total}. Values in the table below`,
+  },
+  parallel: {
+    title: 'Parallel coordinates',
+    empty: 'No data (at least two axes are needed)',
+    selected: (n, total) => (n === total ? `${total} rows` : `${n} of ${total} rows selected`),
+    clear: 'Clear brushes',
+    hint: 'Drag on an axis to brush a range, drag the brush to move it, click an axis to clear; drag an axis title to reorder (keyboard: ←→ reorder, Delete clears)',
+    axis: (label, lo, hi, b) => `${label}, range ${lo} to ${hi}${b ? `, ${b}` : ''}`,
+    brushed: (lo, hi) => `brushed ${lo} to ${hi}`,
+    row: (n) => `Row ${n}`,
+    value: (name, v) => `${name}: ${v}`,
+    ariaLabel: (title, axes, n, sel) => `${title}: ${axes.join(', ')}, ${n} rows${sel < n ? `, ${sel} after brushing` : ''}`,
   },
   radar: {
     title: 'Radar chart',

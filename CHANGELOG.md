@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ParallelCoordinatesChart 平行座標圖**（charts）：多參數的製程視窗（哪些溫度 + 速度 + 壓力的組合良率高）。每個參數一條軸
+  （`domain` 不給時依資料取整、`reverse` 越小越好），每一筆一條折線（缺值的軸斷開）。在軸上拖曳框選範圍、可多條軸一起框，
+  拖動框選區平移、點一下軸清除；所有條件都符合的線保留顏色（`v-model:brushes`、`select`）。拖曳軸名稱換位置（`v-model:order`），
+  鍵盤 ←→ 換位置、Delete 清除框選；窄的時候軸名稱上下交錯。`colorBy` 依數值（連續色階 `colorRange`）或文字（類別色）上色；
+  線多於 `canvasThreshold` 時改畫在 Canvas。新增 `charts/utils/parallel.ts`、語系群組 `parallel` 與文件頁「平行座標圖」。
 - **ChptPivotTable 樞紐分析表**：交叉分析（不良數依「線 × 不良代碼」、產量依「日期 × 機台」）。欄位拖到列、欄、值，或用欄位旁的按鈕
   （鍵盤可操作；區內可前後移、移除）；`v-model:config` 記住設定。值：加總、平均、計數、最小、最大、不重複計數（分組欄位只能計數），可同時多個。
   列可以多層，每一層小計、可展開收合（`defaultExpandDepth`）；多層欄合併標題；總計欄與總計列（`showTotals`）。熱度依數值深淺上色；

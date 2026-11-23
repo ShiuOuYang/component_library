@@ -174,6 +174,14 @@ const routes = [
         },
       },
       {
+        path: "components/parallel-chart",
+        name: "ParallelChartDoc",
+        component: () => import("../views/docs/ParallelChartDoc.vue"),
+        meta: {
+          title: "平行座標圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),
