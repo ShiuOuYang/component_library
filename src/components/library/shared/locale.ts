@@ -212,6 +212,27 @@ export interface ChptLocale {
     announceStep: (n: number, title: string) => string
     hint: string
   }
+  andon: {
+    type: Record<'maintenance' | 'material' | 'quality' | 'supervisor', string>
+    normal: string
+    calling: string
+    handling: string
+    waiting: (by: string) => string
+    responding: (who: string) => string
+    respond: string
+    resolve: string
+    raise: (station: string, type: string) => string
+    raiseFor: (station: string) => string
+    stationNormal: (station: string) => string
+    stationCalls: (station: string, calls: string[]) => string
+    callLabel: (type: string, state: string, time: string) => string
+    newCall: (station: string, type: string) => string
+    escalated: (station: string, type: string) => string
+    mute: string
+    unmute: string
+    fullscreen: string
+    exitFullscreen: string
+  }
   pivot: {
     label: string
     configure: string
@@ -1282,6 +1303,27 @@ export const zhTW: ChptLocale = {
     sep: '；',
     announceStep: (n, title) => `第 ${n} 步：${title}`,
     hint: '平板上左右滑動切換步驟；鍵盤 ← → 或 PageUp / PageDown',
+  },
+  andon: {
+    type: { maintenance: '維修', material: '缺料', quality: '品質', supervisor: '主管' },
+    normal: '正常',
+    calling: '呼叫中',
+    handling: '處理中',
+    waiting: (by) => `等待回應${by ? `（${by} 呼叫）` : ''}`,
+    responding: (who) => `${who || '已回應'}處理中`,
+    respond: '回應',
+    resolve: '完成',
+    raise: (station, type) => `${station}：呼叫${type}`,
+    raiseFor: (station) => `${station}的呼叫按鈕`,
+    stationNormal: (station) => `${station}：正常`,
+    stationCalls: (station, calls) => `${station}：${calls.join('；')}`,
+    callLabel: (type, state, time) => `${type}${state} ${time}`,
+    newCall: (station, type) => `${station} 呼叫${type}`,
+    escalated: (station, type) => `${station} 的${type}呼叫等太久了`,
+    mute: '靜音',
+    unmute: '取消靜音',
+    fullscreen: '全螢幕',
+    exitFullscreen: '離開全螢幕',
   },
   pivot: {
     label: '樞紐分析表',
@@ -2418,6 +2460,27 @@ export const enUS: ChptLocale = {
     sep: '; ',
     announceStep: (n, title) => `Step ${n}: ${title}`,
     hint: 'Swipe left or right on a tablet; keyboard ← → or PageUp / PageDown',
+  },
+  andon: {
+    type: { maintenance: 'Maintenance', material: 'Material', quality: 'Quality', supervisor: 'Supervisor' },
+    normal: 'Normal',
+    calling: 'Calling',
+    handling: 'In progress',
+    waiting: (by) => `Waiting for response${by ? ` (called by ${by})` : ''}`,
+    responding: (who) => (who ? `${who} is handling it` : 'Being handled'),
+    respond: 'Respond',
+    resolve: 'Resolve',
+    raise: (station, type) => `${station}: call ${type}`,
+    raiseFor: (station) => `Call buttons for ${station}`,
+    stationNormal: (station) => `${station}: normal`,
+    stationCalls: (station, calls) => `${station}: ${calls.join('; ')}`,
+    callLabel: (type, state, time) => `${type} ${String(state).toLowerCase()} ${time}`,
+    newCall: (station, type) => `${station} called ${type}`,
+    escalated: (station, type) => `${type} call at ${station} is overdue`,
+    mute: 'Mute',
+    unmute: 'Unmute',
+    fullscreen: 'Full screen',
+    exitFullscreen: 'Exit full screen',
   },
   pivot: {
     label: 'Pivot table',

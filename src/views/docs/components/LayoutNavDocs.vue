@@ -311,6 +311,42 @@
       <ApiTable of="ChptAlarmCenter" title="方法（ref）" :rows="alarmMethods" />
     </section>
 
+    <!-- ============ ChptAndonBoard ============ -->
+    <section id="chpt-andon-board" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAndonBoard 安東看板</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>給產線大螢幕的呼叫看板 —— 站點呼叫維修、缺料、品質、主管，大家都看得到誰在等、等多久。
+        每站一張卡片：綠色是正常；有呼叫時依等待時間由黃轉紅（紅色閃動）。還沒人回應時依「等了多久」、處理中時依「處理了多久」升級
+        （<code>thresholds</code>，分鐘；這裡為了示範設成很短）。呼叫、回應、完成都在卡片上操作；「電視模式」字更大，另有全螢幕按鈕。
+        ChptAlarmCenter 是設備自己報的警報；安東是人按的呼叫，兩者可以並用。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptAndonBoard } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-4">
+          <ChptSwitch v-model="andonLive" label="模擬現場呼叫（每 6 秒）" />
+          <ChptSwitch v-model="andonTv" label="電視模式" />
+          <ChptSwitch v-model="andonActiveFirst" label="有呼叫的站排前面" />
+        </div>
+        <ChptAndonBoard
+          v-model="andonCalls"
+          :stations="andonStations"
+          :thresholds="{ respond: [0.5, 1.5], resolve: [2, 4] }"
+          operator="陳技術員"
+          :tv="andonTv"
+          :active-first="andonActiveFirst"
+          title="二廠 1F"
+          @resolve="(c) => toast.success(`${c.station} 的呼叫已完成`)"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="andonSample" />
+      <ApiTable of="ChptAndonBoard" title="Props" :rows="andonProps" />
+      <ApiTable of="-" title="AndonStation / AndonCall / AndonCallType" :rows="andonDataRows" />
+      <ApiTable of="ChptAndonBoard" title="Events" :rows="andonEvents" />
+      <ApiTable of="ChptAndonBoard" title="方法（ref）" :rows="andonMethods" />
+    </section>
+
     <!-- ============ ChptApprovalFlow ============ -->
     <section id="chpt-approval-flow" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptApprovalFlow 簽核流程</h2>
@@ -363,6 +399,7 @@ import {
   ChptEquipmentWall,
   ChptFloorPlan,
   ChptAlarmCenter,
+  ChptAndonBoard,
   ChptApprovalFlow,
   ChptSegmented,
 } from '@/components/library'
@@ -493,6 +530,83 @@ import { useToast } from '@/components/library'
 
 /** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */
 const toast = useToast()
+
+// ---- ChptAndonBoard ----
+const andonStations = [
+  { id: 's1', name: 'SMT-01 印刷', group: 'SMT 一線' },
+  { id: 's2', name: 'SMT-02 貼片', group: 'SMT 一線' },
+  { id: 's3', name: 'SMT-04 回焊', group: 'SMT 一線' },
+  { id: 's4', name: 'AOI-01', group: '檢測' },
+  { id: 's5', name: '手插 A', group: 'DIP 線' },
+  { id: 's6', name: '波焊', group: 'DIP 線' },
+  { id: 's7', name: 'ICT-01', group: '檢測' },
+  { id: 's8', name: '包裝', group: '出貨' },
+]
+const secondsAgo = (s) => Date.now() - s * 1000
+const andonCalls = ref([
+  { id: 'c1', station: 's2', type: 'maintenance', raisedAt: secondsAgo(130), by: '林作業員', note: '吸嘴 N3 真空異常' },
+  { id: 'c2', station: 's4', type: 'quality', raisedAt: secondsAgo(40), by: '王檢驗員' },
+  { id: 'c3', station: 's5', type: 'material', raisedAt: secondsAgo(200), respondedAt: secondsAgo(90), responder: '倉管小李' },
+  { id: 'c4', station: 's8', type: 'supervisor', raisedAt: secondsAgo(500), respondedAt: secondsAgo(480), resolvedAt: secondsAgo(300), responder: '張組長' },
+])
+const andonLive = ref(false)
+const andonTv = ref(false)
+const andonActiveFirst = ref(false)
+let andonTimer = null
+let andonTick = 0
+watch(andonLive, (on) => {
+  clearInterval(andonTimer)
+  if (!on) return
+  andonTimer = setInterval(() => {
+    // 固定輪替：某一站呼叫某種原因（同一站同一原因進行中時不會重複）
+    andonTick++
+    const station = andonStations[(andonTick * 3) % andonStations.length].id
+    const type = ['maintenance', 'material', 'quality', 'supervisor'][andonTick % 4]
+    if (andonCalls.value.some((c) => c.station === station && c.type === type && !c.resolvedAt)) return
+    andonCalls.value = [...andonCalls.value, { id: `live-${andonTick}`, station, type, raisedAt: Date.now(), by: '作業員' }]
+  }, 6000)
+})
+onBeforeUnmount(() => clearInterval(andonTimer))
+const andonSample = `<ChptAndonBoard
+  v-model="calls"
+  :stations="[{ id: 's1', name: 'SMT-01 印刷', group: 'SMT 一線' }, …]"
+  :thresholds="{ respond: [3, 10], resolve: [20, 45] }"
+  :operator="user.name"
+  tv sound
+  @raise="api.raise" @respond="api.respond" @resolve="api.resolve"
+/>
+
+// calls：[{ id: 'c1', station: 's2', type: 'maintenance', raisedAt: '2026-11-23T09:12', by: '林作業員', note: '吸嘴異常' }]
+// 回應後：respondedAt、responder；完成後：resolvedAt（看板只顯示進行中的呼叫）`
+const andonProps = [
+  { name: 'stations', type: 'AndonStation[]', def: '—', desc: '站點（每站一張卡片）' },
+  { name: 'v-model', type: 'AndonCall[]', def: '—', desc: '呼叫清單（可以包含已完成的）' },
+  { name: 'types', type: 'AndonCallType[]', def: '維修、缺料、品質、主管', desc: '呼叫原因（key、label、icon）；預設的名稱依語系' },
+  { name: 'thresholds', type: '{ respond: [黃, 紅], resolve: [黃, 紅] }', def: '{ respond: [3, 10], resolve: [20, 45] }', desc: '升級門檻（分鐘）：未回應等了多久、處理中處理了多久' },
+  { name: 'operator', type: 'string', def: "''", desc: '目前操作的人（呼叫記在 by、回應記在 responder）' },
+  { name: 'tv', type: 'boolean', def: 'false', desc: '電視模式：字更大、卡片更寬' },
+  { name: 'sound', type: 'boolean', def: 'false', desc: '新呼叫與轉紅時響（可靜音）' },
+  { name: 'canRaise', type: 'boolean', def: 'true', desc: '卡片下方的呼叫按鈕' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只顯示（例如走廊的大螢幕）' },
+  { name: 'activeFirst', type: 'boolean', def: 'false', desc: '有呼叫的站（越嚴重越前面）排前面' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '計時用的現在時間；不給時每秒更新' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+]
+const andonDataRows = [
+  { name: 'AndonStation', type: '{ id, name, group? }', def: '—', desc: '站點' },
+  { name: 'AndonCall', type: '{ id, station, type, raisedAt, by?, note?, respondedAt?, responder?, resolvedAt? }', def: '—', desc: '狀態：未回應 → 處理中（respondedAt）→ 完成（resolvedAt）' },
+  { name: 'AndonCallType', type: '{ key, label, icon? }', def: '—', desc: 'icon 是 Material Symbols 名稱' },
+]
+const andonEvents = [
+  { name: 'update:modelValue', params: '(calls: AndonCall[])', desc: '呼叫清單更新（v-model）' },
+  { name: 'raise', params: '(call: AndonCall)', desc: '新增呼叫（同一站同一原因進行中時不會重複）' },
+  { name: 'respond', params: '(call: AndonCall)', desc: '回應' },
+  { name: 'resolve', params: '(call: AndonCall)', desc: '完成' },
+]
+const andonMethods = [
+  { name: 'raise(stationId, type)', type: '(stationId: string, type: string) => void', desc: '由程式呼叫（例如設備自動觸發）' },
+  { name: 'toggleFullscreen()', type: '() => Promise<void>', desc: '切換全螢幕' },
+]
 
 // ---- ChptApprovalFlow ----
 const hoursAgo = (h) => Date.now() - h * 3_600_000
