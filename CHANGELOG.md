@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **ChptStorageMap 儲位圖**（ui）：倉庫 / 線邊倉的儲位配置與庫存。區 → 料架 → 層 → 格（缺的格位留空），依使用率、料號或效期上色（`v-model:mode`）；
+  搜尋料號 / 品名 / 批號 / 儲位標出位置（`locate()` 可接掃描）。點儲位看明細；拖曳庫存或整格、或按「移動」再點目的儲位即可移庫
+  （檢查停用與容量，`allowOverCapacity`），送出 `move` / `move-reject`。快到期（`warnDays`）與已過期標示；方向鍵在料架內移動。
+  另匯出 `buildStorageLayout`、`searchStorageBins`、`checkStorageMove`、`moveStorageStocks`、`storageExpiryStatus` 與型別 `StorageBin`、`StorageStock` 等。
 - **ChptFeederMap 上料防錯**（ui）：SMT / 插件線上料、換料防錯。掃站位（或點選）→ 掃料盤，跟 BOM 比對料號（含 `alternates` 代用料）：
   正確就上料並嗶一聲；錯料時紅色警示 + 警報音，必須確認才能繼續（`mismatch` 事件）。同一盤不能同時裝在兩個站位。
   站位圖依 `group` 分區，顯示料盤、剩餘數量（`lowQty` 低料、0 用完）、估計還能生產幾片（`perBoard`），可只看需要處理的。

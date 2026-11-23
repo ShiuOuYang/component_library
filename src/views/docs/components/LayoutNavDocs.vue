@@ -383,6 +383,41 @@
       <ApiTable of="ChptFeederMap" title="方法（ref）" :rows="feederMethods" />
     </section>
 
+    <!-- ============ ChptStorageMap ============ -->
+    <section id="chpt-storage-map" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptStorageMap 儲位圖</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>倉庫、線邊倉、冷藏庫的儲位配置與庫存。區 → 料架 → 層 → 格，依<strong>使用率</strong>、<strong>料號</strong>或<strong>效期</strong>上色；
+        搜尋料號 / 品名 / 批號 / 儲位會標出位置（可接掃描槍用 <code>locate()</code>）。點儲位看明細；拖曳庫存（或整格）到別的儲位、
+        或按「移動」再點目的儲位即可移庫，會檢查停用與容量。快到期（<code>warnDays</code>）與已過期的庫存會標示。方向鍵在同一個料架裡移動。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptStorageMap } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+          <span class="text-content-secondary">試試定位：</span>
+          <ChptButton size="xs" is-outline @click="storageRef?.locate('SOLDER-305')">SOLDER-305</ChptButton>
+          <ChptButton size="xs" is-outline @click="storageRef?.locate('L2315')">批號 L2315</ChptButton>
+          <ChptButton size="xs" is-outline @click="storageRef?.locate('A-02-2-3')">儲位 A-02-2-3</ChptButton>
+        </div>
+        <ChptStorageMap
+          ref="storageRef"
+          v-model:stocks="storageStocks"
+          v-model:mode="storageMode"
+          v-model:selected="storageSelected"
+          :bins="storageBins"
+          title="二廠倉庫"
+          @move="(e) => toast.success(`已移到 ${e.to}`)"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="storageSample" />
+      <ApiTable of="ChptStorageMap" title="Props" :rows="storageProps" />
+      <ApiTable of="-" title="StorageBin / StorageStock" :rows="storageDataRows" />
+      <ApiTable of="ChptStorageMap" title="Events" :rows="storageEvents" />
+      <ApiTable of="ChptStorageMap" title="方法（ref）" :rows="storageMethods" />
+    </section>
+
     <!-- ============ ChptApprovalFlow ============ -->
     <section id="chpt-approval-flow" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptApprovalFlow 簽核流程</h2>
@@ -437,6 +472,7 @@ import {
   ChptAlarmCenter,
   ChptAndonBoard,
   ChptFeederMap,
+  ChptStorageMap,
   ChptApprovalFlow,
   ChptSegmented,
 } from '@/components/library'
@@ -567,6 +603,87 @@ import { useToast } from '@/components/library'
 
 /** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */
 const toast = useToast()
+
+// ---- ChptStorageMap ----
+const stoDay = 86_400_000
+const stoNow = Date.now()
+const storageBins = []
+for (const [zone, rack, levels, positions, capacity] of [
+  ['A 區 常溫', 'A-01', 4, 5, 1000],
+  ['A 區 常溫', 'A-02', 4, 5, 1000],
+  ['B 區 冷藏', 'B-01', 3, 4, 400],
+]) {
+  for (let level = 1; level <= levels; level++) {
+    for (let position = 1; position <= positions; position++) {
+      if (rack === 'B-01' && level === 3 && position === 4) continue
+      storageBins.push({ id: `${rack}-${level}-${position}`, zone, rack, level, position, capacity, blocked: rack === 'A-02' && level === 4 && position === 5 })
+    }
+  }
+}
+const stoItems = [
+  ['PCB-A12', 'A12 主板空板', 'pcs'],
+  ['IC-MCU-F4', 'MCU F4 系列', 'pcs'],
+  ['CAP-0402', '電容 0402 捲盤', 'reel'],
+  ['SOLDER-305', 'SAC305 錫膏', 'jar'],
+  ['FLUX-RMA', 'RMA 助焊劑', 'btl'],
+  ['CASE-B07', 'B07 外殼', 'pcs'],
+]
+let stoSeed = 7
+const stoRand = () => ((stoSeed = (stoSeed * 1103515245 + 12345) % 2147483648) / 2147483648)
+const storageStocks = ref(
+  storageBins.flatMap((b, i) => {
+    if (b.blocked || stoRand() < 0.25) return []
+    const cold = b.zone.startsWith('B')
+    const [item, name, unit] = cold ? stoItems[3 + Math.floor(stoRand() * 2)] : stoItems[Math.floor(stoRand() * 3) + (stoRand() < 0.3 ? 3 : 0) % 6]
+    const days = cold ? Math.round(stoRand() * 50) - 5 : Math.round(stoRand() * 300) + 20
+    return [{ id: `S${i}`, bin: b.id, item, name, unit, qty: Math.round(b.capacity * (0.15 + stoRand() * 0.85)), lot: `L23${String(10 + (i % 12)).padStart(2, '0')}`, expiry: stoNow + days * stoDay }]
+  })
+)
+const storageMode = ref('utilization')
+const storageSelected = ref(null)
+const storageRef = useTemplateRef('storageRef')
+const storageSample = `<ChptStorageMap
+  v-model:stocks="stocks"
+  v-model:mode="mode"
+  v-model:selected="selected"
+  :bins="[
+    { id: 'A-01-1-1', zone: 'A 區 常溫', rack: 'A-01', level: 1, position: 1, capacity: 1000 },
+    { id: 'A-01-1-2', zone: 'A 區 常溫', rack: 'A-01', level: 1, position: 2, capacity: 1000, blocked: true },
+  ]"
+  :warn-days="30"
+  @move="(e) => api.transfer(e.stocks, e.to)"
+/>
+
+<!-- 掃描料號後定位 -->
+<ChptScanInput @scan="(r) => storageRef.locate(r.value)" />`
+const storageProps = [
+  { name: 'bins', type: 'StorageBin[]', def: '—', desc: '儲位：區、料架、層（1 = 最下層）、格、容量、停用' },
+  { name: 'v-model:stocks', type: 'StorageStock[]', def: '[]', desc: '庫存（儲位、料號、品名、數量、批號、效期）；移庫後更新' },
+  { name: 'v-model:mode', type: "'utilization' | 'item' | 'expiry'", def: "'utilization'", desc: '上色方式：使用率、料號、效期' },
+  { name: 'v-model:selected', type: 'string | null', def: 'null', desc: '選取的儲位' },
+  { name: 'warnDays', type: 'number', def: '30', desc: '幾天內到期算「快到期」' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '計算效期用的現在時間' },
+  { name: 'allowOverCapacity', type: 'boolean', def: 'false', desc: '允許移入後超過容量' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只看（不能移庫）' },
+  { name: 'itemColors', type: 'Record<item, color>', def: '{}', desc: '自訂料號顏色；其他料號依數量多寡取類別色（超過 8 種為「其他」）' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+]
+const storageDataRows = [
+  { name: 'StorageBin', type: '{ id, zone, rack, level, position, capacity?, blocked? }', def: '—', desc: '同一料架缺的格位會留空' },
+  { name: 'StorageStock', type: '{ id, bin, item, qty, name?, unit?, lot?, expiry? }', def: '—', desc: 'expiry：epoch ms、ISO 字串或 Date' },
+]
+const storageEvents = [
+  { name: 'update:stocks', params: '(stocks)', desc: '移庫後的庫存' },
+  { name: 'update:mode', params: '(mode)', desc: '切換上色方式' },
+  { name: 'update:selected', params: '(id | null)', desc: '選取儲位' },
+  { name: 'move', params: '({ stocks, from, to })', desc: '移庫完成（拖曳或「移動」→ 點目的儲位）' },
+  { name: 'move-reject', params: "({ reason: 'blocked' | 'overCapacity' | 'unknown', to, stockIds })", desc: '移庫被拒絕' },
+]
+const storageMethods = [
+  { name: 'locate(query)', type: '(query: string) => string[]', desc: '搜尋並選取第一個符合的儲位（例如接掃描）；回傳符合的儲位' },
+  { name: 'select(id)', type: '(id: string | null) => void', desc: '選取儲位' },
+  { name: 'startMove(stockIds) / cancelMove()', type: '—', desc: '開始 / 取消移庫（接著點目的儲位）' },
+]
 
 // ---- ChptFeederMap ----
 const feederSlots = [
