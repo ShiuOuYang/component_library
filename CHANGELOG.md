@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ParallelCoordinatesChart 平行座標圖**（charts）：多參數的製程視窗（哪些溫度 + 速度 + 壓力的組合良率高）。每個參數一條軸
+  （`domain` 不給時依資料取整、`reverse` 越小越好），每一筆一條折線（缺值的軸斷開）。在軸上拖曳框選範圍、可多條軸一起框，
+  拖動框選區平移、點一下軸清除；所有條件都符合的線保留顏色（`v-model:brushes`、`select`）。拖曳軸名稱換位置（`v-model:order`），
+  鍵盤 ←→ 換位置、Delete 清除框選；窄的時候軸名稱上下交錯。`colorBy` 依數值（連續色階 `colorRange`）或文字（類別色）上色；
+  線多於 `canvasThreshold` 時改畫在 Canvas。新增 `charts/utils/parallel.ts`、語系群組 `parallel` 與文件頁「平行座標圖」。
 - **ChptTimeScrubber 時間軸回放**：把一段時間的資料重播（異常前後參數怎麼變、一個班怎麼演變）。播放頭（v-model，毫秒）可拖曳、
   點軌道跳過去；播放（`v-model:playing`）依倍速（`v-model:speed`、`speeds`）往前走，到結尾自動停止或 `loop`；分頁切走再回來時一次最多推進 250ms。
   事件標記（`events`：時間、說明、嚴重度或顏色）點了跳過去，另有上一個 / 下一個事件按鈕。範圍（`v-model:range`）拖兩端把手只看一段、播放只在範圍內。
