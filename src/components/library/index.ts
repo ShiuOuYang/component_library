@@ -40,6 +40,7 @@ export {
   ChptLotTrace,
   ChptDiffViewer,
   ChptChecklist,
+  ChptWorkInstruction,
   ChptSignaturePad,
   ChptNumpad,
 } from './ui/index.js'
@@ -94,6 +95,8 @@ export { fitImage, clampImageView, zoomImageTo, viewOf as imageViewOf, zoomOf as
 export type { ImageView, ImageZoom, CompareMode } from './shared/imageCompare'
 export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
+export { blockers as workInstructionBlockers, summarize as summarizeWorkInstruction, inSpec } from './shared/workInstruction'
+export type { WiStep, WiMark, WiSpec, WiCheck, WiStepRecord, WiRecord, WiBlock, WiSummary } from './shared/workInstruction'
 export { DEFAULT_ANDON_TYPES, DEFAULT_ANDON_THRESHOLDS, callStatus as andonCallStatus, callLevel as andonCallLevel, raiseCall as raiseAndonCall, respondCall as respondAndonCall, resolveCall as resolveAndonCall } from './shared/andon'
 export type { AndonCallType, AndonStation, AndonCall, AndonStatus, AndonLevel, AndonThresholds } from './shared/andon'
 export { computePivot, moveField as movePivotField, PIVOT_AGGS } from './shared/pivot'

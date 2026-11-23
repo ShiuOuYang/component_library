@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptWorkInstruction 作業指導書**（ui）：現場一步一步照著做（換線、保養、首件檢驗）。每一步有圖片（`marks` 編號標記）、說明、
+  注意事項與規格；要勾選確認（`check.kind: 'confirm'`）或輸入量測值（`'measure'`，超出 `lsl` / `usl` 不能下一步）才能前進，
+  `minSeconds` 要求至少停留幾秒。完成的步驟可以回去看、未完成的不能跳過；平板左右滑動、鍵盤 ← → 切換。
+  `v-model:record` 保存每一步的時間與量測值（中斷後接著做），完成時送出 `complete(summary)`。另匯出
+  `workInstructionBlockers`、`summarizeWorkInstruction`、`inSpec` 與型別 `WiStep` 等。
 - **ChptAndonBoard 安東看板**：產線大螢幕的呼叫看板（維修、缺料、品質、主管，`types` 可自訂）。每站一張卡片：正常為綠；呼叫中依等待時間由藍轉黃轉紅
   （紅色閃動，`prefers-reduced-motion` 時不閃）；有人處理且未超時時為中性灰。未回應依「等了多久」、處理中依「處理了多久」升級（`thresholds`，分鐘）。
   呼叫、回應、完成都在卡片上操作（v-model 是呼叫清單；`raise` / `respond` / `resolve` 事件；同一站同一原因進行中時不重複）。

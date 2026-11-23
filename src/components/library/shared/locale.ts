@@ -187,6 +187,31 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  workInstruction: {
+    label: string
+    progress: (n: number, total: number) => string
+    progressLabel: string
+    stepsLabel: string
+    total: (time: string) => string
+    stepTime: (time: string) => string
+    stepButton: (n: number, title: string, done: boolean) => string
+    caution: string
+    pass: string
+    fail: string
+    range: (lo: string, hi: string) => string
+    min: (lo: string) => string
+    max: (hi: string) => string
+    prev: string
+    next: string
+    finish: string
+    finished: string
+    doneTitle: (time: string) => string
+    restart: string
+    block: { confirm: string; measure: string; outOfSpec: string; wait: (seconds: number) => string }
+    sep: string
+    announceStep: (n: number, title: string) => string
+    hint: string
+  }
   andon: {
     type: Record<'maintenance' | 'material' | 'quality' | 'supervisor', string>
     normal: string
@@ -1254,6 +1279,31 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  workInstruction: {
+    label: '作業指導書',
+    progress: (n, total) => `步驟 ${n} / ${total}`,
+    progressLabel: '完成進度',
+    stepsLabel: '步驟',
+    total: (time) => `總計 ${time}`,
+    stepTime: (time) => `本步驟 ${time}`,
+    stepButton: (n, title, done) => `第 ${n} 步：${title}${done ? '（已完成）' : ''}`,
+    caution: '注意',
+    pass: '合格',
+    fail: '超出規格',
+    range: (lo, hi) => `規格 ${lo} ～ ${hi}`,
+    min: (lo) => `至少 ${lo}`,
+    max: (hi) => `最多 ${hi}`,
+    prev: '上一步',
+    next: '下一步',
+    finish: '完成',
+    finished: '全部完成',
+    doneTitle: (time) => `全部完成，共 ${time}`,
+    restart: '重新開始',
+    block: { confirm: '請先勾選確認', measure: '請輸入量測值', outOfSpec: '量測值超出規格', wait: (s) => `請再看 ${s} 秒` },
+    sep: '；',
+    announceStep: (n, title) => `第 ${n} 步：${title}`,
+    hint: '平板上左右滑動切換步驟；鍵盤 ← → 或 PageUp / PageDown',
+  },
   andon: {
     type: { maintenance: '維修', material: '缺料', quality: '品質', supervisor: '主管' },
     normal: '正常',
@@ -2386,6 +2436,31 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  workInstruction: {
+    label: 'Work instruction',
+    progress: (n, total) => `Step ${n} of ${total}`,
+    progressLabel: 'Progress',
+    stepsLabel: 'Steps',
+    total: (time) => `Total ${time}`,
+    stepTime: (time) => `This step ${time}`,
+    stepButton: (n, title, done) => `Step ${n}: ${title}${done ? ' (done)' : ''}`,
+    caution: 'Caution',
+    pass: 'Pass',
+    fail: 'Out of spec',
+    range: (lo, hi) => `Spec ${lo} – ${hi}`,
+    min: (lo) => `At least ${lo}`,
+    max: (hi) => `At most ${hi}`,
+    prev: 'Previous',
+    next: 'Next',
+    finish: 'Finish',
+    finished: 'All done',
+    doneTitle: (time) => `All done in ${time}`,
+    restart: 'Start over',
+    block: { confirm: 'Please confirm first', measure: 'Please enter the measurement', outOfSpec: 'Measurement is out of spec', wait: (s) => `Please review for ${s} more seconds` },
+    sep: '; ',
+    announceStep: (n, title) => `Step ${n}: ${title}`,
+    hint: 'Swipe left or right on a tablet; keyboard ← → or PageUp / PageDown',
+  },
   andon: {
     type: { maintenance: 'Maintenance', material: 'Material', quality: 'Quality', supervisor: 'Supervisor' },
     normal: 'Normal',
