@@ -48,6 +48,12 @@
   （例如以目標值為中心），色階用 CSS `color-mix` 在主題色之間混色，亮 / 暗主題自動正確。放不下的方塊不放文字，文字有底色描邊。
   鍵盤：方向鍵依位置移動、Enter 往下、Esc / Backspace 回上層並把焦點放回原本那塊；附隱藏的資料表。
   新增 `charts/utils/treemap.ts`、語系群組 `treemap` 與文件頁「矩形樹圖」。
+- **ScatterChart 散佈圖與迴歸**（charts）：看兩個變數的關係（爐溫與空焊率、錫膏厚度與良率）。分類用不同顏色、圖例可顯示 / 隱藏；
+  直線迴歸 `regression`：`'all'`（全部一條虛線）/ `'category'`（每個分類一條）/ `'none'`，顯示迴歸式、R²、n；
+  `showBand` 畫平均反應的 95% 信賴帶（t 分配）。拖曳框選 → `select` 事件，沒選到的點變淡並顯示選取數與平均；點一個點 → `point-click`。
+  點數超過 `canvasThreshold`（預設 3000）時改畫在 Canvas，滑過與框選照常，主題切換時重畫；觸控時上下滑動仍可捲動頁面。
+  附隱藏的迴歸統計表給螢幕閱讀器。新增 `charts/utils/scatter.ts`（`linearRegression`、`regressionBand`、`tQuantile975`）、
+  語系群組 `scatter` 與文件頁「散佈圖與迴歸」。
 - **ChptDiffViewer 參數比對**：比對兩組巢狀參數（配方 A / B、機台設定修改前後）。巢狀物件與陣列攤平成路徑比對，
   狀態分為變更、新增、刪除、容許內（數值差在 `tolerance` 內）與相同；數值顯示差值與百分比。`tolerances` / `units` 依路徑設定
   （`oven.zones[*].temp`、`conveyor.*`），`labels` 給路徑顯示名稱。樹狀顯示（只有一個子節點的群組併成一列，例如 `[1].temp`），
