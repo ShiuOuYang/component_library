@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ScatterChart 散佈圖與迴歸**（charts）：看兩個變數的關係（爐溫與空焊率、錫膏厚度與良率）。分類用不同顏色、圖例可顯示 / 隱藏；
+  直線迴歸 `regression`：`'all'`（全部一條虛線）/ `'category'`（每個分類一條）/ `'none'`，顯示迴歸式、R²、n；
+  `showBand` 畫平均反應的 95% 信賴帶（t 分配）。拖曳框選 → `select` 事件，沒選到的點變淡並顯示選取數與平均；點一個點 → `point-click`。
+  點數超過 `canvasThreshold`（預設 3000）時改畫在 Canvas，滑過與框選照常，主題切換時重畫；觸控時上下滑動仍可捲動頁面。
+  附隱藏的迴歸統計表給螢幕閱讀器。新增 `charts/utils/scatter.ts`（`linearRegression`、`regressionBand`、`tQuantile975`）、
+  語系群組 `scatter` 與文件頁「散佈圖與迴歸」。
 - **ChptImageCompare 影像比對**：比對兩張同視野的影像（標準樣品與待測品、修改前後）。三種方式（`v-model:mode`）：
   滑桿（拖分隔線，`v-model:position`；沒放大時拖任何地方都會移動分隔線）、並排、疊圖（`v-model:opacity`，`v-model:difference`
   用差異混合：相同處變黑、缺件偏移發亮）。三種方式與並排兩格共用同一個縮放與位置 —— 縮放以「相對倍數 + 畫面中心的影像座標」記錄，

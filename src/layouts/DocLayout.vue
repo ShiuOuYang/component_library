@@ -567,6 +567,10 @@ const navSections = [
         anchors: [{ label: '良率損失', id: 'yield' }, { label: '小計與成本', id: 'subtotal' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/scatter-chart', icon: '⚬', label: '散佈圖與迴歸',
+        anchors: [{ label: '分類與迴歸', id: 'basic' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },
