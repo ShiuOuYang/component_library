@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptApprovalFlow 簽核流程**：工程變更、異常處理單、採購單的簽核進度與簽核動作（v-model：`ApprovalFlowData`）。
+  關卡依序進行；多人關卡可以是會簽（`mode: 'all'`，全部同意）或或簽（`'any'`，一人同意即可），任一人退回整份退回、後面的關卡不需簽核。
+  每一關顯示花了 / 已經等了多久，超過 `slaHours` 標示逾時。委託（代理）：簽核人把這一關交給別人，由代理人決定。
+  輪到 `operator`（或他是代理人）時出現簽核區：意見、同意、退回（`requireRejectComment` 時要寫原因）、委託（從 `delegates` 選，
+  排除自己與這一關已經在簽的人）；送出 `approve` / `reject` / `delegate` 事件。新增 `shared/approval.ts` 與語系群組 `approval`。
 - **ScatterChart 散佈圖與迴歸**（charts）：看兩個變數的關係（爐溫與空焊率、錫膏厚度與良率）。分類用不同顏色、圖例可顯示 / 隱藏；
   直線迴歸 `regression`：`'all'`（全部一條虛線）/ `'category'`（每個分類一條）/ `'none'`，顯示迴歸式、R²、n；
   `showBand` 畫平均反應的 95% 信賴帶（t 分配）。拖曳框選 → `select` 事件，沒選到的點變淡並顯示選取數與平均；點一個點 → `point-click`。
