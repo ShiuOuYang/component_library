@@ -296,6 +296,34 @@
       </p>
     </section>
 
+    <!-- ============ ChptWorkInstruction ============ -->
+    <section id="chpt-work-instruction" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptWorkInstruction 作業指導書</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>現場一步一步照著做 —— 換線、設備保養、首件檢驗、組裝。每一步有圖片（可加編號標記）、說明、注意事項與規格；
+        要勾選確認或輸入量測值（超出上下限不能下一步）才能前進，<code>minSeconds</code> 可要求至少停留幾秒。完成的步驟可以回去看，未完成的不能跳過。
+        平板上左右滑動切換。紀錄（每一步的時間、量測值）用 <code>v-model:record</code> 保存，中斷後可以接著做；完成時送出 <code>complete</code>。
+        ChptChecklist 是一張表一次填完；這裡是有順序、有圖的步驟。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptWorkInstruction } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptWorkInstruction
+          v-model:record="wiRecord"
+          v-model:current="wiCurrent"
+          :steps="wiSteps"
+          title="SMT 換線 SOP（PCB-A12 → B07）"
+          @complete="(s) => toast.success(`換線完成，共 ${Math.round(s.durationMs / 1000)} 秒`)"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="wiSample" />
+      <ApiTable of="ChptWorkInstruction" title="Props" :rows="wiProps" />
+      <ApiTable of="-" title="WiStep" :rows="wiDataRows" />
+      <ApiTable of="ChptWorkInstruction" title="Events" :rows="wiEvents" />
+      <ApiTable of="ChptWorkInstruction" title="方法（ref）" :rows="wiMethods" />
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -351,6 +379,8 @@ import {
   ChptRichTextEditor,
   ChptSignaturePad,
   ChptChecklist,
+  ChptWorkInstruction,
+  useToast,
   ChptInput,
   ChptSelect,
   ChptInputNumber,
@@ -874,5 +904,102 @@ const uploadMethods = [
   { name: 'submit', params: '() => Promise<boolean>', desc: '上傳所有還沒上傳（或失敗）的檔案' },
   { name: 'open', params: '()', desc: '開啟檔案選擇' },
   { name: 'addFiles', params: '(files: File[])', desc: '以程式加入（例如從剪貼簿貼上）' },
+]
+const toast = useToast()
+
+// ---- ChptWorkInstruction ----
+/** 示意圖（SVG）：一個機台面板與幾個零件 */
+const wiSvg = (accent, extra = '') =>
+  `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="300" viewBox="0 0 640 300">
+<rect width="640" height="300" fill="#e5e7eb"/><rect x="40" y="40" width="560" height="220" rx="12" fill="#9ca3af"/>
+<rect x="80" y="80" width="160" height="140" rx="8" fill="#374151"/><rect x="280" y="90" width="120" height="60" rx="6" fill="${accent}"/>
+<circle cx="480" cy="120" r="34" fill="#1f2937"/><circle cx="480" cy="120" r="12" fill="#d1d5db"/>
+<rect x="280" y="180" width="280" height="24" rx="4" fill="#4b5563"/>${extra}</svg>`)}`
+const wiSteps = [
+  {
+    id: 'w1',
+    title: '停機並掛上警示牌',
+    body: '按下面板上的「停止」，確認輸送帶完全停止後，在操作面板掛上「換線中」警示牌。',
+    image: wiSvg('#dc2626'),
+    marks: [{ x: 0.53, y: 0.4, label: '停止按鈕' }, { x: 0.25, y: 0.5, label: '操作面板（掛警示牌）' }],
+    cautions: ['輸送帶未完全停止前不可伸手進入', '需兩人確認'],
+    check: { kind: 'confirm', label: '已停機並掛上警示牌' },
+  },
+  {
+    id: 'w2',
+    title: '更換吸嘴',
+    body: '依新料號的吸嘴表更換 3、5、7 號吸嘴。',
+    image: wiSvg('#2563eb', '<g fill="#f59e0b"><circle cx="310" cy="192" r="8"/><circle cx="380" cy="192" r="8"/><circle cx="450" cy="192" r="8"/></g>'),
+    marks: [{ x: 0.48, y: 0.64 }, { x: 0.59, y: 0.64 }, { x: 0.7, y: 0.64 }],
+    specs: [{ label: '吸嘴型號', value: 'N-504 / N-506 / N-508' }],
+    check: { kind: 'confirm', label: '3 支吸嘴已更換並確認型號' },
+  },
+  {
+    id: 'w3',
+    title: '鎖緊固定螺絲並量測扭力',
+    body: '用扭力起子鎖緊吸嘴座的 4 顆固定螺絲，量測其中一顆的扭力並記錄。',
+    image: wiSvg('#16a34a', '<g fill="#111827"><circle cx="300" cy="100" r="6"/><circle cx="380" cy="100" r="6"/><circle cx="300" cy="140" r="6"/><circle cx="380" cy="140" r="6"/></g>'),
+    marks: [{ x: 0.47, y: 0.33 }, { x: 0.59, y: 0.33 }, { x: 0.47, y: 0.47 }, { x: 0.59, y: 0.47 }],
+    specs: [{ label: '扭力', value: '1.2 ± 0.1', unit: 'N·m' }, { label: '工具', value: '扭力起子 TD-12' }],
+    check: { kind: 'measure', label: '量測扭力', unit: 'N·m', lsl: 1.1, usl: 1.3, precision: 2 },
+  },
+  {
+    id: 'w4',
+    title: '載入新程式',
+    body: '在面板選擇程式 PCB-B07-R2，確認畫面上的料號與工單一致。',
+    specs: [{ label: '程式', value: 'PCB-B07-R2' }, { label: '工單', value: 'WO-2611-0051' }],
+    minSeconds: 5,
+    check: { kind: 'confirm', label: '程式與工單料號一致' },
+  },
+  {
+    id: 'w5',
+    title: '首件量測',
+    body: '生產第一片後，量測 C12 電容的錫膏高度。',
+    check: { kind: 'measure', label: 'C12 錫膏高度', unit: 'µm', lsl: 100, usl: 140, precision: 0 },
+  },
+  {
+    id: 'w6',
+    title: '取下警示牌、恢復生產',
+    check: { kind: 'confirm', label: '已取下警示牌並通知組長' },
+  },
+]
+const wiRecord = ref({})
+const wiCurrent = ref(0)
+const wiSample = `<ChptWorkInstruction
+  v-model:record="record"
+  v-model:current="current"
+  :steps="[
+    { id: 'w1', title: '停機並掛上警示牌', image: '/sop/stop.png', marks: [{ x: 0.53, y: 0.4, label: '停止按鈕' }],
+      cautions: ['輸送帶未完全停止前不可伸手進入'], check: { kind: 'confirm', label: '已停機並掛上警示牌' } },
+    { id: 'w3', title: '量測扭力', specs: [{ label: '扭力', value: '1.2 ± 0.1', unit: 'N·m' }],
+      check: { kind: 'measure', label: '量測扭力', unit: 'N·m', lsl: 1.1, usl: 1.3, precision: 2 } },
+    { id: 'w4', title: '載入新程式', minSeconds: 5, check: { kind: 'confirm', label: '程式與工單一致' } },
+  ]"
+  title="SMT 換線 SOP"
+  @complete="(summary) => api.saveRecord(summary)"
+/>`
+const wiProps = [
+  { name: 'steps', type: 'WiStep[]', def: '—', desc: '步驟' },
+  { name: 'v-model:record', type: 'Record<stepId, WiStepRecord>', def: '{}', desc: '每一步的紀錄（開始 / 完成時間、確認、量測值、是否合格）；存起來中斷後可以接著做' },
+  { name: 'v-model:current', type: 'number', def: '0', desc: '目前第幾步（0 起算）' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只看（不能勾選、輸入、前進）' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '計時用的現在時間；不給時每秒更新' },
+]
+const wiDataRows = [
+  { name: 'WiStep', type: '{ id, title, body?, image?, imageAlt?, marks?, cautions?, specs?, check?, minSeconds? }', def: '—', desc: 'marks：圖片上的編號標記 { x, y（0–1）, label? }；specs：{ label, value, unit? }' },
+  { name: 'check（確認）', type: "{ kind: 'confirm', label }", def: '—', desc: '勾選後才能下一步' },
+  { name: 'check（量測）', type: "{ kind: 'measure', label, unit?, lsl?, usl?, precision? }", def: '—', desc: '輸入量測值，在上下限內才能下一步' },
+  { name: 'minSeconds', type: 'number', def: '—', desc: '至少停留幾秒（避免沒看就跳過）' },
+]
+const wiEvents = [
+  { name: 'update:record', params: '(record)', desc: '紀錄改變' },
+  { name: 'update:current', params: '(index: number)', desc: '切換步驟' },
+  { name: 'complete', params: '(summary: WiSummary)', desc: '最後一步完成：開始 / 完成時間、總時間、每一步的時間與量測值' },
+]
+const wiMethods = [
+  { name: 'next() / prev() / go(i)', type: '—', desc: '前進（要符合條件）、上一步、跳到某一步（只能到已完成或第一個未完成的）' },
+  { name: 'restart()', type: '() => void', desc: '清除紀錄、從頭開始' },
+  { name: 'summary', type: 'WiSummary', desc: '目前的摘要' },
 ]
 </script>

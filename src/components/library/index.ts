@@ -41,6 +41,7 @@ export {
   ChptDiffViewer,
   ChptChecklist,
   ChptFeederMap,
+  ChptWorkInstruction,
   ChptSignaturePad,
   ChptNumpad,
 } from './ui/index.js'
@@ -97,6 +98,8 @@ export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, a
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
 export { parseReelCode, matchesSlot as feederMatchesSlot, feederSummary, boardsLeft as feederBoardsLeft } from './shared/feeder'
 export type { FeederSlot, FeederReel, FeederLoad, FeederLoads, FeederLogEntry, FeederStock, FeederSummary } from './shared/feeder'
+export { blockers as workInstructionBlockers, summarize as summarizeWorkInstruction, inSpec } from './shared/workInstruction'
+export type { WiStep, WiMark, WiSpec, WiCheck, WiStepRecord, WiRecord, WiBlock, WiSummary } from './shared/workInstruction'
 export { DEFAULT_ANDON_TYPES, DEFAULT_ANDON_THRESHOLDS, callStatus as andonCallStatus, callLevel as andonCallLevel, raiseCall as raiseAndonCall, respondCall as respondAndonCall, resolveCall as resolveAndonCall } from './shared/andon'
 export type { AndonCallType, AndonStation, AndonCall, AndonStatus, AndonLevel, AndonThresholds } from './shared/andon'
 export { computePivot, moveField as movePivotField, PIVOT_AGGS } from './shared/pivot'
