@@ -158,6 +158,14 @@ const routes = [
         },
       },
       {
+        path: "components/scatter-chart",
+        name: "ScatterChartDoc",
+        component: () => import("../views/docs/ScatterChartDoc.vue"),
+        meta: {
+          title: "散佈圖與迴歸",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),

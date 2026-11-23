@@ -860,6 +860,22 @@ export interface ChptLocale {
     outflow: (v: string) => string
     share: (source: string, pct: string) => string
   }
+  scatter: {
+    title: string
+    empty: string
+    legend: string
+    point: string
+    all: string
+    group: string
+    equation: string
+    clearSelection: string
+    selected: (n: number, meanX: string, meanY: string) => string
+    axisTitle: (label: string, unit: string) => string
+    fitText: (group: string | null, equation: string, r2: string, n: number) => string
+    tipLine: (name: string, value: string) => string
+    statsCaption: (title: string) => string
+    ariaLabel: (title: string, n: number, x: string, y: string, fits: string[]) => string
+  }
   radar: {
     title: string
     empty: string
@@ -1840,6 +1856,22 @@ export const zhTW: ChptLocale = {
     inflow: (v) => `流入 ${v}`,
     outflow: (v) => `流出 ${v}`,
     share: (source, pct) => `佔 ${source} 流出的 ${pct}`,
+  },
+  scatter: {
+    title: '散佈圖',
+    empty: '沒有資料',
+    legend: '分類',
+    point: '資料點',
+    all: '全部',
+    group: '分組',
+    equation: '迴歸式',
+    clearSelection: '取消選取',
+    selected: (n, mx, my) => `已選取 ${n} 點（平均 ${mx}，${my}）`,
+    axisTitle: (label, unit) => (label && unit ? `${label}（${unit}）` : label || unit),
+    fitText: (g, eq, r2, n) => `${g ? `${g}：` : ''}${eq}，R² = ${r2}，n = ${n}`,
+    tipLine: (name, value) => `${name}：${value}`,
+    statsCaption: (title) => `${title}的迴歸統計`,
+    ariaLabel: (title, n, x, y, fits) => `${title}：${n} 個點，X 軸 ${x}、Y 軸 ${y}${fits.length ? `；${fits.join('、')}` : ''}`,
   },
   radar: {
     title: '雷達圖',
@@ -2828,6 +2860,22 @@ export const enUS: ChptLocale = {
     inflow: (v) => `In ${v}`,
     outflow: (v) => `Out ${v}`,
     share: (source, pct) => `${pct} of ${source} outflow`,
+  },
+  scatter: {
+    title: 'Scatter plot',
+    empty: 'No data',
+    legend: 'Categories',
+    point: 'Point',
+    all: 'All',
+    group: 'Group',
+    equation: 'Equation',
+    clearSelection: 'Clear selection',
+    selected: (n, mx, my) => `${n} point${n === 1 ? '' : 's'} selected (mean ${mx}, ${my})`,
+    axisTitle: (label, unit) => (label && unit ? `${label} (${unit})` : label || unit),
+    fitText: (g, eq, r2, n) => `${g ? `${g}: ` : ''}${eq}, R² = ${r2}, n = ${n}`,
+    tipLine: (name, value) => `${name}: ${value}`,
+    statsCaption: (title) => `${title} regression statistics`,
+    ariaLabel: (title, n, x, y, fits) => `${title}: ${n} points, X axis ${x}, Y axis ${y}${fits.length ? `; ${fits.join(', ')}` : ''}`,
   },
   radar: {
     title: 'Radar chart',
