@@ -310,6 +310,40 @@
       <ApiTable of="ChptAlarmCenter" title="Slots" :rows="alarmSlots" />
       <ApiTable of="ChptAlarmCenter" title="方法（ref）" :rows="alarmMethods" />
     </section>
+
+    <!-- ============ ChptApprovalFlow ============ -->
+    <section id="chpt-approval-flow" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptApprovalFlow 簽核流程</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>工程變更（ECN）、異常處理單、採購單的簽核進度與簽核動作。關卡依序進行；多人關卡可以是
+        <strong>會簽</strong>（全部同意）或<strong>或簽</strong>（一人同意即可），任一人退回整份退回。每一關顯示花了 / 已經等了多久，
+        超過 <code>slaHours</code> 標示逾時。簽核人可以<strong>委託</strong>給別人代理。輪到 <code>operator</code>（或他是代理人）時，
+        該關卡下方出現簽核區：意見、同意、退回（退回要寫原因）、委託。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptApprovalFlow } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-3">
+          <span class="text-sm text-content-secondary">以誰的身分檢視：</span>
+          <ChptSegmented v-model="approvalOperator" :options="approvalOperators" aria-label="檢視身分" size="xs" />
+          <ChptButton size="xs" is-outline icon="restart_alt" @click="approvalFlow = makeApprovalFlow()">重設</ChptButton>
+        </div>
+        <ChptApprovalFlow
+          v-model="approvalFlow"
+          :operator="approvalOperator"
+          :delegates="approvalDelegates"
+          @approve="() => toast.success('已同意（送出到後端）')"
+          @reject="() => toast.warning('已退回')"
+          @delegate="(p) => toast.info(`已委託給 ${p.to.name}`)"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="approvalSample" />
+      <ApiTable of="ChptApprovalFlow" title="Props" :rows="approvalProps" />
+      <ApiTable of="-" title="ApprovalFlowData / ApprovalStep / Approver" :rows="approvalDataRows" />
+      <ApiTable of="ChptApprovalFlow" title="Events" :rows="approvalEvents" />
+      <ApiTable of="ChptApprovalFlow" title="方法（ref）" :rows="approvalMethods" />
+    </section>
   </div>
 </template>
 
@@ -329,6 +363,8 @@ import {
   ChptEquipmentWall,
   ChptFloorPlan,
   ChptAlarmCenter,
+  ChptApprovalFlow,
+  ChptSegmented,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -457,6 +493,70 @@ import { useToast } from '@/components/library'
 
 /** 文件示範的事件回饋（DocLayout 掛了全域 ChptToast） */
 const toast = useToast()
+
+// ---- ChptApprovalFlow ----
+const hoursAgo = (h) => Date.now() - h * 3_600_000
+const makeApprovalFlow = () => ({
+  submittedAt: hoursAgo(30),
+  submitter: '張工程師',
+  steps: [
+    { id: 's1', name: '申請單位主管', approvers: [{ id: 'u-lee', name: '李組長', title: 'SMT 組長', status: 'approved', actedAt: hoursAgo(27), comment: '同意，請製程確認回焊曲線。' }], slaHours: 8 },
+    {
+      id: 's2',
+      name: '製程 / 品保會簽',
+      mode: 'all',
+      slaHours: 24,
+      approvers: [
+        { id: 'u-chen', name: '陳工程師', title: '製程', status: 'approved', actedAt: hoursAgo(20) },
+        { id: 'u-wu', name: '吳課長', title: '品保', delegatedTo: { id: 'u-lin', name: '林副課長', title: '品保' }, delegatedAt: hoursAgo(10) },
+        { id: 'u-huang', name: '黃工程師', title: '設備' },
+      ],
+    },
+    { id: 's3', name: '廠長核准', mode: 'any', approvers: [{ id: 'u-ho', name: '何廠長' }, { id: 'u-tsai', name: '蔡副廠長' }], slaHours: 8 },
+  ],
+})
+const approvalFlow = ref(makeApprovalFlow())
+const approvalOperator = ref('u-huang')
+const approvalOperators = [
+  { label: '黃工程師（待簽）', value: 'u-huang' },
+  { label: '林副課長（代理）', value: 'u-lin' },
+  { label: '何廠長', value: 'u-ho' },
+  { label: '訪客', value: 'guest' },
+]
+const approvalDelegates = [
+  { id: 'u-kao', name: '高工程師', title: '設備' },
+  { id: 'u-lin', name: '林副課長', title: '品保' },
+  { id: 'u-ho', name: '何廠長' },
+]
+const approvalSample = `<ChptApprovalFlow v-model="flow" :operator="user.id" :delegates="colleagues" @approve="api.approve" @reject="api.reject" @delegate="api.delegate" />
+
+// flow：
+// { submittedAt: '2026-11-22T09:00', submitter: '張工程師', steps: [
+//   { id: 's1', name: '申請單位主管', approvers: [{ id: 'u-lee', name: '李組長', status: 'approved', actedAt: … }], slaHours: 8 },
+//   { id: 's2', name: '製程 / 品保會簽', mode: 'all', approvers: [{ id: 'u-chen', name: '陳工程師' }, { id: 'u-wu', name: '吳課長' }] },
+//   { id: 's3', name: '廠長核准', mode: 'any', approvers: [{ id: 'u-ho', name: '何廠長' }, { id: 'u-tsai', name: '蔡副廠長' }] },
+// ] }`
+const approvalProps = [
+  { name: 'v-model', type: 'ApprovalFlowData', def: '—', desc: '整份流程資料；簽核動作直接改這份資料' },
+  { name: 'operator', type: 'string', def: "''", desc: '目前操作的人（id）；輪到他（或他是代理人）時顯示簽核區' },
+  { name: 'delegates', type: '{ id, name, title? }[]', def: '[]', desc: '可以委託的人（自動排除自己與同一關的簽核人）' },
+  { name: 'requireRejectComment', type: 'boolean', def: 'true', desc: '退回時一定要寫原因' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只顯示進度，不顯示簽核區' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '計算等待時間用的現在時間；不給時每分鐘更新' },
+  { name: 'label', type: 'string', def: '語系', desc: '區塊名稱（螢幕閱讀器）' },
+]
+const approvalDataRows = [
+  { name: 'ApprovalFlowData', type: '{ submittedAt, submitter?, steps }', def: '—', desc: '送出時間、送出者、關卡' },
+  { name: 'ApprovalStep', type: '{ id, name, mode?, approvers, slaHours? }', def: '—', desc: "mode：'single' | 'all'（會簽）| 'any'（或簽）；多人時預設 all" },
+  { name: 'Approver', type: '{ id, name, title?, status?, actedAt?, comment?, delegatedTo?, delegatedAt? }', def: '—', desc: "status：'pending' | 'approved' | 'rejected'；委託時記的是代理人的決定" },
+]
+const approvalEvents = [
+  { name: 'update:modelValue', params: '(flow: ApprovalFlowData)', desc: '簽核後的流程資料（v-model）' },
+  { name: 'approve', params: '({ stepId, approverId, comment })', desc: '同意' },
+  { name: 'reject', params: '({ stepId, approverId, comment })', desc: '退回' },
+  { name: 'delegate', params: '({ stepId, approverId, to })', desc: '委託' },
+]
+const approvalMethods = [{ name: 'acting', type: '{ stepIndex, approver } | null', desc: '目前輪到 operator 簽的關卡與簽核人' }]
 
 // ---- ChptAlarmCenter ----
 const alarms = ref([

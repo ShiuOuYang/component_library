@@ -30,6 +30,7 @@ export {
   ChptImageCompare,
   ChptEquipmentWall,
   ChptAlarmCenter,
+  ChptApprovalFlow,
   ChptShiftRoster,
   ChptFloorPlan,
   ChptLogViewer,
@@ -90,6 +91,8 @@ export { fitImage, clampImageView, zoomImageTo, viewOf as imageViewOf, zoomOf as
 export type { ImageView, ImageZoom, CompareMode } from './shared/imageCompare'
 export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
+export { stepStatuses as approvalStepStatuses, flowStatus as approvalFlowStatus, stepDuration as approvalStepDuration, actingApprover, act as approvalAct, delegate as approvalDelegate } from './shared/approval'
+export type { ApprovalFlowData, ApprovalStep, Approver, Delegate as ApprovalDelegate, StepMode as ApprovalStepMode, StepStatus as ApprovalStepStatus, FlowStatus as ApprovalFlowStatus, ApproverStatus, ApprovalAction } from './shared/approval'
 export { diffParams, flattenParams, buildDiffTree, countDiff, toleranceFor, DIFF_STATUSES } from './shared/paramDiff'
 export type { ParamValue, ParamObject, LeafValue, DiffStatus, DiffRow, DiffCounts, DiffTreeNode, ToleranceMap } from './shared/paramDiff'
 export { parseLogLine, compileSearch as compileLogSearch, filterLogs, countLevels as countLogLevels, formatLogLine, formatLogTime, LOG_LEVELS } from './shared/logViewer'

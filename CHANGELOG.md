@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptApprovalFlow 簽核流程**：工程變更、異常處理單、採購單的簽核進度與簽核動作（v-model：`ApprovalFlowData`）。
+  關卡依序進行；多人關卡可以是會簽（`mode: 'all'`，全部同意）或或簽（`'any'`，一人同意即可），任一人退回整份退回、後面的關卡不需簽核。
+  每一關顯示花了 / 已經等了多久，超過 `slaHours` 標示逾時。委託（代理）：簽核人把這一關交給別人，由代理人決定。
+  輪到 `operator`（或他是代理人）時出現簽核區：意見、同意、退回（`requireRejectComment` 時要寫原因）、委託（從 `delegates` 選，
+  排除自己與這一關已經在簽的人）；送出 `approve` / `reject` / `delegate` 事件。新增 `shared/approval.ts` 與語系群組 `approval`。
 - **TreemapChart 矩形樹圖**（charts）：階層的組成（不良依「廠 → 線 → 站 → 代碼」、成本依「部門 → 科目」）。面積是數量；
   點有子節點的方塊往下鑽，麵包屑回上層（`v-model:path`），最底層送出 `node-click`；`levels="2"` 一次看兩層（第一層有標題列）。
   `colorBy="group"` 每個子節點一個類別色，`"metric"` 依 `metric` 上色（群組依 value 加權平均）；`metricCenter` 設定時為發散色階
