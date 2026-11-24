@@ -381,6 +381,47 @@
       </p>
     </section>
 
+    <!-- ============ ChptScheduler ============ -->
+    <section id="chpt-scheduler" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptScheduler 週 / 日行事曆</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>設備預約、會議室、保養排程。週檢視看 7 天、日檢視可依<strong>資源</strong>（機台、會議室、人）分欄；時間重疊的事件自動並排。
+        空白處拖曳建立（送出 <code>create</code>，由你決定要不要新增、要不要先開表單）、拖曳事件移動（可換天 / 換資源）、拉下緣調整長度，都會吸附到 15 分鐘；
+        同一資源時間重疊標 ⚠。點週檢視的日期可跳到那天的日檢視。紅線是現在時間。
+        鍵盤：Tab 到事件後方向鍵上下移動、左右換天 / 換資源、Shift + 上下調整長度、Delete 刪除。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptScheduler } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-content-secondary">
+          <ChptSwitch v-model="schedByResource" label="日檢視依機台分欄" />
+        </div>
+        <ChptScheduler
+          v-model:events="schedEvents"
+          v-model:view="schedView"
+          :resources="schedByResource ? schedResources : []"
+          :day-start="6"
+          :day-end="22"
+          :height="460"
+          @create="schedCreate"
+          @change="({ event, kind }) => (schedLog = `${event.title} ${kind === 'move' ? '移到' : '改為'} ${schedTime(event.start)} – ${schedTime(event.end)}`)"
+          @delete="(e) => ((schedEvents = schedEvents.filter((x) => x.id !== e.id)), (schedLog = `刪除 ${e.title}`))"
+          @select="(e) => (schedLog = `選取 ${e.title}`)"
+        />
+        <p class="mt-2 text-xs text-content-secondary" aria-live="polite">{{ schedLog || '（建立、移動、調整時顯示）' }}</p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="schedSample" />
+      <ApiTable of="ChptScheduler" title="Props" :rows="schedProps" />
+      <ApiTable of="-" title="SchedEvent / SchedResource" :rows="schedDataRows" />
+      <ApiTable of="ChptScheduler" title="Events" :rows="schedEmits" />
+      <ApiTable of="ChptScheduler" title="方法（ref）" :rows="schedMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>時間一律用瀏覽器的本地時區；<code>start</code> / <code>end</code> 可以是毫秒、ISO 字串或 Date，元件改過的事件會回傳毫秒。
+        跨午夜的事件會在兩天各畫一段。衝突只標示不阻止 —— 要不要允許重疊由使用端在 <code>change</code> 裡決定（可以把 <code>v-model:events</code> 改回原值）。
+      </p>
+    </section>
+
     <!-- ============ ChptSkillMatrix ============ -->
     <section id="chpt-skill-matrix" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSkillMatrix 技能矩陣</h2>
@@ -432,6 +473,7 @@ import {
   ChptSwitch,
   ChptShiftRoster,
   ChptSkillMatrix,
+  ChptScheduler,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -504,6 +546,91 @@ const rosterEvents = [
 const rosterMethods = [
   { name: 'shortages()', type: '() => { date, code, have, need }[]', desc: '目前人力不足的格子' },
   { name: 'warnings()', type: '() => RosterWarning[]', desc: '目前的規則提醒（休息不足、連續上班）' },
+]
+
+// ---- ChptScheduler ----
+const schedMonday = (() => {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7))
+  return d.getTime()
+})()
+const schedAt = (day, h, m = 0) => schedMonday + day * 86_400_000 + (h * 60 + m) * 60_000
+const schedResources = [
+  { id: 'smt1', name: 'SMT 一線', color: 'rgb(var(--t-chart-1))' },
+  { id: 'smt2', name: 'SMT 二線', color: 'rgb(var(--t-chart-2))' },
+  { id: 'aoi', name: 'AOI', color: 'rgb(var(--t-chart-3))' },
+  { id: 'reflow', name: '迴焊爐', color: 'rgb(var(--t-chart-4))' },
+]
+const schedEvents = ref([
+  { id: 'e1', title: '鋼板更換', start: schedAt(0, 8), end: schedAt(0, 9, 30), resource: 'smt1' },
+  { id: 'e2', title: '新機種試產', start: schedAt(0, 9), end: schedAt(0, 12), resource: 'smt2' },
+  { id: 'e3', title: 'AOI 程式調整', start: schedAt(0, 10), end: schedAt(0, 11), resource: 'aoi' },
+  { id: 'e4', title: '爐溫量測', start: schedAt(1, 7, 30), end: schedAt(1, 8, 30), resource: 'reflow' },
+  { id: 'e5', title: '吸嘴保養', start: schedAt(1, 13), end: schedAt(1, 15), resource: 'smt1' },
+  { id: 'e6', title: '客戶稽核', start: schedAt(1, 14), end: schedAt(1, 16), resource: 'smt1' },
+  { id: 'e7', title: '月保養（鎖定）', start: schedAt(2, 6), end: schedAt(2, 10), resource: 'reflow', locked: true },
+  { id: 'e8', title: '換線 A→B', start: schedAt(3, 12), end: schedAt(3, 13), resource: 'smt2' },
+  { id: 'e9', title: '夜班試跑', start: schedAt(4, 20), end: schedAt(5, 2), resource: 'smt1' },
+])
+const schedView = ref('week')
+const schedByResource = ref(true)
+const schedLog = ref('')
+let schedSeq = 10
+const schedTime = (t) => {
+  const d = new Date(t)
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+function schedCreate({ start, end, resource }) {
+  const id = `e${schedSeq++}`
+  schedEvents.value = [...schedEvents.value, { id, title: `新預約 ${id}`, start, end, resource: resource ?? 'smt1' }]
+  schedLog.value = `建立 ${schedTime(start)} – ${schedTime(end)}`
+}
+const schedSample = `<ChptScheduler
+  v-model:events="events"
+  v-model:view="view"
+  :resources="machines"
+  :day-start="6"
+  :day-end="22"
+  @create="({ start, end, resource }) => openBookingForm({ start, end, resource })"
+  @change="({ event, previous, kind }) => save(event)"
+  @delete="(e) => remove(e.id)"
+/>
+
+// events：{ id, title, start, end, resource?, color?, locked? }[]
+// resources：{ id, name, color? }[]（日檢視依資源分欄）`
+const schedProps = [
+  { name: 'events', type: 'SchedEvent[]', def: '[]', desc: '事件（v-model:events；移動 / 調整後回傳新陣列）' },
+  { name: 'view', type: "'week' | 'day'", def: "'week'", desc: '週 / 日檢視（v-model:view）' },
+  { name: 'date', type: 'number | string | Date | null', def: 'null（今天）', desc: '顯示哪一天（週檢視為它所在的週；v-model:date）' },
+  { name: 'resources', type: 'SchedResource[]', def: '[]', desc: '日檢視依資源分欄；週檢視用資源顏色' },
+  { name: 'dayStart / dayEnd', type: 'number', def: '0 / 24', desc: '可見時段（時）' },
+  { name: 'snapMinutes', type: 'number', def: '15', desc: '拖曳與鍵盤的吸附間隔（分鐘）' },
+  { name: 'defaultDuration', type: 'number', def: '60', desc: '點一下空白處建立的預設長度（分鐘）' },
+  { name: 'hourHeight', type: 'number', def: '48', desc: '一小時的高度（px）' },
+  { name: 'height', type: 'number | string', def: '520', desc: '時間格最大高度（超過可捲動）' },
+  { name: 'minColumnWidth', type: 'number', def: '96', desc: '每欄最小寬度（px；太窄時左右捲動，時間刻度固定在左側）' },
+  { name: 'weekStartsOn', type: '0 | 1', def: '1', desc: '一週從星期日（0）或星期一（1）開始' },
+  { name: 'initialHour', type: 'number', def: '8', desc: '一開始捲到幾點' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '「現在」（紅線與「今天」）；不給時用現在並每分鐘更新' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '唯讀：不能建立、移動、調整、刪除' },
+]
+const schedDataRows = [
+  { name: 'SchedEvent', type: '{ id, title, start, end, resource?, color?, locked? }', def: '—', desc: 'start / end 可為毫秒、ISO 字串或 Date；locked 不能拖曳 / 調整 / 刪除' },
+  { name: 'SchedResource', type: '{ id, name, color? }', def: '—', desc: '事件沒指定 color 時用資源顏色' },
+]
+const schedEmits = [
+  { name: 'update:events', params: '(events: SchedEvent[])', desc: '移動或調整後的新陣列' },
+  { name: 'update:view / update:date', params: "('week' | 'day') / (day: number)", desc: '切換檢視、上一段 / 下一段 / 今天' },
+  { name: 'create', params: '({ start, end, resource? })', desc: '空白處拖曳或點擊；元件不會自己新增' },
+  { name: 'change', params: "({ event, previous, kind: 'move' | 'resize' })", desc: '移動或調整一個事件' },
+  { name: 'select', params: '(event: SchedEvent)', desc: '點選事件' },
+  { name: 'delete', params: '(event: SchedEvent)', desc: '在事件上按 Delete / Backspace；由使用端刪除' },
+]
+const schedMethods = [
+  { name: 'scrollToHour(h)', type: '(h: number) => void', desc: '捲到某個小時' },
+  { name: 'goTo(date)', type: '(date: number) => void', desc: '跳到某天（所在的週）' },
+  { name: 'conflicts', type: 'string[]', desc: '同一資源時間重疊的事件 id' },
 ]
 
 // ---- ChptSkillMatrix ----

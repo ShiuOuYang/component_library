@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptScheduler 週 / 日行事曆**（ui）：設備預約、會議室、保養排程。週檢視 7 天、日檢視可依資源（`resources`）分欄；時間重疊的事件自動並排，
+  跨午夜的事件兩天各畫一段。空白處拖曳建立（emit `create`，由使用端決定是否新增）、拖曳事件移動（可換天 / 換資源）、拉下緣調整長度，
+  都吸附到 `snapMinutes`；同一資源時間重疊標 ⚠、`locked` 事件不能動。現在時間紅線、點週檢視日期跳到日檢視；鍵盤方向鍵移動、
+  Shift + 上下調整長度、Delete 送出 `delete`。`v-model:events` / `v-model:view` / `v-model:date`，expose `scrollToHour`、`goTo`、`conflicts`；
+  共用排版函式 `schedLayoutColumn`、`schedConflictsOf`、`schedWeekDays`。
 - **ChptJsonViewer JSON 檢視器**（ui）：看 API 回應、設定檔、記錄內容。樹狀展開 / 收合（`expandDepth`）、依型別上色；搜尋鍵或值並展開到符合的位置
   （上一個 / 下一個）；複製值、路徑（`rootName` → `response.data.items[3].name`）或全部；長陣列分段顯示（`pageSize`）、長字串截斷（`maxStringLength`）。
   給 `compare` 時標出新增、刪除、變更。鍵盤：↑↓ 移動、← → 收合 / 展開、C 複製值。另匯出 `diffJson`、`searchJson`、`jsonPathString`、`jsonType` 與型別。
