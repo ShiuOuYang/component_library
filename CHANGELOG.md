@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptScheduler 週 / 日行事曆**（ui）：設備預約、會議室、保養排程。週檢視 7 天、日檢視可依資源（`resources`）分欄；時間重疊的事件自動並排，
+  跨午夜的事件兩天各畫一段。空白處拖曳建立（emit `create`，由使用端決定是否新增）、拖曳事件移動（可換天 / 換資源）、拉下緣調整長度，
+  都吸附到 `snapMinutes`；同一資源時間重疊標 ⚠、`locked` 事件不能動。現在時間紅線、點週檢視日期跳到日檢視；鍵盤方向鍵移動、
+  Shift + 上下調整長度、Delete 送出 `delete`。`v-model:events` / `v-model:view` / `v-model:date`，expose `scrollToHour`、`goTo`、`conflicts`；
+  共用排版函式 `schedLayoutColumn`、`schedConflictsOf`、`schedWeekDays`。
 - **ChptCronInput 排程設定**（ui）：不用手寫 cron 也能設排程。選「每 N 分鐘 / 每小時 / 每天 / 每週 / 每月」再點選時間，或直接改 5 欄 cron 表達式，
   兩邊同步（簡易設定表達不了的切到「自訂」）；顯示可讀說明與接下來幾次執行時間（`showNext`），表達式錯誤時指出哪一欄。
   支援範圍、清單、間隔、月份與星期名稱，日與週同時限制時其一符合。另匯出 `parseCron`、`cronNextRuns`、`describeCron`、`isCronError` 與型別。

@@ -453,6 +453,7 @@ const navSections = [
           { label: 'ChptImageCompare', id: 'chpt-image-compare' },
           { label: 'ChptTimeScrubber', id: 'chpt-time-scrubber' },
           { label: 'ChptShiftRoster', id: 'chpt-shift-roster' },
+          { label: 'ChptScheduler', id: 'chpt-scheduler' },
           { label: 'ChptSkillMatrix', id: 'chpt-skill-matrix' },
         ],
       },
