@@ -223,6 +223,37 @@ export interface ChptLocale {
     collapse: (partNo: string) => string
     changes: { added: string; removed: string; qty: (from: string, to: string) => string }
   }
+  aql: {
+    title: string
+    lotSize: string
+    level: string
+    levelName: (level: string) => string
+    letter: (letter: string) => string
+    severity: string
+    severities: { normal: string; tightened: string; reduced: string }
+    enterLot: string
+    plans: string
+    class: string
+    classes: { critical: string; major: string; minor: string }
+    aqlFor: (cls: string) => string
+    sampleSize: string
+    defects: string
+    verdict: string
+    verdicts: { pending: string; accept: string; reject: string }
+    arrow: (letter: string, dir: string) => string
+    full: string
+    increase: (cls: string) => string
+    decrease: (cls: string) => string
+    inspected: string
+    inspectedPlus: string
+    inspectedMinus: string
+    reset: string
+    overall: { pending: string; accept: string; reject: string }
+    pendingDetail: (left: number) => string
+    acceptDetail: (n: number) => string
+    rejectDetail: (classes: string) => string
+    advice: { toTightened: string; toNormal: string; toReduced: string; discontinue: string }
+  }
   skillMatrix: {
     title: string
     empty: string
@@ -1557,6 +1588,42 @@ export const zhTW: ChptLocale = {
     expand: (partNo) => `展開 ${partNo}`,
     collapse: (partNo) => `收合 ${partNo}`,
     changes: { added: '新增', removed: '刪除', qty: (from, to) => `用量 ${from} → ${to}` },
+  },
+  aql: {
+    title: '抽樣檢驗',
+    lotSize: '批量',
+    level: '檢驗水準',
+    levelName: (level) => (String(level).startsWith('S') ? `特殊 ${level}` : `一般 ${level}`),
+    letter: (letter) => `樣本代字 ${letter}`,
+    severity: '檢驗',
+    severities: { normal: '正常', tightened: '加嚴', reduced: '減量' },
+    enterLot: '輸入批量（至少 2）後顯示抽樣方案',
+    plans: '各缺點等級的抽樣方案',
+    class: '缺點等級',
+    classes: { critical: '嚴重', major: '主要', minor: '次要' },
+    aqlFor: (cls) => `${cls} 的 AQL`,
+    sampleSize: '樣本數',
+    defects: '不良數',
+    verdict: '判定',
+    verdicts: { pending: '檢驗中', accept: '允收', reject: '拒收' },
+    arrow: (letter, dir) => `依箭頭${dir === 'up' ? '往上' : '往下'}用代字 ${letter}`,
+    full: '樣本數 ≥ 批量：全數檢驗',
+    increase: (cls) => `${cls} 不良數加一`,
+    decrease: (cls) => `${cls} 不良數減一`,
+    inspected: '已檢數量',
+    inspectedPlus: '已檢數量加一',
+    inspectedMinus: '已檢數量減一',
+    reset: '重新開始',
+    overall: { pending: '檢驗中', accept: '整批允收', reject: '整批拒收' },
+    pendingDetail: (left) => (Number(left) > 0 ? `還要檢 ${left} 個` : '已檢完樣本'),
+    acceptDetail: (n) => `已檢 ${n} 個，各等級不良數都在允收數以內`,
+    rejectDetail: (classes) => `${classes} 已達拒收數，可以停止檢驗`,
+    advice: {
+      toTightened: '最近 5 批內有 2 批拒收：依轉換規則改為加嚴檢驗',
+      toNormal: '依轉換規則可回到正常檢驗',
+      toReduced: '連續 10 批允收：生產穩定且主管同意時，可改為減量檢驗',
+      discontinue: '加嚴檢驗期間已累計 5 批拒收：停止檢驗，待供應商改善後再恢復',
+    },
   },
   skillMatrix: {
     title: '技能矩陣',
@@ -2966,6 +3033,42 @@ export const enUS: ChptLocale = {
     expand: (partNo) => `Expand ${partNo}`,
     collapse: (partNo) => `Collapse ${partNo}`,
     changes: { added: 'Added', removed: 'Removed', qty: (from, to) => `Qty ${from} → ${to}` },
+  },
+  aql: {
+    title: 'Acceptance sampling',
+    lotSize: 'Lot size',
+    level: 'Inspection level',
+    levelName: (level) => (String(level).startsWith('S') ? `Special ${level}` : `General ${level}`),
+    letter: (letter) => `Code letter ${letter}`,
+    severity: 'Inspection',
+    severities: { normal: 'Normal', tightened: 'Tightened', reduced: 'Reduced' },
+    enterLot: 'Enter the lot size (at least 2) to see the sampling plan',
+    plans: 'Sampling plan by defect class',
+    class: 'Class',
+    classes: { critical: 'Critical', major: 'Major', minor: 'Minor' },
+    aqlFor: (cls) => `AQL for ${cls}`,
+    sampleSize: 'Sample',
+    defects: 'Defects',
+    verdict: 'Result',
+    verdicts: { pending: 'In progress', accept: 'Accept', reject: 'Reject' },
+    arrow: (letter, dir) => `Arrow ${dir === 'up' ? 'up' : 'down'}: use code letter ${letter}`,
+    full: 'Sample ≥ lot size: inspect 100%',
+    increase: (cls) => `Add a ${cls} defect`,
+    decrease: (cls) => `Remove a ${cls} defect`,
+    inspected: 'Inspected',
+    inspectedPlus: 'Add one inspected',
+    inspectedMinus: 'Remove one inspected',
+    reset: 'Start over',
+    overall: { pending: 'In progress', accept: 'Lot accepted', reject: 'Lot rejected' },
+    pendingDetail: (left) => (Number(left) > 0 ? `${left} more to inspect` : 'Sample complete'),
+    acceptDetail: (n) => `${n} inspected; all classes within the acceptance number`,
+    rejectDetail: (classes) => `${classes} reached the rejection number; inspection can stop`,
+    advice: {
+      toTightened: '2 of the last 5 lots were rejected: switch to tightened inspection',
+      toNormal: 'Switching rules allow a return to normal inspection',
+      toReduced: '10 lots accepted in a row: switch to reduced inspection if production is steady and approved',
+      discontinue: '5 lots rejected under tightened inspection: discontinue inspection until the supplier improves',
+    },
   },
   skillMatrix: {
     title: 'Skill matrix',
