@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ProbabilityPlot 機率圖**（charts）：算 Cpk 前先確認分配。常態 / 對數常態 / Weibull（`v-model:distribution`），中位秩繪圖位置、
+  配適線與 95% 信賴帶（帶外的點標紅），Anderson-Darling 檢定的 p 值與判定（`alpha`），算法與 Minitab 預設相同。`series` 可多組比較；
+  統計表列出 N、平均 / 標準差（Weibull 為形狀 / 尺度）、AD、p 值。另匯出 `fitProbability`、`probabilityQuantile`、`normCdf`、`normInv`、
+  `andersonDarling` 與型別 `ProbabilityFit` 等。文件：新頁面「機率圖（常態檢定）」。
+
 - **ChptStorageMap 儲位圖**（ui）：倉庫 / 線邊倉的儲位配置與庫存。區 → 料架 → 層 → 格（缺的格位留空），依使用率、料號或效期上色（`v-model:mode`）；
   搜尋料號 / 品名 / 批號 / 儲位標出位置（`locate()` 可接掃描）。點儲位看明細；拖曳庫存或整格、或按「移動」再點目的儲位即可移庫
   （檢查停用與容量，`allowOverCapacity`），送出 `move` / `move-reject`。快到期（`warnDays`）與已過期標示；方向鍵在料架內移動。
