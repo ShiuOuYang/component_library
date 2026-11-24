@@ -566,6 +566,10 @@ const navSections = [
         ],
       },
       {
+        to: '/docs/components/probability-plot', icon: '📐', label: '機率圖（常態檢定）',
+        anchors: [{ label: '常態檢定', id: 'normal' }, { label: '比較分配', id: 'compare' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/box-plot-chart', icon: '📦', label: '箱型圖',
         anchors: [{ label: '箱型圖', id: 'basic' }, { label: '小提琴圖', id: 'violin' }, { label: '四分位數算法', id: 'minitab' }, { label: 'API', id: 'api' }],
       },

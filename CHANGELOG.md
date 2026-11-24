@@ -46,7 +46,10 @@
   點弧往下鑽、點中央或麵包屑回上層（`v-model:path`），最外圈送出 `node-click`。滑過時標出路徑、提示佔全部與佔上一層的比例；
   最內圈類別色、外圈沿用並漸淡；放得下的弧沿半徑放文字。鍵盤：← → 同一圈、↑ 往外、↓ 往內、Enter 往下、Esc 回上層。
   另匯出 `layoutSunburst` 與型別 `SunburstArc`。文件：新頁面「旭日圖」。
-
+- **ProbabilityPlot 機率圖**（charts）：算 Cpk 前先確認分配。常態 / 對數常態 / Weibull（`v-model:distribution`），中位秩繪圖位置、
+  配適線與 95% 信賴帶（帶外的點標紅），Anderson-Darling 檢定的 p 值與判定（`alpha`），算法與 Minitab 預設相同。`series` 可多組比較；
+  統計表列出 N、平均 / 標準差（Weibull 為形狀 / 尺度）、AD、p 值。另匯出 `fitProbability`、`probabilityQuantile`、`normCdf`、`normInv`、
+  `andersonDarling` 與型別 `ProbabilityFit` 等。文件：新頁面「機率圖（常態檢定）」。
 - **LineBalanceChart 線平衡圖**（charts）：山積圖（Yamazumi）。每站一根堆疊長條（作業元素依 `kinds` 分類上色），疊上節拍線（`takt`），
   超過的站標紅；摘要顯示瓶頸、平衡率、總工時、理論最少人數。多人站週期 = 工時 ÷ 人數。`draggable` 時可把作業元素拖到別站
   （即時重新堆疊，鍵盤也能拿起 / 換站 / 放下），送出 `v-model:elements` 與 `move`。另匯出 `lineBalanceLoads`、`lineBalanceSummary`、
