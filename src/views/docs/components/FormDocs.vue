@@ -401,6 +401,32 @@
       <ApiTable of="ChptQueryBuilder" title="方法（ref）" :rows="qbMethods" />
     </section>
 
+    <!-- ============ ChptCronInput ============ -->
+    <section id="chpt-cron-input" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptCronInput 排程設定</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>設定報表寄送、資料同步、設備巡檢這類定期工作。選「每 N 分鐘 / 每小時 / 每天 / 每週 / 每月」再點選時間，
+        或直接改 cron 表達式（5 欄：分 時 日 月 週），兩邊同步；下方用文字說明並列出接下來幾次執行時間（瀏覽器的時區）。
+        表達式寫錯時指出是哪一欄；像 <code>*/10 9-17 * * 1-5</code> 這種簡易設定表達不了的，會切到「自訂」。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptCronInput } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+          <span class="text-content-secondary">範例：</span>
+          <ChptButton v-for="c in cronPresets" :key="c.expr" size="xs" is-outline @click="cronExpr = c.expr">{{ c.label }}</ChptButton>
+        </div>
+        <ChptCronInput v-model="cronExpr" />
+        <p class="mt-3 text-xs text-content-secondary">v-model：<code>{{ cronExpr }}</code></p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="cronSample" />
+      <ApiTable of="ChptCronInput" title="Props" :rows="cronProps" />
+      <ApiTable of="-" title="表達式語法" :rows="cronSyntax" />
+      <ApiTable of="ChptCronInput" title="Events" :rows="cronEvents" />
+      <ApiTable of="ChptCronInput" title="方法（ref）" :rows="cronMethods" />
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -459,6 +485,7 @@ import {
   ChptWorkInstruction,
   ChptAqlSampling,
   ChptQueryBuilder,
+  ChptCronInput,
   evaluateQuery,
   useToast,
   ChptInput,
@@ -987,6 +1014,36 @@ const uploadMethods = [
 ]
 const toast = useToast()
 
+// ---- ChptCronInput ----
+const cronExpr = ref('30 8 * * 1-5')
+const cronPresets = [
+  { label: '每 5 分鐘', expr: '*/5 * * * *' },
+  { label: '平日 08:30', expr: '30 8 * * 1-5' },
+  { label: '每月 1、15 日 02:00', expr: '0 2 1,15 * *' },
+  { label: '上班時間每 10 分鐘', expr: '*/10 9-17 * * 1-5' },
+  { label: '每季第一天', expr: '0 0 1 1,4,7,10 *' },
+]
+const cronSample = `<ChptCronInput v-model="schedule" :show-next="5" />
+
+// schedule：'30 8 * * 1-5'（平日 08:30）`
+const cronProps = [
+  { name: 'v-model', type: 'string', def: "'0 8 * * *'", desc: 'cron 表達式（5 欄：分 時 日 月 週）；只有格式正確時才更新' },
+  { name: 'showNext', type: 'number', def: '5', desc: '列出接下來幾次執行時間（0 不列）' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '計算下次執行的起點；不給時用現在（每分鐘更新）' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只看' },
+]
+const cronSyntax = [
+  { name: '*', type: '全部', def: '—', desc: '每分 / 每時 / 每日…' },
+  { name: '5、1-5、1,15', type: '數字、範圍、清單', def: '—', desc: '可以混用：1-5,10' },
+  { name: '*/15、9-17/2', type: '間隔', def: '—', desc: '每 15、9 到 17 每 2' },
+  { name: 'JAN–DEC、SUN–SAT', type: '名稱', def: '—', desc: '月與週可用英文縮寫；週的 0 與 7 都是星期日' },
+  { name: '日與週', type: '其一符合', def: '—', desc: '日、週都有限制時，兩者符合其一就執行（與 Linux cron 相同）' },
+]
+const cronEvents = [{ name: 'update:modelValue', params: '(expr: string)', desc: '改了設定或表達式（只送出正確的表達式）' }]
+const cronMethods = [
+  { name: 'valid', type: 'boolean', desc: '目前的表達式是否正確' },
+  { name: 'description', type: 'string', desc: '可讀說明' },
+]
 // ---- ChptQueryBuilder ----
 const qbFields = [
   { key: 'orderNo', label: '工單', type: 'text' },

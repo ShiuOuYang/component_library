@@ -187,6 +187,44 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  cron: {
+    mode: string
+    modes: { minutes: string; hourly: string; daily: string; weekly: string; monthly: string; custom: string }
+    every: string
+    everyMinutes: string
+    minutesUnit: string
+    everyHourAt: string
+    minuteUnit: string
+    minute: string
+    hour: string
+    time: string
+    weekdaysLabel: string
+    daysLabel: string
+    dayN: (n: number) => string
+    weekdayShort: [string, string, string, string, string, string, string]
+    monthNames: [string, string, string, string, string, string, string, string, string, string, string, string]
+    expression: string
+    fieldsHint: string
+    fieldNames: { minute: string; hour: string; dom: string; month: string; dow: string }
+    errors: { count: (n: number) => string; field: (field: string, token: string) => string }
+    nextRuns: string
+    never: string
+    dateTime: (date: string, weekday: string, time: string) => string
+    text: {
+      everyMinute: string
+      everyNMinutes: (n: number) => string
+      everyNMinutesInHours: (n: number, hours: string) => string
+      atMinuteEveryHour: (m: number) => string
+      at: (times: string[]) => string
+      minutesOfHours: (minutes: string, hours: string) => string
+      everyDay: string
+      weekdays: (names: string[]) => string
+      monthDays: (days: string[]) => string
+      months: (names: string[]) => string
+      dayOrWeek: (dom: string, dow: string) => string
+      join: (parts: string[]) => string
+    }
+  }
   queryBuilder: {
     title: string
     combinator: string
@@ -1599,6 +1637,47 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  cron: {
+    mode: '排程方式',
+    modes: { minutes: '每 N 分鐘', hourly: '每小時', daily: '每天', weekly: '每週', monthly: '每月', custom: '自訂' },
+    every: '每',
+    everyMinutes: '每幾分鐘',
+    minutesUnit: '分鐘執行一次',
+    everyHourAt: '每小時的第',
+    minuteUnit: '分',
+    minute: '分',
+    hour: '時',
+    time: '時間',
+    weekdaysLabel: '星期',
+    daysLabel: '日期',
+    dayN: (n) => `${n} 日`,
+    weekdayShort: ['日', '一', '二', '三', '四', '五', '六'],
+    monthNames: ['1 月', '2 月', '3 月', '4 月', '5 月', '6 月', '7 月', '8 月', '9 月', '10 月', '11 月', '12 月'],
+    expression: 'Cron 表達式',
+    fieldsHint: '分 時 日 月 週',
+    fieldNames: { minute: '分', hour: '時', dom: '日', month: '月', dow: '週' },
+    errors: {
+      count: (n) => `需要 5 欄（分 時 日 月 週），目前 ${n} 欄`,
+      field: (field, token) => `「${field}」欄的 ${token} 無效`,
+    },
+    nextRuns: '接下來執行：',
+    never: '找不到符合的時間',
+    dateTime: (date, weekday, time) => `${date}（${weekday}）${time}`,
+    text: {
+      everyMinute: '每分鐘',
+      everyNMinutes: (n) => `每 ${n} 分鐘`,
+      everyNMinutesInHours: (n, hours) => `${hours} 時每 ${n} 分鐘`,
+      atMinuteEveryHour: (m) => `每小時的第 ${m} 分`,
+      at: (times) => times.join('、'),
+      minutesOfHours: (minutes, hours) => `${hours} 時的第 ${minutes} 分`,
+      everyDay: '每天',
+      weekdays: (names) => `每週${names.join('、')}`,
+      monthDays: (days) => `每月 ${days.join('、')} 日`,
+      months: (names) => `限 ${names.join('、')}`,
+      dayOrWeek: (dom, dow) => `${dom}或${dow}`,
+      join: (parts) => [...parts].reverse().join('，'),
+    },
+  },
   queryBuilder: {
     title: '查詢條件',
     combinator: '條件關係',
@@ -3090,6 +3169,47 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  cron: {
+    mode: 'Schedule',
+    modes: { minutes: 'Every N min', hourly: 'Hourly', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', custom: 'Custom' },
+    every: 'Every',
+    everyMinutes: 'Every how many minutes',
+    minutesUnit: 'minutes',
+    everyHourAt: 'Every hour at minute',
+    minuteUnit: '',
+    minute: 'Minute',
+    hour: 'Hour',
+    time: 'At',
+    weekdaysLabel: 'Days of week',
+    daysLabel: 'Days of month',
+    dayN: (n) => `Day ${n}`,
+    weekdayShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    monthNames: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    expression: 'Cron expression',
+    fieldsHint: 'min hour day month weekday',
+    fieldNames: { minute: 'minute', hour: 'hour', dom: 'day', month: 'month', dow: 'weekday' },
+    errors: {
+      count: (n) => `Needs 5 fields (minute hour day month weekday), got ${n}`,
+      field: (field, token) => `Invalid ${field}: ${token}`,
+    },
+    nextRuns: 'Next runs:',
+    never: 'No matching time',
+    dateTime: (date, weekday, time) => `${date} (${weekday}) ${time}`,
+    text: {
+      everyMinute: 'Every minute',
+      everyNMinutes: (n) => `Every ${n} minutes`,
+      everyNMinutesInHours: (n, hours) => `Every ${n} minutes during hour ${hours}`,
+      atMinuteEveryHour: (m) => `At minute ${m} past every hour`,
+      at: (times) => `At ${times.join(', ')}`,
+      minutesOfHours: (minutes, hours) => `At minute ${minutes} past hour ${hours}`,
+      everyDay: 'every day',
+      weekdays: (names) => `on ${names.join(', ')}`,
+      monthDays: (days) => `on day ${days.join(', ')} of the month`,
+      months: (names) => `in ${names.join(', ')}`,
+      dayOrWeek: (dom, dow) => `${dom} or ${dow}`,
+      join: (parts) => parts.join(', '),
+    },
+  },
   queryBuilder: {
     title: 'Query',
     combinator: 'Match',
