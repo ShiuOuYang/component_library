@@ -187,6 +187,29 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  skillMatrix: {
+    title: string
+    empty: string
+    search: string
+    team: string
+    allTeams: string
+    brush: string
+    cycle: string
+    levels: [string, string, string, string, string]
+    legend: string
+    covered: (ok: number, total: number) => string
+    multiSkilled: (n: number, total: number) => string
+    soonCount: (n: number) => string
+    expiredCount: (n: number) => string
+    person: string
+    qualifiedCol: string
+    coverage: string
+    coverageTitle: (qualified: number, required: number) => string
+    hint: string
+    cellLabel: (person: string, skill: string, state: string) => string
+    changed: (person: string, skill: string, level: string) => string
+    expiry: { ok: (date: string) => string; soon: (date: string) => string; expired: (date: string) => string }
+  }
   storage: {
     search: string
     searchPlaceholder: string
@@ -1432,6 +1455,33 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  skillMatrix: {
+    title: '技能矩陣',
+    empty: '沒有符合的人員或技能',
+    search: '搜尋人員',
+    team: '班別',
+    allTeams: '全部',
+    brush: '點格子設為',
+    cycle: '依序循環（Shift 往回）',
+    levels: ['未訓練', '訓練中', '指導下作業', '可獨立作業', '可教導他人'],
+    legend: '圖例',
+    covered: (ok, total) => `人力足夠的技能 ${ok} / ${total}`,
+    multiSkilled: (n, total) => `多能工 ${n} / ${total} 人`,
+    soonCount: (n) => `${n} 張證照即將到期`,
+    expiredCount: (n) => `${n} 張證照已過期`,
+    person: '人員',
+    qualifiedCol: '合格數',
+    coverage: '合格人數',
+    coverageTitle: (qualified, required) => `合格 ${qualified} 人，需要 ${required} 人`,
+    hint: '點格子調整等級（上方可選要設成的等級）；鍵盤：方向鍵移動、數字鍵 0–4 直接設定。合格 = 可獨立作業以上且證照未過期。',
+    cellLabel: (person, skill, state) => `${person}，${skill}：${state}`,
+    changed: (person, skill, level) => `${person} 的 ${skill} 改為 ${level}`,
+    expiry: {
+      ok: (date) => `證照到 ${date}`,
+      soon: (date) => `證照 ${date} 到期`,
+      expired: (date) => `證照已於 ${date} 過期`,
+    },
+  },
   storage: {
     search: '搜尋儲位、料號、批號',
     searchPlaceholder: '搜尋儲位 / 料號 / 品名 / 批號',
@@ -2747,6 +2797,33 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  skillMatrix: {
+    title: 'Skill matrix',
+    empty: 'No matching people or skills',
+    search: 'Search people',
+    team: 'Team',
+    allTeams: 'All',
+    brush: 'Click sets',
+    cycle: 'Cycle (Shift to go back)',
+    levels: ['Untrained', 'In training', 'With guidance', 'Independent', 'Can train others'],
+    legend: 'Legend',
+    covered: (ok, total) => `Skills fully staffed ${ok} / ${total}`,
+    multiSkilled: (n, total) => `Multi-skilled ${n} / ${total}`,
+    soonCount: (n) => `${n} certificate${Number(n) === 1 ? '' : 's'} expiring soon`,
+    expiredCount: (n) => `${n} certificate${Number(n) === 1 ? '' : 's'} expired`,
+    person: 'Person',
+    qualifiedCol: 'Qualified',
+    coverage: 'Qualified people',
+    coverageTitle: (qualified, required) => `${qualified} qualified, ${required} required`,
+    hint: 'Click a cell to change the level (choose the level above). Keyboard: arrows to move, 0–4 to set. Qualified = independent or above with a valid certificate.',
+    cellLabel: (person, skill, state) => `${person}, ${skill}: ${state}`,
+    changed: (person, skill, level) => `${person} ${skill} set to ${level}`,
+    expiry: {
+      ok: (date) => `Certified until ${date}`,
+      soon: (date) => `Certificate expires ${date}`,
+      expired: (date) => `Certificate expired ${date}`,
+    },
+  },
   storage: {
     search: 'Search bins, parts, lots',
     searchPlaceholder: 'Search bin / part / name / lot',

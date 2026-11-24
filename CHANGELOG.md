@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptSkillMatrix 技能矩陣**（ui）：作業員 × 工站 / 技能的多能工管理。等級 0–4（ILUO）用圓餅圖示；等級 ≥ `qualifyLevel` 且證照未過期算合格。
+  最下列每個技能的合格人數，低於 `required` 標紅；最右欄每人合格的技能數；證照快到期（`warnDays`）與已過期標示。
+  篩選班別、搜尋人員；點格子循環等級（或選定等級後點）、鍵盤方向鍵移動與數字鍵 0–4 設定。`v-model:matrix` 與 `change` 事件。
+  另匯出 `skillCoverage`、`skillMatrixSummary`、`setSkillLevel`、`isSkillQualified` 與型別 `SkillDef`、`SkillPerson`、`SkillMatrixData` 等。
+
 - **SunburstChart 旭日圖**（charts）：一次看好幾層的佔比（不良類別 → 原因 → 站別）。資料格式與 TreemapChart 相同；`levels` 圈數，
   點弧往下鑽、點中央或麵包屑回上層（`v-model:path`），最外圈送出 `node-click`。滑過時標出路徑、提示佔全部與佔上一層的比例；
   最內圈類別色、外圈沿用並漸淡；放得下的弧沿半徑放文字。鍵盤：← → 同一圈、↑ 往外、↓ 往內、Enter 往下、Esc 回上層。
