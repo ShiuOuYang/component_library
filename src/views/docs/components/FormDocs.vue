@@ -359,6 +359,48 @@
       </p>
     </section>
 
+    <!-- ============ ChptQueryBuilder ============ -->
+    <section id="chpt-query-builder" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptQueryBuilder 條件建構器</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>讓使用者自己組查詢條件，例如報表篩選、警報規則、資料匯出條件。AND / OR 群組可以巢狀，
+        欄位依型別給對應的運算子與輸入（數字、日期的「介於」、選項的「屬於」可複選）；條目可以拖曳排序或拖到別的群組。
+        <code>v-model</code> 是條件的 JSON，交給後端轉成 SQL / API 參數；前端篩選可以直接用 <code>evaluateQuery</code>。
+        ChptFilterBar 是固定欄位的快速篩選；這裡是任意組合的條件。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptQueryBuilder, evaluateQuery } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptQueryBuilder ref="qbRef" v-model="qbQuery" :fields="qbFields" allow-not title="工單篩選條件" />
+        <div class="mt-3 flex flex-wrap items-center gap-2 text-sm">
+          <ChptButton size="xs" is-outline icon="rule" @click="qbValid = qbRef?.validate()">檢查條件</ChptButton>
+          <span v-if="qbValid !== null" :class="qbValid ? 'text-success' : 'text-danger'">{{ qbValid ? '條件完整' : '有條件沒填完整' }}</span>
+          <span class="ml-auto text-content-secondary">符合 {{ qbMatched.length }} / {{ qbRows.length }} 張工單</span>
+        </div>
+        <div class="mt-2 overflow-x-auto rounded-md border border-stroke-light">
+          <table class="w-full whitespace-nowrap text-xs">
+            <thead class="bg-surface-secondary text-left text-content-secondary">
+              <tr><th class="px-2 py-1.5 font-medium">工單</th><th class="px-2 py-1.5 font-medium">線別</th><th class="px-2 py-1.5 font-medium">狀態</th><th class="px-2 py-1.5 text-right font-medium">良率</th><th class="px-2 py-1.5 text-right font-medium">數量</th><th class="px-2 py-1.5 font-medium">交期</th><th class="px-2 py-1.5 font-medium">急單</th></tr>
+            </thead>
+            <tbody class="divide-y divide-stroke-light bg-surface-primary text-content-primary">
+              <tr v-for="r in qbMatched" :key="r.orderNo"><td class="px-2 py-1 font-mono">{{ r.orderNo }}</td><td class="px-2 py-1">{{ r.line }}</td><td class="px-2 py-1">{{ qbStatusLabel(r.status) }}</td><td class="px-2 py-1 text-right tabular-nums">{{ r.yield }}</td><td class="px-2 py-1 text-right tabular-nums">{{ r.qty }}</td><td class="px-2 py-1 tabular-nums">{{ r.due }}</td><td class="px-2 py-1">{{ r.urgent ? '是' : '' }}</td></tr>
+              <tr v-if="!qbMatched.length"><td colspan="7" class="px-2 py-3 text-center text-content-tertiary">沒有符合的工單</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <details class="mt-3 rounded-md border border-stroke-light bg-surface-primary">
+          <summary class="cursor-pointer px-3 py-2 text-sm font-medium text-content-primary">條件 JSON（v-model）</summary>
+          <ChptCodeBlock class="m-2" :code="qbJson" />
+        </details>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="qbSample" />
+      <ApiTable of="ChptQueryBuilder" title="Props" :rows="qbProps" />
+      <ApiTable of="-" title="各型別的運算子" :rows="qbOps" />
+      <ApiTable of="ChptQueryBuilder" title="Events" :rows="qbEvents" />
+      <ApiTable of="ChptQueryBuilder" title="方法（ref）" :rows="qbMethods" />
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -405,7 +447,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, useTemplateRef } from 'vue'
 import {
   ChptForm,
   ChptFormItem,
@@ -416,6 +458,8 @@ import {
   ChptChecklist,
   ChptWorkInstruction,
   ChptAqlSampling,
+  ChptQueryBuilder,
+  evaluateQuery,
   useToast,
   ChptInput,
   ChptSelect,
@@ -943,6 +987,74 @@ const uploadMethods = [
 ]
 const toast = useToast()
 
+// ---- ChptQueryBuilder ----
+const qbFields = [
+  { key: 'orderNo', label: '工單', type: 'text' },
+  { key: 'line', label: '線別', type: 'select', options: ['SMT-1', 'SMT-2', 'SMT-3', 'DIP-1'].map((v) => ({ label: v, value: v })) },
+  { key: 'status', label: '狀態', type: 'select', options: [{ label: '生產中', value: 'run' }, { label: '暫停', value: 'hold' }, { label: '異常', value: 'alarm' }, { label: '完工', value: 'done' }] },
+  { key: 'yield', label: '良率（%）', type: 'number' },
+  { key: 'qty', label: '數量', type: 'number' },
+  { key: 'due', label: '交期', type: 'date' },
+  { key: 'urgent', label: '急單', type: 'boolean' },
+]
+const qbRows = [
+  ['WO-2611-001', 'SMT-1', 'run', 98.6, 1200, '2026-11-28', false],
+  ['WO-2611-002', 'SMT-2', 'alarm', 91.2, 800, '2026-11-26', true],
+  ['WO-2611-003', 'SMT-1', 'hold', 96.4, 500, '2026-12-02', false],
+  ['WO-2611-004', 'DIP-1', 'run', 94.1, 300, '2026-11-27', true],
+  ['WO-2611-005', 'SMT-3', 'done', 99.2, 2000, '2026-11-24', false],
+  ['WO-2611-006', 'SMT-2', 'run', 97.8, 1500, '2026-11-30', false],
+  ['WO-2611-007', 'SMT-3', 'alarm', 88.5, 600, '2026-11-25', true],
+  ['WO-2611-008', 'DIP-1', 'hold', 95.0, 450, '2026-12-05', false],
+].map(([orderNo, line, status, y, qty, due, urgent]) => ({ orderNo, line, status, yield: y, qty, due, urgent }))
+const qbQuery = ref({
+  id: 'root',
+  combinator: 'and',
+  rules: [
+    { id: 'r1', field: 'status', op: 'neq', value: 'done' },
+    {
+      id: 'g1',
+      combinator: 'or',
+      rules: [
+        { id: 'r2', field: 'yield', op: 'lt', value: 95 },
+        { id: 'r3', field: 'urgent', op: 'eq', value: true },
+      ],
+    },
+  ],
+})
+const qbRef = useTemplateRef('qbRef')
+const qbValid = ref(null)
+const qbMatched = computed(() => qbRows.filter((r) => evaluateQuery(qbQuery.value, r, qbFields)))
+const qbStatusLabel = (v) => qbFields[2].options.find((o) => o.value === v)?.label ?? v
+const qbJson = computed(() => JSON.stringify(qbQuery.value, null, 2))
+const qbSample = `<ChptQueryBuilder v-model="query" :fields="fields" :max-depth="3" />
+
+// fields：{ key, label, type: 'text' | 'number' | 'date' | 'select' | 'boolean', options? }
+// 前端篩選：
+import { evaluateQuery } from '@/components/library'
+const matched = rows.filter((row) => evaluateQuery(query.value, row, fields))`
+const qbProps = [
+  { name: 'fields', type: 'QbField[]', def: '—', desc: "可用欄位：{ key, label, type, options?, operators? }；type 為 text / number / date / select / boolean" },
+  { name: 'v-model', type: 'QbGroup | null', def: 'null', desc: "條件 JSON：{ id, combinator: 'and' | 'or', not?, rules: (QbRule | QbGroup)[] }；規則為 { id, field, op, value }" },
+  { name: 'maxDepth', type: 'number', def: '3', desc: '最多幾層群組（根 = 1）' },
+  { name: 'allowNot', type: 'boolean', def: 'false', desc: '允許整組取反（NOT）' },
+  { name: 'showText', type: 'boolean', def: 'true', desc: '在下方顯示可讀的條件文字' },
+  { name: 'showErrors', type: 'boolean', def: 'false', desc: '一直顯示錯誤；否則等呼叫 validate() 後才顯示' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只看' },
+  { name: 'title', type: 'string', def: "''", desc: '無障礙名稱' },
+]
+const qbOps = [
+  { name: 'text', type: '等於、不等於、包含、不包含、開頭是、結尾是、是空的、不是空的', def: '—', desc: '不分大小寫' },
+  { name: 'number / date', type: '等於、不等於、大於、大於等於、小於、小於等於、介於、是空的、不是空的', def: '—', desc: '介於包含兩端' },
+  { name: 'select', type: '等於、不等於、屬於、不屬於、是空的、不是空的', def: '—', desc: '屬於 / 不屬於可以複選' },
+  { name: 'boolean', type: '等於', def: '—', desc: '是 / 否' },
+]
+const qbEvents = [{ name: 'update:modelValue', params: '(query: QbGroup)', desc: '新增、刪除、修改、拖曳排序' }]
+const qbMethods = [
+  { name: 'validate()', type: '() => boolean', desc: '驗證並顯示錯誤（沒填值、介於的起點大於終點、空群組）' },
+  { name: 'errors', type: 'Map<id, QbError>', desc: '目前的錯誤' },
+  { name: 'text', type: 'string', desc: '可讀的條件文字' },
+]
 // ---- ChptAqlSampling ----
 const aqlRecord = ref({ lotSize: 1000, level: 'II', inspected: 0, defects: {} })
 const aqlClasses = [

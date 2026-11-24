@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptQueryBuilder 條件建構器**（ui）：讓使用者自己組查詢條件。AND / OR 群組可巢狀（`maxDepth`）、可整組取反（`allowNot`）；
+  欄位依型別（text / number / date / select / boolean）給對應的運算子與輸入（介於、屬於可複選、是空的）。條目可拖曳排序或拖到別的群組；
+  下方顯示可讀的條件文字；`validate()` 標出沒填完整的條件。`v-model` 是條件 JSON。另匯出 `evaluateQuery`（前端篩選）、
+  `validateQuery`、`describeQuery`、`createQueryRule`、`createQueryGroup`、`queryOperatorsFor` 與型別 `QbField`、`QbGroup`、`QbRule` 等。
+
 - **ChptBomTree BOM 結構**（ui）：多階 BOM 的樹狀表格（treegrid）。用量逐階連乘成每台用量，乘上生產數量（`v-model:buildQty`）就是需求；
   給了庫存（`stock`）就算缺料，`netting` 時先扣半成品庫存、同料號多處使用時共用庫存，關鍵料標示並統計。搜尋料號 / 品名 / 位置號會展開
   到那一層並列出用在哪裡（where-used）；給舊版次（`compare`）就標出新增、刪除、用量變更。只看缺料、全部展開 / 收合、鍵盤操作、匯出 CSV。
