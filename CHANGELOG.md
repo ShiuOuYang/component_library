@@ -42,6 +42,12 @@
 
 ### 新增
 
+- **ChptAqlSampling 抽樣檢驗**（ui）：依 ANSI/ASQ Z1.4（ISO 2859-1）單次抽樣、正常檢驗。輸入批量與檢驗水準，各缺點等級（`classes`）依 AQL
+  查出樣本代字、樣本數、Ac / Re（表 II-A 的箭頭依標準換方案；樣本數 ≥ 批量時全檢）。邊檢驗邊記錄已檢數與不良數，達 Re 立刻判定拒收、
+  檢完且 ≤ Ac 允收（`verdict` 事件）；依最近各批結果（`history`）提示轉換（加嚴、減量、停止）。`v-model` 保存整筆紀錄。
+  另匯出 `aqlCodeLetter`、`aqlNormalPlan`、`aqlVerdict`、`aqlSwitchingAdvice`、`AQL_LEVELS`、`AQL_VALUES` 與型別 `AqlPlan` 等。
+  加嚴與減量的方案表未內建。
+
 - **ChptHourlyBoard 逐時產出看板**（ui）：產線的 hour-by-hour board。每個時段：計畫、實際（可填）、差異、累計差異、達成率；
   落後的已過時段要選原因（`reasons`），沒填的會標出來。上方摘要：目前應做（目前時段依時間比例）、實際、差異、達成率、班別預估。
   目前時段高亮、未來時段淡化；`now` 不給時用電腦時間。電視模式、匯出 CSV、跨午夜的班別。`v-model:slots` 與 `change` 事件。
