@@ -187,6 +187,28 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  jsonViewer: {
+    title: string
+    search: string
+    found: (index: number, total: number) => string
+    prev: string
+    next: string
+    expandAll: string
+    collapseAll: string
+    copyAll: string
+    added: (n: number) => string
+    removed: (n: number) => string
+    changed: (n: number) => string
+    more: (n: number) => string
+    items: (n: number, isArray: boolean) => string
+    showFull: string
+    changes: { added: string; removed: string; changed: string }
+    copyValue: string
+    copyPath: string
+    hint: string
+    copied: { value: string; path: string; all: string }
+    copyFailed: string
+  }
   queryBuilder: {
     title: string
     combinator: string
@@ -1599,6 +1621,28 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  jsonViewer: {
+    title: 'JSON',
+    search: '搜尋鍵或值',
+    found: (index, total) => (Number(total) ? `${index} / ${total}` : '找不到'),
+    prev: '上一個',
+    next: '下一個',
+    expandAll: '全部展開',
+    collapseAll: '全部收合',
+    copyAll: '複製全部',
+    added: (n) => `新增 ${n}`,
+    removed: (n) => `刪除 ${n}`,
+    changed: (n) => `變更 ${n}`,
+    more: (n) => `還有 ${n} 項，顯示更多`,
+    items: (n, isArray) => (isArray ? `${n} 項` : `${n} 個鍵`),
+    showFull: '顯示全部',
+    changes: { added: '新增', removed: '刪除', changed: '變更' },
+    copyValue: '複製值',
+    copyPath: '複製路徑',
+    hint: '點物件或陣列展開 / 收合；滑過一列可複製值或路徑。鍵盤：↑↓ 移動、← → 收合 / 展開、C 複製值',
+    copied: { value: '已複製值', path: '已複製路徑', all: '已複製全部' },
+    copyFailed: '無法複製（瀏覽器不允許存取剪貼簿）',
+  },
   queryBuilder: {
     title: '查詢條件',
     combinator: '條件關係',
@@ -3090,6 +3134,28 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  jsonViewer: {
+    title: 'JSON',
+    search: 'Search keys or values',
+    found: (index, total) => (Number(total) ? `${index} / ${total}` : 'No match'),
+    prev: 'Previous',
+    next: 'Next',
+    expandAll: 'Expand all',
+    collapseAll: 'Collapse all',
+    copyAll: 'Copy all',
+    added: (n) => `${n} added`,
+    removed: (n) => `${n} removed`,
+    changed: (n) => `${n} changed`,
+    more: (n) => `${n} more, show more`,
+    items: (n, isArray) => (isArray ? `${n} item${Number(n) === 1 ? '' : 's'}` : `${n} key${Number(n) === 1 ? '' : 's'}`),
+    showFull: 'Show all',
+    changes: { added: 'Added', removed: 'Removed', changed: 'Changed' },
+    copyValue: 'Copy value',
+    copyPath: 'Copy path',
+    hint: 'Click an object or array to expand or collapse; hover a row to copy its value or path. Keyboard: ↑↓ to move, ← → to collapse / expand, C to copy the value.',
+    copied: { value: 'Value copied', path: 'Path copied', all: 'All copied' },
+    copyFailed: 'Could not copy (clipboard access was blocked)',
+  },
   queryBuilder: {
     title: 'Query',
     combinator: 'Match',
