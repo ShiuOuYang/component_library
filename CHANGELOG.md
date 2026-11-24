@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptHourlyBoard 逐時產出看板**（ui）：產線的 hour-by-hour board。每個時段：計畫、實際（可填）、差異、累計差異、達成率；
+  落後的已過時段要選原因（`reasons`），沒填的會標出來。上方摘要：目前應做（目前時段依時間比例）、實際、差異、達成率、班別預估。
+  目前時段高亮、未來時段淡化；`now` 不給時用電腦時間。電視模式、匯出 CSV、跨午夜的班別。`v-model:slots` 與 `change` 事件。
+  另匯出 `buildHourlySlots`（依班別、休息、產能產生時段）、`hourlySummary` 與型別 `HourlySlot` 等。
+
 - **ProbabilityPlot 機率圖**（charts）：算 Cpk 前先確認分配。常態 / 對數常態 / Weibull（`v-model:distribution`），中位秩繪圖位置、
   配適線與 95% 信賴帶（帶外的點標紅），Anderson-Darling 檢定的 p 值與判定（`alpha`），算法與 Minitab 預設相同。`series` 可多組比較；
   統計表列出 N、平均 / 標準差（Weibull 為形狀 / 尺度）、AD、p 值。另匯出 `fitProbability`、`probabilityQuantile`、`normCdf`、`normInv`、
