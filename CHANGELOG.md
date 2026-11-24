@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **ChptBomTree BOM 結構**（ui）：多階 BOM 的樹狀表格（treegrid）。用量逐階連乘成每台用量，乘上生產數量（`v-model:buildQty`）就是需求；
+  給了庫存（`stock`）就算缺料，`netting` 時先扣半成品庫存、同料號多處使用時共用庫存，關鍵料標示並統計。搜尋料號 / 品名 / 位置號會展開
+  到那一層並列出用在哪裡（where-used）；給舊版次（`compare`）就標出新增、刪除、用量變更。只看缺料、全部展開 / 收合、鍵盤操作、匯出 CSV。
+  另匯出 `explodeBom`、`bomWhereUsed`、`diffBom`、`flattenBom` 與型別 `BomItem` 等。
 - **ChptAqlSampling 抽樣檢驗**（ui）：依 ANSI/ASQ Z1.4（ISO 2859-1）單次抽樣、正常檢驗。輸入批量與檢驗水準，各缺點等級（`classes`）依 AQL
   查出樣本代字、樣本數、Ac / Re（表 II-A 的箭頭依標準換方案；樣本數 ≥ 批量時全檢）。邊檢驗邊記錄已檢數與不良數，達 Re 立刻判定拒收、
   檢完且 ≤ Ac 允收（`verdict` 事件）；依最近各批結果（`history`）提示轉換（加嚴、減量、停止）。`v-model` 保存整筆紀錄。
