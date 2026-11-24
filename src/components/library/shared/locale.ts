@@ -187,6 +187,26 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  scheduler: {
+    today: string
+    prev: string
+    next: string
+    viewLabel: string
+    views: { week: string; day: string }
+    weekdayShort: [string, string, string, string, string, string, string]
+    dayHeader: (monthDay: string, weekday: string) => string
+    dayTitle: (date: string, weekday: string) => string
+    weekTitle: (from: string, to: string) => string
+    openDay: (day: string) => string
+    eventLabel: (title: string, time: string) => string
+    resize: string
+    newEvent: string
+    conflict: string
+    locked: string
+    separator: string
+    hint: string
+    readonlyHint: string
+  }
   cron: {
     mode: string
     modes: { minutes: string; hourly: string; daily: string; weekly: string; monthly: string; custom: string }
@@ -1680,6 +1700,26 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  scheduler: {
+    today: '今天',
+    prev: '上一段',
+    next: '下一段',
+    viewLabel: '檢視',
+    views: { week: '週', day: '日' },
+    weekdayShort: ['日', '一', '二', '三', '四', '五', '六'],
+    dayHeader: (monthDay, weekday) => `${monthDay}（${weekday}）`,
+    dayTitle: (date, weekday) => `${date}（${weekday}）`,
+    weekTitle: (from, to) => `${from} – ${to}`,
+    openDay: (day) => `看 ${day} 的日檢視`,
+    eventLabel: (title, time) => `${title}，${time}`,
+    resize: '拖曳調整結束時間',
+    newEvent: '新增',
+    conflict: '時間衝突',
+    locked: '已鎖定',
+    separator: '，',
+    hint: '空白處拖曳建立；拖曳事件移動、拉下緣調整長度。鍵盤：方向鍵移動、Shift + 上下調整長度、Delete 刪除。',
+    readonlyHint: '唯讀：點事件看詳細。',
+  },
   cron: {
     mode: '排程方式',
     modes: { minutes: '每 N 分鐘', hourly: '每小時', daily: '每天', weekly: '每週', monthly: '每月', custom: '自訂' },
@@ -3255,6 +3295,26 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  scheduler: {
+    today: 'Today',
+    prev: 'Previous',
+    next: 'Next',
+    viewLabel: 'View',
+    views: { week: 'Week', day: 'Day' },
+    weekdayShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    dayHeader: (monthDay, weekday) => `${weekday} ${monthDay}`,
+    dayTitle: (date, weekday) => `${weekday}, ${date}`,
+    weekTitle: (from, to) => `${from} – ${to}`,
+    openDay: (day) => `Open day view for ${day}`,
+    eventLabel: (title, time) => `${title}, ${time}`,
+    resize: 'Drag to change end time',
+    newEvent: 'New',
+    conflict: 'Conflict',
+    locked: 'Locked',
+    separator: ', ',
+    hint: 'Drag on empty space to create; drag an event to move, drag its bottom edge to resize. Keyboard: arrows move, Shift + Up/Down resizes, Delete removes.',
+    readonlyHint: 'Read-only: click an event for details.',
+  },
   cron: {
     mode: 'Schedule',
     modes: { minutes: 'Every N min', hourly: 'Hourly', daily: 'Daily', weekly: 'Weekly', monthly: 'Monthly', custom: 'Custom' },
