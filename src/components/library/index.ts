@@ -61,7 +61,7 @@ export {
   FacetedChart, GridFacetChart, StatusScatterMap, GanttChart,
   HorizontalBarChart, PieChart, SparklineChart, GaugeChart, ControlChart, CapabilityHistogram,
   StateTimeline, BoxPlotChart, WaterfallChart, ChptChartFrame, ChptKpiCard, WaferMap,
-  BulletChart, YieldFunnel, CalendarHeatmap, RadarChart, radarScales, radarRatio, LineBalanceChart, lineBalanceLoads, lineBalanceSummary, moveLineBalanceElement, CorrelationMatrix, correlationMatrix, correlationPValue, correlationClusterOrder, ParallelCoordinatesChart, passesBrushes, SunburstChart, layoutSunburst, TreemapChart, layoutTreemap, buildTreemapHierarchy, ProbabilityPlot, fitProbability, probabilityQuantile, normCdf, normInv, andersonDarling, ScatterChart, linearRegression, regressionBand, tQuantile975, SankeyChart, sankeyLayout, sankeyLinkPath, NetworkGraph, buildNetwork, networkShortestPath,
+  BulletChart, YieldFunnel, CalendarHeatmap, RadarChart, radarScales, radarRatio, LineBalanceChart, lineBalanceLoads, lineBalanceSummary, moveLineBalanceElement, CorrelationMatrix, correlationMatrix, correlationPValue, correlationClusterOrder, ParallelCoordinatesChart, passesBrushes, SunburstChart, layoutSunburst, TreemapChart, layoutTreemap, buildTreemapHierarchy, ProbabilityPlot, fitProbability, probabilityQuantile, normCdf, normInv, andersonDarling, ScatterChart, linearRegression, regressionBand, tQuantile975, SankeyChart, sankeyLayout, sankeyLinkPath, RidgelineChart, ridgelineGroups, sortRidgelineGroups, NetworkGraph, buildNetwork, networkShortestPath,
   exportChart, elementToSvg, svgToPng, toCsv, csvBlob, downloadBlob, useChartSync,
 } from './charts/index.js'
 
@@ -192,7 +192,7 @@ export type {
   StateTimelineEvent, StateTimelineTooltip, StateTimelineRowInput, StateDef, StateSummary,
   DualAxisComboChartProps,
   WaferBin, WaferDieInfo, WaferGrid, WaferShape, WaferNotch, YieldSummary, RingYield,
-  BulletItem, FunnelStep, FunnelRow, FunnelResult, CalendarDatum, CalendarCell, RadarAxis, RadarSeries, RadarAxisScale, LineBalanceKind, LbStation, LbElement, LbStationLoad, LbSummary, CorrelationMethod, CorrelationCell, ParallelAxis, ParallelRow, ParallelBrushes, SunburstArc, TreemapNode, TreemapTile, ProbabilitySeries, ProbabilityDistribution, ProbabilityFit, ProbabilityPoint, ScatterPoint, Regression, SankeyNodeInput, SankeyLinkInput, SankeyNode, SankeyLink, SankeyLayout, SankeyOptions, NetworkNodeInput, NetworkLinkInput, NetworkNode, NetworkLink, NetworkGraphData, ChartSync, ChartSyncOptions, CrosshairValue,
+  BulletItem, FunnelStep, FunnelRow, FunnelResult, CalendarDatum, CalendarCell, RadarAxis, RadarSeries, RadarAxisScale, LineBalanceKind, LbStation, LbElement, LbStationLoad, LbSummary, CorrelationMethod, CorrelationCell, ParallelAxis, ParallelRow, ParallelBrushes, SunburstArc, TreemapNode, TreemapTile, ProbabilitySeries, ProbabilityDistribution, ProbabilityFit, ProbabilityPoint, ScatterPoint, Regression, SankeyNodeInput, SankeyLinkInput, SankeyNode, SankeyLink, SankeyLayout, SankeyOptions, RidgelineSeries, RidgelineSpec, RidgelineSort, RidgelineGroup, RidgelineOptions, NetworkNodeInput, NetworkLinkInput, NetworkNode, NetworkLink, NetworkGraphData, ChartSync, ChartSyncOptions, CrosshairValue,
   BoxPlotGroupEvent, BoxPlotPointEvent, BoxPlotTooltip, BoxPlotReferenceLine, BoxPlotGroupInput, BoxStats, QuartileMethod,
   WaterfallEvent, WaterfallTooltip, WaterfallKind,
   ChartFrameExportFormat, ChptChartFrameProps, ChartExportFormat, ChartExportOptions, CsvColumn, KpiStatus, ChptKpiCardProps,
