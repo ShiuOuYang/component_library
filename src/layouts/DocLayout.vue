@@ -420,6 +420,7 @@ const navSections = [
           { label: 'ChptDiffViewer', id: 'chpt-diff-viewer' },
           { label: 'ChptPivotTable', id: 'chpt-pivot-table' },
           { label: 'ChptBomTree', id: 'chpt-bom-tree' },
+          { label: 'ChptJsonViewer', id: 'chpt-json-viewer' },
         ],
       },
       {

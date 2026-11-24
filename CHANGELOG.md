@@ -45,7 +45,9 @@
 - **ChptCronInput 排程設定**（ui）：不用手寫 cron 也能設排程。選「每 N 分鐘 / 每小時 / 每天 / 每週 / 每月」再點選時間，或直接改 5 欄 cron 表達式，
   兩邊同步（簡易設定表達不了的切到「自訂」）；顯示可讀說明與接下來幾次執行時間（`showNext`），表達式錯誤時指出哪一欄。
   支援範圍、清單、間隔、月份與星期名稱，日與週同時限制時其一符合。另匯出 `parseCron`、`cronNextRuns`、`describeCron`、`isCronError` 與型別。
-
+- **ChptJsonViewer JSON 檢視器**（ui）：看 API 回應、設定檔、記錄內容。樹狀展開 / 收合（`expandDepth`）、依型別上色；搜尋鍵或值並展開到符合的位置
+  （上一個 / 下一個）；複製值、路徑（`rootName` → `response.data.items[3].name`）或全部；長陣列分段顯示（`pageSize`）、長字串截斷（`maxStringLength`）。
+  給 `compare` 時標出新增、刪除、變更。鍵盤：↑↓ 移動、← → 收合 / 展開、C 複製值。另匯出 `diffJson`、`searchJson`、`jsonPathString`、`jsonType` 與型別。
 - **ChptQueryBuilder 條件建構器**（ui）：讓使用者自己組查詢條件。AND / OR 群組可巢狀（`maxDepth`）、可整組取反（`allowNot`）；
   欄位依型別（text / number / date / select / boolean）給對應的運算子與輸入（介於、屬於可複選、是空的）。條目可拖曳排序或拖到別的群組；
   下方顯示可讀的條件文字；`validate()` 標出沒填完整的條件。`v-model` 是條件 JSON。另匯出 `evaluateQuery`（前端篩選）、
