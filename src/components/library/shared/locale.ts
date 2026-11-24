@@ -187,6 +187,37 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  hourlyBoard: {
+    title: string
+    empty: string
+    slot: string
+    plan: string
+    actual: string
+    diff: string
+    cumPlan: string
+    cumActual: string
+    cumDiff: string
+    achievement: string
+    reason: string
+    note: string
+    total: string
+    now: string
+    breakMin: (n: number) => string
+    planToNow: string
+    actualToNow: string
+    gap: string
+    achievementLabel: string
+    forecast: string
+    ofTotal: (total: string) => string
+    forecastGap: (gap: string) => string
+    missing: (n: number) => string
+    needReason: string
+    noReason: string
+    exportCsv: string
+    actualLabel: (slot: string) => string
+    reasonLabel: (slot: string) => string
+    noteLabel: (slot: string) => string
+  }
   storage: {
     search: string
     searchPlaceholder: string
@@ -1432,6 +1463,37 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  hourlyBoard: {
+    title: '逐時產出',
+    empty: '沒有時段',
+    slot: '時段',
+    plan: '計畫',
+    actual: '實際',
+    diff: '差異',
+    cumPlan: '累計計畫',
+    cumActual: '累計實際',
+    cumDiff: '累計差異',
+    achievement: '達成',
+    reason: '落後原因',
+    note: '備註',
+    total: '合計',
+    now: '現在',
+    breakMin: (n) => `含休息 ${n} 分`,
+    planToNow: '目前應做',
+    actualToNow: '目前實際',
+    gap: '差異',
+    achievementLabel: '達成率',
+    forecast: '班別預估',
+    ofTotal: (total) => `整班計畫 ${total}`,
+    forecastGap: (gap) => `對計畫 ${gap}`,
+    missing: (n) => `${n} 個時段待填原因`,
+    needReason: '請選原因',
+    noReason: '—',
+    exportCsv: '匯出',
+    actualLabel: (slot) => `${slot} 實際數量`,
+    reasonLabel: (slot) => `${slot} 落後原因`,
+    noteLabel: (slot) => `${slot} 備註`,
+  },
   storage: {
     search: '搜尋儲位、料號、批號',
     searchPlaceholder: '搜尋儲位 / 料號 / 品名 / 批號',
@@ -2747,6 +2809,37 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  hourlyBoard: {
+    title: 'Hour-by-hour',
+    empty: 'No time slots',
+    slot: 'Hour',
+    plan: 'Plan',
+    actual: 'Actual',
+    diff: 'Diff',
+    cumPlan: 'Cum. plan',
+    cumActual: 'Cum. actual',
+    cumDiff: 'Cum. diff',
+    achievement: 'Achieved',
+    reason: 'Reason',
+    note: 'Note',
+    total: 'Total',
+    now: 'Now',
+    breakMin: (n) => `incl. ${n} min break`,
+    planToNow: 'Plan to now',
+    actualToNow: 'Actual to now',
+    gap: 'Gap',
+    achievementLabel: 'Achievement',
+    forecast: 'Shift forecast',
+    ofTotal: (total) => `Shift plan ${total}`,
+    forecastGap: (gap) => `${gap} vs plan`,
+    missing: (n) => `${n} slot${Number(n) === 1 ? '' : 's'} need a reason`,
+    needReason: 'Select a reason',
+    noReason: '—',
+    exportCsv: 'Export',
+    actualLabel: (slot) => `${slot} actual quantity`,
+    reasonLabel: (slot) => `${slot} reason`,
+    noteLabel: (slot) => `${slot} note`,
+  },
   storage: {
     search: 'Search bins, parts, lots',
     searchPlaceholder: 'Search bin / part / name / lot',
