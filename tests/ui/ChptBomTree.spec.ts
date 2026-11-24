@@ -190,7 +190,7 @@ describe('ChptBomTree', () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => undefined)
     const { w } = mountIt({ stock })
     await w.findAll('button').find((b) => b.text().includes('匯出'))!.trigger('click')
-    const lines = (await created[0].text()).replace(/^﻿/, '').split('\r\n')
+    const lines = (await created[0].text()).replace(/^\uFEFF/, '').split('\r\n')
     expect(lines[0]).toBe('階,料號,品名,位置號,單位用量,單位,每台用量,需求（10 台）,庫存,缺料,關鍵料')
     expect(lines).toHaveLength(7)
     expect(lines[1]).toBe('0,FG,成品,,,,,10,,,')
