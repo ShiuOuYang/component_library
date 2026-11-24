@@ -1076,6 +1076,28 @@ export interface ChptLocale {
     statsCaption: (title: string) => string
     ariaLabel: (title: string, n: number, x: string, y: string, fits: string[]) => string
   }
+  probability: {
+    title: string
+    empty: string
+    data: string
+    distribution: string
+    dists: { normal: string; lognormal: string; weibull: string }
+    mean: string
+    sd: string
+    shape: string
+    scale: string
+    pValue: string
+    verdict: string
+    fits: string
+    notFits: string
+    excluded: (n: number) => string
+    statsCaption: (dist: string) => string
+    hint: (alpha: string) => string
+    rank: (rank: number, n: number, pct: string) => string
+    outside: string
+    seriesLabel: (name: string, n: number, p: string, verdict: string) => string
+    ariaLabel: (title: string, dist: string, parts: string[]) => string
+  }
   treemap: {
     title: string
     empty: string
@@ -2346,6 +2368,28 @@ export const zhTW: ChptLocale = {
     tipLine: (name, value) => `${name}：${value}`,
     statsCaption: (title) => `${title}的迴歸統計`,
     ariaLabel: (title, n, x, y, fits) => `${title}：${n} 個點，X 軸 ${x}、Y 軸 ${y}${fits.length ? `；${fits.join('、')}` : ''}`,
+  },
+  probability: {
+    title: '機率圖',
+    empty: '資料不足（至少 3 個有效值）',
+    data: '資料',
+    distribution: '分配',
+    dists: { normal: '常態', lognormal: '對數常態', weibull: 'Weibull' },
+    mean: '平均',
+    sd: '標準差',
+    shape: '形狀',
+    scale: '尺度',
+    pValue: 'p 值',
+    verdict: '判定',
+    fits: '符合',
+    notFits: '不符合',
+    excluded: (n) => `（排除 ${n}）`,
+    statsCaption: (dist) => `${dist}配適與 Anderson-Darling 檢定`,
+    hint: (alpha) => `點落在直線附近表示符合；虛線為 95% 信賴帶，帶外的點標紅。p < ${alpha} 判定不符合（Anderson-Darling）。`,
+    rank: (rank, n, pct) => `第 ${rank} / ${n} 小，累積 ${pct}`,
+    outside: '在信賴帶外',
+    seriesLabel: (name, n, p, verdict) => `${name}：N ${n}，p ${p}，${verdict}`,
+    ariaLabel: (title, dist, parts) => `${title}（${dist}）：${parts.join('；')}`,
   },
   treemap: {
     title: '矩形樹圖',
@@ -3624,6 +3668,28 @@ export const enUS: ChptLocale = {
     tipLine: (name, value) => `${name}: ${value}`,
     statsCaption: (title) => `${title} regression statistics`,
     ariaLabel: (title, n, x, y, fits) => `${title}: ${n} points, X axis ${x}, Y axis ${y}${fits.length ? `; ${fits.join(', ')}` : ''}`,
+  },
+  probability: {
+    title: 'Probability plot',
+    empty: 'Not enough data (at least 3 valid values)',
+    data: 'Data',
+    distribution: 'Distribution',
+    dists: { normal: 'Normal', lognormal: 'Lognormal', weibull: 'Weibull' },
+    mean: 'Mean',
+    sd: 'StDev',
+    shape: 'Shape',
+    scale: 'Scale',
+    pValue: 'P-value',
+    verdict: 'Result',
+    fits: 'Fits',
+    notFits: 'Does not fit',
+    excluded: (n) => ` (${n} excluded)`,
+    statsCaption: (dist) => `${dist} fit and Anderson-Darling test`,
+    hint: (alpha) => `Points close to the line fit the distribution. Dashed lines are the 95% confidence band; points outside are red. P < ${alpha} means it does not fit (Anderson-Darling).`,
+    rank: (rank, n, pct) => `Rank ${rank} of ${n}, cumulative ${pct}`,
+    outside: 'Outside the confidence band',
+    seriesLabel: (name, n, p, verdict) => `${name}: N ${n}, P ${p}, ${verdict}`,
+    ariaLabel: (title, dist, parts) => `${title} (${dist}): ${parts.join('; ')}`,
   },
   treemap: {
     title: 'Treemap',

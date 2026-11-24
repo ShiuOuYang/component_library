@@ -150,6 +150,14 @@ const routes = [
         },
       },
       {
+        path: "components/probability-plot",
+        name: "ProbabilityPlotDoc",
+        component: () => import("../views/docs/ProbabilityPlotDoc.vue"),
+        meta: {
+          title: "機率圖",
+        },
+      },
+      {
         path: "components/box-plot-chart",
         name: "BoxPlotChartDoc",
         component: () => import("../views/docs/BoxPlotChartDoc.vue"),
