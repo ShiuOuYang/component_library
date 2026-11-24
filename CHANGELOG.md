@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **NetworkGraph 關係圖**（charts）：設備相依、警報關聯、物料共用這類「誰跟誰有關係」的資料。力導向版面（初始位置固定，同樣資料每次排出來一樣；
+  資料小改時保留位置只微調）、節點大小 = 數值或連線數、線寬 = 權重、同群組同色並聚在一起；`directed` 畫箭頭。滑過 / 點選高亮相鄰節點，
+  點選後 Shift + 點另一個節點顯示最短路徑（`path` 事件）；拖曳節點會釘住（雙擊放開）、拖曳空白處平移、Ctrl + 滾輪與按鈕縮放、全覽；
+  點圖例隱藏群組；節點超過 `canvasThreshold` 改用 Canvas。鍵盤依連線數順序移動、Enter 選取；`v-model:selected`、`dropped-links` 回報略過的連線，
+  expose `fit`、`zoomBy`、`showPath`、`relayout`、`graph`、`view`；工具函式 `buildNetwork`、`networkShortestPath`。
 - **ChptCronInput 排程設定**（ui）：不用手寫 cron 也能設排程。選「每 N 分鐘 / 每小時 / 每天 / 每週 / 每月」再點選時間，或直接改 5 欄 cron 表達式，
   兩邊同步（簡易設定表達不了的切到「自訂」）；顯示可讀說明與接下來幾次執行時間（`showNext`），表達式錯誤時指出哪一欄。
   支援範圍、清單、間隔、月份與星期名稱，日與週同時限制時其一符合。另匯出 `parseCron`、`cronNextRuns`、`describeCron`、`isCronError` 與型別。

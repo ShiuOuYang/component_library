@@ -606,6 +606,10 @@ const navSections = [
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/network-graph', icon: '🕸️', label: '關係圖',
+        anchors: [{ label: '設備相依', id: 'dependency' }, { label: '大量節點', id: 'large' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/state-timeline', icon: '🚦', label: '機台狀態時間軸',
         anchors: [{ label: '一天的狀態', id: 'basic' }, { label: '停最久的機台', id: 'summary' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' }],
       },
