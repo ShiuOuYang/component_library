@@ -174,6 +174,14 @@ const routes = [
         },
       },
       {
+        path: "components/sunburst-chart",
+        name: "SunburstChartDoc",
+        component: () => import("../views/docs/SunburstChartDoc.vue"),
+        meta: {
+          title: "旭日圖",
+        },
+      },
+      {
         path: "components/parallel-chart",
         name: "ParallelChartDoc",
         component: () => import("../views/docs/ParallelChartDoc.vue"),

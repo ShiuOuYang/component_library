@@ -582,6 +582,10 @@ const navSections = [
         anchors: [{ label: '鑽取與分組顏色', id: 'group' }, { label: '依指標上色', id: 'metric' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/sunburst-chart', icon: '🌞', label: '旭日圖',
+        anchors: [{ label: '不良原因', id: 'defects' }, { label: '成本結構', id: 'cost' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/parallel-chart', icon: '🎚️', label: '平行座標圖',
         anchors: [{ label: '找出製程視窗', id: 'window' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' }],
       },
