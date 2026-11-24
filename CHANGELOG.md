@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **LineBalanceChart 線平衡圖**（charts）：山積圖（Yamazumi）。每站一根堆疊長條（作業元素依 `kinds` 分類上色），疊上節拍線（`takt`），
+  超過的站標紅；摘要顯示瓶頸、平衡率、總工時、理論最少人數。多人站週期 = 工時 ÷ 人數。`draggable` 時可把作業元素拖到別站
+  （即時重新堆疊，鍵盤也能拿起 / 換站 / 放下），送出 `v-model:elements` 與 `move`。另匯出 `lineBalanceLoads`、`lineBalanceSummary`、
+  `moveLineBalanceElement` 與型別 `LbStation`、`LbElement` 等。文件：新頁面「線平衡圖」。
+
 - **ChptStorageMap 儲位圖**（ui）：倉庫 / 線邊倉的儲位配置與庫存。區 → 料架 → 層 → 格（缺的格位留空），依使用率、料號或效期上色（`v-model:mode`）；
   搜尋料號 / 品名 / 批號 / 儲位標出位置（`locate()` 可接掃描）。點儲位看明細；拖曳庫存或整格、或按「移動」再點目的儲位即可移庫
   （檢查停用與容量，`allowOverCapacity`），送出 `move` / `move-reject`。快到期（`warnDays`）與已過期標示；方向鍵在料架內移動。
