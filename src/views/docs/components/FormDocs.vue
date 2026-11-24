@@ -324,6 +324,41 @@
       <ApiTable of="ChptWorkInstruction" title="方法（ref）" :rows="wiMethods" />
     </section>
 
+    <!-- ============ ChptAqlSampling ============ -->
+    <section id="chpt-aql-sampling" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAqlSampling 抽樣檢驗</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>進料檢驗（IQC）、出貨檢驗（OQC）依 ANSI/ASQ Z1.4（ISO 2859-1）抽樣。輸入批量、選檢驗水準，
+        每個缺點等級依 AQL 查出樣本數、允收數 Ac、拒收數 Re（表上是箭頭時依標準換方案，樣本數跟著變）。
+        邊檢驗邊按 + 記錄已檢數與不良數：任一等級不良數達到 Re 立刻判定拒收，檢完樣本且都在 Ac 以內為允收。
+        依最近各批結果（<code>history</code>）提示轉換規則：改為加嚴、減量、或停止檢驗。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptAqlSampling } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
+          <span class="text-content-secondary">最近各批：</span>
+          <ChptSegmented v-model="aqlHistoryKey" :options="aqlHistoryOptions" aria-label="最近各批結果" size="xs" />
+        </div>
+        <ChptAqlSampling
+          v-model="aqlRecord"
+          :classes="aqlClasses"
+          :history="aqlHistory"
+          title="IQC：電源供應器 PSU-65W"
+          @verdict="(v) => (v === 'accept' ? toast.success('整批允收') : toast.error('整批拒收'))"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="aqlSample" />
+      <ApiTable of="ChptAqlSampling" title="Props" :rows="aqlProps" />
+      <ApiTable of="ChptAqlSampling" title="Events" :rows="aqlEvents" />
+      <ApiTable of="ChptAqlSampling" title="方法（ref）" :rows="aqlMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>範圍：</strong>內建 Z1.4 表 I（樣本代字）與表 II-A（正常檢驗、單次抽樣）；加嚴與減量的方案請依標準另行查表，元件只提示何時該轉換。
+        查表函式也匯出成 <code>aqlCodeLetter</code>、<code>aqlNormalPlan</code>、<code>aqlVerdict</code>、<code>aqlSwitchingAdvice</code>。
+      </p>
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -370,7 +405,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import {
   ChptForm,
   ChptFormItem,
@@ -380,6 +415,7 @@ import {
   ChptSignaturePad,
   ChptChecklist,
   ChptWorkInstruction,
+  ChptAqlSampling,
   useToast,
   ChptInput,
   ChptSelect,
@@ -907,6 +943,51 @@ const uploadMethods = [
 ]
 const toast = useToast()
 
+// ---- ChptAqlSampling ----
+const aqlRecord = ref({ lotSize: 1000, level: 'II', inspected: 0, defects: {} })
+const aqlClasses = [
+  { key: 'critical', aql: 0.065 },
+  { key: 'major', aql: 1 },
+  { key: 'minor', aql: 2.5 },
+]
+const aqlHistoryOptions = [
+  { label: '最近都允收', value: 'ok' },
+  { label: '5 批內 2 批拒收', value: 'bad' },
+  { label: '連續 10 批允收', value: 'good' },
+]
+const aqlHistoryKey = ref('ok')
+const aqlHistory = computed(
+  () => ({ ok: [true, true, false, true, true], bad: [true, false, true, true, false], good: Array(10).fill(true) })[aqlHistoryKey.value]
+)
+const aqlSample = `<ChptAqlSampling
+  v-model="record"
+  :classes="[
+    { key: 'critical', aql: 0.065 },
+    { key: 'major', aql: 1.0 },
+    { key: 'minor', aql: 2.5 },
+  ]"
+  :history="lastLots"
+  @verdict="(v, record) => api.saveInspection(v, record)"
+/>
+
+// record：{ lotSize: 1000, level: 'II', inspected: 0, defects: {} }`
+const aqlProps = [
+  { name: 'v-model', type: 'AqlRecord', def: "{ lotSize: null, level: 'II', inspected: 0, defects: {} }", desc: '批量、檢驗水準、已檢數、各等級不良數（以及使用者改過的 AQL：aqls）' },
+  { name: 'classes', type: '{ key, label?, aql }[]', def: '主要 1.0、次要 2.5', desc: "缺點等級與預設 AQL；key 為 critical / major / minor 時名稱用語系" },
+  { name: 'severity', type: "'normal' | 'tightened' | 'reduced'", def: "'normal'", desc: '目前的檢驗嚴格度（只用來給轉換建議；方案一律為正常檢驗）' },
+  { name: 'history', type: 'boolean[]', def: '[]', desc: '最近各批結果（舊 → 新，true = 允收）；加嚴時只放加嚴期間的批' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只看' },
+]
+const aqlEvents = [
+  { name: 'update:modelValue', params: '(record)', desc: '批量、水準、AQL、已檢數、不良數改變' },
+  { name: 'verdict', params: "(verdict: 'accept' | 'reject', record)", desc: '整批判定變成允收或拒收時' },
+]
+const aqlMethods = [
+  { name: 'reset()', type: '() => void', desc: '清除已檢數與不良數（批量與水準保留）' },
+  { name: 'rows', type: '{ cls, label, aql, plan, defects, verdict }[]', desc: '各缺點等級的方案與判定' },
+  { name: 'overall', type: "'pending' | 'accept' | 'reject'", desc: '整批判定' },
+]
 // ---- ChptWorkInstruction ----
 /** 示意圖（SVG）：一個機台面板與幾個零件 */
 const wiSvg = (accent, extra = '') =>
