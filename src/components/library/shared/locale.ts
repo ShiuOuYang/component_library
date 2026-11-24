@@ -1334,6 +1334,32 @@ export interface ChptLocale {
     summary: (better: number, worse: number, same: number) => string
     ariaLabel: (title: string, rows: number, summary: string) => string
   }
+  ridgeline: {
+    title: string
+    empty: string
+    group: string
+    noData: string
+    separator: string
+    n: (n: number) => string
+    mean: (mean: string, sd: string) => string
+    median: (v: string) => string
+    quartiles: (q1: string, q3: string) => string
+    range: (min: string, max: string) => string
+    outOfSpec: (total: string, below: string, above: string) => string
+    lsl: string
+    usl: string
+    target: string
+    ariaLabel: (title: string, groups: number) => string
+    colN: string
+    colMean: string
+    colSd: string
+    colMedian: string
+    colQ1: string
+    colQ3: string
+    colMin: string
+    colMax: string
+    colOut: string
+  }
   sankey: {
     title: string
     empty: string
@@ -2937,6 +2963,32 @@ export const zhTW: ChptLocale = {
     pair: (name, value) => `${name}：${value}`,
     summary: (better, worse, same) => `改善 ${better}、變差 ${worse}、持平 ${same}`,
     ariaLabel: (title, rows, summary) => `${title}：${rows} 個項目${summary ? `，${summary}` : ''}`,
+  },
+  ridgeline: {
+    title: '山脊圖',
+    empty: '沒有資料',
+    group: '組別',
+    noData: '沒有資料',
+    separator: '，',
+    n: (n) => `n = ${n}`,
+    mean: (mean, sd) => `平均 ${mean}（標準差 ${sd}）`,
+    median: (v) => `中位數 ${v}`,
+    quartiles: (q1, q3) => `Q1–Q3：${q1} – ${q3}`,
+    range: (min, max) => `範圍：${min} – ${max}`,
+    outOfSpec: (total, below, above) => `規格外 ${total}${[below && `低於 LSL ${below}`, above && `高於 USL ${above}`].filter(Boolean).map((x) => `、${x}`).join('')}`,
+    lsl: 'LSL',
+    usl: 'USL',
+    target: '目標',
+    ariaLabel: (title, groups) => `${title}：${groups} 組分佈`,
+    colN: '筆數',
+    colMean: '平均',
+    colSd: '標準差',
+    colMedian: '中位數',
+    colQ1: 'Q1',
+    colQ3: 'Q3',
+    colMin: '最小',
+    colMax: '最大',
+    colOut: '規格外',
   },
   sankey: {
     title: '流向圖',
@@ -4548,6 +4600,32 @@ export const enUS: ChptLocale = {
     pair: (name, value) => `${name}: ${value}`,
     summary: (better, worse, same) => `${better} better, ${worse} worse, ${same} unchanged`,
     ariaLabel: (title, rows, summary) => `${title}: ${rows} ${Number(rows) === 1 ? 'item' : 'items'}${summary ? `, ${summary}` : ''}`,
+  },
+  ridgeline: {
+    title: 'Ridgeline chart',
+    empty: 'No data',
+    group: 'Group',
+    noData: 'No data',
+    separator: ', ',
+    n: (n) => `n = ${n}`,
+    mean: (mean, sd) => `Mean ${mean} (SD ${sd})`,
+    median: (v) => `Median ${v}`,
+    quartiles: (q1, q3) => `Q1–Q3: ${q1} – ${q3}`,
+    range: (min, max) => `Range: ${min} – ${max}`,
+    outOfSpec: (total, below, above) => `Out of spec ${total}${[below && `below LSL ${below}`, above && `above USL ${above}`].filter(Boolean).map((x) => `, ${x}`).join('')}`,
+    lsl: 'LSL',
+    usl: 'USL',
+    target: 'Target',
+    ariaLabel: (title, groups) => `${title}: ${groups} ${Number(groups) === 1 ? 'distribution' : 'distributions'}`,
+    colN: 'n',
+    colMean: 'Mean',
+    colSd: 'SD',
+    colMedian: 'Median',
+    colQ1: 'Q1',
+    colQ3: 'Q3',
+    colMin: 'Min',
+    colMax: 'Max',
+    colOut: 'Out of spec',
   },
   sankey: {
     title: 'Flow chart',

@@ -222,6 +222,14 @@ const routes = [
         },
       },
       {
+        path: "components/ridgeline-chart",
+        name: "RidgelineChartDoc",
+        component: () => import("../views/docs/RidgelineChartDoc.vue"),
+        meta: {
+          title: "山脊圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),
