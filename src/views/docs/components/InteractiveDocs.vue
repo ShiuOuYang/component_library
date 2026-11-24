@@ -380,6 +380,34 @@
         沒給時間的班別不檢查。規則只提醒不阻止 —— 調班、支援常有例外，由排班的人決定。
       </p>
     </section>
+
+    <!-- ============ ChptSkillMatrix ============ -->
+    <section id="chpt-skill-matrix" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSkillMatrix 技能矩陣</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>作業員 × 工站 / 技能的多能工管理。等級 0–4 用圓餅圖示（ILUO：未訓練 → 可教導他人），可獨立作業以上且證照未過期算合格。
+        最下列是每個技能的合格人數，低於需求（<code>required</code>）標紅；最右欄是每人合格的技能數。證照快到期（橘色圈）與已過期（紅色虛線圈）一眼看出。
+        排班（ChptShiftRoster）時可以用它確認每班的人會不會做。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptSkillMatrix } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptSkillMatrix
+          v-model:matrix="smMatrix"
+          :persons="smPersons"
+          :skills="smSkills"
+          title="SMT 二線技能矩陣"
+          :max-height="460"
+          @change="({ person, skill, to }) => (smLog = `${person.name} 的 ${skill.name} 改為 ${to} 級`)"
+        />
+        <p class="mt-2 text-xs text-content-secondary" aria-live="polite">{{ smLog || '（調整等級時顯示）' }}</p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="smSample" />
+      <ApiTable of="ChptSkillMatrix" title="Props" :rows="smProps" />
+      <ApiTable of="ChptSkillMatrix" title="Events" :rows="smEvents" />
+      <ApiTable of="ChptSkillMatrix" title="方法（ref）" :rows="smMethods" />
+    </section>
   </div>
 </template>
 
@@ -403,6 +431,7 @@ import {
   useChartSync,
   ChptSwitch,
   ChptShiftRoster,
+  ChptSkillMatrix,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -477,6 +506,75 @@ const rosterMethods = [
   { name: 'warnings()', type: '() => RosterWarning[]', desc: '目前的規則提醒（休息不足、連續上班）' },
 ]
 
+// ---- ChptSkillMatrix ----
+const smSkills = [
+  { id: 'print', name: '錫膏印刷', group: 'SMT', required: 3 },
+  { id: 'mount', name: '貼片機操作', group: 'SMT', required: 4 },
+  { id: 'reflow', name: '回焊爐', group: 'SMT', required: 2 },
+  { id: 'aoi', name: 'AOI 判讀', group: 'SMT', required: 3 },
+  { id: 'dip', name: '手插件', group: '後段', required: 3 },
+  { id: 'solder', name: '手焊', group: '後段', required: 2 },
+  { id: 'ict', name: 'ICT 測試', group: '測試', required: 2 },
+  { id: 'fct', name: '功能測試', group: '測試', required: 2 },
+  { id: 'pack', name: '包裝', group: '後段' },
+]
+const smPersons = [
+  ['A01', '陳小明', '早班'], ['A02', '林美華', '早班'], ['A03', '王大偉', '早班'], ['A04', '張雅婷', '早班'], ['A05', '李志強', '早班'],
+  ['B01', '黃淑芬', '中班'], ['B02', '吳建宏', '中班'], ['B03', '劉怡君', '中班'], ['B04', '蔡宗翰', '中班'],
+  ['C01', '楊佩珊', '夜班'], ['C02', '許家豪', '夜班'], ['C03', '鄭雅雯', '夜班'],
+].map(([id, name, team]) => ({ id, name, team }))
+const smDay = 86_400_000
+let smSeed = 5
+const smRand = () => ((smSeed = (smSeed * 1103515245 + 12345) % 2147483648) / 2147483648)
+const smMatrix = ref(
+  Object.fromEntries(
+    smPersons.map((p) => [
+      p.id,
+      Object.fromEntries(
+        smSkills
+          .map((s) => {
+            const level = Math.min(4, Math.floor(smRand() * 5.4))
+            if (!level) return null
+            const r = smRand()
+            const expiresAt = r < 0.08 ? Date.now() - 10 * smDay : r < 0.18 ? Date.now() + 12 * smDay : r < 0.6 ? Date.now() + 200 * smDay : null
+            return [s.id, expiresAt ? { level, expiresAt } : { level }]
+          })
+          .filter(Boolean)
+      ),
+    ])
+  )
+)
+const smLog = ref('')
+const smSample = `<ChptSkillMatrix
+  v-model:matrix="matrix"
+  :persons="[{ id: 'A01', name: '陳小明', team: '早班' }, …]"
+  :skills="[{ id: 'mount', name: '貼片機操作', group: 'SMT', required: 4 }, …]"
+  :qualify-level="3"
+  :warn-days="30"
+  @change="({ person, skill, to }) => api.saveSkill(person.id, skill.id, to)"
+/>
+
+// matrix：人員 id → 技能 id → { level: 0–4, expiresAt? }
+{ A01: { mount: { level: 4, expiresAt: '2027-03-31' }, aoi: { level: 2 } } }`
+const smProps = [
+  { name: 'persons', type: '{ id, name, team? }[]', def: '—', desc: '人員；team 可篩選（班別 / 組別）' },
+  { name: 'skills', type: '{ id, name, group?, required? }[]', def: '—', desc: '技能；group 分區表頭；required 至少要幾個合格的人（低於時標紅）' },
+  { name: 'v-model:matrix', type: 'Record<personId, Record<skillId, { level, expiresAt? }>>', def: '{}', desc: '等級 0–4（未訓練 / 訓練中 / 指導下作業 / 可獨立作業 / 可教導他人）與證照期限' },
+  { name: 'qualifyLevel', type: 'number', def: '3', desc: '等級 ≥ 這個值且證照未過期才算合格' },
+  { name: 'warnDays', type: 'number', def: '30', desc: '證照幾天內到期要提醒' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '計算效期用的現在時間' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只看' },
+  { name: 'maxHeight', type: 'number | null', def: 'null', desc: '表格最大高度；超過時捲動，表頭與合格人數列固定' },
+]
+const smEvents = [
+  { name: 'update:matrix', params: '(matrix)', desc: '調整等級後的矩陣' },
+  { name: 'change', params: '({ person, skill, from, to })', desc: '某人某技能的等級改變（存檔用）' },
+]
+const smMethods = [
+  { name: 'summary', type: 'SkillMatrixSummary', desc: '人力足夠的技能數、多能工人數、即將到期 / 已過期證照數' },
+  { name: 'coverage', type: 'SkillCoverage[]', desc: '每個技能的合格人數與缺額' },
+]
 // ---- DefectAnnotator ----
 /** 範例用的 PCB 示意圖（SVG） */
 const pcbSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" viewBox="0 0 640 400">
