@@ -187,6 +187,52 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  queryBuilder: {
+    title: string
+    combinator: string
+    and: string
+    or: string
+    not: string
+    groupHint: (isAnd: boolean) => string
+    removeGroup: string
+    removeRule: string
+    field: string
+    operator: string
+    value: string
+    choose: string
+    valuePlaceholder: string
+    from: string
+    to: string
+    yes: string
+    no: string
+    addRule: string
+    addGroup: string
+    summary: string
+    noCondition: string
+    between: (lo: string, hi: string) => string
+    list: (items: string[]) => string
+    ops: {
+      eq: string
+      neq: string
+      contains: string
+      notContains: string
+      startsWith: string
+      endsWith: string
+      gt: string
+      gte: string
+      lt: string
+      lte: string
+      between: string
+      in: string
+      notIn: string
+      empty: string
+      notEmpty: string
+    }
+    errors: { field: string; value: string; range: string; emptyGroup: string }
+    added: string
+    removed: string
+    moved: string
+  }
   bom: {
     title: string
     search: string
@@ -1553,6 +1599,52 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  queryBuilder: {
+    title: '查詢條件',
+    combinator: '條件關係',
+    and: '且',
+    or: '或',
+    not: '不符合',
+    groupHint: (isAnd) => (isAnd ? '以下全部符合' : '以下任一符合'),
+    removeGroup: '刪除群組',
+    removeRule: '刪除條件',
+    field: '欄位',
+    operator: '運算子',
+    value: '值',
+    choose: '請選擇',
+    valuePlaceholder: '輸入值',
+    from: '從',
+    to: '到',
+    yes: '是',
+    no: '否',
+    addRule: '條件',
+    addGroup: '群組',
+    summary: '條件：',
+    noCondition: '（沒有條件，全部符合）',
+    between: (lo, hi) => `介於 ${lo} 與 ${hi}`,
+    list: (items) => `（${items.join('、')}）`,
+    ops: {
+      eq: '等於',
+      neq: '不等於',
+      contains: '包含',
+      notContains: '不包含',
+      startsWith: '開頭是',
+      endsWith: '結尾是',
+      gt: '大於',
+      gte: '大於等於',
+      lt: '小於',
+      lte: '小於等於',
+      between: '介於',
+      in: '屬於',
+      notIn: '不屬於',
+      empty: '是空的',
+      notEmpty: '不是空的',
+    },
+    errors: { field: '欄位或運算子無效', value: '請輸入值', range: '起點大於終點', emptyGroup: '群組裡沒有條件' },
+    added: '已新增',
+    removed: '已刪除',
+    moved: '已移動',
+  },
   bom: {
     title: 'BOM 結構',
     search: '搜尋料號 / 品名 / 位置號',
@@ -2998,6 +3090,52 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  queryBuilder: {
+    title: 'Query',
+    combinator: 'Match',
+    and: 'AND',
+    or: 'OR',
+    not: 'NOT',
+    groupHint: (isAnd) => (isAnd ? 'All of the following' : 'Any of the following'),
+    removeGroup: 'Remove group',
+    removeRule: 'Remove condition',
+    field: 'Field',
+    operator: 'Operator',
+    value: 'Value',
+    choose: 'Choose',
+    valuePlaceholder: 'Value',
+    from: 'From',
+    to: 'To',
+    yes: 'Yes',
+    no: 'No',
+    addRule: 'Condition',
+    addGroup: 'Group',
+    summary: 'Query:',
+    noCondition: '(no conditions, everything matches)',
+    between: (lo, hi) => `between ${lo} and ${hi}`,
+    list: (items) => `(${items.join(', ')})`,
+    ops: {
+      eq: 'is',
+      neq: 'is not',
+      contains: 'contains',
+      notContains: 'does not contain',
+      startsWith: 'starts with',
+      endsWith: 'ends with',
+      gt: '>',
+      gte: '≥',
+      lt: '<',
+      lte: '≤',
+      between: 'between',
+      in: 'is one of',
+      notIn: 'is not one of',
+      empty: 'is empty',
+      notEmpty: 'is not empty',
+    },
+    errors: { field: 'Invalid field or operator', value: 'Enter a value', range: 'Start is after end', emptyGroup: 'Group has no conditions' },
+    added: 'Added',
+    removed: 'Removed',
+    moved: 'Moved',
+  },
   bom: {
     title: 'Bill of materials',
     search: 'Search part / name / reference',
