@@ -1297,6 +1297,22 @@ export interface ChptLocale {
     title: string
     target: (value: string) => string
   }
+  dumbbell: {
+    title: string
+    empty: string
+    before: string
+    after: string
+    better: string
+    worse: string
+    same: string
+    change: string
+    item: string
+    noValue: string
+    separator: string
+    pair: (name: string, value: string) => string
+    summary: (better: number, worse: number, same: number) => string
+    ariaLabel: (title: string, rows: number, summary: string) => string
+  }
   sankey: {
     title: string
     empty: string
@@ -2863,6 +2879,22 @@ export const zhTW: ChptLocale = {
   bullet: {
     title: '子彈圖',
     target: (value) => `目標 ${value}`,
+  },
+  dumbbell: {
+    title: '啞鈴圖',
+    empty: '沒有資料',
+    before: '前',
+    after: '後',
+    better: '改善',
+    worse: '變差',
+    same: '持平',
+    change: '變化',
+    item: '項目',
+    noValue: '無資料',
+    separator: '，',
+    pair: (name, value) => `${name}：${value}`,
+    summary: (better, worse, same) => `改善 ${better}、變差 ${worse}、持平 ${same}`,
+    ariaLabel: (title, rows, summary) => `${title}：${rows} 個項目${summary ? `，${summary}` : ''}`,
   },
   sankey: {
     title: '流向圖',
@@ -4437,6 +4469,22 @@ export const enUS: ChptLocale = {
   bullet: {
     title: 'Bullet chart',
     target: (value) => `target ${value}`,
+  },
+  dumbbell: {
+    title: 'Dumbbell chart',
+    empty: 'No data',
+    before: 'Before',
+    after: 'After',
+    better: 'Better',
+    worse: 'Worse',
+    same: 'Unchanged',
+    change: 'Change',
+    item: 'Item',
+    noValue: 'No data',
+    separator: ', ',
+    pair: (name, value) => `${name}: ${value}`,
+    summary: (better, worse, same) => `${better} better, ${worse} worse, ${same} unchanged`,
+    ariaLabel: (title, rows, summary) => `${title}: ${rows} ${Number(rows) === 1 ? 'item' : 'items'}${summary ? `, ${summary}` : ''}`,
   },
   sankey: {
     title: 'Flow chart',

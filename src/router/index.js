@@ -206,6 +206,14 @@ const routes = [
         },
       },
       {
+        path: "components/dumbbell-chart",
+        name: "DumbbellChartDoc",
+        component: () => import("../views/docs/DumbbellChartDoc.vue"),
+        meta: {
+          title: "啞鈴圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),
