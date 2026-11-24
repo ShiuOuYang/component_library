@@ -1318,6 +1318,22 @@ export interface ChptLocale {
     pathText: (path: string, hops: number) => string
     noPath: string
   }
+  dumbbell: {
+    title: string
+    empty: string
+    before: string
+    after: string
+    better: string
+    worse: string
+    same: string
+    change: string
+    item: string
+    noValue: string
+    separator: string
+    pair: (name: string, value: string) => string
+    summary: (better: number, worse: number, same: number) => string
+    ariaLabel: (title: string, rows: number, summary: string) => string
+  }
   sankey: {
     title: string
     empty: string
@@ -2905,6 +2921,22 @@ export const zhTW: ChptLocale = {
     ariaLabel: (title, nodes, links) => `${title}：${nodes} 個節點、${links} 條連線`,
     pathText: (path, hops) => `最短路徑（${hops} 步）：${path}`,
     noPath: '兩者之間沒有路徑',
+  },
+  dumbbell: {
+    title: '啞鈴圖',
+    empty: '沒有資料',
+    before: '前',
+    after: '後',
+    better: '改善',
+    worse: '變差',
+    same: '持平',
+    change: '變化',
+    item: '項目',
+    noValue: '無資料',
+    separator: '，',
+    pair: (name, value) => `${name}：${value}`,
+    summary: (better, worse, same) => `改善 ${better}、變差 ${worse}、持平 ${same}`,
+    ariaLabel: (title, rows, summary) => `${title}：${rows} 個項目${summary ? `，${summary}` : ''}`,
   },
   sankey: {
     title: '流向圖',
@@ -4500,6 +4532,22 @@ export const enUS: ChptLocale = {
     ariaLabel: (title, nodes, links) => `${title}: ${nodes} nodes, ${links} links`,
     pathText: (path, hops) => `Shortest path (${hops} ${Number(hops) === 1 ? 'step' : 'steps'}): ${path}`,
     noPath: 'No path between them',
+  },
+  dumbbell: {
+    title: 'Dumbbell chart',
+    empty: 'No data',
+    before: 'Before',
+    after: 'After',
+    better: 'Better',
+    worse: 'Worse',
+    same: 'Unchanged',
+    change: 'Change',
+    item: 'Item',
+    noValue: 'No data',
+    separator: ', ',
+    pair: (name, value) => `${name}: ${value}`,
+    summary: (better, worse, same) => `${better} better, ${worse} worse, ${same} unchanged`,
+    ariaLabel: (title, rows, summary) => `${title}: ${rows} ${Number(rows) === 1 ? 'item' : 'items'}${summary ? `, ${summary}` : ''}`,
   },
   sankey: {
     title: 'Flow chart',

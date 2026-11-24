@@ -603,6 +603,10 @@ const navSections = [
         anchors: [{ label: '找瓶頸', id: 'basic' }, { label: '拖曳重新平衡', id: 'rebalance' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/dumbbell-chart', icon: '🏋️', label: '啞鈴圖 / 斜率圖',
+        anchors: [{ label: '改善前後', id: 'kaizen' }, { label: '斜率圖', id: 'slope' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },
