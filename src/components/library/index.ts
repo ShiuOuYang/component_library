@@ -40,6 +40,7 @@ export {
   ChptLotTrace,
   ChptDiffViewer,
   ChptChecklist,
+  ChptJsonViewer,
   ChptBomTree,
   ChptAqlSampling,
   ChptSkillMatrix,
@@ -101,6 +102,8 @@ export { fitImage, clampImageView, zoomImageTo, viewOf as imageViewOf, zoomOf as
 export type { ImageView, ImageZoom, CompareMode } from './shared/imageCompare'
 export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
+export { diffJson, searchJson, pathString as jsonPathString, jsonType } from './shared/jsonViewer'
+export type { JsonType, JsonPath, JsonRow, JsonChange, JsonDiff } from './shared/jsonViewer'
 export { explodeBom, whereUsed as bomWhereUsed, diffBom, flattenBom } from './shared/bom'
 export type { BomItem, BomRow, BomNeed, BomPartNeed, BomChange, BomDiff } from './shared/bom'
 export { AQL_LEVELS, AQL_VALUES, codeLetter as aqlCodeLetter, normalPlan as aqlNormalPlan, aqlVerdict, switchingAdvice as aqlSwitchingAdvice } from './shared/aql'
@@ -158,7 +161,7 @@ export type {
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
-  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
+  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptJsonViewerProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
   SchemaFormField, SchemaFieldType, SchemaFieldOption, CommandItem, DashboardItem, KanbanColumn, KanbanMoveEvent, RichTextTool,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'

@@ -421,6 +421,38 @@
       <ApiTable of="ChptBomTree" title="方法（ref）" :rows="bomMethods" />
     </section>
 
+    <!-- ============ ChptJsonViewer ============ -->
+    <section id="chpt-json-viewer" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptJsonViewer JSON 檢視器</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>看 API 回應、設定檔、設備上報的原始資料。樹狀展開 / 收合、依型別上色；搜尋鍵或值會展開到符合的位置；
+        滑過一列可以複製值或路徑（例如 <code>response.data.alarms[1].message</code>）。很長的陣列分段顯示（下面的 <code>hourly</code> 有 160 筆）、
+        很長的字串截斷。給 <code>compare</code> 就標出與舊版的差異。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptJsonViewer } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-4">
+          <ChptSwitch v-model="jvCompare" label="與上一次回應比對" />
+        </div>
+        <ChptJsonViewer
+          :data="jvData"
+          :compare="jvCompare ? jvBefore : undefined"
+          :expand-depth="2"
+          root-name="response"
+          title="GET /api/lines/SMT-3/status"
+          :max-height="460"
+          @select="({ pathText, value }) => (jvLog = `${pathText || '（根）'}：${typeof value === 'object' && value !== null ? (Array.isArray(value) ? `陣列 ${value.length} 項` : '物件') : String(value)}`)"
+        />
+        <p class="mt-2 text-xs text-content-secondary" aria-live="polite">{{ jvLog || '（點一列時顯示路徑與值）' }}</p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="jvSample" />
+      <ApiTable of="ChptJsonViewer" title="Props" :rows="jvProps" />
+      <ApiTable of="ChptJsonViewer" title="Events" :rows="jvEvents" />
+      <ApiTable of="ChptJsonViewer" title="方法（ref）" :rows="jvMethods" />
+    </section>
+
   </div>
 </template>
 
@@ -445,6 +477,7 @@ import {
   ChptDiffViewer,
   ChptPivotTable,
   ChptBomTree,
+  ChptJsonViewer,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -874,6 +907,56 @@ const diffEvents = [{ name: 'update:onlyDiff', params: '(value: boolean)', desc:
 const diffMethods = [
   { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 摺疊' },
   { name: 'rows', type: 'DiffRow[]', desc: '比對結果（含相同的列）：{ path, left, right, status, delta?, pct? }' },
+]
+// ---- ChptJsonViewer ----
+const jvData = {
+  status: 200,
+  requestId: 'req_7f3a9c21',
+  data: {
+    line: 'SMT-3',
+    shift: { name: '早班', start: '08:00', end: '17:00', leader: null },
+    oee: { availability: 0.91, performance: 0.87, quality: 0.993, value: 0.786 },
+    alarms: [
+      { code: 'E203', message: '吸嘴真空異常', severity: 'major', at: '2026-11-24T09:12:33+08:00', acked: true },
+      { code: 'W118', message: '錫膏印刷偏移超過 50 µm，請檢查鋼板張力與刮刀壓力；若連續三片超出規格請停機並通知製程工程師處理。', severity: 'minor', at: '2026-11-24T10:41:05+08:00', acked: false },
+    ],
+    hourly: Array.from({ length: 160 }, (_, i) => ({ hour: i % 24, output: 100 + ((i * 37) % 30) })),
+    tags: ['automotive', 'lead-free'],
+    'x-trace-id': 'a1b2c3',
+  },
+}
+const jvBefore = {
+  ...jvData,
+  requestId: 'req_7f3a9c20',
+  data: { ...jvData.data, oee: { availability: 0.91, performance: 0.82, quality: 0.993 }, tags: ['automotive'], operator: '陳小明', hourly: jvData.data.hourly.slice(0, 150) },
+}
+const jvCompare = ref(false)
+const jvLog = ref('')
+const jvSample = `<ChptJsonViewer
+  :data="response"
+  :expand-depth="2"
+  root-name="response"
+  :compare="previousResponse"
+  @select="({ pathText, value }) => …"
+/>`
+const jvProps = [
+  { name: 'data', type: 'unknown', def: '—', desc: '要顯示的資料（物件、陣列或基本型別）' },
+  { name: 'compare', type: 'unknown', def: 'undefined', desc: '舊版資料；給了就標出新增、刪除、變更（物件依鍵、陣列依索引比對）' },
+  { name: 'expandDepth', type: 'number', def: '1', desc: '一開始展開幾層（0 = 只有根）' },
+  { name: 'rootName', type: 'string', def: "''", desc: "複製路徑時的開頭，例如 'response' → response.data.items[0]" },
+  { name: 'maxStringLength', type: 'number', def: '120', desc: '字串超過這個長度時截斷（可點「顯示全部」）' },
+  { name: 'pageSize', type: 'number', def: '100', desc: '陣列 / 物件一次顯示幾個子項，其餘收成「還有 N 項」' },
+  { name: 'toolbar / searchable / copyable', type: 'boolean', def: 'true', desc: '工具列、搜尋、複製' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'maxHeight', type: 'number | null', def: 'null', desc: '最大高度（px），超過時捲動' },
+]
+const jvEvents = [
+  { name: 'select', params: '({ path, pathText, value })', desc: '點一列' },
+  { name: 'copy', params: "({ text, kind: 'value' | 'path' | 'all' })", desc: '複製了值、路徑或全部' },
+]
+const jvMethods = [
+  { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 收合' },
+  { name: 'reveal(path)', type: '(path: (string | number)[]) => void', desc: '展開到某個路徑並捲到那裡' },
 ]
 // ---- ChptBomTree ----
 const part = (partNo, name, qty, extra = {}) => ({ partNo, name, qty, unit: 'pcs', ...extra })
