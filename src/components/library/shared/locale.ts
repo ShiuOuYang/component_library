@@ -1139,6 +1139,34 @@ export interface ChptLocale {
     pair: (x: string, y: string) => string
     closePair: string
   }
+  lineBalance: {
+    title: string
+    empty: string
+    takt: (v: string) => string
+    bottleneck: (station: string, v: string) => string
+    balanceRate: (pct: string) => string
+    totalWork: (v: string) => string
+    operators: (n: number) => string
+    operatorsMin: (n: number, min: number) => string
+    overTakt: (n: number) => string
+    operatorsShort: (n: number) => string
+    average: (v: string) => string
+    hint: string
+    stationLine: (station: string, cycle: string) => string
+    segLabel: (name: string, time: string, station: string, kind: string) => string
+    ariaLabel: (title: string, n: number, bottleneck: string, rate: string) => string
+    grabbed: (name: string) => string
+    grabMove: (name: string, station: string) => string
+    moved: (name: string, station: string) => string
+    cancelled: string
+    station: string
+    operatorsCol: string
+    load: string
+    cycle: string
+    status: string
+    over: string
+    ok: string
+  }
   radar: {
     title: string
     empty: string
@@ -2403,6 +2431,34 @@ export const zhTW: ChptLocale = {
     cell: (a, b, r, n, p, sig) => `${a} 與 ${b}：r = ${r}，n = ${n}，p ${String(p).startsWith('<') ? p : `= ${p}`}${sig ? '' : '（不顯著）'}`,
     pair: (x, y) => `${y} 對 ${x}`,
     closePair: '關閉',
+  },
+  lineBalance: {
+    title: '線平衡圖',
+    empty: '沒有工站',
+    takt: (v) => `節拍 ${v}`,
+    bottleneck: (station, v) => `瓶頸 ${station}（${v}）`,
+    balanceRate: (pct) => `平衡率 ${pct}`,
+    totalWork: (v) => `總工時 ${v}`,
+    operators: (n) => `人數 ${n}`,
+    operatorsMin: (n, min) => `人數 ${n}（理論最少 ${min}）`,
+    overTakt: (n) => `${n} 站超過節拍`,
+    operatorsShort: (n) => `${n} 人`,
+    average: (v) => `平均 ${v}`,
+    hint: '拖曳作業元素到別站重新平衡；鍵盤：Enter 拿起、← → 換站、Enter 放下',
+    stationLine: (station, cycle) => `${station} 週期 ${cycle}`,
+    segLabel: (name, time, station, kind) => [name, time, station, kind].filter(Boolean).join('，'),
+    ariaLabel: (title, n, bottleneck, rate) => `${title}：${n} 站，瓶頸 ${bottleneck}，平衡率 ${rate}`,
+    grabbed: (name) => `已拿起 ${name}，用左右鍵換站，Enter 放下，Esc 取消`,
+    grabMove: (name, station) => `${name} → ${station}`,
+    moved: (name, station) => `${name} 已移到 ${station}`,
+    cancelled: '已取消',
+    station: '工站',
+    operatorsCol: '人數',
+    load: '工時',
+    cycle: '週期',
+    status: '狀態',
+    over: '超過節拍',
+    ok: '正常',
   },
   radar: {
     title: '雷達圖',
@@ -3675,6 +3731,34 @@ export const enUS: ChptLocale = {
     cell: (a, b, r, n, p, sig) => `${a} and ${b}: r = ${r}, n = ${n}, p ${String(p).startsWith('<') ? p : `= ${p}`}${sig ? '' : ' (not significant)'}`,
     pair: (x, y) => `${y} vs ${x}`,
     closePair: 'Close',
+  },
+  lineBalance: {
+    title: 'Line balance chart',
+    empty: 'No stations',
+    takt: (v) => `Takt ${v}`,
+    bottleneck: (station, v) => `Bottleneck ${station} (${v})`,
+    balanceRate: (pct) => `Balance ${pct}`,
+    totalWork: (v) => `Total work ${v}`,
+    operators: (n) => `${n} operators`,
+    operatorsMin: (n, min) => `${n} operators (min ${min})`,
+    overTakt: (n) => `${n} over takt`,
+    operatorsShort: (n) => `×${n}`,
+    average: (v) => `Average ${v}`,
+    hint: 'Drag work elements to another station to rebalance. Keyboard: Enter to pick up, ← → to move, Enter to drop.',
+    stationLine: (station, cycle) => `${station} cycle ${cycle}`,
+    segLabel: (name, time, station, kind) => [name, time, station, kind].filter(Boolean).join(', '),
+    ariaLabel: (title, n, bottleneck, rate) => `${title}: ${n} stations, bottleneck ${bottleneck}, balance ${rate}`,
+    grabbed: (name) => `Picked up ${name}. Use left and right arrows to move, Enter to drop, Esc to cancel.`,
+    grabMove: (name, station) => `${name} → ${station}`,
+    moved: (name, station) => `${name} moved to ${station}`,
+    cancelled: 'Cancelled',
+    station: 'Station',
+    operatorsCol: 'Operators',
+    load: 'Work',
+    cycle: 'Cycle',
+    status: 'Status',
+    over: 'Over takt',
+    ok: 'OK',
   },
   radar: {
     title: 'Radar chart',
