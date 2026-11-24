@@ -586,6 +586,10 @@ const navSections = [
         anchors: [{ label: '找出製程視窗', id: 'window' }, { label: '大量資料', id: 'large' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/line-balance-chart', icon: '⚖️', label: '線平衡圖（山積圖）',
+        anchors: [{ label: '找瓶頸', id: 'basic' }, { label: '拖曳重新平衡', id: 'rebalance' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },

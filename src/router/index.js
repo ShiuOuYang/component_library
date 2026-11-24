@@ -182,6 +182,14 @@ const routes = [
         },
       },
       {
+        path: "components/line-balance-chart",
+        name: "LineBalanceChartDoc",
+        component: () => import("../views/docs/LineBalanceChartDoc.vue"),
+        meta: {
+          title: "線平衡圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),
