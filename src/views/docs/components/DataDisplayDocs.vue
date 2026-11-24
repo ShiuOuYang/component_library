@@ -388,6 +388,39 @@
       <ApiTable of="ChptPivotTable" title="方法（ref）" :rows="pivotMethods" />
     </section>
 
+    <!-- ============ ChptBomTree ============ -->
+    <section id="chpt-bom-tree" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptBomTree BOM 結構</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>多階 BOM 的檢視與備料。用量逐階連乘成「每台用量」，乘上生產數量就是需求；給了庫存就算缺料
+        （<code>netting</code> 時先扣半成品庫存：電源模組有 120 個庫存，下階只要補 380 台份），關鍵料標驚嘆號。
+        搜尋料號 / 品名 / 位置號會展開到那一層並列出用在哪裡（where-used）；給舊版次（<code>compare</code>）就標出新增、刪除、用量變更。
+        ChptLotTrace 追的是「這批用了哪些批」，這裡是「這個產品該用哪些料」。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptBomTree } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-4">
+          <ChptSwitch v-model="bomCompare" label="與 Rev.A 比對" />
+        </div>
+        <ChptBomTree
+          v-model:build-qty="bomQty"
+          :data="bomV2"
+          :stock="bomStock"
+          :compare="bomCompare ? bomV1 : null"
+          title="GW-500 工業閘道器"
+          :max-height="520"
+          @row-click="(item) => (bomClicked = `${item.partNo} ${item.name ?? ''}`)"
+        />
+        <p class="mt-2 text-xs text-content-secondary" aria-live="polite">{{ bomClicked || '（點一列時顯示）' }}</p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="bomSample" />
+      <ApiTable of="ChptBomTree" title="Props" :rows="bomProps" />
+      <ApiTable of="ChptBomTree" title="Events" :rows="bomEvents" />
+      <ApiTable of="ChptBomTree" title="方法（ref）" :rows="bomMethods" />
+    </section>
+
   </div>
 </template>
 
@@ -411,6 +444,7 @@ import {
   ChptLotTrace,
   ChptDiffViewer,
   ChptPivotTable,
+  ChptBomTree,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -840,6 +874,98 @@ const diffEvents = [{ name: 'update:onlyDiff', params: '(value: boolean)', desc:
 const diffMethods = [
   { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 摺疊' },
   { name: 'rows', type: 'DiffRow[]', desc: '比對結果（含相同的列）：{ path, left, right, status, delta?, pct? }' },
+]
+// ---- ChptBomTree ----
+const part = (partNo, name, qty, extra = {}) => ({ partNo, name, qty, unit: 'pcs', ...extra })
+const bomV2 = {
+  partNo: 'GW-500',
+  name: '工業閘道器 GW-500（Rev.B）',
+  qty: 1,
+  children: [
+    {
+      partNo: 'PCBA-500-MB',
+      name: '主板組件',
+      qty: 1,
+      children: [
+        part('PCB-500-MB', '主板空板 6L', 1),
+        part('IC-MCU-H7', 'MCU H7 系列 LQFP144', 1, { critical: true, ref: 'U1' }),
+        part('IC-PHY-ETH', '乙太網 PHY', 2, { ref: 'U5, U6' }),
+        part('IC-DDR4-4G', 'DDR4 4Gb', 2, { critical: true, ref: 'U3, U4' }),
+        part('RC0402-10K', '電阻 10KΩ 0402', 24, { ref: 'R1–R24' }),
+        part('CC0402-100N', '電容 100nF 0402', 36, { ref: 'C1–C36' }),
+        part('CN-RJ45-2', 'RJ45 雙口連接器', 1, { ref: 'J1' }),
+      ],
+    },
+    {
+      partNo: 'PSU-24V-MOD',
+      name: '電源模組',
+      qty: 1,
+      children: [part('PCB-PSU', '電源板', 1), part('IC-DCDC-5A', 'DC-DC 5A', 2, { critical: true, ref: 'U1, U2' }), part('L-10UH', '電感 10µH', 2, { ref: 'L1, L2' }), part('CC0402-100N', '電容 100nF 0402', 8, { ref: 'C1–C8' })],
+    },
+    part('CASE-500-AL', '鋁擠外殼', 1),
+    part('SCREW-M3-6', '螺絲 M3×6', 8),
+    part('LBL-500', '銘牌標籤', 1),
+  ],
+}
+const bomV1 = {
+  ...bomV2,
+  name: '工業閘道器 GW-500（Rev.A）',
+  children: [
+    { ...bomV2.children[0], children: [...bomV2.children[0].children.filter((c) => c.partNo !== 'IC-PHY-ETH'), part('IC-PHY-ETH', '乙太網 PHY', 1), part('IC-RTC', 'RTC 時鐘', 1)] },
+    bomV2.children[1],
+    bomV2.children[2],
+    part('SCREW-M3-6', '螺絲 M3×6', 6),
+  ],
+}
+const bomStock = {
+  'PSU-24V-MOD': 120,
+  'PCB-500-MB': 600,
+  'IC-MCU-H7': 380,
+  'IC-PHY-ETH': 1500,
+  'IC-DDR4-4G': 700,
+  'RC0402-10K': 50000,
+  'CC0402-100N': 12000,
+  'CN-RJ45-2': 520,
+  'PCB-PSU': 200,
+  'IC-DCDC-5A': 900,
+  'L-10UH': 2000,
+  'CASE-500-AL': 450,
+  'SCREW-M3-6': 10000,
+  'LBL-500': 3000,
+}
+const bomQty = ref(500)
+const bomCompare = ref(false)
+const bomClicked = ref('')
+const bomSample = `<ChptBomTree
+  v-model:build-qty="qty"
+  :data="{ partNo: 'GW-500', name: '工業閘道器', qty: 1, children: [
+    { partNo: 'PCBA-500-MB', name: '主板組件', qty: 1, children: [
+      { partNo: 'IC-MCU-H7', name: 'MCU', qty: 1, critical: true, ref: 'U1' }, …
+    ] }, …
+  ] }"
+  :stock="{ 'IC-MCU-H7': 380, 'PSU-24V-MOD': 120, … }"
+  :compare="previousRevision"
+/>`
+const bomProps = [
+  { name: 'data', type: 'BomItem', def: '—', desc: '成品（根）與各階子件：{ partNo, name?, qty, unit?, critical?, ref?, children? }' },
+  { name: 'v-model:buildQty', type: 'number', def: '1', desc: '生產數量；需求 = 每台用量 × 生產數量' },
+  { name: 'stock', type: 'Record<partNo, number> | null', def: 'null', desc: '庫存；給了才顯示庫存與缺料欄' },
+  { name: 'netting', type: 'boolean', def: 'true', desc: '扣抵半成品庫存（半成品有庫存時，下階少用）；同料號多處使用時共用庫存' },
+  { name: 'compare', type: 'BomItem | null', def: 'null', desc: '舊版次；給了就標出新增、刪除、用量變更' },
+  { name: 'expandDepth', type: 'number', def: '2', desc: '一開始展開幾階' },
+  { name: 'showRef', type: 'boolean', def: 'true', desc: '位置號欄' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'maxHeight', type: 'number | null', def: 'null', desc: '表格最大高度；超過時捲動，表頭固定' },
+  { name: 'filename', type: 'string', def: "'bom'", desc: '匯出 CSV 的檔名' },
+]
+const bomEvents = [
+  { name: 'update:buildQty', params: '(qty: number)', desc: '改生產數量' },
+  { name: 'row-click', params: '(item: BomItem, key: string)', desc: '點一列（key 是根到這一層的路徑）' },
+]
+const bomMethods = [
+  { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 收合' },
+  { name: 'exportCsv()', type: '() => void', desc: '下載全部展開的攤平表（階、料號、用量、需求、庫存、缺料）' },
+  { name: 'parts', type: 'BomPartNeed[]', desc: '各採購件的需求、庫存、缺料' },
 ]
 // ---- ChptPivotTable ----
 const pivotData = (() => {

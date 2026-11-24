@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptBomTree BOM 結構**（ui）：多階 BOM 的樹狀表格（treegrid）。用量逐階連乘成每台用量，乘上生產數量（`v-model:buildQty`）就是需求；
+  給了庫存（`stock`）就算缺料，`netting` 時先扣半成品庫存、同料號多處使用時共用庫存，關鍵料標示並統計。搜尋料號 / 品名 / 位置號會展開
+  到那一層並列出用在哪裡（where-used）；給舊版次（`compare`）就標出新增、刪除、用量變更。只看缺料、全部展開 / 收合、鍵盤操作、匯出 CSV。
+  另匯出 `explodeBom`、`bomWhereUsed`、`diffBom`、`flattenBom` 與型別 `BomItem` 等。
+
 - **ChptSkillMatrix 技能矩陣**（ui）：作業員 × 工站 / 技能的多能工管理。等級 0–4（ILUO）用圓餅圖示；等級 ≥ `qualifyLevel` 且證照未過期算合格。
   最下列每個技能的合格人數，低於 `required` 標紅；最右欄每人合格的技能數；證照快到期（`warnDays`）與已過期標示。
   篩選班別、搜尋人員；點格子循環等級（或選定等級後點）、鍵盤方向鍵移動與數字鍵 0–4 設定。`v-model:matrix` 與 `change` 事件。

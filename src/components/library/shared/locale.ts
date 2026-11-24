@@ -187,6 +187,42 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  bom: {
+    title: string
+    search: string
+    buildQty: string
+    shortOnly: string
+    expandAll: string
+    collapseAll: string
+    exportCsv: string
+    partCount: (n: number) => string
+    shortCount: (n: number) => string
+    noShortage: string
+    criticalShort: (n: number) => string
+    nettingNote: string
+    added: (n: number) => string
+    removed: (n: number) => string
+    qtyChanged: (n: number) => string
+    found: (n: number) => string
+    usedIn: string
+    perUnitShort: (n: string) => string
+    level: string
+    partNo: string
+    name: string
+    ref: string
+    qty: string
+    unit: string
+    perUnit: string
+    required: (qty: string) => string
+    stock: string
+    shortage: string
+    change: string
+    critical: string
+    fromStock: (n: string) => string
+    expand: (partNo: string) => string
+    collapse: (partNo: string) => string
+    changes: { added: string; removed: string; qty: (from: string, to: string) => string }
+  }
   skillMatrix: {
     title: string
     empty: string
@@ -1486,6 +1522,42 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  bom: {
+    title: 'BOM 結構',
+    search: '搜尋料號 / 品名 / 位置號',
+    buildQty: '生產數量',
+    shortOnly: '只看缺料',
+    expandAll: '全部展開',
+    collapseAll: '全部收合',
+    exportCsv: '匯出',
+    partCount: (n) => `採購件 ${n} 種`,
+    shortCount: (n) => `缺料 ${n} 種`,
+    noShortage: '不缺料',
+    criticalShort: (n) => `其中關鍵料 ${n} 種`,
+    nettingNote: '（已扣抵半成品庫存）',
+    added: (n) => `新增 ${n}`,
+    removed: (n) => `刪除 ${n}`,
+    qtyChanged: (n) => `用量變更 ${n}`,
+    found: (n) => (Number(n) ? `找到 ${n} 筆` : '找不到'),
+    usedIn: '用在',
+    perUnitShort: (n) => `（每台 ${n}）`,
+    level: '階',
+    partNo: '料號',
+    name: '品名',
+    ref: '位置號',
+    qty: '單位用量',
+    unit: '單位',
+    perUnit: '每台用量',
+    required: (qty) => `需求（${qty} 台）`,
+    stock: '庫存',
+    shortage: '缺料',
+    change: '變更',
+    critical: '關鍵料',
+    fromStock: (n) => `用庫存 ${n}`,
+    expand: (partNo) => `展開 ${partNo}`,
+    collapse: (partNo) => `收合 ${partNo}`,
+    changes: { added: '新增', removed: '刪除', qty: (from, to) => `用量 ${from} → ${to}` },
+  },
   skillMatrix: {
     title: '技能矩陣',
     empty: '沒有符合的人員或技能',
@@ -2859,6 +2931,42 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  bom: {
+    title: 'Bill of materials',
+    search: 'Search part / name / reference',
+    buildQty: 'Build quantity',
+    shortOnly: 'Shortages only',
+    expandAll: 'Expand all',
+    collapseAll: 'Collapse all',
+    exportCsv: 'Export',
+    partCount: (n) => `${n} purchased part${Number(n) === 1 ? '' : 's'}`,
+    shortCount: (n) => `${n} short`,
+    noShortage: 'No shortages',
+    criticalShort: (n) => `${n} critical`,
+    nettingNote: '(net of subassembly stock)',
+    added: (n) => `${n} added`,
+    removed: (n) => `${n} removed`,
+    qtyChanged: (n) => `${n} quantity changed`,
+    found: (n) => (Number(n) ? `${n} found` : 'No match'),
+    usedIn: 'Used in',
+    perUnitShort: (n) => `(${n} per unit)`,
+    level: 'Level',
+    partNo: 'Part no.',
+    name: 'Description',
+    ref: 'Reference',
+    qty: 'Qty per',
+    unit: 'Unit',
+    perUnit: 'Per unit',
+    required: (qty) => `Required (${qty} units)`,
+    stock: 'Stock',
+    shortage: 'Short',
+    change: 'Change',
+    critical: 'Critical part',
+    fromStock: (n) => `${n} from stock`,
+    expand: (partNo) => `Expand ${partNo}`,
+    collapse: (partNo) => `Collapse ${partNo}`,
+    changes: { added: 'Added', removed: 'Removed', qty: (from, to) => `Qty ${from} → ${to}` },
+  },
   skillMatrix: {
     title: 'Skill matrix',
     empty: 'No matching people or skills',
