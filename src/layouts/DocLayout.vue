@@ -603,6 +603,10 @@ const navSections = [
         anchors: [{ label: '找瓶頸', id: 'basic' }, { label: '拖曳重新平衡', id: 'rebalance' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/dumbbell-chart', icon: '🏋️', label: '啞鈴圖 / 斜率圖',
+        anchors: [{ label: '改善前後', id: 'kaizen' }, { label: '斜率圖', id: 'slope' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/ridgeline-chart', icon: '⛰️', label: '山脊圖',
         anchors: [{ label: '各機台與規格', id: 'spec' }, { label: '每天的週期時間', id: 'daily' }, { label: 'API', id: 'api' }],
       },

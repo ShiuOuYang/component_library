@@ -214,6 +214,14 @@ const routes = [
         },
       },
       {
+        path: "components/dumbbell-chart",
+        name: "DumbbellChartDoc",
+        component: () => import("../views/docs/DumbbellChartDoc.vue"),
+        meta: {
+          title: "啞鈴圖",
+        },
+      },
+      {
         path: "components/ridgeline-chart",
         name: "RidgelineChartDoc",
         component: () => import("../views/docs/RidgelineChartDoc.vue"),
