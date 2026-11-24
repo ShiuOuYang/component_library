@@ -206,6 +206,14 @@ const routes = [
         },
       },
       {
+        path: "components/network-graph",
+        name: "NetworkGraphDoc",
+        component: () => import("../views/docs/NetworkGraphDoc.vue"),
+        meta: {
+          title: "關係圖",
+        },
+      },
+      {
         path: "components/dumbbell-chart",
         name: "DumbbellChartDoc",
         component: () => import("../views/docs/DumbbellChartDoc.vue"),

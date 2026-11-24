@@ -1297,6 +1297,27 @@ export interface ChptLocale {
     title: string
     target: (value: string) => string
   }
+  network: {
+    title: string
+    empty: string
+    legend: string
+    zoomIn: string
+    zoomOut: string
+    fit: string
+    source: string
+    target: string
+    weight: string
+    group: (g: string) => string
+    degree: (n: number) => string
+    value: (v: string) => string
+    neighbors: (list: string) => string
+    pinned: string
+    separator: string
+    listSeparator: string
+    ariaLabel: (title: string, nodes: number, links: number) => string
+    pathText: (path: string, hops: number) => string
+    noPath: string
+  }
   dumbbell: {
     title: string
     empty: string
@@ -2879,6 +2900,27 @@ export const zhTW: ChptLocale = {
   bullet: {
     title: '子彈圖',
     target: (value) => `目標 ${value}`,
+  },
+  network: {
+    title: '關係圖',
+    empty: '沒有資料',
+    legend: '群組（點一下隱藏 / 顯示）',
+    zoomIn: '放大',
+    zoomOut: '縮小',
+    fit: '全覽',
+    source: '起點',
+    target: '終點',
+    weight: '權重',
+    group: (g) => `群組：${g}`,
+    degree: (n) => `連線 ${n} 條`,
+    value: (v) => `數值 ${v}`,
+    neighbors: (list) => (list ? `相鄰：${list}` : '沒有相鄰節點'),
+    pinned: '已釘住（雙擊取消）',
+    separator: '，',
+    listSeparator: '、',
+    ariaLabel: (title, nodes, links) => `${title}：${nodes} 個節點、${links} 條連線`,
+    pathText: (path, hops) => `最短路徑（${hops} 步）：${path}`,
+    noPath: '兩者之間沒有路徑',
   },
   dumbbell: {
     title: '啞鈴圖',
@@ -4469,6 +4511,27 @@ export const enUS: ChptLocale = {
   bullet: {
     title: 'Bullet chart',
     target: (value) => `target ${value}`,
+  },
+  network: {
+    title: 'Network graph',
+    empty: 'No data',
+    legend: 'Groups (click to hide / show)',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    fit: 'Fit to view',
+    source: 'Source',
+    target: 'Target',
+    weight: 'Weight',
+    group: (g) => `Group: ${g}`,
+    degree: (n) => `${n} ${Number(n) === 1 ? 'link' : 'links'}`,
+    value: (v) => `Value ${v}`,
+    neighbors: (list) => (list ? `Neighbors: ${list}` : 'No neighbors'),
+    pinned: 'Pinned (double-click to release)',
+    separator: ', ',
+    listSeparator: ', ',
+    ariaLabel: (title, nodes, links) => `${title}: ${nodes} nodes, ${links} links`,
+    pathText: (path, hops) => `Shortest path (${hops} ${Number(hops) === 1 ? 'step' : 'steps'}): ${path}`,
+    noPath: 'No path between them',
   },
   dumbbell: {
     title: 'Dumbbell chart',
