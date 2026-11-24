@@ -1113,6 +1113,21 @@ export interface ChptLocale {
     metricLine: (label: string, value: string) => string
     ariaLabel: (title: string, path: string, n: number, total: string) => string
   }
+  sunburst: {
+    title: string
+    empty: string
+    breadcrumb: string
+    hint: string
+    upShort: string
+    back: (parent: string) => string
+    name: string
+    value: string
+    share: string
+    drillable: (n: number) => string
+    valueShare: (value: string, share: string) => string
+    parentShare: (share: string, parent: string) => string
+    ariaLabel: (title: string, path: string, n: number, total: string) => string
+  }
   parallel: {
     title: string
     empty: string
@@ -2405,6 +2420,21 @@ export const zhTW: ChptLocale = {
     valueShare: (v, share) => `${v}（${share}）`,
     metricLine: (label, v) => `${label}：${v}`,
     ariaLabel: (title, path, n, total) => `${title}：${path}，${n} 項，合計 ${total}。數值見下方資料表`,
+  },
+  sunburst: {
+    title: '旭日圖',
+    empty: '沒有資料',
+    breadcrumb: '目前位置',
+    hint: '點弧往下一層、點中央回上一層；滑過看佔比。鍵盤：← → 同一圈、↑ 往外、↓ 往內、Enter 往下、Esc 回上層',
+    upShort: '回上層',
+    back: (parent) => `回到 ${parent}`,
+    name: '名稱',
+    value: '數量',
+    share: '佔比',
+    drillable: (n) => `有 ${n} 個子項，點了往下`,
+    valueShare: (value, share) => `${value}（佔 ${share}）`,
+    parentShare: (share, parent) => `佔 ${parent} 的 ${share}`,
+    ariaLabel: (title, path, n, total) => `${title}：${path}，${n} 項，合計 ${total}`,
   },
   parallel: {
     title: '平行座標圖',
@@ -3705,6 +3735,21 @@ export const enUS: ChptLocale = {
     valueShare: (v, share) => `${v} (${share})`,
     metricLine: (label, v) => `${label}: ${v}`,
     ariaLabel: (title, path, n, total) => `${title}: ${path}, ${n} items, total ${total}. Values in the table below`,
+  },
+  sunburst: {
+    title: 'Sunburst chart',
+    empty: 'No data',
+    breadcrumb: 'Current level',
+    hint: 'Click an arc to drill down, click the center to go up; hover for shares. Keyboard: ← → same ring, ↑ outward, ↓ inward, Enter to drill down, Esc to go up.',
+    upShort: 'Up',
+    back: (parent) => `Back to ${parent}`,
+    name: 'Name',
+    value: 'Value',
+    share: 'Share',
+    drillable: (n) => `${n} children, click to drill down`,
+    valueShare: (value, share) => `${value} (${share})`,
+    parentShare: (share, parent) => `${share} of ${parent}`,
+    ariaLabel: (title, path, n, total) => `${title}: ${path}, ${n} items, total ${total}`,
   },
   parallel: {
     title: 'Parallel coordinates',
