@@ -41,6 +41,7 @@ export {
   ChptDiffViewer,
   ChptChecklist,
   ChptSkillMatrix,
+  ChptHourlyBoard,
   ChptStorageMap,
   ChptFeederMap,
   ChptWorkInstruction,
@@ -100,6 +101,8 @@ export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, a
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
 export { skillCoverage, skillMatrixSummary, setSkillLevel, isQualified as isSkillQualified } from './shared/skillMatrix'
 export type { SkillLevel, SkillDef, SkillPerson, SkillCell, SkillMatrixData, SkillExpiry, SkillCoverage, SkillMatrixSummary } from './shared/skillMatrix'
+export { buildHourlySlots, hourlySummary } from './shared/hourlyBoard'
+export type { HourlySlot, HourlyBreak, HourlyRow, HourlySummary, SlotState as HourlySlotState, BuildSlotsOptions as HourlySlotOptions } from './shared/hourlyBoard'
 export { buildLayout as buildStorageLayout, searchBins as searchStorageBins, checkMove as checkStorageMove, moveStocks as moveStorageStocks, expiryStatus as storageExpiryStatus } from './shared/storage'
 export type { StorageBin, StorageStock, StorageExpiry, BinState as StorageBinState, RackLayout as StorageRackLayout, ZoneLayout as StorageZoneLayout, MoveCheck as StorageMoveCheck, StorageSummary } from './shared/storage'
 export { parseReelCode, matchesSlot as feederMatchesSlot, feederSummary, boardsLeft as feederBoardsLeft } from './shared/feeder'
@@ -149,7 +152,7 @@ export type {
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
-  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptSkillMatrixProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
+  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
   SchemaFormField, SchemaFieldType, SchemaFieldOption, CommandItem, DashboardItem, KanbanColumn, KanbanMoveEvent, RichTextTool,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'

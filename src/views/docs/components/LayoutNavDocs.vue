@@ -418,6 +418,37 @@
       <ApiTable of="ChptStorageMap" title="方法（ref）" :rows="storageMethods" />
     </section>
 
+    <!-- ============ ChptHourlyBoard ============ -->
+    <section id="chpt-hourly-board" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptHourlyBoard 逐時產出看板</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>產線的 hour-by-hour board。每個時段一列：計畫、實際（線上人員每小時填）、差異、累計差異、達成率；
+        落後的時段要選原因（<code>reasons</code>），沒填的會標出來。上方是目前應做、實際、差異、達成率，以及照目前效率的班別預估。
+        目前時段高亮、未來時段淡化；計畫可以用 <code>buildHourlySlots</code> 依班別、休息與產能算出來。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptHourlyBoard, buildHourlySlots } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="mb-3 flex flex-wrap items-center gap-4">
+          <ChptSwitch v-model="hourlyLive" label="使用電腦時間（關閉時固定在 13:40）" />
+          <ChptSwitch v-model="hourlyTv" label="電視模式" />
+        </div>
+        <ChptHourlyBoard
+          v-model:slots="hourlySlots"
+          :reasons="hourlyReasons"
+          :now="hourlyNow"
+          :tv="hourlyTv"
+          title="SMT-3 早班（每小時 120 片）"
+        />
+      </div>
+      <ChptCodeBlock class="mt-6" :code="hourlySample" />
+      <ApiTable of="ChptHourlyBoard" title="Props" :rows="hourlyProps" />
+      <ApiTable of="-" title="HourlySlot 與計算函式" :rows="hourlyDataRows" />
+      <ApiTable of="ChptHourlyBoard" title="Events" :rows="hourlyEvents" />
+      <ApiTable of="ChptHourlyBoard" title="方法（ref）" :rows="hourlyMethods" />
+    </section>
+
     <!-- ============ ChptApprovalFlow ============ -->
     <section id="chpt-approval-flow" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptApprovalFlow 簽核流程</h2>
@@ -473,6 +504,8 @@ import {
   ChptAndonBoard,
   ChptFeederMap,
   ChptStorageMap,
+  ChptHourlyBoard,
+  buildHourlySlots,
   ChptApprovalFlow,
   ChptSegmented,
 } from '@/components/library'
@@ -780,6 +813,76 @@ const feederMethods = [
   { name: 'selectSlot(id)', type: '(id: string | null) => void', desc: '選站位 / 取消' },
   { name: 'acknowledge()', type: '() => void', desc: '確認錯料（已取下）' },
   { name: 'exportCsv()', type: '() => void', desc: '下載上料紀錄 CSV' },
+]
+
+// ---- ChptHourlyBoard ----
+const hourlyReasons = [
+  { code: 'C01', label: '換線' },
+  { code: 'M02', label: '缺料' },
+  { code: 'E03', label: '設備故障' },
+  { code: 'Q04', label: '品質異常' },
+  { code: 'P05', label: '人員不足' },
+]
+const hourlyBase = buildHourlySlots({
+  start: '08:00',
+  end: '17:00',
+  rate: 120,
+  breaks: [
+    { start: '10:00', end: '10:10' },
+    { start: '12:00', end: '13:00' },
+    { start: '15:00', end: '15:10' },
+  ],
+})
+const hourlyFilled = { '08:00': [118], '09:00': [96, 'C01'], '10:00': [104], '11:00': [87, null, '貼片機拋料，已換吸嘴'], '13:00': [78] }
+const hourlySlots = ref(
+  hourlyBase.map((s) => {
+    const f = hourlyFilled[s.start]
+    return f ? { ...s, actual: f[0], reason: f[1] ?? null, note: f[2] ?? '' } : s
+  })
+)
+const hourlyLive = ref(false)
+const hourlyTv = ref(false)
+const hourlyNow = computed(() => {
+  if (hourlyLive.value) return undefined
+  const d = new Date()
+  d.setHours(13, 40, 0, 0)
+  return d.getTime()
+})
+const hourlySample = `<ChptHourlyBoard
+  v-model:slots="slots"
+  :reasons="[{ code: 'C01', label: '換線' }, { code: 'M02', label: '缺料' }, …]"
+  title="SMT-3 早班"
+  @change="({ slot, field }) => api.saveHourly(slot)"
+/>
+
+// 依班別、休息與產能產生時段
+const slots = ref(buildHourlySlots({
+  start: '08:00', end: '17:00', rate: 120,
+  breaks: [{ start: '12:00', end: '13:00' }],
+}))`
+const hourlyProps = [
+  { name: 'v-model:slots', type: 'HourlySlot[]', def: '—', desc: '時段（start、end、plan、actual、reason、note、breakMinutes）；可用 buildHourlySlots 產生' },
+  { name: 'reasons', type: '{ code, label }[]', def: '[]', desc: '落後原因代碼；給了才顯示原因欄，落後（實際 < 計畫）的已過時段要選' },
+  { name: 'shiftStart', type: 'string', def: '第一個時段的開始', desc: "班別開始 'HH:mm'（跨午夜的班別判斷用）" },
+  { name: 'now', type: 'number | Date | null', def: 'undefined', desc: '現在時間：不給時用電腦時間、每 30 秒更新；null 不判斷目前時段' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'tv', type: 'boolean', def: 'false', desc: '電視模式（字更大）' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '只看' },
+  { name: 'showNote', type: 'boolean', def: 'true', desc: '備註欄' },
+  { name: 'filename', type: 'string', def: "'hourly-board'", desc: '匯出 CSV 的檔名' },
+]
+const hourlyDataRows = [
+  { name: 'HourlySlot', type: '{ id, start, end, plan, actual?, reason?, note?, breakMinutes? }', def: '—', desc: "start / end 是 'HH:mm'；actual 還沒填為 null" },
+  { name: 'buildHourlySlots(options)', type: '({ start, end, rate, breaks?, interval? }) => HourlySlot[]', def: '—', desc: '計畫 = 產能 × 扣掉休息的分鐘 ÷ 60；跨午夜的班別也可以' },
+  { name: 'hourlySummary(slots, nowMin, shiftStart)', type: '→ HourlySummary', def: '—', desc: '逐列累計、目前應做 / 實際、達成率、班別預估、待填原因數' },
+]
+const hourlyEvents = [
+  { name: 'update:slots', params: '(slots)', desc: '填實際、選原因、寫備註' },
+  { name: 'change', params: "({ slot, field: 'actual' | 'reason' | 'note' })", desc: '某個時段改了哪一欄（存檔用）' },
+]
+const hourlyMethods = [
+  { name: 'exportCsv()', type: '() => void', desc: '下載逐時資料 CSV' },
+  { name: 'summary', type: 'HourlySummary', desc: '目前的摘要' },
 ]
 
 // ---- ChptAndonBoard ----

@@ -46,7 +46,10 @@
   最下列每個技能的合格人數，低於 `required` 標紅；最右欄每人合格的技能數；證照快到期（`warnDays`）與已過期標示。
   篩選班別、搜尋人員；點格子循環等級（或選定等級後點）、鍵盤方向鍵移動與數字鍵 0–4 設定。`v-model:matrix` 與 `change` 事件。
   另匯出 `skillCoverage`、`skillMatrixSummary`、`setSkillLevel`、`isSkillQualified` 與型別 `SkillDef`、`SkillPerson`、`SkillMatrixData` 等。
-
+- **ChptHourlyBoard 逐時產出看板**（ui）：產線的 hour-by-hour board。每個時段：計畫、實際（可填）、差異、累計差異、達成率；
+  落後的已過時段要選原因（`reasons`），沒填的會標出來。上方摘要：目前應做（目前時段依時間比例）、實際、差異、達成率、班別預估。
+  目前時段高亮、未來時段淡化；`now` 不給時用電腦時間。電視模式、匯出 CSV、跨午夜的班別。`v-model:slots` 與 `change` 事件。
+  另匯出 `buildHourlySlots`（依班別、休息、產能產生時段）、`hourlySummary` 與型別 `HourlySlot` 等。
 - **SunburstChart 旭日圖**（charts）：一次看好幾層的佔比（不良類別 → 原因 → 站別）。資料格式與 TreemapChart 相同；`levels` 圈數，
   點弧往下鑽、點中央或麵包屑回上層（`v-model:path`），最外圈送出 `node-click`。滑過時標出路徑、提示佔全部與佔上一層的比例；
   最內圈類別色、外圈沿用並漸淡；放得下的弧沿半徑放文字。鍵盤：← → 同一圈、↑ 往外、↓ 往內、Enter 往下、Esc 回上層。

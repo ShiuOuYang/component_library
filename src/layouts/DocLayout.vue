@@ -510,6 +510,7 @@ const navSections = [
           { label: 'ChptAndonBoard', id: 'chpt-andon-board' },
           { label: 'ChptFeederMap', id: 'chpt-feeder-map' },
           { label: 'ChptStorageMap', id: 'chpt-storage-map' },
+          { label: 'ChptHourlyBoard', id: 'chpt-hourly-board' },
           { label: 'ChptApprovalFlow', id: 'chpt-approval-flow' },
         ],
       },
