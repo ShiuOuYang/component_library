@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **UpSetChart 集合交集圖**（charts）：哪些缺陷 / 警報 / 不良原因常一起出現（三個以上集合時取代文氏圖）。上方長條是每種組合的數量、下方矩陣的實心點與連線表示包含哪些集合、
+  左側是各集合總數。資料可用 `items`（每個項目屬於哪些集合）或 `sets`（每個集合有哪些項目）；`mode` exclusive（剛好是這幾個，加總等於總數）/ inclusive（至少有這幾個）；
+  `sort` 依數量 / 組合大小 / 集合順序，`minCount`、`minDegree` / `maxDegree`、`limit`、`includeEmpty` 篩選並標示略過數。滑過欄看數量與比例、滑過集合標出包含它的組合；
+  點欄選取（`v-model:selected`、`combo-click` 附項目）；鍵盤 ←→ 移動、Enter 選取；窄畫面左右捲動；隱藏資料表。工具函式 `buildUpset`、`upsetCombos`。
 - **HorizonChart 地平線圖**（charts）：幾十條時間序列放在同一張圖比較（各溫區、熱電偶、機台）。每條只佔一列，數值減掉基準線（`baseline`：0、`'mean'`
   或各序列的設定值）後，高於 / 低於基準各一種顏色、切成 `bands` 層摺疊，越深偏離越多；`scale` 每列各自比例或共用比例，`sort` 依最大偏離 / 平均 / 最新值 / 名稱。
   滑過時十字線對齊所有列、右側列出該時間的值與 tooltip（偏離量與基準），可用 `useChartSync` 跟 DualAxisComboChart 等同步十字線（`crosshairValue` / `crosshair-move`、`xDomain`）；
