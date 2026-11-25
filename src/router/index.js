@@ -230,6 +230,14 @@ const routes = [
         },
       },
       {
+        path: "components/horizon-chart",
+        name: "HorizonChartDoc",
+        component: () => import("../views/docs/HorizonChartDoc.vue"),
+        meta: {
+          title: "地平線圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),
