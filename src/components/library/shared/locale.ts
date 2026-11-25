@@ -1461,6 +1461,23 @@ export interface ChptLocale {
     separator: string
     hint: string
   }
+  upset: {
+    title: string
+    empty: string
+    modeExclusive: string
+    modeInclusive: string
+    hidden: (n: number) => string
+    count: string
+    setSize: string
+    joiner: string
+    none: string
+    onlyThese: string
+    atLeastThese: string
+    comboAria: (name: string, exclusive: boolean, count: string, pct: string) => string
+    ariaLabel: (title: string, sets: number, combos: number) => string
+    colCombo: string
+    colDegree: string
+  }
   sankey: {
     title: string
     empty: string
@@ -3191,6 +3208,23 @@ export const zhTW: ChptLocale = {
     colLast: '最新',
     separator: '，',
     hint: '左右方向鍵移動時間、上下方向鍵換列、Home / End 到頭尾、Esc 離開。',
+  },
+  upset: {
+    title: '集合交集圖',
+    empty: '沒有資料',
+    modeExclusive: '每一欄：剛好是這幾項（不含其他）',
+    modeInclusive: '每一欄：至少有這幾項',
+    hidden: (n) => `另有 ${n} 個組合未顯示`,
+    count: '數量',
+    setSize: '這一項的總數',
+    joiner: ' + ',
+    none: '（都沒有）',
+    onlyThese: '只有這幾項',
+    atLeastThese: '至少有這幾項',
+    comboAria: (name, exclusive, count, pct) => `${name}（${exclusive ? '只有這幾項' : '至少有這幾項'}）：${count}，佔 ${pct}`,
+    ariaLabel: (title, sets, combos) => `${title}：${sets} 個集合、${combos} 種組合`,
+    colCombo: '組合',
+    colDegree: '項數',
   },
   sankey: {
     title: '流向圖',
@@ -4929,6 +4963,23 @@ export const enUS: ChptLocale = {
     colLast: 'Latest',
     separator: ', ',
     hint: 'Left / Right move in time, Up / Down change row, Home / End jump to the ends, Escape leaves.',
+  },
+  upset: {
+    title: 'UpSet chart',
+    empty: 'No data',
+    modeExclusive: 'Each column: exactly these sets',
+    modeInclusive: 'Each column: at least these sets',
+    hidden: (n) => `${n} more ${Number(n) === 1 ? 'combination' : 'combinations'} not shown`,
+    count: 'Count',
+    setSize: 'Total in this set',
+    joiner: ' + ',
+    none: '(none)',
+    onlyThese: 'Exactly these',
+    atLeastThese: 'At least these',
+    comboAria: (name, exclusive, count, pct) => `${name} (${exclusive ? 'exactly these' : 'at least these'}): ${count}, ${pct}`,
+    ariaLabel: (title, sets, combos) => `${title}: ${sets} sets, ${combos} combinations`,
+    colCombo: 'Combination',
+    colDegree: 'Sets',
   },
   sankey: {
     title: 'Flow chart',
