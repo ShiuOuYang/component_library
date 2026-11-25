@@ -468,6 +468,45 @@
       </p>
     </section>
 
+    <!-- ============ ChptCommentThread ============ -->
+    <section id="chpt-comment-thread" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptCommentThread 留言串</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>異常處理紀錄、審查意見、工單討論。留言與回覆（兩層）、用 <code>@</code> 提及同事（ChptMentionInput）、編輯、刪除（兩步確認，有回覆的留言改成「已刪除」佔位）；
+        最上層的留言可以標記為已解決（整串收起來），也可以重新開啟；有已解決的留言時可篩選「未解決」。時間顯示「3 分鐘前」並每分鐘更新，滑過看完整時間。
+        只能改自己的留言；<code>moderator</code> 可以改所有人的。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptCommentThread } from '@/components/library'</code>
+      </p>
+      <div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-content-secondary">
+        <ChptSegmented v-model="cmtUserId" :options="cmtUserOptions" aria-label="目前登入" size="xs" />
+        <ChptSwitch v-model="cmtModerator" label="管理者（可改所有人的留言）" />
+      </div>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptCommentThread
+          v-model="cmtItems"
+          :current-user="cmtUser"
+          :triggers="cmtTriggers"
+          :moderator="cmtModerator"
+          title="異常 #A-1125-03 爐溫偏高 討論"
+          @create="({ mentions }) => (cmtLog = mentions.length ? `通知：${mentions.map((m) => m.label).join('、')}` : '已送出')"
+          @resolve="({ resolved }) => (cmtLog = resolved ? '已結案' : '重新開啟')"
+        />
+        <p class="mt-2 text-xs text-content-secondary" aria-live="polite">{{ cmtLog || '（留言時 @ 到的人會收到通知）' }}</p>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="cmtSample" />
+      <ApiTable of="ChptCommentThread" title="Props" :rows="cmtProps" />
+      <ApiTable of="-" title="CommentItem（modelValue 的每一則）" :rows="cmtItemRows" />
+      <ApiTable of="ChptCommentThread" title="Events" :rows="cmtEvents" />
+      <ApiTable of="ChptCommentThread" title="方法（ref）" :rows="cmtMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>元件只負責畫面與操作，存檔、權限檢查、通知請在 <code>create</code> / <code>edit</code> / <code>remove</code> / <code>resolve</code> 事件裡呼叫 API；
+        <code>create</code> 與 <code>edit</code> 事件會給提及清單，方便通知被 @ 的人（編輯時只給新增的提及）。
+        留言內容是提及標記字串，要在別處顯示時用 <code>parseMentions</code> 拆開。
+      </p>
+    </section>
+
     <!-- ============ ChptSkillMatrix ============ -->
     <section id="chpt-skill-matrix" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSkillMatrix 技能矩陣</h2>
@@ -521,6 +560,8 @@ import {
   ChptSkillMatrix,
   ChptScheduler,
   ChptSortableList,
+  ChptCommentThread,
+  ChptSegmented,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -756,6 +797,94 @@ const sortMethods = [
   { name: 'toggle(id)', type: '(id: string) => void', desc: '收合 / 展開' },
   { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 收合' },
   { name: 'isDescendant(ancestorId, id)', type: '(a: string, b: string) => boolean', desc: 'b 是否在 a 底下（含自己）' },
+]
+
+// ---- ChptCommentThread ----
+const cmtPeople = [
+  { id: 'u01', name: '王小明', description: 'SMT 一線．領班' },
+  { id: 'u02', name: '陳怡君', description: '品保．IPQC' },
+  { id: 'u03', name: '林志豪', description: '設備課' },
+  { id: 'u04', name: '黃淑芬', description: '生管' },
+]
+const cmtUserId = ref('u01')
+const cmtUserOptions = cmtPeople.slice(0, 2).map((p) => ({ label: `以 ${p.name} 登入`, value: p.id }))
+const cmtUser = computed(() => {
+  const p = cmtPeople.find((x) => x.id === cmtUserId.value)
+  return { id: p.id, name: p.name }
+})
+const cmtModerator = ref(false)
+const cmtTriggers = [{ char: '@', label: '人員', options: cmtPeople.map((p) => ({ id: p.id, label: p.name, description: p.description })) }]
+const cmtAgo = (min) => Date.now() - min * 60_000
+const cmtAuthor = (id) => ({ id, name: cmtPeople.find((p) => p.id === id).name })
+const cmtItems = ref([
+  {
+    id: 'c1',
+    author: cmtAuthor('u02'),
+    body: '迴焊爐 A 第 7 區從 13:20 開始偏高，目前 236 °C（設定 230）。@[林志豪](u03) 麻煩確認加熱器與熱電偶。',
+    createdAt: cmtAgo(180),
+    attachments: [
+      { name: '爐溫曲線_1125.png', size: 248_000 },
+      { name: '異常單 A-1125-03.pdf', size: 1_320_000 },
+    ],
+    replies: [
+      { id: 'c1r1', author: cmtAuthor('u03'), body: '第 7 區熱電偶接頭鬆動，已重新鎖緊，溫度回到 231 °C。', createdAt: cmtAgo(95) },
+      { id: 'c1r2', author: cmtAuthor('u01'), body: '這段時間的產品要不要隔離？@[陳怡君](u02)', createdAt: cmtAgo(40), editedAt: cmtAgo(38) },
+    ],
+  },
+  {
+    id: 'c2',
+    author: cmtAuthor('u04'),
+    body: '受影響工單 WO-1031、WO-1032，已先暫停出貨。',
+    createdAt: cmtAgo(60 * 26),
+    resolved: true,
+    resolvedBy: cmtAuthor('u02'),
+    replies: [{ id: 'c2r1', author: cmtAuthor('u02'), body: '抽驗 32 片外觀與 X-ray 都正常，可以放行。', createdAt: cmtAgo(60 * 25) }],
+  },
+  { id: 'c3', author: cmtAuthor('u01'), body: '交接：夜班請每小時記錄一次第 7 區溫度。', createdAt: cmtAgo(2) },
+])
+const cmtLog = ref('')
+const cmtSample = `<ChptCommentThread
+  v-model="comments"
+  :current-user="{ id: me.id, name: me.name }"
+  :triggers="[{ char: '@', options: people, label: '人員' }]"
+  title="異常 #A-1125-03 討論"
+  @create="({ comment, parentId, mentions }) => api.post(comment, parentId).then(() => notify(mentions))"
+  @edit="({ comment, addedMentions }) => api.update(comment).then(() => notify(addedMentions))"
+  @remove="({ comment }) => api.remove(comment.id)"
+  @resolve="({ comment, resolved }) => api.resolve(comment.id, resolved)"
+/>
+
+// comments：{ id, author: { id, name, avatar? }, body, createdAt, editedAt?, resolved?, resolvedBy?, replies?, attachments? }[]`
+const cmtProps = [
+  { name: 'modelValue', type: 'CommentItem[]', def: '[]', desc: '留言（v-model）；回覆放在 replies' },
+  { name: 'currentUser', type: '{ id, name, avatar? } | null', def: 'null', desc: '目前登入的人；沒給時只能看' },
+  { name: 'triggers', type: 'MentionTrigger[]', def: "[{ char: '@' }]", desc: '提及的來源（同 ChptMentionInput）' },
+  { name: 'moderator', type: 'boolean', def: 'false', desc: '可以編輯 / 刪除別人的留言' },
+  { name: 'order', type: "'oldest' | 'newest'", def: "'oldest'", desc: '最上層的排序（回覆一律由舊到新）' },
+  { name: 'maxLength', type: 'number | null', def: '1000', desc: '每則字數上限' },
+  { name: 'title / placeholder / emptyText', type: 'string', def: '語系', desc: '標題（預設「N 則留言」）／輸入提示／沒有留言時的文字' },
+  { name: 'now', type: 'number | Date | null', def: 'null', desc: '相對時間的「現在」；不給時用現在並每分鐘更新' },
+  { name: 'idFactory', type: '() => string', def: '自動產生', desc: '新留言的 id' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '唯讀' },
+]
+const cmtItemRows = [
+  { name: 'id / author / body', type: 'string / { id, name, avatar? } / string', def: '—', desc: 'body 為提及標記字串' },
+  { name: 'createdAt / editedAt', type: 'number | string | Date', def: '—', desc: '建立／最後編輯時間' },
+  { name: 'resolved / resolvedBy', type: 'boolean / CommentAuthor', def: 'false', desc: '最上層留言的已解決狀態與標記的人' },
+  { name: 'replies', type: 'CommentItem[]', def: '[]', desc: '回覆（只有一層）' },
+  { name: 'attachments', type: '{ name, url?, size? }[]', def: '[]', desc: '附件（有 url 時可以點開）' },
+  { name: 'deleted', type: 'boolean', def: 'false', desc: '已刪除但還有回覆時的佔位（元件自己設定）' },
+]
+const cmtEvents = [
+  { name: 'update:modelValue', params: '(items: CommentItem[])', desc: '任何改動後的新陣列' },
+  { name: 'create', params: '({ comment, parentId, mentions })', desc: '新增留言或回覆；mentions 為內容裡的提及' },
+  { name: 'edit', params: '({ comment, before, addedMentions })', desc: '編輯；addedMentions 為新加的提及' },
+  { name: 'remove', params: '({ comment, parentId })', desc: '刪除' },
+  { name: 'resolve', params: '({ comment, resolved })', desc: '標記為已解決／重新開啟' },
+]
+const cmtMethods = [
+  { name: 'count', type: 'number', desc: '留言總數（含回覆）' },
+  { name: 'reply(id)', type: '(id: string) => void', desc: '開始回覆某一則（例如從通知連過來）' },
 ]
 
 // ---- ChptSkillMatrix ----

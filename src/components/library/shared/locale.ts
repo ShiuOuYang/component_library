@@ -187,6 +187,46 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  comments: {
+    title: (n: number) => string
+    filter: string
+    all: string
+    unresolved: (n: number) => string
+    empty: string
+    listLabel: string
+    repliesLabel: (name: string) => string
+    resolvedSummary: (author: string, by: string, count: number) => string
+    show: string
+    hide: string
+    resolvedBy: (name: string) => string
+    reply: string
+    replyPlaceholder: (name: string) => string
+    placeholder: string
+    send: string
+    cancel: string
+    save: string
+    edit: string
+    delete: string
+    resolve: string
+    reopen: string
+    you: string
+    edited: string
+    deleted: string
+    attachments: string
+    confirmDelete: string
+    confirmDeleteWithReplies: string
+    byAt: (name: string, time: string) => string
+    justNow: string
+    minutesAgo: (n: number) => string
+    hoursAgo: (n: number) => string
+    daysAgo: (n: number) => string
+    posted: string
+    replied: string
+    saved: string
+    removed: string
+    markedResolved: string
+    reopened: string
+  }
   mention: {
     suggestions: string
     loading: string
@@ -1820,6 +1860,46 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  comments: {
+    title: (n) => `${n} 則留言`,
+    filter: '篩選留言',
+    all: '全部',
+    unresolved: (n) => `未解決（${n}）`,
+    empty: '還沒有留言',
+    listLabel: '留言',
+    repliesLabel: (name) => `回覆 ${name}`,
+    resolvedSummary: (author, by, count) => `${author} 的留言已由 ${by || '—'} 標記為已解決（${count} 則）`,
+    show: '展開',
+    hide: '收起',
+    resolvedBy: (name) => `已由 ${name || '—'} 標記為已解決`,
+    reply: '回覆',
+    replyPlaceholder: (name) => `回覆 ${name}…`,
+    placeholder: '寫下留言，可以用 @ 提及同事',
+    send: '送出',
+    cancel: '取消',
+    save: '儲存',
+    edit: '編輯',
+    delete: '刪除',
+    resolve: '標記為已解決',
+    reopen: '重新開啟',
+    you: '（你）',
+    edited: '（已編輯）',
+    deleted: '此留言已刪除',
+    attachments: '附件',
+    confirmDelete: '確定刪除這則留言？',
+    confirmDeleteWithReplies: '確定刪除？回覆會保留，原留言顯示為已刪除。',
+    byAt: (name, time) => `${name}，${time}`,
+    justNow: '剛剛',
+    minutesAgo: (n) => `${n} 分鐘前`,
+    hoursAgo: (n) => `${n} 小時前`,
+    daysAgo: (n) => `${n} 天前`,
+    posted: '已送出留言',
+    replied: '已送出回覆',
+    saved: '已儲存修改',
+    removed: '已刪除留言',
+    markedResolved: '已標記為已解決',
+    reopened: '已重新開啟',
+  },
   mention: {
     suggestions: '建議',
     loading: '搜尋中…',
@@ -3535,6 +3615,46 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  comments: {
+    title: (n) => `${n} ${Number(n) === 1 ? 'comment' : 'comments'}`,
+    filter: 'Filter comments',
+    all: 'All',
+    unresolved: (n) => `Open (${n})`,
+    empty: 'No comments yet',
+    listLabel: 'Comments',
+    repliesLabel: (name) => `Replies to ${name}`,
+    resolvedSummary: (author, by, count) => `${author}'s thread was resolved by ${by || '—'} (${count} ${Number(count) === 1 ? 'comment' : 'comments'})`,
+    show: 'Show',
+    hide: 'Hide',
+    resolvedBy: (name) => `Resolved by ${name || '—'}`,
+    reply: 'Reply',
+    replyPlaceholder: (name) => `Reply to ${name}…`,
+    placeholder: 'Write a comment; use @ to mention someone',
+    send: 'Send',
+    cancel: 'Cancel',
+    save: 'Save',
+    edit: 'Edit',
+    delete: 'Delete',
+    resolve: 'Resolve',
+    reopen: 'Reopen',
+    you: '(you)',
+    edited: '(edited)',
+    deleted: 'This comment was deleted',
+    attachments: 'Attachments',
+    confirmDelete: 'Delete this comment?',
+    confirmDeleteWithReplies: 'Delete? Replies stay; the comment will show as deleted.',
+    byAt: (name, time) => `${name}, ${time}`,
+    justNow: 'just now',
+    minutesAgo: (n) => `${n} min ago`,
+    hoursAgo: (n) => `${n} h ago`,
+    daysAgo: (n) => `${n} ${Number(n) === 1 ? 'day' : 'days'} ago`,
+    posted: 'Comment posted',
+    replied: 'Reply posted',
+    saved: 'Changes saved',
+    removed: 'Comment deleted',
+    markedResolved: 'Marked as resolved',
+    reopened: 'Reopened',
+  },
   mention: {
     suggestions: 'Suggestions',
     loading: 'Searching…',
