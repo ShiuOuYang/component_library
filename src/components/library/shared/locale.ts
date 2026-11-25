@@ -203,6 +203,24 @@ export interface ChptLocale {
     cancelled: string
     cannotMove: (label: string) => string
   }
+  imageCropper: {
+    aspect: string
+    size: (width: number, height: number) => string
+    empty: string
+    loading: string
+    error: string
+    cropArea: string
+    areaText: (x: number, y: number, width: number, height: number) => string
+    hint: string
+    preview: string
+    rotateLeft: string
+    rotateRight: string
+    flipX: string
+    flipY: string
+    zoomIn: string
+    zoomOut: string
+    reset: string
+  }
   scheduler: {
     today: string
     prev: string
@@ -1773,6 +1791,24 @@ export const zhTW: ChptLocale = {
     dropped: (label, position) => `已放下 ${label}，${position}`,
     cancelled: '已取消移動',
     cannotMove: (label) => `${label} 是固定的，不能移動`,
+  },
+  imageCropper: {
+    aspect: '比例',
+    size: (width, height) => `${width} × ${height} px`,
+    empty: '請先選擇圖片',
+    loading: '載入圖片中…',
+    error: '圖片載入失敗',
+    cropArea: '裁切範圍',
+    areaText: (x, y, width, height) => `左上角 ${x}, ${y}，${width} × ${height} 像素`,
+    hint: '拖曳框移動、拉把手調整大小、空白處拖曳重畫；滾輪縮放、中鍵拖曳平移。鍵盤：方向鍵移動（Shift 加快）、+ / − 調整大小。',
+    preview: '預覽',
+    rotateLeft: '向左轉 90°',
+    rotateRight: '向右轉 90°',
+    flipX: '水平翻轉',
+    flipY: '垂直翻轉',
+    zoomIn: '放大',
+    zoomOut: '縮小',
+    reset: '重設',
   },
   scheduler: {
     today: '今天',
@@ -3426,6 +3462,24 @@ export const enUS: ChptLocale = {
     dropped: (label, position) => `Dropped ${label}, ${position}`,
     cancelled: 'Move cancelled',
     cannotMove: (label) => `${label} is fixed and cannot be moved`,
+  },
+  imageCropper: {
+    aspect: 'Aspect ratio',
+    size: (width, height) => `${width} × ${height} px`,
+    empty: 'Choose an image first',
+    loading: 'Loading image…',
+    error: 'Failed to load the image',
+    cropArea: 'Crop area',
+    areaText: (x, y, width, height) => `Top-left ${x}, ${y}, ${width} × ${height} pixels`,
+    hint: 'Drag the box to move, drag handles to resize, drag outside to draw a new box; wheel to zoom, middle-drag to pan. Keyboard: arrows move (Shift for larger steps), + / − resize.',
+    preview: 'Preview',
+    rotateLeft: 'Rotate left 90°',
+    rotateRight: 'Rotate right 90°',
+    flipX: 'Flip horizontally',
+    flipY: 'Flip vertically',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    reset: 'Reset',
   },
   scheduler: {
     today: 'Today',
