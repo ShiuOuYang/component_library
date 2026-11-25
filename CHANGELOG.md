@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **HorizonChart 地平線圖**（charts）：幾十條時間序列放在同一張圖比較（各溫區、熱電偶、機台）。每條只佔一列，數值減掉基準線（`baseline`：0、`'mean'`
+  或各序列的設定值）後，高於 / 低於基準各一種顏色、切成 `bands` 層摺疊，越深偏離越多；`scale` 每列各自比例或共用比例，`sort` 依最大偏離 / 平均 / 最新值 / 名稱。
+  滑過時十字線對齊所有列、右側列出該時間的值與 tooltip（偏離量與基準），可用 `useChartSync` 跟 DualAxisComboChart 等同步十字線（`crosshairValue` / `crosshair-move`、`xDomain`）；
+  缺值斷開；鍵盤 ←→ 移動時間、↑↓ 換列；隱藏統計表。工具函式 `horizonRows`、`sortHorizonRows`。
 - **ChptSortableList 拖曳排序清單**（ui）：製程步驟順序、點檢項目、選單設定、工單排程。拖曳把手排序（指標事件實作，觸控也能拖；`:handle="false"` 整列可拖），
   拖曳中有幽靈與放置指示線、Esc 取消；`maxDepth` > 1 時可巢狀（拖曳時往右成為上一項的子項、往左回上一層），有子項的可收合；
   同一個 `group` 的清單互相拖曳（`add` / `remove`、`put`）；`locked` 固定、`leaf` 不收子項、`canDrop` 自訂規則。鍵盤空白鍵拿起、方向鍵移動（←→ 調整層級）、
