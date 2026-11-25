@@ -246,6 +246,14 @@ const routes = [
         },
       },
       {
+        path: "components/bump-chart",
+        name: "BumpChartDoc",
+        component: () => import("../views/docs/BumpChartDoc.vue"),
+        meta: {
+          title: "排名變化圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),

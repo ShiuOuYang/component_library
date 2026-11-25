@@ -623,6 +623,10 @@ const navSections = [
         anchors: [{ label: '缺陷組合', id: 'defects' }, { label: '用集合輸入', id: 'sets' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/bump-chart', icon: '🏁', label: '排名變化圖',
+        anchors: [{ label: '各線良率排名', id: 'yield' }, { label: '越小越好', id: 'suppliers' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },
