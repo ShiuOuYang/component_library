@@ -46,6 +46,10 @@
   有防抖、丟掉過期結果），↑↓ 選擇、Enter / Tab 確定、Esc 關閉；提及以底色標籤顯示，刪除時整個移除、在名字中間打字變回一般文字；
   觸發字元前要是開頭、空白或標點（email 不會跳出）。v-model 為帶標記的字串 `@[名稱](id)`，`change` / `submit`（Ctrl / ⌘ + Enter）附純文字與提及清單，
   `mention-add` / `mention-remove`；字數上限與計數、自動長高、輸入法組字中不打斷。工具函式 `parseMentions`、`mentionMarkup`、`filterMentionOptions`。
+- **ChptSortableList 拖曳排序清單**（ui）：製程步驟順序、點檢項目、選單設定、工單排程。拖曳把手排序（指標事件實作，觸控也能拖；`:handle="false"` 整列可拖），
+  拖曳中有幽靈與放置指示線、Esc 取消；`maxDepth` > 1 時可巢狀（拖曳時往右成為上一項的子項、往左回上一層），有子項的可收合；
+  同一個 `group` 的清單互相拖曳（`add` / `remove`、`put`）；`locked` 固定、`leaf` 不收子項、`canDrop` 自訂規則。鍵盤空白鍵拿起、方向鍵移動（←→ 調整層級）、
+  空白鍵放下、Esc 取消，移動時以 aria-live 念出位置。樹狀工具函式 `sortMoveItem`、`sortFlattenTree`、`sortFindItem`。
 - **ChptImageCropper 圖片裁切**（ui）：大頭照、缺陷照片、銘牌照片上傳前先裁好。拖曳框移動、拉 8 個把手調整大小、框外拖曳重畫；
   固定比例（`aspect` / 工具列 `aspectOptions`）、轉 90°（框跟著內容轉）、水平 / 垂直翻轉、滾輪與雙指縮放、中鍵平移；圓形遮罩（`shape="circle"`）、
   三分線、即時預覽。經 ref 取得 `getCanvas` / `getBlob` / `getDataURL`（指定 width / height / maxWidth、PNG / JPEG / WebP、底色）。
