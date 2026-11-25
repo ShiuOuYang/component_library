@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **ChptCommentThread 留言串**（ui）：異常處理紀錄、審查意見、工單討論。留言與回覆（兩層）、用 ChptMentionInput @ 提及、編輯（標示已編輯）、
+  刪除（兩步確認；有回覆的留下「已刪除」佔位）、最上層可標記已解決（整串收起、可展開 / 重新開啟）、全部 / 未解決篩選、相對時間（每分鐘更新，滑過看完整時間）、
+  附件標籤、頭像。只能改自己的留言（`moderator` 可改所有人的）、`readonly`。`create` / `edit` 事件附提及清單方便通知。資料函式 `addComment`、`updateComment`、
+  `removeComment`、`countComments`。
 - **ChptMentionInput 提及輸入**（ui）：交接紀錄、異常回報、留言裡 @人員、#工單。輸入觸發字元後列出候選（`triggers` 各自給固定 `options` 或非同步 `search`，
   有防抖、丟掉過期結果），↑↓ 選擇、Enter / Tab 確定、Esc 關閉；提及以底色標籤顯示，刪除時整個移除、在名字中間打字變回一般文字；
   觸發字元前要是開頭、空白或標點（email 不會跳出）。v-model 為帶標記的字串 `@[名稱](id)`，`change` / `submit`（Ctrl / ⌘ + Enter）附純文字與提及清單，
