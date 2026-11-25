@@ -477,6 +477,55 @@
       </p>
     </section>
 
+    <!-- ============ ChptMentionInput ============ -->
+    <section id="chpt-mention-input" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptMentionInput 提及輸入</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>交接紀錄、異常回報、留言裡 <code>@人員</code>、<code>#工單</code> / <code>#設備</code>。輸入觸發字元後列出候選（可以接 API 非同步搜尋），
+        ↑↓ 選擇、Enter 或 Tab 確定、Esc 關閉；提及顯示成有底色的標籤，刪除時整個一起刪掉，在名字中間打字則變回一般文字。Ctrl / ⌘ + Enter 送出。
+        <code>v-model</code> 是帶標記的字串（存檔用），<code>change</code> / <code>submit</code> 另外給純文字與提及清單（通知被提及的人）。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptMentionInput } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptMentionInput
+          v-model="mentionValue"
+          :triggers="mentionTriggers"
+          :max-length="300"
+          label="交接紀錄"
+          placeholder="例如：@王 請協助確認 #WO 的首件"
+          @submit="mentionSubmit"
+        />
+        <div class="mt-2 flex flex-wrap items-center gap-2">
+          <ChptButton size="sm" icon="send" @click="mentionSubmit(null)">送出</ChptButton>
+          <span class="text-xs text-content-secondary">被提及：{{ mentionPeople || '—' }}</span>
+        </div>
+        <div class="mt-3 rounded-md border border-stroke-light bg-surface-primary p-2 text-xs">
+          <div class="text-content-tertiary mb-1">v-model（存檔的值）</div>
+          <code class="break-all text-content-primary">{{ mentionValue || '（空）' }}</code>
+        </div>
+        <ul v-if="mentionPosts.length" class="mt-3 flex flex-col gap-1 text-sm">
+          <li v-for="(p, i) in mentionPosts" :key="i" class="rounded-md border border-stroke-light bg-surface-primary px-3 py-2 text-content-primary">
+            <template v-for="(seg, k) in p" :key="k">
+              <span v-if="seg.mention" class="rounded px-0.5 text-accent-on-subtle bg-accent-subtle">{{ seg.text }}</span>
+              <template v-else>{{ seg.text }}</template>
+            </template>
+          </li>
+        </ul>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="mentionSample" />
+      <ApiTable of="ChptMentionInput" title="Props" :rows="mentionProps" />
+      <ApiTable of="-" title="MentionTrigger（triggers 的每一項）" :rows="mentionTriggerRows" />
+      <ApiTable of="ChptMentionInput" title="Events" :rows="mentionEvents" />
+      <ApiTable of="ChptMentionInput" title="Slots" :rows="mentionSlots" />
+      <ApiTable of="ChptMentionInput" title="方法（ref）" :rows="mentionMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>顯示存好的內容時，用 <code>parseMentions(value, ['@', '#'])</code> 拆出純文字與提及位置，自己決定怎麼畫（例如連到人員頁）。
+        觸發字元前面要是開頭、空白或標點，<code>a@b.com</code> 這種 email 不會跳出候選。輸入法組字中不會改動輸入框。
+      </p>
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -545,6 +594,8 @@ import {
   ChptDatePicker,
   ChptTextarea,
   ChptUpload,
+  ChptMentionInput,
+  parseMentions,
   ChptImageCropper,
   ChptSwitch,
   ChptButton,
@@ -1087,6 +1138,88 @@ const cropOutputRows = [
   { name: 'maxWidth / maxHeight', type: 'number', def: '—', desc: '超過時等比縮小（不放大）' },
   { name: 'type / quality', type: 'string / number', def: "'image/png' / —", desc: "'image/jpeg'、'image/webp' 與品質 0–1" },
   { name: 'background', type: 'string | null', def: 'null', desc: '底色（JPEG 沒給時為黑色）' },
+]
+
+// ---- ChptMentionInput ----
+const mentionPeople0 = [
+  { id: 'u01', label: '王小明', description: 'SMT 一線．領班' },
+  { id: 'u02', label: '陳怡君', description: '品保．IPQC' },
+  { id: 'u03', label: '林志豪', description: '設備課' },
+  { id: 'u04', label: '黃淑芬', description: '生管' },
+  { id: 'u05', label: '張家豪', description: 'SMT 二線．技術員' },
+  { id: 'u06', label: 'Alex Wu', description: '製程工程' },
+]
+const mentionOrders = Array.from({ length: 40 }, (_, i) => ({ id: `wo-${1001 + i}`, label: `WO-${1001 + i}`, description: ['主機板', '電源板', 'LED 驅動板', '控制板'][i % 4] + `．${(i % 5) * 200 + 300} 片` }))
+const mentionTriggers = [
+  { char: '@', options: mentionPeople0, label: '人員' },
+  {
+    char: '#',
+    label: '工單',
+    color: 'warning',
+    // 模擬 API：300ms 後回傳
+    search: (q) => new Promise((resolve) => setTimeout(() => resolve(mentionOrders.filter((o) => o.label.toLowerCase().includes(q.toLowerCase()) || o.description.includes(q))), 300)),
+  },
+]
+const mentionValue = ref('@[陳怡君](u02) 請協助確認 #[WO-1003](wo-1003) 的首件，錫膏厚度偏高')
+const mentionPosts = ref([])
+const mentionPeople = computed(() => [...new Set(parseMentions(mentionValue.value, ['@', '#']).mentions.filter((m) => m.trigger === '@').map((m) => m.label))].join('、'))
+function mentionSubmit() {
+  const { plain, mentions } = parseMentions(mentionValue.value, ['@', '#'])
+  if (!plain.trim()) return
+  const segs = []
+  let last = 0
+  for (const m of mentions) {
+    if (m.start > last) segs.push({ text: plain.slice(last, m.start) })
+    segs.push({ text: plain.slice(m.start, m.end), mention: true })
+    last = m.end
+  }
+  if (last < plain.length) segs.push({ text: plain.slice(last) })
+  mentionPosts.value = [segs, ...mentionPosts.value].slice(0, 5)
+  mentionValue.value = ''
+}
+const mentionSample = `<ChptMentionInput
+  v-model="note"
+  :triggers="[
+    { char: '@', options: people, label: '人員' },
+    { char: '#', search: (q) => api.searchOrders(q), label: '工單', color: 'warning' },
+  ]"
+  :max-length="300"
+  @submit="({ text, mentions }) => post(text, mentions)"
+/>
+
+// v-model：'@[陳怡君](u02) 請確認 #[WO-1003](wo-1003) 的首件'
+// 顯示時：const { plain, mentions } = parseMentions(note, ['@', '#'])`
+const mentionProps = [
+  { name: 'modelValue', type: 'string', def: "''", desc: '帶標記的字串：一般文字 + @[名稱](id)（v-model）' },
+  { name: 'triggers', type: 'MentionTrigger[]', def: "[{ char: '@' }]", desc: '觸發字元與各自的候選來源' },
+  { name: 'placeholder', type: 'string', def: "''", desc: '提示文字' },
+  { name: 'rows / maxRows', type: 'number', def: '3 / 8', desc: '初始行數／自動長高的上限' },
+  { name: 'maxLength', type: 'number | null', def: 'null', desc: '字數上限（純文字），顯示計數，超過時標紅且不能送出' },
+  { name: 'allowSpaces', type: 'boolean', def: 'false', desc: '查詢字可以有空白（英文全名）' },
+  { name: 'limit', type: 'number', def: '8', desc: '最多列出幾個候選' },
+  { name: 'label', type: 'string', def: "''", desc: '輸入框名稱（螢幕閱讀器）' },
+  { name: 'disabled / readonly', type: 'boolean', def: 'false', desc: '停用／唯讀' },
+]
+const mentionTriggerRows = [
+  { name: 'char', type: 'string', def: '—', desc: "觸發字元，例如 '@'、'#'" },
+  { name: 'options', type: 'MentionOption[]', def: '—', desc: '固定的候選（依名稱、id、說明過濾）；{ id, label, description? }' },
+  { name: 'search', type: '(q) => MentionOption[] | Promise<MentionOption[]>', def: '—', desc: '自訂搜尋（非同步時有 120ms 防抖、過期結果會丟掉）' },
+  { name: 'label', type: 'string', def: '—', desc: '候選清單名稱（螢幕閱讀器）' },
+  { name: 'color', type: "'accent' | 'info' | 'success' | 'warning' | 'danger'", def: '第一個 accent，其餘 info', desc: '標籤底色' },
+]
+const mentionEvents = [
+  { name: 'update:modelValue', params: '(value: string)', desc: '內容改變' },
+  { name: 'change', params: '({ value, text, mentions })', desc: '內容改變，附純文字與提及清單' },
+  { name: 'select', params: '({ trigger, option })', desc: '從候選選了一個' },
+  { name: 'mention-add / mention-remove', params: '(mentions: Mention[])', desc: '新增／移除了哪些提及' },
+  { name: 'submit', params: '({ value, text, mentions })', desc: 'Ctrl / ⌘ + Enter（超過字數時不送）' },
+]
+const mentionSlots = [{ name: 'option', params: '{ option, trigger, active }', desc: '自訂候選的樣子（預設為縮寫圓圈 + 名稱 + 說明）' }]
+const mentionMethods = [
+  { name: 'focus()', type: '() => void', desc: '聚焦' },
+  { name: 'clear()', type: '() => void', desc: '清空' },
+  { name: 'insertTrigger(char?)', type: '(char?: string) => void', desc: '在游標處插入觸發字元並開啟候選（工具列的 @ 按鈕）' },
+  { name: 'text / mentions', type: 'string / Mention[]', desc: '目前的純文字與提及' },
 ]
 
 // ---- ChptUpload ----
