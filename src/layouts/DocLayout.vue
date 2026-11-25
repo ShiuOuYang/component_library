@@ -455,6 +455,7 @@ const navSections = [
           { label: 'ChptShiftRoster', id: 'chpt-shift-roster' },
           { label: 'ChptScheduler', id: 'chpt-scheduler' },
           { label: 'ChptSkillMatrix', id: 'chpt-skill-matrix' },
+          { label: 'ChptSortableList', id: 'chpt-sortable-list' },
         ],
       },
       {

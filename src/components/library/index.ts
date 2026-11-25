@@ -40,6 +40,7 @@ export {
   ChptLotTrace,
   ChptDiffViewer,
   ChptChecklist,
+  ChptSortableList,
   ChptScheduler,
   ChptCronInput,
   ChptJsonViewer,
@@ -105,6 +106,8 @@ export { fitImage, clampImageView, zoomImageTo, viewOf as imageViewOf, zoomOf as
 export type { ImageView, ImageZoom, CompareMode } from './shared/imageCompare'
 export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
+export { moveItem as sortMoveItem, flattenTree as sortFlattenTree, findItem as sortFindItem } from './shared/sortableList'
+export type { SortItem, SortRow, SortTarget } from './shared/sortableList'
 export { layoutColumn as schedLayoutColumn, conflictsOf as schedConflictsOf, weekDays as schedWeekDays } from './shared/scheduler'
 export type { SchedEvent, SchedResource, PlacedEvent } from './shared/scheduler'
 export { parseCron, nextRuns as cronNextRuns, describeCron, isCronError } from './shared/cron'
@@ -170,7 +173,7 @@ export type {
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
-  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptSchedulerProps, SchedulerView, ChptCronInputProps, ChptJsonViewerProps, ChptQueryBuilderProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
+  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptSortableListProps, SortChange, ChptSchedulerProps, SchedulerView, ChptCronInputProps, ChptJsonViewerProps, ChptQueryBuilderProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
   SchemaFormField, SchemaFieldType, SchemaFieldOption, CommandItem, DashboardItem, KanbanColumn, KanbanMoveEvent, RichTextTool,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'

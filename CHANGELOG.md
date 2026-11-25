@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **ChptSortableList 拖曳排序清單**（ui）：製程步驟順序、點檢項目、選單設定、工單排程。拖曳把手排序（指標事件實作，觸控也能拖；`:handle="false"` 整列可拖），
+  拖曳中有幽靈與放置指示線、Esc 取消；`maxDepth` > 1 時可巢狀（拖曳時往右成為上一項的子項、往左回上一層），有子項的可收合；
+  同一個 `group` 的清單互相拖曳（`add` / `remove`、`put`）；`locked` 固定、`leaf` 不收子項、`canDrop` 自訂規則。鍵盤空白鍵拿起、方向鍵移動（←→ 調整層級）、
+  空白鍵放下、Esc 取消，移動時以 aria-live 念出位置。樹狀工具函式 `sortMoveItem`、`sortFlattenTree`、`sortFindItem`。
 - **RidgelineChart 山脊圖**（charts）：比較很多組的分佈形狀（各機台 / 各班 / 各批的量測值、每天的週期時間）。每組一條核密度曲線
   （頻寬 Silverman / Scott 或指定）、上下錯開部分重疊（`overlap`），曲線內畫中位數與 Q1 / Q3；`normalize` 選各自同高（比形狀）或共用比例
   （比集中程度）；`sort` 依中位數 / 平均 / 標準差 / 名稱。給 `spec`（LSL / USL / 目標）時畫規格線並在右側標出每組規格外比例。

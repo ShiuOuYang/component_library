@@ -187,6 +187,22 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  sortable: {
+    label: string
+    empty: string
+    handleLabel: (label: string, index: number, total: number) => string
+    hint: string
+    hintTree: string
+    expand: (label: string) => string
+    collapse: (label: string) => string
+    locked: string
+    position: (index: number, total: number, parent: string) => string
+    grabbed: (label: string, position: string) => string
+    moved: (position: string) => string
+    dropped: (label: string, position: string) => string
+    cancelled: string
+    cannotMove: (label: string) => string
+  }
   scheduler: {
     today: string
     prev: string
@@ -1742,6 +1758,22 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  sortable: {
+    label: '可排序清單',
+    empty: '拖曳項目到這裡',
+    handleLabel: (label, index, total) => `拖曳 ${label}（第 ${index} / ${total} 項）`,
+    hint: '按空白鍵拿起，上下方向鍵移動，再按空白鍵放下，Esc 取消。',
+    hintTree: '按空白鍵拿起，上下方向鍵移動、左右方向鍵調整層級，再按空白鍵放下，Esc 取消。',
+    expand: (label) => `展開 ${label}`,
+    collapse: (label) => `收合 ${label}`,
+    locked: '固定，不能移動',
+    position: (index, total, parent) => `${parent ? `在 ${parent} 底下` : ''}第 ${index} / ${total} 項`,
+    grabbed: (label, position) => `已拿起 ${label}，目前${position}`,
+    moved: (position) => `移到${position}`,
+    dropped: (label, position) => `已放下 ${label}，${position}`,
+    cancelled: '已取消移動',
+    cannotMove: (label) => `${label} 是固定的，不能移動`,
+  },
   scheduler: {
     today: '今天',
     prev: '上一段',
@@ -3379,6 +3411,22 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  sortable: {
+    label: 'Sortable list',
+    empty: 'Drag items here',
+    handleLabel: (label, index, total) => `Drag ${label} (item ${index} of ${total})`,
+    hint: 'Press Space to pick up, Up / Down to move, Space again to drop, Escape to cancel.',
+    hintTree: 'Press Space to pick up, Up / Down to move, Left / Right to change level, Space again to drop, Escape to cancel.',
+    expand: (label) => `Expand ${label}`,
+    collapse: (label) => `Collapse ${label}`,
+    locked: 'Fixed, cannot be moved',
+    position: (index, total, parent) => `item ${index} of ${total}${parent ? ` under ${parent}` : ''}`,
+    grabbed: (label, position) => `Picked up ${label}, ${position}`,
+    moved: (position) => `Moved to ${position}`,
+    dropped: (label, position) => `Dropped ${label}, ${position}`,
+    cancelled: 'Move cancelled',
+    cannotMove: (label) => `${label} is fixed and cannot be moved`,
+  },
   scheduler: {
     today: 'Today',
     prev: 'Previous',
