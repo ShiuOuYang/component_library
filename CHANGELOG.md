@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **HorizonChart 地平線圖**（charts）：幾十條時間序列放在同一張圖比較（各溫區、熱電偶、機台）。每條只佔一列，數值減掉基準線（`baseline`：0、`'mean'`
+  或各序列的設定值）後，高於 / 低於基準各一種顏色、切成 `bands` 層摺疊，越深偏離越多；`scale` 每列各自比例或共用比例，`sort` 依最大偏離 / 平均 / 最新值 / 名稱。
+  滑過時十字線對齊所有列、右側列出該時間的值與 tooltip（偏離量與基準），可用 `useChartSync` 跟 DualAxisComboChart 等同步十字線（`crosshairValue` / `crosshair-move`、`xDomain`）；
+  缺值斷開；鍵盤 ←→ 移動時間、↑↓ 換列；隱藏統計表。工具函式 `horizonRows`、`sortHorizonRows`。
 - **ChptMentionInput 提及輸入**（ui）：交接紀錄、異常回報、留言裡 @人員、#工單。輸入觸發字元後列出候選（`triggers` 各自給固定 `options` 或非同步 `search`，
   有防抖、丟掉過期結果），↑↓ 選擇、Enter / Tab 確定、Esc 關閉；提及以底色標籤顯示，刪除時整個移除、在名字中間打字變回一般文字；
   觸發字元前要是開頭、空白或標點（email 不會跳出）。v-model 為帶標記的字串 `@[名稱](id)`，`change` / `submit`（Ctrl / ⌘ + Enter）附純文字與提及清單，

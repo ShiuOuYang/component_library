@@ -1402,6 +1402,25 @@ export interface ChptLocale {
     colMax: string
     colOut: string
   }
+  horizon: {
+    title: string
+    empty: string
+    above: string
+    below: string
+    perBand: (size: string) => string
+    perRow: string
+    deviation: (dev: string, baseline: string) => string
+    noData: string
+    ariaLabel: (title: string, rows: number) => string
+    colName: string
+    colBaseline: string
+    colMin: string
+    colMax: string
+    colMean: string
+    colLast: string
+    separator: string
+    hint: string
+  }
   sankey: {
     title: string
     empty: string
@@ -3073,6 +3092,25 @@ export const zhTW: ChptLocale = {
     colMin: '最小',
     colMax: '最大',
     colOut: '規格外',
+  },
+  horizon: {
+    title: '地平線圖',
+    empty: '沒有資料',
+    above: '高於基準',
+    below: '低於基準',
+    perBand: (size) => `每層 ${size}`,
+    perRow: '每列各自比例',
+    deviation: (dev, baseline) => `偏離 ${dev}（基準 ${baseline}）`,
+    noData: '沒有資料',
+    ariaLabel: (title, rows) => `${title}：${rows} 條序列`,
+    colName: '名稱',
+    colBaseline: '基準',
+    colMin: '最小',
+    colMax: '最大',
+    colMean: '平均',
+    colLast: '最新',
+    separator: '，',
+    hint: '左右方向鍵移動時間、上下方向鍵換列、Home / End 到頭尾、Esc 離開。',
   },
   sankey: {
     title: '流向圖',
@@ -4752,6 +4790,25 @@ export const enUS: ChptLocale = {
     colMin: 'Min',
     colMax: 'Max',
     colOut: 'Out of spec',
+  },
+  horizon: {
+    title: 'Horizon chart',
+    empty: 'No data',
+    above: 'Above baseline',
+    below: 'Below baseline',
+    perBand: (size) => `${size} per band`,
+    perRow: 'Each row has its own scale',
+    deviation: (dev, baseline) => `${dev} from baseline ${baseline}`,
+    noData: 'No data',
+    ariaLabel: (title, rows) => `${title}: ${rows} series`,
+    colName: 'Name',
+    colBaseline: 'Baseline',
+    colMin: 'Min',
+    colMax: 'Max',
+    colMean: 'Mean',
+    colLast: 'Latest',
+    separator: ', ',
+    hint: 'Left / Right move in time, Up / Down change row, Home / End jump to the ends, Escape leaves.',
   },
   sankey: {
     title: 'Flow chart',
