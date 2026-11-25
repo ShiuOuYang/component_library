@@ -427,6 +427,56 @@
       <ApiTable of="ChptCronInput" title="方法（ref）" :rows="cronMethods" />
     </section>
 
+    <!-- ============ ChptImageCropper ============ -->
+    <section id="chpt-image-cropper" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptImageCropper 圖片裁切</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>大頭照、缺陷照片、設備銘牌照片上傳前先裁好需要的範圍。拖曳框移動、拉 8 個把手調整大小、在框外拖曳重畫一個；
+        可固定比例、轉 90°、翻轉，滾輪（或雙指）縮放畫面、中鍵拖曳平移。按「裁切」用 <code>getBlob()</code> / <code>getDataURL()</code> 取得結果，
+        可指定輸出大小（例如大頭照固定 256 × 256）。鍵盤：Tab 到裁切框後方向鍵移動（Shift 加快）、+ / − 調整大小。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptImageCropper } from '@/components/library'</code>
+      </p>
+      <div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-content-secondary">
+        <label class="inline-flex items-center gap-2">
+          <span>換一張圖：</span>
+          <input type="file" accept="image/*" class="text-xs" @change="cropPick" />
+        </label>
+        <ChptSwitch v-model="cropCircle" label="圓形（大頭照）" />
+      </div>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <ChptImageCropper
+          ref="cropperRef"
+          v-model="cropRect"
+          v-model:aspect="cropAspect"
+          :src="cropSrc"
+          :aspect-options="cropAspectOptions"
+          :shape="cropCircle ? 'circle' : 'rect'"
+          :height="340"
+          preview
+        />
+        <div class="mt-3 flex flex-wrap items-center gap-3">
+          <ChptButton size="sm" icon="crop" @click="cropDo">裁切</ChptButton>
+          <span class="text-xs text-content-secondary" aria-live="polite">框：{{ cropRect ? `${cropRect.x}, ${cropRect.y}，${cropRect.width} × ${cropRect.height}` : '—' }}</span>
+          <template v-if="cropResult">
+            <img :src="cropResult.url" alt="裁切結果" class="h-16 border border-stroke-default" :class="cropCircle ? 'rounded-full' : 'rounded-md'" />
+            <span class="text-xs text-content-secondary">{{ cropResult.text }}</span>
+          </template>
+        </div>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="cropSample" />
+      <ApiTable of="ChptImageCropper" title="Props" :rows="cropProps" />
+      <ApiTable of="ChptImageCropper" title="Events" :rows="cropEvents" />
+      <ApiTable of="ChptImageCropper" title="方法（ref）" :rows="cropMethods" />
+      <ApiTable of="-" title="CropOutputOptions（getCanvas / getBlob / getDataURL 的參數）" :rows="cropOutputRows" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>裁切框的座標是「轉過 / 翻過之後」看到的圖片像素；轉 90° 時框會跟著內容一起轉。
+        跨網域的圖片要伺服器允許 CORS 並設定 <code>cross-origin="anonymous"</code>，否則瀏覽器不允許讀出裁切結果。
+        輸出 JPEG 沒有透明，圓形以外與空白處會填 <code>background</code>（預設黑色）。
+      </p>
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -495,6 +545,8 @@ import {
   ChptDatePicker,
   ChptTextarea,
   ChptUpload,
+  ChptImageCropper,
+  ChptSwitch,
   ChptButton,
   ChptSegmented,
   ChptCodeBlock,
@@ -942,6 +994,99 @@ const ruleRows = [
   { name: 'validator', type: '(value, model) => true | string | Promise', def: '—', desc: '自訂（可 async、可跨欄位）' },
   { name: 'message', type: 'string', def: '—', desc: '錯誤訊息（不給時用預設訊息）' },
   { name: 'trigger', type: "'blur' | 'change'", def: "'blur'", desc: 'change：值一改變就檢查' },
+]
+
+// ---- ChptImageCropper ----
+// 範例圖：一張產生出來的電路板照片（SVG）
+const cropSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640">
+<rect width="960" height="640" fill="#0f5132"/>
+<g fill="none" stroke="#c9a227" stroke-width="6" stroke-linecap="round">
+<path d="M60 120 H420 V260 H700"/><path d="M60 520 H300 V380 H860"/><path d="M500 60 V560"/><path d="M780 100 V600"/></g>
+<rect x="360" y="220" width="260" height="200" rx="10" fill="#1f2937"/>
+<text x="490" y="330" fill="#e5e7eb" font-family="monospace" font-size="34" text-anchor="middle">MCU-128</text>
+<g fill="#d1d5db">${Array.from({ length: 12 }, (_, i) => `<rect x="${372 + i * 21}" y="204" width="10" height="16"/><rect x="${372 + i * 21}" y="420" width="10" height="16"/>`).join('')}</g>
+<g fill="#7c2d12">${Array.from({ length: 6 }, (_, i) => `<rect x="${120 + i * 40}" y="300" width="22" height="50" rx="4"/>`).join('')}</g>
+<circle cx="760" cy="470" r="46" fill="#334155"/><circle cx="760" cy="470" r="18" fill="#94a3b8"/>
+<circle cx="250" cy="200" r="14" fill="none" stroke="#ef4444" stroke-width="5"/>
+</svg>`
+const cropDefault = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(cropSvg)}`
+const cropSrc = ref(cropDefault)
+const cropRect = ref(null)
+const cropAspect = ref(null)
+const cropCircle = ref(false)
+const cropResult = ref(null)
+const cropperRef = useTemplateRef('cropperRef')
+const cropAspectOptions = [
+  { label: '自由', value: null },
+  { label: '1:1', value: 1 },
+  { label: '4:3', value: 4 / 3 },
+  { label: '16:9', value: 16 / 9 },
+]
+let cropObjectUrl = null
+function cropPick(e) {
+  const f = e.target.files?.[0]
+  if (!f) return
+  if (cropObjectUrl) URL.revokeObjectURL(cropObjectUrl)
+  cropObjectUrl = URL.createObjectURL(f)
+  cropSrc.value = cropObjectUrl
+  cropResult.value = null
+}
+function cropDo() {
+  const opts = cropCircle.value ? { width: 256, height: 256 } : { maxWidth: 800 }
+  const url = cropperRef.value?.getDataURL(opts)
+  const canvas = cropperRef.value?.getCanvas(opts)
+  if (url && canvas) cropResult.value = { url, text: `輸出 ${canvas.width} × ${canvas.height} px` }
+}
+const cropSample = `<ChptImageCropper
+  ref="cropper"
+  v-model="rect"
+  v-model:aspect="aspect"
+  :src="imageUrl"
+  :aspect-options="[{ label: '自由', value: null }, { label: '1:1', value: 1 }, { label: '4:3', value: 4 / 3 }]"
+  shape="circle"
+  preview
+/>
+
+// 大頭照：固定輸出 256 × 256 的 PNG
+const blob = await cropper.value.getBlob({ width: 256, height: 256 })
+// 照片：最寬 1600px 的 JPEG
+const jpeg = await cropper.value.getBlob({ maxWidth: 1600, type: 'image/jpeg', quality: 0.85, background: '#fff' })`
+const cropProps = [
+  { name: 'src', type: 'string | null', def: 'null', desc: '圖片網址、DataURL 或 URL.createObjectURL 的結果' },
+  { name: 'modelValue', type: 'CropRect | null', def: 'null', desc: '裁切框 { x, y, width, height }（v-model；轉過 / 翻過後的圖片像素）' },
+  { name: 'aspect', type: 'number | null', def: 'null', desc: '寬 ÷ 高；null 為自由（v-model:aspect）' },
+  { name: 'aspectOptions', type: '{ label, value }[]', def: '[]', desc: '工具列的比例選項（空陣列不顯示）' },
+  { name: 'shape', type: "'rect' | 'circle'", def: "'rect'", desc: '圓形遮罩；輸出 PNG 時圓外透明' },
+  { name: 'minSize', type: 'number', def: '16', desc: '框的最小邊長（圖片像素）' },
+  { name: 'height', type: 'number | string', def: '360', desc: '舞台高度' },
+  { name: 'toolbar', type: 'boolean', def: 'true', desc: '工具列（比例、旋轉、翻轉、縮放、重設）' },
+  { name: 'preview / previewSize', type: 'boolean / number', def: 'false / 120', desc: '裁切結果的即時預覽與其最大邊長' },
+  { name: 'guides', type: 'boolean', def: 'true', desc: '三分線' },
+  { name: 'maxZoom', type: 'number', def: '8', desc: '最大放大倍率（相對全覽）' },
+  { name: 'crossOrigin', type: "'anonymous' | 'use-credentials' | null", def: 'null', desc: '跨網域圖片要讀出結果時設定' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '停用' },
+]
+const cropEvents = [
+  { name: 'update:modelValue', params: '(rect: CropRect)', desc: '框改變（拖曳中持續送出）' },
+  { name: 'update:aspect', params: '(aspect: number | null)', desc: '在工具列換比例' },
+  { name: 'change', params: '(state: { rect, rotation, flipX, flipY })', desc: '一次操作結束（放開、按鈕、鍵盤）' },
+  { name: 'load', params: '({ width, height })', desc: '圖片載入完成（原始大小）' },
+  { name: 'error', params: '()', desc: '圖片載入失敗' },
+]
+const cropMethods = [
+  { name: 'getCanvas(opts?)', type: '(o?: CropOutputOptions) => HTMLCanvasElement | null', desc: '裁切後的 canvas' },
+  { name: 'getBlob(opts?)', type: '(o?: CropOutputOptions) => Promise<Blob | null>', desc: '裁切後的檔案（預設 PNG）' },
+  { name: 'getDataURL(opts?)', type: '(o?: CropOutputOptions) => string | null', desc: '裁切後的 DataURL' },
+  { name: 'rotate(dir) / flip(axis)', type: "(1 | -1) / ('x' | 'y')", desc: '轉 90°（1 = 順時針）／翻轉' },
+  { name: 'zoom(factor)', type: '(factor: number) => void', desc: '放大縮小畫面（不改框）' },
+  { name: 'reset()', type: '() => void', desc: '回到初始狀態' },
+  { name: 'state', type: 'CropState | null', desc: '目前的框、旋轉、翻轉' },
+]
+const cropOutputRows = [
+  { name: 'width / height', type: 'number', def: '框的大小', desc: '輸出大小；只給一邊時依框的比例算另一邊' },
+  { name: 'maxWidth / maxHeight', type: 'number', def: '—', desc: '超過時等比縮小（不放大）' },
+  { name: 'type / quality', type: 'string / number', def: "'image/png' / —", desc: "'image/jpeg'、'image/webp' 與品質 0–1" },
+  { name: 'background', type: 'string | null', def: 'null', desc: '底色（JPEG 沒給時為黑色）' },
 ]
 
 // ---- ChptUpload ----
