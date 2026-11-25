@@ -187,6 +187,14 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  mention: {
+    suggestions: string
+    loading: string
+    noMatch: (query: string) => string
+    count: (n: number) => string
+    inserted: (label: string) => string
+    hint: (triggers: string) => string
+  }
   sortable: {
     label: string
     empty: string
@@ -1795,6 +1803,14 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  mention: {
+    suggestions: '建議',
+    loading: '搜尋中…',
+    noMatch: (query) => (query ? `找不到「${query}」` : '沒有可選的項目'),
+    count: (n) => `${n} 個建議，上下方向鍵選擇，Enter 確定`,
+    inserted: (label) => `已加入 ${label}`,
+    hint: (triggers) => `輸入 ${triggers} 提及；Ctrl + Enter 送出`,
+  },
   sortable: {
     label: '可排序清單',
     empty: '拖曳項目到這裡',
@@ -3485,6 +3501,14 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  mention: {
+    suggestions: 'Suggestions',
+    loading: 'Searching…',
+    noMatch: (query) => (query ? `No match for "${query}"` : 'Nothing to suggest'),
+    count: (n) => `${n} ${Number(n) === 1 ? 'suggestion' : 'suggestions'}, use Up / Down to choose and Enter to confirm`,
+    inserted: (label) => `Added ${label}`,
+    hint: (triggers) => `Type ${triggers} to mention; Ctrl + Enter to send`,
+  },
   sortable: {
     label: 'Sortable list',
     empty: 'Drag items here',

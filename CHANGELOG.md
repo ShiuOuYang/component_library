@@ -46,6 +46,10 @@
   或各序列的設定值）後，高於 / 低於基準各一種顏色、切成 `bands` 層摺疊，越深偏離越多；`scale` 每列各自比例或共用比例，`sort` 依最大偏離 / 平均 / 最新值 / 名稱。
   滑過時十字線對齊所有列、右側列出該時間的值與 tooltip（偏離量與基準），可用 `useChartSync` 跟 DualAxisComboChart 等同步十字線（`crosshairValue` / `crosshair-move`、`xDomain`）；
   缺值斷開；鍵盤 ←→ 移動時間、↑↓ 換列；隱藏統計表。工具函式 `horizonRows`、`sortHorizonRows`。
+- **ChptMentionInput 提及輸入**（ui）：交接紀錄、異常回報、留言裡 @人員、#工單。輸入觸發字元後列出候選（`triggers` 各自給固定 `options` 或非同步 `search`，
+  有防抖、丟掉過期結果），↑↓ 選擇、Enter / Tab 確定、Esc 關閉；提及以底色標籤顯示，刪除時整個移除、在名字中間打字變回一般文字；
+  觸發字元前要是開頭、空白或標點（email 不會跳出）。v-model 為帶標記的字串 `@[名稱](id)`，`change` / `submit`（Ctrl / ⌘ + Enter）附純文字與提及清單，
+  `mention-add` / `mention-remove`；字數上限與計數、自動長高、輸入法組字中不打斷。工具函式 `parseMentions`、`mentionMarkup`、`filterMentionOptions`。
 - **ChptSortableList 拖曳排序清單**（ui）：製程步驟順序、點檢項目、選單設定、工單排程。拖曳把手排序（指標事件實作，觸控也能拖；`:handle="false"` 整列可拖），
   拖曳中有幽靈與放置指示線、Esc 取消；`maxDepth` > 1 時可巢狀（拖曳時往右成為上一項的子項、往左回上一層），有子項的可收合；
   同一個 `group` 的清單互相拖曳（`add` / `remove`、`put`）；`locked` 固定、`leaf` 不收子項、`canDrop` 自訂規則。鍵盤空白鍵拿起、方向鍵移動（←→ 調整層級）、
