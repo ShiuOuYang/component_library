@@ -238,6 +238,14 @@ const routes = [
         },
       },
       {
+        path: "components/upset-chart",
+        name: "UpSetChartDoc",
+        component: () => import("../views/docs/UpSetChartDoc.vue"),
+        meta: {
+          title: "集合交集圖",
+        },
+      },
+      {
         path: "components/bump-chart",
         name: "BumpChartDoc",
         component: () => import("../views/docs/BumpChartDoc.vue"),

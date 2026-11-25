@@ -46,6 +46,10 @@
   （`valueType="rank"`），名次 1 在最上、點裡寫名次，兩端標籤與首末期變化（▲ 進步 / ▼ 退步，名次相同時標籤錯開）；`display` 切換名次 / 實際值（實際值時標籤自動避讓）、
   `curve` 曲線 / 直線、缺期斷開。滑過或點選高亮一條（`v-model:selected`，高亮的疊在最上面但不改 DOM 順序，鍵盤焦點不會掉）、tooltip；
   鍵盤 ↑↓ 換序列、←→ 換期念出名次；期數多時變寬並左右捲動；隱藏名次表。工具函式 `bumpRows`、`rankPeriod`。
+- **UpSetChart 集合交集圖**（charts）：哪些缺陷 / 警報 / 不良原因常一起出現（三個以上集合時取代文氏圖）。上方長條是每種組合的數量、下方矩陣的實心點與連線表示包含哪些集合、
+  左側是各集合總數。資料可用 `items`（每個項目屬於哪些集合）或 `sets`（每個集合有哪些項目）；`mode` exclusive（剛好是這幾個，加總等於總數）/ inclusive（至少有這幾個）；
+  `sort` 依數量 / 組合大小 / 集合順序，`minCount`、`minDegree` / `maxDegree`、`limit`、`includeEmpty` 篩選並標示略過數。滑過欄看數量與比例、滑過集合標出包含它的組合；
+  點欄選取（`v-model:selected`、`combo-click` 附項目）；鍵盤 ←→ 移動、Enter 選取；窄畫面左右捲動；隱藏資料表。工具函式 `buildUpset`、`upsetCombos`。
 - **ChptCommentThread 留言串**（ui）：異常處理紀錄、審查意見、工單討論。留言與回覆（兩層）、用 ChptMentionInput @ 提及、編輯（標示已編輯）、
   刪除（兩步確認；有回覆的留下「已刪除」佔位）、最上層可標記已解決（整串收起、可展開 / 重新開啟）、全部 / 未解決篩選、相對時間（每分鐘更新，滑過看完整時間）、
   附件標籤、頭像。只能改自己的留言（`moderator` 可改所有人的）、`readonly`。`create` / `edit` 事件附提及清單方便通知。資料函式 `addComment`、`updateComment`、
