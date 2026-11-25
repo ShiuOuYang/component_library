@@ -619,6 +619,10 @@ const navSections = [
         anchors: [{ label: '溫區相對設定值', id: 'zones' }, { label: '同步十字線', id: 'sync' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/bump-chart', icon: '🏁', label: '排名變化圖',
+        anchors: [{ label: '各線良率排名', id: 'yield' }, { label: '越小越好', id: 'suppliers' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },

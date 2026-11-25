@@ -1461,6 +1461,21 @@ export interface ChptLocale {
     separator: string
     hint: string
   }
+  bump: {
+    title: string
+    empty: string
+    rank: (n: number) => string
+    up: (n: number) => string
+    down: (n: number) => string
+    same: string
+    noData: string
+    best: (n: number) => string
+    fromTo: (fromPeriod: string, fromRank: number, toPeriod: string, toRank: number) => string
+    ariaLabel: (title: string, series: number, periods: number) => string
+    colName: string
+    colChange: string
+    separator: string
+  }
   sankey: {
     title: string
     empty: string
@@ -3191,6 +3206,21 @@ export const zhTW: ChptLocale = {
     colLast: '最新',
     separator: '，',
     hint: '左右方向鍵移動時間、上下方向鍵換列、Home / End 到頭尾、Esc 離開。',
+  },
+  bump: {
+    title: '排名變化圖',
+    empty: '沒有資料',
+    rank: (n) => `第 ${n} 名`,
+    up: (n) => `進步 ${n} 名`,
+    down: (n) => `退步 ${n} 名`,
+    same: '名次不變',
+    noData: '無資料',
+    best: (n) => `最佳第 ${n} 名`,
+    fromTo: (fromPeriod, fromRank, toPeriod, toRank) => `${fromPeriod} 第 ${fromRank} 名 → ${toPeriod} 第 ${toRank} 名`,
+    ariaLabel: (title, series, periods) => `${title}：${series} 個項目、${periods} 期`,
+    colName: '名稱',
+    colChange: '變化',
+    separator: '，',
   },
   sankey: {
     title: '流向圖',
@@ -4929,6 +4959,21 @@ export const enUS: ChptLocale = {
     colLast: 'Latest',
     separator: ', ',
     hint: 'Left / Right move in time, Up / Down change row, Home / End jump to the ends, Escape leaves.',
+  },
+  bump: {
+    title: 'Bump chart',
+    empty: 'No data',
+    rank: (n) => `#${n}`,
+    up: (n) => `up ${n}`,
+    down: (n) => `down ${n}`,
+    same: 'no change',
+    noData: 'No data',
+    best: (n) => `best #${n}`,
+    fromTo: (fromPeriod, fromRank, toPeriod, toRank) => `#${fromRank} in ${fromPeriod} → #${toRank} in ${toPeriod}`,
+    ariaLabel: (title, series, periods) => `${title}: ${series} items, ${periods} periods`,
+    colName: 'Name',
+    colChange: 'Change',
+    separator: ', ',
   },
   sankey: {
     title: 'Flow chart',
