@@ -381,6 +381,7 @@ const navSections = [
           { label: 'ChptRichTextEditor', id: 'chpt-rich-text' },
           { label: 'ChptSignaturePad', id: 'chpt-signature' },
           { label: 'ChptChecklist', id: 'chpt-checklist' }, { label: 'ChptWorkInstruction', id: 'chpt-work-instruction' }, { label: 'ChptAqlSampling', id: 'chpt-aql-sampling' }, { label: 'ChptQueryBuilder', id: 'chpt-query-builder' }, { label: 'ChptCronInput', id: 'chpt-cron-input' },
+          { label: 'ChptImageCropper', id: 'chpt-image-cropper' },
           { label: 'ChptUpload', id: 'chpt-upload' },
         ],
       },

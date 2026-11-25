@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **ChptImageCropper 圖片裁切**（ui）：大頭照、缺陷照片、銘牌照片上傳前先裁好。拖曳框移動、拉 8 個把手調整大小、框外拖曳重畫；
+  固定比例（`aspect` / 工具列 `aspectOptions`）、轉 90°（框跟著內容轉）、水平 / 垂直翻轉、滾輪與雙指縮放、中鍵平移；圓形遮罩（`shape="circle"`）、
+  三分線、即時預覽。經 ref 取得 `getCanvas` / `getBlob` / `getDataURL`（指定 width / height / maxWidth、PNG / JPEG / WebP、底色）。
+  鍵盤方向鍵移動、+ / − 調整大小；`v-model` 為轉過後的圖片像素座標。共用幾何函式 `cropResizeRect`、`cropRotateRect`、`cropOutputSize`。
 - **RidgelineChart 山脊圖**（charts）：比較很多組的分佈形狀（各機台 / 各班 / 各批的量測值、每天的週期時間）。每組一條核密度曲線
   （頻寬 Silverman / Scott 或指定）、上下錯開部分重疊（`overlap`），曲線內畫中位數與 Q1 / Q3；`normalize` 選各自同高（比形狀）或共用比例
   （比集中程度）；`sort` 依中位數 / 平均 / 標準差 / 名稱。給 `spec`（LSL / USL / 目標）時畫規格線並在右側標出每組規格外比例。
