@@ -422,6 +422,52 @@
       </p>
     </section>
 
+    <!-- ============ ChptSortableList ============ -->
+    <section id="chpt-sortable-list" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSortableList 拖曳排序清單</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>製程步驟順序、點檢項目、選單設定、工單排程。拖曳左側把手排序（觸控也可以）；<code>max-depth</code> 大於 1 時可以巢狀 ——
+        拖曳時往右移成為上一項的子項、往左移回上一層；有子項的可以收合。<code>locked</code> 的項目固定不動。
+        鍵盤：Tab 到把手後按空白鍵拿起、上下方向鍵移動、左右方向鍵調整層級、空白鍵放下、Esc 取消。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptSortableList } from '@/components/library'</code>
+      </p>
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <h3 class="text-sm font-semibold text-content-secondary mb-2">製程路線（兩層）</h3>
+          <ChptSortableList v-model="sortRoute" :max-depth="2" label="製程路線" @change="sortOnChange" />
+          <p class="mt-2 text-xs text-content-secondary" aria-live="polite">{{ sortLog || '（拖曳或用鍵盤調整）' }}</p>
+          <p class="mt-1 text-xs text-content-tertiary">順序：{{ sortOrder }}</p>
+        </div>
+        <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+          <h3 class="text-sm font-semibold text-content-secondary mb-2">工單排程（兩個清單互相拖曳，<code>group="orders"</code>）</h3>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <p class="mb-1 text-xs text-content-secondary">待排（{{ sortBacklog.length }}）</p>
+              <ChptSortableList v-model="sortBacklog" group="orders" label="待排工單" :handle="false" />
+            </div>
+            <div>
+              <p class="mb-1 text-xs text-content-secondary">今日 SMT 一線（{{ sortToday.length }}）</p>
+              <ChptSortableList v-model="sortToday" group="orders" label="今日排程" :handle="false" empty-text="拖工單到這裡排入" @add="(c) => (sortLog2 = `排入 ${c.item.label}`)" />
+            </div>
+          </div>
+          <p class="mt-2 text-xs text-content-secondary" aria-live="polite">{{ sortLog2 || '（整列都可以拖）' }}</p>
+        </div>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="sortSample" />
+      <ApiTable of="ChptSortableList" title="Props" :rows="sortProps" />
+      <ApiTable of="-" title="SortItem（modelValue 的每一項）" :rows="sortItemRows" />
+      <ApiTable of="ChptSortableList" title="Events" :rows="sortEvents" />
+      <ApiTable of="ChptSortableList" title="Slots" :rows="sortSlots" />
+      <ApiTable of="ChptSortableList" title="方法（ref）" :rows="sortMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>拖曳用指標事件實作（不用 HTML5 拖放），所以手機、平板也能拖；按 Esc 可以取消正在進行的拖曳。
+        <code>:handle="false"</code> 時整列都會攔下觸控，手指在列上無法捲動頁面 —— 清單長、主要在手機上用時建議保留把手。
+        <code>can-drop</code> 可以加規則，例如「檢驗站底下不能再放子步驟」。鍵盤移動時先在畫面上預覽，放下才送出 <code>update:modelValue</code>。
+      </p>
+    </section>
+
     <!-- ============ ChptSkillMatrix ============ -->
     <section id="chpt-skill-matrix" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSkillMatrix 技能矩陣</h2>
@@ -474,6 +520,7 @@ import {
   ChptShiftRoster,
   ChptSkillMatrix,
   ChptScheduler,
+  ChptSortableList,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
 
@@ -631,6 +678,84 @@ const schedMethods = [
   { name: 'scrollToHour(h)', type: '(h: number) => void', desc: '捲到某個小時' },
   { name: 'goTo(date)', type: '(date: number) => void', desc: '跳到某天（所在的週）' },
   { name: 'conflicts', type: 'string[]', desc: '同一資源時間重疊的事件 id' },
+]
+
+// ---- ChptSortableList ----
+const sortRoute = ref([
+  { id: 'feed', label: '投料 / 備料', description: '固定第一步', locked: true },
+  { id: 'print', label: '錫膏印刷', children: [{ id: 'spi', label: 'SPI 錫膏檢查', leaf: true }] },
+  {
+    id: 'mount',
+    label: '貼片',
+    children: [
+      { id: 'hs', label: '高速機（小零件）', leaf: true },
+      { id: 'gp', label: '泛用機（IC、連接器）', leaf: true },
+    ],
+  },
+  { id: 'reflow', label: '迴焊', description: '十溫區、氮氣' },
+  { id: 'aoi', label: '爐後 AOI' },
+  { id: 'ict', label: 'ICT' },
+  { id: 'pack', label: '包裝' },
+])
+const sortLog = ref('')
+function sortOnChange({ item, to }) {
+  sortLog.value = `${item.label} 移到${to.parentId ? '子步驟' : '主流程'}第 ${to.index + 1} 項`
+}
+const sortOrder = computed(() => {
+  const out = []
+  const walk = (list, prefix) => list.forEach((x, i) => (out.push(`${prefix}${i + 1}. ${x.label}`), walk(x.children ?? [], `${prefix}${i + 1}.`)))
+  walk(sortRoute.value, '')
+  return out.join('、')
+})
+const sortBacklog = ref([
+  { id: 'wo-1031', label: 'WO-1031 主機板 A', description: '500 片．交期 11/27' },
+  { id: 'wo-1032', label: 'WO-1032 電源板', description: '1,200 片．交期 11/28' },
+  { id: 'wo-1035', label: 'WO-1035 LED 驅動板', description: '800 片．交期 11/29' },
+  { id: 'wo-1036', label: 'WO-1036 主機板 B', description: '300 片．交期 12/01' },
+])
+const sortToday = ref([{ id: 'wo-1029', label: 'WO-1029 控制板', description: '進行中', locked: true }])
+const sortLog2 = ref('')
+const sortSample = `<ChptSortableList v-model="route" :max-depth="2" label="製程路線" @change="save" />
+
+// 兩個清單互相拖曳：同一個 group
+<ChptSortableList v-model="backlog" group="orders" :handle="false" />
+<ChptSortableList v-model="today" group="orders" :handle="false" @add="({ item }) => schedule(item)" />
+
+// 項目：{ id, label, description?, children?, locked?, leaf? }
+// 自訂內容
+<ChptSortableList v-model="steps">
+  <template #item="{ item, depth }">{{ item.label }} <ChptTag>{{ item.station }}</ChptTag></template>
+</ChptSortableList>`
+const sortProps = [
+  { name: 'modelValue', type: 'SortItem[]', def: '[]', desc: '項目（v-model）；巢狀時用 children' },
+  { name: 'maxDepth', type: 'number', def: '1', desc: '最多幾層（1 = 平面清單）' },
+  { name: 'indent', type: 'number', def: '24', desc: '每層縮排（px），也是拖曳時左右換層的距離' },
+  { name: 'handle', type: 'boolean', def: 'true', desc: '只能用把手拖；false 時整列都可以拖' },
+  { name: 'group', type: 'string', def: "''", desc: '同名的清單之間可以互相拖曳' },
+  { name: 'put', type: 'boolean', def: 'true', desc: '接受從同 group 的其他清單拖進來' },
+  { name: 'canDrop', type: '(item, parent) => boolean', def: 'null', desc: '自訂規則：能不能放到 parent 底下（null 為最上層）' },
+  { name: 'label', type: 'string', def: '語系', desc: '清單名稱（螢幕閱讀器）' },
+  { name: 'emptyText', type: 'string', def: '語系', desc: '沒有項目時的文字' },
+  { name: 'disabled', type: 'boolean', def: 'false', desc: '停用拖曳' },
+]
+const sortItemRows = [
+  { name: 'id / label', type: 'string', def: '—', desc: '唯一 id 與顯示文字' },
+  { name: 'description', type: 'string', def: '—', desc: '次要說明' },
+  { name: 'children', type: 'SortItem[]', def: '—', desc: '子項（maxDepth > 1）' },
+  { name: 'locked', type: 'boolean', def: 'false', desc: '固定不動（不能拖，鍵盤也不能拿起）' },
+  { name: 'leaf', type: 'boolean', def: 'false', desc: '不能有子項' },
+]
+const sortEvents = [
+  { name: 'update:modelValue', params: '(items: SortItem[])', desc: '放下後的新陣列' },
+  { name: 'change', params: '({ item, from, to })', desc: '在清單內移動；from / to 為 { parentId, index }' },
+  { name: 'add', params: '({ item, from, to })', desc: '從同 group 的其他清單拖進來' },
+  { name: 'remove', params: '({ item, from, to })', desc: '拖到同 group 的其他清單' },
+]
+const sortSlots = [{ name: 'item', params: '{ item, depth, dragging, grabbed }', desc: '自訂每一項的內容（預設為 label 與 description）' }]
+const sortMethods = [
+  { name: 'toggle(id)', type: '(id: string) => void', desc: '收合 / 展開' },
+  { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 收合' },
+  { name: 'isDescendant(ancestorId, id)', type: '(a: string, b: string) => boolean', desc: 'b 是否在 a 底下（含自己）' },
 ]
 
 // ---- ChptSkillMatrix ----
