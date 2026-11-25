@@ -42,6 +42,10 @@
 
 ### 新增
 
+- **ChptMentionInput 提及輸入**（ui）：交接紀錄、異常回報、留言裡 @人員、#工單。輸入觸發字元後列出候選（`triggers` 各自給固定 `options` 或非同步 `search`，
+  有防抖、丟掉過期結果），↑↓ 選擇、Enter / Tab 確定、Esc 關閉；提及以底色標籤顯示，刪除時整個移除、在名字中間打字變回一般文字；
+  觸發字元前要是開頭、空白或標點（email 不會跳出）。v-model 為帶標記的字串 `@[名稱](id)`，`change` / `submit`（Ctrl / ⌘ + Enter）附純文字與提及清單，
+  `mention-add` / `mention-remove`；字數上限與計數、自動長高、輸入法組字中不打斷。工具函式 `parseMentions`、`mentionMarkup`、`filterMentionOptions`。
 - **ChptImageCropper 圖片裁切**（ui）：大頭照、缺陷照片、銘牌照片上傳前先裁好。拖曳框移動、拉 8 個把手調整大小、框外拖曳重畫；
   固定比例（`aspect` / 工具列 `aspectOptions`）、轉 90°（框跟著內容轉）、水平 / 垂直翻轉、滾輪與雙指縮放、中鍵平移；圓形遮罩（`shape="circle"`）、
   三分線、即時預覽。經 ref 取得 `getCanvas` / `getBlob` / `getDataURL`（指定 width / height / maxWidth、PNG / JPEG / WebP、底色）。
