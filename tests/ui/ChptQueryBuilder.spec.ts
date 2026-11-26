@@ -43,7 +43,7 @@ function mountIt(props: Record<string, unknown> = {}, wrap?: (n: ReturnType<type
     })
   const w = mount({ render: () => (wrap ? wrap(node()) : node()) }, { attachTo: document.body })
   mounted.push(w)
-  const items = () => w.findAll('li[role="treeitem"]')
+  const items = () => w.findAll('li[aria-level]')
   const ruleRow = (i: number) => items().filter((li) => li.find('select[aria-label="欄位"]').exists())[i]
   const btn = (label: string, n = 0) => w.findAll('button').filter((b) => b.attributes('aria-label') === label || (!b.attributes('aria-label') && b.text().trim().endsWith(label)))[n]
   const rule = (id: string) => {
@@ -188,7 +188,7 @@ describe('ChptQueryBuilder', () => {
     // r1 拖到 g1 結尾
     at(1).dispatchEvent(drag('dragstart'))
     const over = drag('dragover')
-    const endRows = w.findAll('li[role="none"]')
+    const endRows = w.findAll('li[data-row="end"]')
     endRows[0].element.dispatchEvent(over)
     expect(over.defaultPrevented).toBe(true)
     endRows[0].element.dispatchEvent(drag('drop'))

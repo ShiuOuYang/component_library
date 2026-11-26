@@ -205,7 +205,7 @@
 
       <!-- 數值表 -->
       <div v-if="props.showTables" class="grid gap-4" :style="{ gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))` }">
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus" tabindex="0" role="region" :aria-label="t.tableComponents">
           <table class="w-full text-xs tabular-nums" data-table="components">
             <caption class="mb-1 text-left text-xs font-medium text-content-primary">{{ t.tableComponents }}</caption>
             <thead>
@@ -230,7 +230,7 @@
             </tbody>
           </table>
         </div>
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus" tabindex="0" role="region" :aria-label="res.anovaReduced ? t.tableAnovaReduced : t.tableAnova">
           <table class="w-full text-xs tabular-nums" data-table="anova">
             <caption class="mb-1 text-left text-xs font-medium text-content-primary">{{ res.anovaReduced ? t.tableAnovaReduced : t.tableAnova }}</caption>
             <thead>

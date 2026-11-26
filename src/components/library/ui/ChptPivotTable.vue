@@ -155,8 +155,11 @@
               class="whitespace-nowrap border-b border-r border-stroke-light px-3 text-right tabular-nums last:border-r-0"
               :class="[c.total ? 'font-medium' : '', row.leaf ? '' : 'bg-surface-secondary']"
               :style="heatStyle(row, c)"
-              @click="onCellClick(row.path, c)"
-            >{{ cellText(row.path, c) }}</td>
+            >
+              <!-- 有監聽 cell-click 時格子內容是按鈕（鍵盤可以按）；沒有時維持純文字，不多出 Tab 停駐點 -->
+              <button v-if="hasCellClick" type="button" class="block w-full rounded-sm text-right tabular-nums hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus" @click="onCellClick(row.path, c)">{{ cellText(row.path, c) }}</button>
+              <template v-else>{{ cellText(row.path, c) }}</template>
+            </td>
           </tr>
           <tr v-if="windowed.bottom > 0" aria-hidden="true"><td :colspan="valueColumns.length + 1" :style="{ height: `${windowed.bottom}px`, padding: 0 }"></td></tr>
         </tbody>
@@ -167,8 +170,10 @@
               v-for="(c, ci) in valueColumns"
               :key="ci"
               class="whitespace-nowrap border-t border-r border-stroke-default bg-surface-tertiary px-3 py-1.5 text-right tabular-nums text-content-primary last:border-r-0"
-              @click="onCellClick([], c)"
-            >{{ cellText([], c) }}</td>
+            >
+              <button v-if="hasCellClick" type="button" class="block w-full rounded-sm text-right tabular-nums hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus" @click="onCellClick([], c)">{{ cellText([], c) }}</button>
+              <template v-else>{{ cellText([], c) }}</template>
+            </td>
           </tr>
         </tfoot>
       </table>
@@ -177,7 +182,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, shallowRef, useId, useTemplateRef, watch } from 'vue'
+import { computed, getCurrentInstance, ref, shallowRef, useId, useTemplateRef, watch } from 'vue'
 import ChptButton from './ChptButton.vue'
 import ChptSwitch from './ChptSwitch.vue'
 import { useLocale } from '../shared/config'
@@ -437,6 +442,8 @@ function heatStyle(row: PivotRowNode, c: ValueColumn) {
   return { background: `color-mix(in srgb, rgb(var(--t-accent)) ${Math.round((Math.abs(v) / max) * 45)}%, transparent)` }
 }
 
+const instance = getCurrentInstance()
+const hasCellClick = computed(() => !!instance?.vnode.props?.onCellClick)
 function onCellClick(rowPath: string[], c: ValueColumn): void {
   emit('cell-click', { rowPath, colKey: c.colKey, value: config.value.values[c.vi], result: cellValue(rowPath, c) })
 }

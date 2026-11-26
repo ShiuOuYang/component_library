@@ -74,6 +74,10 @@ describe('ChptStorageMap', () => {
     expect(w.findAll('figcaption').map((x) => x.text())).toEqual(['A-01', 'B-01'])
     const heads = w.findAll('figure')[0].findAll('[role="rowheader"]').map((x) => x.text())
     expect(heads).toEqual(['2F', '1F'])
+    // grid 底下是 row，row 裡才是 rowheader / gridcell
+    const grid = w.findAll('figure')[0].find('[role="grid"]')
+    expect(grid.findAll(':scope > [role="row"]')).toHaveLength(2)
+    expect(grid.find(':scope > [role="row"] > [role="rowheader"]').exists()).toBe(true)
     // B-01 只有第 1、3 格：中間補空位
     expect(w.findAll('figure')[1].findAll('[data-bin]')).toHaveLength(2)
     expect(w.findAll('figure')[1].findAll('span.h-10')).toHaveLength(1)

@@ -67,6 +67,12 @@ describe('ChptTable 樹狀資料', () => {
     expect(visibleParts(w)).toEqual(['A-主機板組', 'A1-PCB', 'A2-電源模組', 'A2a-電容', 'A2b-電感', 'B-機殼', 'C-說明書'])
     const capRow = w.findAll('tbody tr.data-row')[3]
     expect(capRow.attributes('aria-level')).toBe('3')
+    // 樹狀表格用 treegrid 角色；有子列的列標出展開狀態
+    expect(w.find('table').attributes('role')).toBe('treegrid')
+    const rowOf = (part: string) => w.findAll('tbody tr.data-row').find((tr) => tr.text().includes(part))!
+    expect(rowOf('A2-電源模組').attributes('aria-expanded')).toBe('true')
+    expect(rowOf('B-機殼').attributes('aria-expanded')).toBe('false') // 有子項目、收合
+    expect(rowOf('C-說明書').attributes('aria-expanded')).toBeUndefined() // 葉節點沒有 aria-expanded
     expect((capRow.find('.tree-cell').element as HTMLElement).style.paddingLeft).toBe('32px')
     expect(w.emitted('update:treeExpandedKeys')!.at(-1)![0]).toEqual(['A', 'A2'])
     // 收合父層：孫層也一起收起來（展開狀態保留，再展開時恢復）

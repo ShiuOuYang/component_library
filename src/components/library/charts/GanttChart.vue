@@ -68,7 +68,17 @@
     </div>
 
     <!-- 列：可垂直捲動，只畫看得到的列（上千列也順） -->
-    <div ref="bodyRef" class="gantt-body relative" :class="{ 'is-scrollable': !autoHeight }" :style="bodyStyle" @scroll.passive="onScroll">
+    <!-- 可以捲動時讓鍵盤也能捲（Tab 到這裡再用方向鍵 / PageDown） -->
+    <div
+      ref="bodyRef"
+      class="gantt-body relative focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-stroke-focus"
+      :class="{ 'is-scrollable': !autoHeight }"
+      :style="bodyStyle"
+      :tabindex="autoHeight ? undefined : 0"
+      :role="autoHeight ? undefined : 'region'"
+      :aria-label="autoHeight ? undefined : i18n.gantt.title"
+      @scroll.passive="onScroll"
+    >
       <div class="relative" :style="{ height: `${contentHeight}px` }">
         <!-- 列名 -->
         <div

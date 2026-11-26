@@ -187,6 +187,7 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  breadcrumbNav: { label: string }
   labelDesigner: {
     label: string
     toolbar: string
@@ -2053,6 +2054,7 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  breadcrumbNav: { label: '麵包屑導覽' },
   labelDesigner: {
     label: '標籤設計器',
     toolbar: '標籤工具',
@@ -4027,6 +4029,7 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  breadcrumbNav: { label: 'Breadcrumb' },
   labelDesigner: {
     label: 'Label designer',
     toolbar: 'Label tools',

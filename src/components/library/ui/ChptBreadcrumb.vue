@@ -1,5 +1,5 @@
 <template>
-  <nav aria-label="breadcrumb" class="flex items-center flex-wrap gap-1">
+  <nav :aria-label="t.breadcrumbNav.label" class="flex items-center flex-wrap gap-1">
     <template v-for="(item, index) in props.items" :key="index">
       <!-- 分隔符 -->
       <ChptIcon v-if="index > 0" :size="16" color="content-tertiary" class="mx-1">
@@ -10,6 +10,7 @@
       <span
         v-if="index === props.items.length - 1"
         class="text-content-primary font-medium text-sm"
+        aria-current="page"
       >
         <slot :name="`item-${index}`" :item="item">
           {{ item.label }}
@@ -27,21 +28,24 @@
         </slot>
       </router-link>
 
-      <span
+      <!-- 沒有 to 的項目：用 button（原本是 span，鍵盤到不了） -->
+      <button
         v-else
-        class="text-content-tertiary hover:text-accent transition-colors text-sm cursor-pointer"
+        type="button"
+        class="rounded-sm text-content-tertiary hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus transition-colors text-sm cursor-pointer"
         @click="handleClick(item)"
       >
         <slot :name="`item-${index}`" :item="item">
           {{ item.label }}
         </slot>
-      </span>
+      </button>
     </template>
   </nav>
 </template>
 
 <script setup lang="ts">
 import ChptIcon from './ChptIcon.vue'
+import { useLocale } from '../shared/config'
 
 /**
  * ChptBreadcrumb（CHPT 主題） - 麵包屑導覽元件
@@ -69,6 +73,7 @@ const props = withDefaults(defineProps<ChptBreadcrumbProps>(), {
   separator: 'chevron_right',
 })
 
+const t = useLocale()
 const emit = defineEmits<{
   (e: 'select', item: BreadcrumbItem): void
 }>()

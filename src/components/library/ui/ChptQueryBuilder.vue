@@ -1,10 +1,12 @@
 <template>
   <div class="query-builder flex flex-col gap-2 text-sm">
-    <ul class="flex flex-col gap-1.5" role="tree" :aria-label="props.title || t.queryBuilder.title">
+    <!-- 一般清單，層級放在 aria-level。原本是 role="tree"，但列裡有按鈕、選單等互動元件，
+         也沒有樹狀的方向鍵操作，tree / treeitem 反而讓螢幕報讀器進入錯的模式 -->
+    <ul class="flex flex-col gap-1.5" :aria-label="props.title || t.queryBuilder.title">
       <li
         v-for="row in rows"
         :key="`${row.kind}:${row.node.id}`"
-        :role="row.kind === 'end' ? 'none' : 'treeitem'"
+        :data-row="row.kind"
         :aria-level="row.kind === 'end' ? undefined : row.depth + 1"
         class="flex flex-wrap items-center gap-1.5 rounded-md"
         :class="[

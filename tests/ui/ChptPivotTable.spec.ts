@@ -195,13 +195,17 @@ describe('ChptPivotTable', () => {
   })
 
   it('點一格：送出 cell-click（總計列 rowPath 為 []、總計欄 colKey 為 null）', async () => {
-    const { w, comp } = mountIt()
-    await w.findAll('tbody td')[3].trigger('click')
-    await w.findAll('tfoot td')[2].trigger('click')
-    expect(comp().emitted('cell-click')).toEqual([
-      [{ rowPath: ['一廠', 'L1'], colKey: ['08'], value: { field: 'qty', agg: 'sum' }, result: 5 }],
-      [{ rowPath: [], colKey: null, value: { field: 'qty', agg: 'sum' }, result: 20 }],
+    const clicks: unknown[] = []
+    const { w } = mountIt({ onCellClick: (p: unknown) => clicks.push(p) })
+    // 有監聽時格子內容是按鈕（鍵盤可以按）
+    await w.findAll('tbody td')[3].find('button').trigger('click')
+    await w.findAll('tfoot td')[2].find('button').trigger('click')
+    expect(clicks).toEqual([
+      { rowPath: ['一廠', 'L1'], colKey: ['08'], value: { field: 'qty', agg: 'sum' }, result: 5 },
+      { rowPath: [], colKey: null, value: { field: 'qty', agg: 'sum' }, result: 20 },
     ])
+    // 沒有監聽：純文字，不多出 Tab 停駐點
+    expect(mountIt().w.find('tbody td button').exists()).toBe(false)
   })
 
   it('匯出 CSV：最後一層的列與總計', async () => {

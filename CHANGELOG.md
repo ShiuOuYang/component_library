@@ -508,6 +508,20 @@
 
 ### 修正
 
+- **鍵盤操作與 ARIA 結構**（無障礙稽核）：原本只能用滑鼠點的元素改成按鈕，axe 回報的結構錯誤一併修正。
+  - **ChptBreadcrumb**：nav 有名稱（「麵包屑導覽」），最後一項標 `aria-current="page"`；沒有連結的項目改為按鈕（原本是 span，鍵盤到不了）。
+  - **ChptFilter** 標籤模式、**GerberViewer / PcbLayout** 圖層列：改為切換按鈕，`aria-pressed` 反映狀態。
+  - **ChptExcelEditor**：工作表名稱改為按鈕（Enter 切換、F2 改名、目前的表標 `aria-current`），新增 / 刪除鈕有名稱；
+    焦點在按鈕或下拉選單時，編輯器不再把 Enter / 空白鍵 / F2 攔去移動作用格或開始編輯。
+  - **ChptPivotTable**：有 `@cell-click` 時，數值格內放按鈕（可用鍵盤點）；沒有監聽就維持純文字。
+  - **ChptTable**：樹狀模式表格為 `treegrid`，有子項目的列帶 `aria-expanded`。
+  - **ChptStorageMap**：格子包在 `role="row"` 裡（grid 必須有 row）。**ChptFormList**：分組改用 `role="group"`，不再放在 list 底下錯置角色。
+  - **ChptQueryBuilder**：改為一般清單（層級放在 `aria-level`）。原本是 `role="tree"`，但列裡有選單、按鈕，也沒有樹狀的方向鍵操作，報讀器會進入錯的模式。
+  - **ChptFishbone**：「新增原因」按鈕移出 tree（tree 裡只能是 treeitem / group）。**WaferMap**：分區良率 dl 改由 dl 外的標題命名。
+  - **GanttChart / GageRRChart / ChptExcelEditor**：可捲動區域可以用 Tab 進入（`tabindex="0"`、`role="region"` 與名稱），鍵盤使用者也能捲動。
+    ExcelEditor 的 Tab 停駐點從外框移到表格區（外框改 `tabindex="-1"`，程式仍可聚焦），聚焦時顯示焦點框。
+  - **ChptImage**：載入失敗時的替代文字改用次要文字色（原本對比 4.3）。
+
 - **深色模式的狀態文字對比不足**（axe 掃描：9 頁、110 處，對比只有 2.5～3.3）：紅 / 綠 / 黃的狀態文字用了填色用的 `*-solid` 色（`chartPalette.critical` 等），
   深色模式不會變亮。改用文字色 token（`danger` / `success` / `warning` / `info`，深色模式會變亮）；邊框、底色、圖例色塊仍用 `*-solid`。
   涉及 LineBalanceChart、DumbbellChart、YieldFunnel、ProbabilityPlot、BumpChart、ChptStorageMap、ChptSkillMatrix、ChptQueryBuilder、ChptJsonViewer、

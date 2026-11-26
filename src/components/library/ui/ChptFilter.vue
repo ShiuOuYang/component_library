@@ -73,16 +73,19 @@
     </div>
     <div class="px-2 py-1">
       <div class="space-y-0.5 max-h-18 overflow-y-auto">
-        <div
+        <!-- 選項是可切換的按鈕（原本是 div，鍵盤到不了） -->
+        <button
           v-for="option in filteredOptions"
           :key="getOptionValue(option)"
+          type="button"
+          :aria-pressed="arrayValue.includes(getOptionValue(option))"
           @click="toggleOption(getOptionValue(option))"
-          class="flex items-center px-1 py-0.5 border border-stroke-light rounded text-xs cursor-pointer hover:border-accent-subtle-border"
+          class="flex w-full items-center px-1 py-0.5 border border-stroke-light rounded text-left text-xs cursor-pointer hover:border-accent-subtle-border focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
           :class="arrayValue.includes(getOptionValue(option)) ? 'border-stroke-focus bg-accent-subtle text-accent-on-subtle' : 'hover:bg-surface-secondary text-content-primary'"
         >
-          <div class="w-2 h-2 rounded border mr-1 flex-shrink-0" :class="arrayValue.includes(getOptionValue(option)) ? 'bg-accent-solid border-stroke-focus' : 'border-stroke-default'"></div>
+          <span class="w-2 h-2 rounded border mr-1 flex-shrink-0" :class="arrayValue.includes(getOptionValue(option)) ? 'bg-accent-solid border-stroke-focus' : 'border-stroke-default'" aria-hidden="true"></span>
           <span class="truncate">{{ getOptionLabel(option) }}</span>
-        </div>
+        </button>
         <div v-if="filteredOptions.length === 0" class="text-center py-1"><p class="text-xs text-content-tertiary">{{ t.filter.noOptions }}</p></div>
       </div>
       <div v-if="filteredOptions.length > 0" class="flex justify-between items-center mt-1 pt-1 border-t border-stroke-light">
