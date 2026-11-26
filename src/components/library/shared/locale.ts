@@ -187,6 +187,28 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  orgChart: {
+    label: string
+    empty: string
+    searchPlaceholder: string
+    matchCount: (i: number, n: number) => string
+    noMatch: string
+    prevMatch: string
+    nextMatch: string
+    zoomIn: string
+    zoomOut: string
+    fit: string
+    expandAll: string
+    collapseAll: string
+    exportPng: string
+    expand: (n: number) => string
+    collapse: string
+    expanded: (label: string, n: number) => string
+    collapsed: (label: string) => string
+    found: (label: string, i: number, n: number) => string
+    nodeAria: (label: string, title: string, children: number) => string
+    hint: string
+  }
   maskedInput: {
     format: (template: string) => string
     rejected: (kind: string) => string
@@ -1917,6 +1939,28 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  orgChart: {
+    label: '組織圖',
+    empty: '沒有資料',
+    searchPlaceholder: '搜尋姓名、職稱',
+    matchCount: (i, n) => `${i} / ${n}`,
+    noMatch: '找不到',
+    prevMatch: '上一個符合的',
+    nextMatch: '下一個符合的',
+    zoomIn: '放大',
+    zoomOut: '縮小',
+    fit: '全部顯示',
+    expandAll: '全部展開',
+    collapseAll: '全部收合',
+    exportPng: '下載 PNG',
+    expand: (n) => `展開（底下 ${n} 個）`,
+    collapse: '收合',
+    expanded: (label, n) => `已展開 ${label}，直屬 ${n} 個`,
+    collapsed: (label) => `已收合 ${label}`,
+    found: (label, i, n) => `${label}（第 ${i} 個，共 ${n} 個符合）`,
+    nodeAria: (label, title, children) => [label, title, children ? `直屬 ${children} 個` : ''].filter(Boolean).join('，'),
+    hint: '方向鍵沿著組織圖移動，Enter 選取，空白鍵展開或收合；拖曳平移，Ctrl + 滾輪或雙指縮放',
+  },
   maskedInput: {
     format: (template) => `格式：${template}`,
     rejected: (kind) => `這裡只能輸入${kind}`,
@@ -3755,6 +3799,28 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  orgChart: {
+    label: 'Organization chart',
+    empty: 'No data',
+    searchPlaceholder: 'Search name or title',
+    matchCount: (i, n) => `${i} / ${n}`,
+    noMatch: 'No match',
+    prevMatch: 'Previous match',
+    nextMatch: 'Next match',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    fit: 'Fit to view',
+    expandAll: 'Expand all',
+    collapseAll: 'Collapse all',
+    exportPng: 'Download PNG',
+    expand: (n) => `Expand (${n} below)`,
+    collapse: 'Collapse',
+    expanded: (label, n) => `Expanded ${label}, ${n} direct ${Number(n) === 1 ? 'report' : 'reports'}`,
+    collapsed: (label) => `Collapsed ${label}`,
+    found: (label, i, n) => `${label} (match ${i} of ${n})`,
+    nodeAria: (label, title, children) => [label, title, children ? `${children} direct ${Number(children) === 1 ? 'report' : 'reports'}` : ''].filter(Boolean).join(', '),
+    hint: 'Use arrow keys to move through the chart, Enter to select, Space to expand or collapse; drag to pan, Ctrl + wheel or pinch to zoom',
+  },
   maskedInput: {
     format: (template) => `Format: ${template}`,
     rejected: (kind) => `Only ${kind} allowed here`,

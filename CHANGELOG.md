@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptOrgChart 組織圖**（ui）：組織架構、產線責任歸屬、簽核層級。由上往下或由左往右（`orientation`）的樹狀版面，節點顯示頭像（沒有時為縮寫）、名稱、職稱與色條；
+  節點可展開收合（顯示底下有幾個，被點的節點在畫面上不動）、`defaultExpandDepth` 預設展開層數；拖曳平移（拖過不算點擊）、Ctrl + 滾輪 / 雙指 / 按鈕縮放、全部顯示；
+  搜尋名稱與職稱（自動展開上層並移到畫面中央，Enter / Shift + Enter 切換結果）；`v-model:selected` 選取並標出到根節點的路徑；
+  tree / treeitem 角色，方向鍵沿著樹移動（往下層時自動展開）、Enter 選取、空白鍵展開收合、`*` 展開兄弟；`#node` slot 自訂節點；下載 PNG（`exportPng()`）。
+  工具函式 `orgFromFlat`（平面清單 + parentId 轉成樹）、`layoutOrg`、`searchOrg`。
 - **GageRRChart 量測系統分析圖**（charts）：量具的量測變異夠不夠小（Gage R&R，交叉設計、ANOVA 法）。二因子 ANOVA 拆出重複性、再現性（作業員與作業員 × 零件交互作用）與零件間變異，
   交互作用不顯著（`interactionAlpha`）時併入誤差重算；% 貢獻度、% 研究變異（`multiplier` 6 / 5.15）、% 公差（`tolerance`）、ndc，依 %GRR（< 10% / 10～30% / > 30%）判定。
   一次畫出六張標準圖（變異成分、依作業員的 R 圖與 X̄ 圖、依零件、依作業員盒鬚圖、交互作用圖，`panels` 可挑選），滑過同一零件跨圖高亮、作業員圖例可標示；
