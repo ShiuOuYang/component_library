@@ -40,6 +40,7 @@ export {
   ChptLotTrace,
   ChptDiffViewer,
   ChptChecklist,
+  ChptFishbone,
   ChptOrgChart,
   ChptMaskedInput,
   ChptCommentThread,
@@ -111,6 +112,8 @@ export { fitImage, clampImageView, zoomImageTo, viewOf as imageViewOf, zoomOf as
 export type { ImageView, ImageZoom, CompareMode } from './shared/imageCompare'
 export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
+export { FISHBONE_5M1E, createFishbone, addCause as fishAddCause, updateCause as fishUpdateCause, removeCause as fishRemoveCause, findCause as fishFindCause, flattenCauses as fishFlattenCauses, fishStats, fishboneOutline } from './shared/fishbone'
+export type { FishboneData, FishCategory, FishCause, FishLocation, FishStats, FishLayout, FishBone, FishRow, FishLayoutOptions, Fishbone5M1E } from './shared/fishbone'
 export { orgFromFlat, indexOrg as orgIndex, layoutOrg, searchOrg } from './shared/orgChart'
 export type { OrgNode, OrgEntry, OrgIndex, OrgLayout, OrgLaidNode, OrgLink, OrgLayoutOptions, OrgDirection } from './shared/orgChart'
 export { MASK_PRESETS, DEFAULT_MASK_TOKENS, formatMask, parseMask, applyMask as applyInputMask, validIPv4 } from './shared/inputMask'
@@ -188,7 +191,7 @@ export type {
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
-  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptOrgChartProps, ChptMaskedInputProps, MaskedValue, ChptCommentThreadProps, ChptMentionInputProps, MentionTrigger, MentionValue, ChptSortableListProps, SortChange, ChptImageCropperProps, CropState, CropOutputOptions, ChptSchedulerProps, SchedulerView, ChptCronInputProps, ChptJsonViewerProps, ChptQueryBuilderProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
+  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptFishboneProps, ChptOrgChartProps, ChptMaskedInputProps, MaskedValue, ChptCommentThreadProps, ChptMentionInputProps, MentionTrigger, MentionValue, ChptSortableListProps, SortChange, ChptImageCropperProps, CropState, CropOutputOptions, ChptSchedulerProps, SchedulerView, ChptCronInputProps, ChptJsonViewerProps, ChptQueryBuilderProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
   SchemaFormField, SchemaFieldType, SchemaFieldOption, CommandItem, DashboardItem, KanbanColumn, KanbanMoveEvent, RichTextTool,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'

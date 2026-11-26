@@ -507,6 +507,34 @@
       </p>
     </section>
 
+    <!-- ============ ChptFishbone ============ -->
+    <section id="chpt-fishbone" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFishbone 魚骨圖（特性要因圖）</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>品質異常分析、8D 報告的 D4 根本原因。右邊魚頭是問題，大骨是分類（預設 5M1E：人員、機器、材料、方法、環境、量測），原因接在大骨上，最多 3 層。
+        原因可以標記<strong>主要原因</strong>、<strong>已驗證</strong>、<strong>已排除</strong>。<code>editable</code> 時直接在圖上操作：點大骨旁的 + 新增原因、雙擊或 Enter 編輯、
+        選取後用上方工具列標記或刪除；鍵盤 Insert 新增次要原因、Delete 刪除、P / V / X 標記。<code>v-model</code> 是結構化資料，可以存檔或輸出文字大綱。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptFishbone, fishboneOutline } from '@/components/library'</code>
+      </p>
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <ChptSwitch v-model="fishEditable" size="sm" label="編輯模式" />
+        <ChptButton size="sm" variant="secondary" icon="content_copy" @click="fishShowOutline = !fishShowOutline">{{ fishShowOutline ? '隱藏' : '顯示' }}文字大綱</ChptButton>
+      </div>
+      <ChptFishbone v-model="fishData" :editable="fishEditable" label="SMT 二線錫橋不良的魚骨圖" @select="(id) => (fishSelected = id)" />
+      <pre v-if="fishShowOutline" class="mt-3 max-h-64 overflow-auto rounded-md border border-stroke-light bg-surface-secondary p-3 text-xs text-content-primary">{{ fishOutline }}</pre>
+      <ChptCodeBlock class="mt-6" :code="fishSample" />
+      <ApiTable of="ChptFishbone" title="Props" :rows="fishProps" />
+      <ApiTable of="-" title="FishboneData / FishCause" :rows="fishDataRows" />
+      <ApiTable of="ChptFishbone" title="Events" :rows="fishEvents" />
+      <ApiTable of="ChptFishbone" title="方法（ref）" :rows="fishMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>沒給 <code>v-model</code> 時以 5M1E 空白分類開始；分類可以自己定（例如 4M、6M 或依製程站別），分類名稱可以在圖上改。
+        原因很多時圖會變寬，外框可以左右捲動；用 <code>max-height</code> 限制高度。主要原因與已排除互斥。
+      </p>
+    </section>
+
     <!-- ============ ChptSkillMatrix ============ -->
     <section id="chpt-skill-matrix" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSkillMatrix 技能矩陣</h2>
@@ -558,6 +586,8 @@ import {
   ChptSwitch,
   ChptShiftRoster,
   ChptSkillMatrix,
+  ChptFishbone,
+  fishboneOutline,
   ChptScheduler,
   ChptSortableList,
   ChptCommentThread,
@@ -885,6 +915,74 @@ const cmtEvents = [
 const cmtMethods = [
   { name: 'count', type: 'number', desc: '留言總數（含回覆）' },
   { name: 'reply(id)', type: '(id: string) => void', desc: '開始回覆某一則（例如從通知連過來）' },
+]
+
+// ---- ChptFishbone ----
+const fishEditable = ref(true)
+const fishShowOutline = ref(false)
+const fishSelected = ref(null)
+const fishData = ref({
+  problem: 'SMT 二線 QFP 錫橋不良率 1.8%（目標 < 0.3%）',
+  categories: [
+    { id: 'man', label: '人員', causes: [
+      { id: 'm1', text: '新進作業員未依 SOP 擦拭鋼板', verified: true },
+      { id: 'm2', text: '換線時未確認刮刀壓力', children: [{ id: 'm2a', text: '換線檢查表沒有這一項' }] },
+    ] },
+    { id: 'machine', label: '機器', causes: [
+      { id: 'k1', text: '印刷機刮刀磨損', primary: true, verified: true, note: '量測刃口 0.3 mm 缺口', children: [
+        { id: 'k1a', text: '刮刀更換週期過長', children: [{ id: 'k1a1', text: 'PM 計畫沿用舊機型' }] },
+      ] },
+      { id: 'k2', text: '迴焊爐第 5 區溫度偏高', ruledOut: true, note: 'Profile 量測正常' },
+    ] },
+    { id: 'material', label: '材料', causes: [
+      { id: 't1', text: '錫膏回溫時間不足', verified: true },
+      { id: 't2', text: 'PCB 防焊開窗過大' },
+    ] },
+    { id: 'method', label: '方法', causes: [
+      { id: 'h1', text: '鋼板開孔比 1:1，未內縮', primary: true },
+      { id: 'h2', text: '擦拭頻率每 10 片一次' },
+    ] },
+    { id: 'environment', label: '環境', causes: [{ id: 'e1', text: '夏季濕度 65%RH 偏高' }] },
+    { id: 'measurement', label: '量測', causes: [{ id: 'q1', text: 'SPI 體積上限設太寬', children: [{ id: 'q1a', text: '沿用前一版程式' }] }] },
+  ],
+})
+const fishOutline = computed(() => fishboneOutline(fishData.value))
+const fishSample = `<ChptFishbone v-model="analysis" editable />
+
+// analysis：
+{
+  problem: 'SMT 二線 QFP 錫橋不良率 1.8%',
+  categories: [
+    { id: 'machine', label: '機器', causes: [
+      { id: 'k1', text: '印刷機刮刀磨損', primary: true, verified: true, note: '刃口 0.3 mm 缺口',
+        children: [{ id: 'k1a', text: '刮刀更換週期過長' }] },
+    ] },
+    …
+  ],
+}
+
+// 輸出文字大綱（貼到 8D 報告）
+fishboneOutline(analysis)`
+const fishProps = [
+  { name: 'modelValue', type: 'FishboneData', def: '5M1E 空白分類', desc: '問題、分類與原因（v-model）' },
+  { name: 'editable', type: 'boolean', def: 'false', desc: '可以在圖上新增、編輯、標記、刪除' },
+  { name: 'maxHeight', type: 'number', def: '0', desc: '外框最大高度（0 = 不限制）' },
+  { name: 'rowHeight / branchWidth', type: 'number', def: '24 / 170', desc: '每列原因的高度／第一層原因線的長度' },
+  { name: 'label', type: 'string', def: "''", desc: '魚骨圖名稱（螢幕閱讀器）' },
+]
+const fishDataRows = [
+  { name: 'FishboneData', type: '{ problem, categories: FishCategory[] }', def: '—', desc: 'FishCategory：{ id, label, causes: FishCause[] }' },
+  { name: 'FishCause', type: '{ id, text, verified?, primary?, ruledOut?, note?, children? }', def: '—', desc: '最多 3 層；note 會出現在滑過提示與大綱裡' },
+]
+const fishEvents = [
+  { name: 'update:modelValue', params: '(value: FishboneData)', desc: '新增、編輯、標記、刪除' },
+  { name: 'select', params: '(id: string | null)', desc: '選取分類或原因' },
+]
+const fishMethods = [
+  { name: 'value() / outline()', type: '() => FishboneData / string', desc: '目前的資料／文字大綱' },
+  { name: 'addCause(parentId, text)', type: '(parentId, text) => string | null', desc: '新增原因（parentId 為分類或原因 id），回傳新 id' },
+  { name: 'updateCause(id, patch) / removeCause(id)', type: '(id, patch?) => void', desc: '修改或標記／刪除原因' },
+  { name: 'select(id)', type: '(id: string | null) => void', desc: '選取' },
 ]
 
 // ---- ChptSkillMatrix ----
