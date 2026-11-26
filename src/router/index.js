@@ -262,6 +262,14 @@ const routes = [
         },
       },
       {
+        path: "components/multi-vari-chart",
+        name: "MultiVariChartDoc",
+        component: () => import("../views/docs/MultiVariChartDoc.vue"),
+        meta: {
+          title: "多變異圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),
