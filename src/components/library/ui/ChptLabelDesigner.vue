@@ -362,6 +362,7 @@ import {
   type LabelRotation,
   type ResizeHandle,
 } from '../shared/labelDesigner'
+import { downloadBlob } from '../shared/download'
 
 /**
  * ChptLabelDesigner - 標籤設計器
@@ -781,15 +782,7 @@ function exportPng(data: Record<string, unknown> | null = props.data, dpi = doc.
 async function downloadPng(): Promise<void> {
   const blob = await exportPng()
   if (!blob) return
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${props.exportName}.png`
-  a.style.display = 'none'
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  downloadBlob(blob, `${props.exportName}.png`)
 }
 /** 列印：每筆資料一張標籤（每頁一張，頁面大小 = 標籤大小） */
 function printHtml(records: (Record<string, unknown> | null)[] = [props.data]): string {

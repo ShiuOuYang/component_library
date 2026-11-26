@@ -59,7 +59,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import qrcode from 'qrcode-generator'
+import { qrMatrix } from '../shared/qrMatrix'
 import { useLocale } from '../shared/config'
 
 /**
@@ -115,28 +115,10 @@ const props = withDefaults(defineProps<ChptQRCodeProps>(), {
 
 const emit = defineEmits<{ refresh: [] }>()
 
-/** UTF-8 位元組轉成「每個字元一個位元組」的字串，交給 qrcode-generator 的 Byte 模式 */
-function toBinaryString(text: string): string {
-  let out = ''
-  for (const byte of new TextEncoder().encode(text)) out += String.fromCharCode(byte)
-  return out
-}
-
 const errorText = computed(() => (props.value ? t.value.qrcode.tooLong : t.value.qrcode.empty))
 
-const matrix = computed<boolean[][] | null>(() => {
-  if (!props.value) return null
-  try {
-    const qr = qrcode(0, props.icon ? 'H' : props.level)
-    qr.addData(toBinaryString(props.value), 'Byte')
-    qr.make()
-    const n = qr.getModuleCount()
-    return Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => qr.isDark(r, c)))
-  } catch {
-    // 超過 40 版的容量（約 2.9KB）
-    return null
-  }
-})
+// 有 Logo 時用 H 級容錯（中間被蓋住仍讀得到）；超過 40 版的容量（約 2.9KB）為 null
+const matrix = computed<boolean[][] | null>(() => qrMatrix(props.value, props.icon ? 'H' : props.level))
 
 const moduleCount = computed(() => matrix.value?.length ?? 0)
 const viewSize = computed(() => moduleCount.value + props.margin * 2)

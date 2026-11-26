@@ -161,6 +161,7 @@ import {
   type OrgNode,
 } from '../shared/orgChart'
 import { resolveCanvasColor } from '../charts/utils/largeData'
+import { downloadBlob } from '../shared/download'
 
 /**
  * ChptOrgChart - 組織圖
@@ -644,16 +645,7 @@ function exportPng(scale = 2): Promise<Blob | null> {
 async function download(): Promise<void> {
   const blob = await exportPng()
   if (!blob) return
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `${props.exportName}.png`
-  a.style.display = 'none'
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  // 太早撤銷網址時，有些瀏覽器會改用預設檔名或下載失敗
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
+  downloadBlob(blob, `${props.exportName}.png`)
 }
 
 defineExpose({

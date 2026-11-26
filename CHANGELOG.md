@@ -477,6 +477,19 @@
 
 ### 變更
 
+- **元件 id 改用 `useId()`**：ChptRadio（沒給 `name` 時的群組名稱）、GanttChart、EnterpriseHeatmap、DualAxisComboChart、EnterprisePareto
+  原本用 `Math.random()` 產生 id，SSR 時伺服器與用戶端算出不同的值，造成 hydration 不一致、clip-path / 漸層參照錯位。
+  `useId()` 在同一個 app 內唯一；同一頁掛多個 Vue app 時，請設定 `app.config.idPrefix` 區分。
+- **重複程式整併**（行為不變，除下列註明處）：
+  - 圖表標籤截斷：10 份一樣的迴圈（BumpChart、DumbbellChart、RidgelineChart、HorizonChart、UpSetChart、SankeyChart、
+    MultiVariChart、MarimekkoChart、GageRRChart、魚骨圖）改用 `shared/textClip` 的 `clipText`。
+    GageRRChart 的零件名稱原本按字數截斷，中文名稱會超出，現在中文算兩格。
+  - LineBalanceChart 的 `fitText` 改用 `truncateText`（從 horizontalBar 移到 chartText，舊路徑仍可匯入）；
+    原本放得下「一個字 + …」時也回傳空字串。
+  - log Γ：spc（c4）與 correlation（p 值）各一份、精度不同，統一為 Lanczos 版本（`charts/utils/gamma`）。
+  - 下載檔案：ChptLogViewer、ChptExcelEditor、ChptExcelExporter 在 `click()` 後立刻釋放網址，部分瀏覽器會下載失敗；
+    與 ChptLabelDesigner、ChptOrgChart 一起改用 `downloadBlob`（移到 `shared/download`，`chartExport` 仍匯出）。
+  - QR Code 矩陣：ChptQRCode 與標籤設計器共用 `shared/qrMatrix`。
 - **ChptTable**：表頭改為淡藍底（`headerBgGradient` 預設 `from-accent-subtle to-accent-subtle`）、標題用主要文字色，
   欄與欄之間加分隔線；群組標題用強調色（新 prop `groupHeaderTextColor`）。排序圖示從標題右緣的 ▲▼ 改成緊接在標題後面的上下箭頭，
   排序中的方向用強調色。要維持舊的灰底，傳 `header-bg-gradient="from-surface-secondary to-surface-tertiary"`、

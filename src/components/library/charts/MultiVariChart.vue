@@ -186,6 +186,7 @@ import { useAutoResize } from './composables/useAutoResize'
 import { tooltipPlacement } from './utils/tooltipPlacement'
 import { buildMultiVari, multiVariPositions, type MVCell, type MVPosition } from './utils/multiVari'
 import { useLocale } from '../shared/config'
+import { clipText } from '../shared/textClip'
 
 /**
  * MultiVariChart —— 多變異圖
@@ -341,15 +342,7 @@ function locate(ps: MVPosition): [number, number] {
 const fmt = (v: number) => (props.valueFormat ? props.valueFormat(v) : d3.format('.4~g')(v))
 const fmtPct = (v: number) => `${d3.format('.1f')(v)}%`
 function shortText(s: string, room: number): string {
-  const budget = Math.max(2, Math.floor((room - 4) / 6.5))
-  let used = 0
-  let out = ''
-  for (const ch of s) {
-    used += ch.charCodeAt(0) < 256 ? 1 : 2
-    if (used > budget) return `${out}…`
-    out += ch
-  }
-  return out
+  return clipText(s, room - 4)
 }
 const ariaLabel = computed(() => {
   const d = data.value.dominant

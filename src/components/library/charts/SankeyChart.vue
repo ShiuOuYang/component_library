@@ -110,6 +110,7 @@ import { useAutoResize } from './composables/useAutoResize'
 import { tooltipPlacement } from './utils/tooltipPlacement'
 import { sankeyLayout, sankeyLinkPath, type SankeyLink, type SankeyLinkInput, type SankeyNode, type SankeyNodeInput } from './utils/sankey'
 import { useLocale } from '../shared/config'
+import { clipText } from '../shared/textClip'
 
 /**
  * SankeyChart —— 流向圖（桑基圖）
@@ -250,15 +251,7 @@ function shortLabel(n: SankeyNode): string {
   const room = (columnStep.value - props.nodeWidth - 16) / (shared ? 2 : 1)
   if (!Number.isFinite(room)) return n.label
   // 中文字約 12px、英數約 7px：用「寬字元算 2」估計
-  const budget = Math.max(2, Math.floor(room / 6.5))
-  let used = 0
-  let out = ''
-  for (const ch of n.label) {
-    used += ch.charCodeAt(0) < 256 ? 1 : 2
-    if (used > budget) return `${out}…`
-    out += ch
-  }
-  return out
+  return clipText(n.label, room)
 }
 /** 最後一欄的名稱放在節點左側（右邊沒有空間） */
 const labelRight = (n: SankeyNode) => n.column < layout.value.columns - 1 || layout.value.columns === 1

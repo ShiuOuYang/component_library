@@ -7,6 +7,8 @@
  *   - 聚類排序：距離 1 − |r|、平均連結的階層式聚類，相關的參數會排在一起
  */
 
+import { logGamma } from './gamma'
+
 export type CorrelationMethod = 'pearson' | 'spearman'
 
 export const toNum = (v: unknown): number | null => {
@@ -56,14 +58,6 @@ export function pearson(xs: number[], ys: number[]): number | null {
 }
 
 // ---- p 值：不完全 Beta 函數（Numerical Recipes 的連分數） ----
-function logGamma(x: number): number {
-  const c = [76.18009172947146, -86.50532032941678, 24.01409824083091, -1.231739572450155, 0.001208650973866179, -0.5395239384953e-5]
-  let y = x
-  const tmp = x + 5.5 - (x + 0.5) * Math.log(x + 5.5)
-  let ser = 1.000000000190015
-  for (const k of c) ser += k / ++y
-  return -tmp + Math.log((Math.sqrt(2 * Math.PI) * ser) / x)
-}
 function betacf(a: number, b: number, x: number): number {
   const EPS = 3e-14
   const FPMIN = 1e-300

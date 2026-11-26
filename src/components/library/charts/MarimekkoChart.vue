@@ -148,6 +148,7 @@ import { useAutoResize } from './composables/useAutoResize'
 import { tooltipPlacement } from './utils/tooltipPlacement'
 import { buildMekko, mekkoLayout, type MekkoCell, type MekkoInput, type MekkoRect } from './utils/marimekko'
 import { useLocale } from '../shared/config'
+import { clipText } from '../shared/textClip'
 
 /**
  * MarimekkoChart —— 馬賽克圖
@@ -243,15 +244,7 @@ const fmtValue = (v: number) => {
 }
 const fmtPct = (v: number) => `${d3.format('.1f')(v * 100)}%`
 function shortText(s: string, room: number): string {
-  const budget = Math.max(2, Math.floor((room - 2) / 6.5))
-  let used = 0
-  let out = ''
-  for (const ch of s) {
-    used += ch.charCodeAt(0) < 256 ? 1 : 2
-    if (used > budget) return `${out}…`
-    out += ch
-  }
-  return out
+  return clipText(s, room - 2)
 }
 const ariaLabel = computed(() => t.value.ariaLabel(props.title || t.value.title, data.value.columns.length, data.value.segments.length))
 function cellLines(r: MekkoRect): string[] {

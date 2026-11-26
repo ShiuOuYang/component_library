@@ -199,7 +199,7 @@ import * as d3 from 'd3'
 import { chartPalette, chartTheme } from './chartTheme'
 import { useAutoResize } from './composables/useAutoResize'
 import { tooltipPlacement } from './utils/tooltipPlacement'
-import { estimateTextWidth } from './utils/chartText'
+import { estimateTextWidth, truncateText } from './utils/chartText'
 import { lineBalanceMax, lineBalanceSummary, moveElement, stationLoads, type LbElement, type LbStation, type LbStationLoad } from './utils/lineBalance'
 import { useLocale } from '../shared/config'
 
@@ -323,12 +323,7 @@ const defaultFormat = d3.format(',~f')
 const fmt = (v: number) => (props.valueFormat ? props.valueFormat(v) : defaultFormat(Number(v.toPrecision(4))))
 const pct = (r: number) => `${d3.format('.1f')(r * 100)}%`
 const withUnit = (v: number) => (props.unit ? `${fmt(v)} ${props.unit}` : fmt(v))
-function fitText(text: string, width: number, size: number): string {
-  if (estimateTextWidth(text, size) <= width) return text
-  let s = text
-  while (s.length > 1 && estimateTextWidth(`${s}…`, size) > width) s = s.slice(0, -1)
-  return s.length > 1 ? `${s}…` : ''
-}
+const fitText = (text: string, width: number, size: number) => truncateText(text, width, (t) => estimateTextWidth(t, size))
 const segText = (el: LbElement, w: number) => fitText(el.name, w - 6, 11)
 const stationOf = (id: string) => props.stations.find((s) => s.id === id)!
 const kindLabel = (el: LbElement) => (el.kind ? kindMap.value.get(el.kind)?.label ?? el.kind : '')

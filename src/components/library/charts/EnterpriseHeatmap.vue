@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { useLocale } from '../shared/config'
 import { chartTheme } from './chartTheme';
-import { ref, computed, watchEffect, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watchEffect, onMounted, onUnmounted, useId } from 'vue';
 import * as d3 from 'd3';
 import type { ChartMargin } from './types/chart.types';
 import { sortCategoryLabels } from './utils/sortCategories';
@@ -285,7 +285,8 @@ const colorLegendRef = ref<SVGGElement | null>(null);
 const titleLayerRef = ref<SVGGElement | null>(null);
 const brushLayerRef = ref<SVGGElement | null>(null);
 
-const chartId = ref(`heatmap-${Math.random().toString(36).slice(2, 11)}`);
+// useId：SSR 與用戶端一致（原本 Math.random() 會造成 hydration 不一致）
+const chartId = ref(`heatmap-${useId()}`);
 const tooltipData = ref<HeatmapDatum | null>(null);
 const tooltipVisible = ref(false);
 const resetBtnShow = ref(false);

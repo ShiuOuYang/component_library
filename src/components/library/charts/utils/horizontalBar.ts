@@ -82,17 +82,5 @@ export function barPath(x0: number, x1: number, y: number, h: number, radius = 4
   return `M${x0},${y} H${x1 + r} A${r},${r} 0 0 0 ${x1},${y + r} V${y + h - r} A${r},${r} 0 0 0 ${x1 + r},${y + h} H${x0} Z`
 }
 
-/** 依估計寬度截斷文字，超出時補「…」 */
-export function truncateText(text: string, maxWidth: number, measure: (s: string) => number): string {
-  if (measure(text) <= maxWidth) return text
-  const chars = Array.from(text)
-  let lo = 0
-  let hi = chars.length
-  // 二分找最長的前綴
-  while (lo < hi) {
-    const mid = Math.ceil((lo + hi) / 2)
-    if (measure(chars.slice(0, mid).join('') + '…') <= maxWidth) lo = mid
-    else hi = mid - 1
-  }
-  return lo > 0 ? chars.slice(0, lo).join('') + '…' : ''
-}
+// truncateText 移到 chartText.ts（LineBalanceChart 也要用），這裡保留匯出相容
+export { truncateText } from './chartText'
