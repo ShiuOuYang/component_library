@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptLabelDesigner 標籤設計器**（ui）：產品、外箱、棧板、物料標籤。以 mm 為單位的畫布（標籤寬高、DPI 可設），放文字（pt、粗體、對齊、多行）、Code 128 / Code 39 條碼、
+  QR code、線條、方框、圖片；拖曳移動與控制點改大小，貼齊格線、其他元素的邊與中線、標籤中線（洋紅色參考線），QR code 保持正方形；旋轉、鎖定、圖層順序、複製、對齊（單選對齊標籤、
+  多選對齊選取範圍）、復原 / 重做；屬性面板與可用鍵盤操作的圖層清單；方向鍵移動（Shift 10 倍、Alt 0.1 mm）、Delete、Ctrl + D / A / Z / Y。內容寫成 `{{lotNo}}` 綁定欄位
+  （「插入欄位」選單），設計時顯示範例資料、預覽（`v-model:preview`）與輸出時代入；`v-model` 為版面 JSON。輸出：PNG（依 DPI）、列印（每筆一頁、頁面等於標籤大小）、
+  ZPL II（`toZpl()`，Zebra 標籤機）。工具函式 `labelSvg`、`labelToZpl`、`bindLabelTemplate`。
 - **MarimekkoChart 馬賽克圖**（charts）：兩個維度的組成，例如各產線的不良類型。欄寬為各欄總量、欄內高度為各類別比例（同一格多筆加總、負值與 0 略過），
   格內標出欄內百分比、欄下標出名稱與占比；`sortColumns` / `sortSegments` 依總量排序，`maxSegments` 把其餘類別併成「其他」（灰色、固定在最後）。
   `mode="residual"` 改以 Pearson 殘差上色（紅比預期多、藍比預期少）找出特別的組合，`mekkoChiSquare()` 給整體卡方值。

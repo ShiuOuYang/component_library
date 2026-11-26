@@ -535,6 +535,45 @@
       </p>
     </section>
 
+    <!-- ============ ChptLabelDesigner ============ -->
+    <section id="chpt-label-designer" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptLabelDesigner 標籤設計器</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>產品標籤、外箱 / 棧板標籤、物料標籤。以 mm 為單位設計：文字、Code 128 / Code 39 條碼、QR code、線條、方框、圖片；
+        拖曳移動與改大小，會貼齊格線、其他元素與標籤中線（洋紅色參考線）。內容寫成 <code v-pre>{{lotNo}}</code> 這種欄位，預覽、列印、匯出時代入資料。
+        <code>v-model</code> 是版面 JSON（存到資料庫、之後再編輯），另可下載 PNG（依標籤機 DPI）、列印（一筆資料一張）、輸出 ZPL 給 Zebra 標籤機。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptLabelDesigner, labelToZpl } from '@/components/library'</code>
+      </p>
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <ChptSegmented v-model="labelRecordIdx" :options="labelRecordOptions" aria-label="資料" size="xs" />
+        <ChptButton size="sm" variant="secondary" icon="print" @click="labelRef?.print(labelRecords)">列印 3 筆</ChptButton>
+        <ChptButton size="sm" variant="secondary" icon="code" @click="labelShowZpl = !labelShowZpl">{{ labelShowZpl ? '隱藏' : '顯示' }} ZPL</ChptButton>
+      </div>
+      <ChptLabelDesigner
+        ref="labelRef"
+        v-model="labelDoc"
+        v-model:preview="labelPreview"
+        :data="labelRecords[labelRecordIdx]"
+        :fields="labelFields"
+        :field-labels="labelFieldLabels"
+        export-name="carton-label"
+        label="外箱標籤"
+      />
+      <pre v-if="labelShowZpl" class="mt-3 max-h-64 overflow-auto rounded-md border border-stroke-light bg-surface-secondary p-3 text-xs text-content-primary" data-zpl>{{ labelZpl }}</pre>
+      <ChptCodeBlock class="mt-6" :code="labelSample" />
+      <ApiTable of="ChptLabelDesigner" title="Props" :rows="labelProps" />
+      <ApiTable of="-" title="LabelDoc / LabelElement" :rows="labelDataRows" />
+      <ApiTable of="ChptLabelDesigner" title="Events" :rows="labelEvents" />
+      <ApiTable of="ChptLabelDesigner" title="方法（ref）" :rows="labelMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>條碼的寬度由元素寬度決定，左右請自行留白（靜區至少 10 倍模組寬，約 2～3 mm）才好掃。
+        ZPL 的文字使用印表機內建字型 0（中文需要印表機有安裝對應字型），圖片不輸出；需要和畫面完全一樣時用 PNG 或列印。
+        列印時頁面大小等於標籤大小，請在列印對話框把邊界設為「無」。
+      </p>
+    </section>
+
     <!-- ============ ChptSkillMatrix ============ -->
     <section id="chpt-skill-matrix" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptSkillMatrix 技能矩陣</h2>
@@ -587,6 +626,8 @@ import {
   ChptShiftRoster,
   ChptSkillMatrix,
   ChptFishbone,
+  ChptLabelDesigner,
+  labelToZpl,
   fishboneOutline,
   ChptScheduler,
   ChptSortableList,
@@ -983,6 +1024,80 @@ const fishMethods = [
   { name: 'addCause(parentId, text)', type: '(parentId, text) => string | null', desc: '新增原因（parentId 為分類或原因 id），回傳新 id' },
   { name: 'updateCause(id, patch) / removeCause(id)', type: '(id, patch?) => void', desc: '修改或標記／刪除原因' },
   { name: 'select(id)', type: '(id: string | null) => void', desc: '選取' },
+]
+
+// ---- ChptLabelDesigner ----
+const labelRef = ref(null)
+const labelPreview = ref(false)
+const labelShowZpl = ref(false)
+const labelFields = ['partNo', 'partName', 'lotNo', 'qty', 'date', 'customer']
+const labelFieldLabels = { partNo: '料號', partName: '品名', lotNo: '批號', qty: '數量', date: '日期', customer: '客戶' }
+const labelRecords = [
+  { partNo: 'PCB-A1024-R3', partName: '主機板 Rev.3', lotNo: 'L2611-0042', qty: 200, date: '2026-11-26', customer: 'ACME' },
+  { partNo: 'PCB-A1024-R3', partName: '主機板 Rev.3', lotNo: 'L2611-0043', qty: 180, date: '2026-11-26', customer: 'ACME' },
+  { partNo: 'PWR-5V-2A', partName: '電源板', lotNo: 'L2611-0101', qty: 500, date: '2026-11-27', customer: 'Globex' },
+]
+const labelRecordIdx = ref(0)
+const labelRecordOptions = labelRecords.map((r, i) => ({ label: r.lotNo, value: i }))
+const labelDoc = ref({
+  width: 100,
+  height: 60,
+  dpi: 203,
+  elements: [
+    { id: 'frame', type: 'rect', x: 1, y: 1, w: 98, h: 58, thickness: 0.4, radius: 1.5, locked: true },
+    { id: 'cust', type: 'text', x: 4, y: 3, w: 60, h: 7, text: '{{customer}}', fontSize: 16, bold: true },
+    { id: 'date', type: 'text', x: 64, y: 3, w: 32, h: 7, text: '{{date}}', fontSize: 9, align: 'right' },
+    { id: 'hr', type: 'line', x: 3, y: 11, w: 94, h: 0.5, thickness: 0.3 },
+    { id: 'pn-l', type: 'text', x: 4, y: 13, w: 14, h: 5, text: 'P/N', fontSize: 8 },
+    { id: 'pn', type: 'text', x: 18, y: 13, w: 52, h: 5, text: '{{partNo}}', fontSize: 11, bold: true },
+    { id: 'name', type: 'text', x: 18, y: 18.5, w: 52, h: 5, text: '{{partName}}', fontSize: 9 },
+    { id: 'pn-bc', type: 'barcode', x: 4, y: 24, w: 62, h: 12, value: '{{partNo}}', format: 'code128', showText: false },
+    { id: 'lot-l', type: 'text', x: 4, y: 38, w: 14, h: 5, text: 'LOT', fontSize: 8 },
+    { id: 'lot', type: 'text', x: 18, y: 38, w: 30, h: 5, text: '{{lotNo}}', fontSize: 11, bold: true },
+    { id: 'qty', type: 'text', x: 48, y: 38, w: 20, h: 5, text: 'Q\'TY {{qty}}', fontSize: 10, align: 'right' },
+    { id: 'lot-bc', type: 'barcode', x: 4, y: 44, w: 62, h: 12, value: '{{lotNo}}', format: 'code128', showText: true },
+    { id: 'qr', type: 'qrcode', x: 72, y: 16, w: 24, h: 24, value: '{{partNo}};{{lotNo}};{{qty}}', level: 'M' },
+    { id: 'note', type: 'text', x: 70, y: 44, w: 28, h: 10, text: 'MADE IN\nTAIWAN', fontSize: 8, align: 'center' },
+  ],
+})
+const labelZpl = computed(() => labelToZpl(labelDoc.value, labelRecords[labelRecordIdx.value]))
+const labelSample = `<ChptLabelDesigner
+  v-model="layout"                 // 版面 JSON：{ width, height, dpi, elements: [...] }
+  :data="{ lotNo: 'L2611-0042', partNo: 'PCB-A1024-R3', qty: 200 }"
+  :fields="['partNo', 'lotNo', 'qty', 'date']"
+  :field-labels="{ partNo: '料號', lotNo: '批號', qty: '數量', date: '日期' }"
+/>
+
+// 列印多筆、輸出給標籤機
+labelRef.value.print(records)               // 每筆一張
+labelRef.value.toZpl(record)                // ZPL II 字串，送到 Zebra（9100 埠或驅動程式）
+const png = await labelRef.value.exportPng(record, 300)   // 300 dpi`
+const labelProps = [
+  { name: 'modelValue', type: 'LabelDoc', def: '60 × 40 mm 空白', desc: '版面（v-model）' },
+  { name: 'data', type: 'Record<string, unknown> | null', def: 'null', desc: '欄位資料：設計時顯示、預覽 / 列印 / 匯出時代入；沒有的欄位設計時顯示原樣' },
+  { name: 'fields / fieldLabels', type: 'string[] / Record<string, string>', def: '[] / {}', desc: '「插入欄位」選單的欄位與名稱' },
+  { name: 'preview', type: 'boolean', def: 'false', desc: '預覽模式（v-model:preview）：代入資料、隱藏格線與選取框' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '唯讀（只能看、預覽與輸出）' },
+  { name: 'grid / showGrid / snap', type: 'number / boolean / boolean', def: '1 / true / true', desc: '格線間距（mm）／顯示格線／貼齊其他元素與標籤' },
+  { name: 'showPanel / allowImages', type: 'boolean', def: 'true / true', desc: '顯示屬性面板／可以放圖片' },
+  { name: 'height', type: 'number', def: '420', desc: '畫布高度（px）' },
+  { name: 'exportName / label', type: 'string', def: "'label' / ''", desc: '下載檔名／設計器名稱（螢幕閱讀器）' },
+]
+const labelDataRows = [
+  { name: 'LabelDoc', type: '{ width, height, dpi?, elements }', def: '—', desc: '寬高為 mm；dpi 給 PNG 與 ZPL 用（203 / 300 / 600）' },
+  { name: 'LabelElement', type: '{ id, type, x, y, w, h, rotation?, locked?, … }', def: '—', desc: "type：'text'（text, fontSize pt, bold, align）、'barcode'（value, format, showText）、'qrcode'（value, level）、'line' / 'rect'（thickness, radius, fill）、'image'（src）" },
+]
+const labelEvents = [
+  { name: 'update:modelValue', params: '(doc: LabelDoc)', desc: '版面改變（拖曳結束時送一次）' },
+  { name: 'update:preview', params: '(preview: boolean)', desc: '切換預覽' },
+  { name: 'select', params: '(ids: string[])', desc: '選取的元素' },
+]
+const labelMethods = [
+  { name: 'toSvg(data?) / printHtml(records?)', type: '(…) => string', desc: 'SVG 字串（寬高以 mm）／列印用的 HTML（每筆一頁）' },
+  { name: 'exportPng(data?, dpi?)', type: '(…) => Promise<Blob | null>', desc: '依 DPI 輸出 PNG' },
+  { name: 'print(records?)', type: '(records?) => void', desc: '列印（每筆資料一張）' },
+  { name: 'toZpl(data?)', type: '(data?) => string', desc: 'ZPL II（Zebra 標籤機）' },
+  { name: 'undo() / redo() / select(ids) / addElement(type)', type: '…', desc: '復原／重做／選取／新增元素' },
 ]
 
 // ---- ChptSkillMatrix ----
