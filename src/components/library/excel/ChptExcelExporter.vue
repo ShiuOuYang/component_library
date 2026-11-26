@@ -140,6 +140,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import type * as XLSXTypes from 'xlsx-js-style'
 import ChptModal from '../ui/ChptModal.vue'
 import { useLocale } from '../shared/config'
+import { downloadBlob } from '../shared/download'
 
 /**
  * ChptExcelExporter（CHPT 主題）- 匯出 Excel
@@ -379,12 +380,7 @@ async function performExport(): Promise<void> {
         cellStyles: true,
       })
       const blob = new Blob([wbout], { type: 'application/octet-stream' })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = filename
-      link.click()
-      window.URL.revokeObjectURL(url)
+      downloadBlob(blob, filename)
     } catch {
       XLSX.writeFile(workbook, filename)
     }

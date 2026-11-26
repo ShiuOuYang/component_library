@@ -142,6 +142,7 @@ import {
 } from './utils/horizon'
 import type { XDomain } from './types/chart.types'
 import { useLocale } from '../shared/config'
+import { clipText } from '../shared/textClip'
 
 /**
  * HorizonChart —— 地平線圖（大量時間序列）
@@ -304,15 +305,7 @@ function fmtTime(t: number): string {
 }
 const signed = (v: number, unit?: string) => (v > 0 ? `+${fmtValue(v, unit)}` : fmtValue(v, unit))
 function shortLabel(s: string): string {
-  const budget = Math.max(3, Math.floor((labelW.value - 4) / 6.5))
-  let used = 0
-  let out = ''
-  for (const ch of s) {
-    used += ch.charCodeAt(0) < 256 ? 1 : 2
-    if (used > budget) return `${out}…`
-    out += ch
-  }
-  return out
+  return clipText(s, labelW.value - 4, { min: 3 })
 }
 
 // ---- 十字線 ----

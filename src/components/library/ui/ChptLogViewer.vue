@@ -132,6 +132,7 @@ import {
   type LogEntry,
   type LogLevel,
 } from '../shared/logViewer'
+import { downloadBlob } from '../shared/download'
 
 /**
  * ChptLogViewer（CHPT 主題） - 設備日誌檢視器
@@ -386,11 +387,7 @@ async function copyOne(e: LogEntry): Promise<void> {
 function download(): void {
   const blob = new Blob([visible.value.map(formatLogLine).join('\n') + '\n'], { type: 'text/plain;charset=utf-8' })
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+$/, '').replace('T', '-')
-  const a = document.createElement('a')
-  a.href = URL.createObjectURL(blob)
-  a.download = `${props.fileName || `log-${stamp}`}.log`
-  a.click()
-  URL.revokeObjectURL(a.href)
+  downloadBlob(blob, `${props.fileName || `log-${stamp}`}.log`)
 }
 
 defineExpose({

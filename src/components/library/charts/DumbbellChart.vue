@@ -183,6 +183,7 @@ import {
   type DumbbellSort,
 } from './utils/dumbbell'
 import { useLocale } from '../shared/config'
+import { clipText } from '../shared/textClip'
 
 /**
  * DumbbellChart —— 啞鈴圖 / 斜率圖
@@ -366,15 +367,7 @@ function valuePos(r: DumbbellRow, which: 'before' | 'after', i: number) {
   return { x: tx, y: rowY(i), dy: '0.35em', 'text-anchor': left ? 'end' : 'start' }
 }
 function shortLabel(s: string): string {
-  const budget = Math.max(3, Math.floor((labelW.value - 4) / 6.5))
-  let used = 0
-  let out = ''
-  for (const ch of s) {
-    used += ch.charCodeAt(0) < 256 ? 1 : 2
-    if (used > budget) return `${out}…`
-    out += ch
-  }
-  return out
+  return clipText(s, labelW.value - 4, { min: 3 })
 }
 function tipLines(r: DumbbellRow): string[] {
   const s = i18n.value.dumbbell

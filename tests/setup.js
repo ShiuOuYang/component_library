@@ -30,6 +30,12 @@ if (!window.matchMedia) {
   }))
 }
 
+// URL.revokeObjectURL：jsdom 沒有。downloadBlob 會在下載後一秒才釋放網址，
+// 測試結束、個別測試的 stub 被拿掉之後計時器才觸發，沒有這個就會變成未處理的例外
+if (typeof URL.revokeObjectURL !== 'function') {
+  URL.revokeObjectURL = () => {}
+}
+
 // ResizeObserver：圖表與表格元件會用到
 if (!window.ResizeObserver) {
   window.ResizeObserver = class {

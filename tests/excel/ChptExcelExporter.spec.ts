@@ -48,10 +48,13 @@ beforeEach(() => {
   })
 })
 
+// setup.js 補的 no-op；還原成它而不是刪掉（downloadBlob 延遲一秒才呼叫 revokeObjectURL）
+const originalRevoke = URL.revokeObjectURL
+
 afterEach(() => {
   const urlApi = URL as unknown as Record<string, unknown>
   delete urlApi.createObjectURL
-  delete urlApi.revokeObjectURL
+  urlApi.revokeObjectURL = originalRevoke
   removeGeneratedFiles()
 })
 

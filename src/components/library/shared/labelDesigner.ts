@@ -5,8 +5,8 @@
  * 文字、條碼、QR code 的內容可以寫成 {{lotNo}} 這種欄位，列印 / 預覽時代入資料。
  * 輸出：SVG 字串（給 PNG 與列印）、ZPL（Zebra 等工業標籤機直接列印）。
  */
-import qrcode from 'qrcode-generator'
 import { BarcodeError, encodeBarcode, type BarcodeFormat, type BarcodeResult } from './barcode'
+import { qrMatrix } from './qrMatrix'
 
 export type LabelElementType = 'text' | 'barcode' | 'qrcode' | 'line' | 'rect' | 'image'
 export type LabelRotation = 0 | 90 | 180 | 270
@@ -270,24 +270,7 @@ export function barcodeOf(value: string, format: BarcodeFormat): BarcodeResult |
   }
 }
 
-function toBinaryString(text: string): string {
-  let out = ''
-  for (const byte of new TextEncoder().encode(text)) out += String.fromCharCode(byte)
-  return out
-}
-
-export function qrMatrix(value: string, level: 'L' | 'M' | 'Q' | 'H' = 'M'): boolean[][] | null {
-  if (!value) return null
-  try {
-    const qr = qrcode(0, level)
-    qr.addData(toBinaryString(value), 'Byte')
-    qr.make()
-    const n = qr.getModuleCount()
-    return Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => qr.isDark(r, c)))
-  } catch {
-    return null
-  }
-}
+export { qrMatrix }
 
 /** 條碼的長條（相對於 0～1 的寬度比例） */
 export function barcodeBars(code: BarcodeResult): { x: number; w: number }[] {

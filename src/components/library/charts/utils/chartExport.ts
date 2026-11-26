@@ -334,16 +334,5 @@ export function csvBlob(rows: Record<string, unknown>[], columns?: CsvColumn[]):
   return new Blob(['﻿', toCsv(rows, columns)], { type: 'text/csv;charset=utf-8' })
 }
 
-/** 觸發瀏覽器下載 */
-export function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.rel = 'noopener'
-  document.body.appendChild(a)
-  a.click()
-  a.remove()
-  // 讓瀏覽器有時間開始下載再釋放
-  setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
+/** 觸發瀏覽器下載（實作在 shared/download，這裡保留匯出相容） */
+export { downloadBlob } from '../../shared/download'

@@ -104,6 +104,7 @@ import { tooltipPlacement } from './utils/tooltipPlacement'
 import { ridgelineGroups, sortRidgelineGroups, type RidgelineGroup, type RidgelineSeries, type RidgelineSort, type RidgelineSpec } from './utils/ridgeline'
 import type { QuartileMethod } from './utils/boxPlot'
 import { useLocale } from '../shared/config'
+import { clipText } from '../shared/textClip'
 
 /**
  * RidgelineChart —— 山脊圖（多組分佈）
@@ -291,15 +292,7 @@ function tableRow(g: RidgelineGroup): string[] {
   return [String(s.n), fmt(s.mean), fmt(s.sd), fmt(s.median), fmt(s.q1), fmt(s.q3), fmt(s.min), fmt(s.max), ...(hasSpec.value ? [pct((g.belowLsl ?? 0) + (g.aboveUsl ?? 0))] : [])]
 }
 function shortLabel(s: string): string {
-  const budget = Math.max(3, Math.floor((labelW.value - 4) / 6.5))
-  let used = 0
-  let out = ''
-  for (const ch of s) {
-    used += ch.charCodeAt(0) < 256 ? 1 : 2
-    if (used > budget) return `${out}…`
-    out += ch
-  }
-  return out
+  return clipText(s, labelW.value - 4, { min: 3 })
 }
 
 // ---- 互動 ----

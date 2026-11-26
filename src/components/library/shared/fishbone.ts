@@ -6,6 +6,8 @@
  * 所有操作都回傳新的物件（不改動傳入的資料），可以直接配合 v-model。
  */
 
+import { clipText } from './textClip'
+
 export interface FishCause {
   id: string
   text: string
@@ -293,15 +295,7 @@ export function layoutFishbone(data: FishboneData, o: FishLayoutOptions = {}): F
   return { width, height, spineY, spineX1, spineX2, head, bones, rows }
 }
 
-/** 依可用寬度（px）截斷文字：中日韓字元算 2 個單位 */
+/** 依可用寬度（px）截斷文字：中日韓字元算 2 個單位（擴充拉丁字母仍算窄字元） */
 export function fitText(text: string, px: number, unit = 6.4): string {
-  const budget = Math.max(2, Math.floor(px / unit))
-  let used = 0
-  let out = ''
-  for (const ch of text) {
-    used += ch.charCodeAt(0) <= 0x24f ? 1 : 2
-    if (used > budget) return `${out}…`
-    out += ch
-  }
-  return out
+  return clipText(text, px, { unit, narrowMax: 0x24f })
 }

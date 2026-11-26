@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, watchEffect, onMounted, onUnmounted, type Ref } from 'vue';
+import { ref, computed, watch, watchEffect, onMounted, onUnmounted, useId, type Ref } from 'vue';
 import * as d3 from 'd3';
 import { useD3Brush } from './composables/useD3Brush';
 import { useChartScales } from './composables/useChartScales';
@@ -309,7 +309,8 @@ const highlightLayerRef = ref<SVGGElement | null>(null);
  * 每個實例的唯一 id。
  * 用來組 clip-path 的 id，避免同頁多張圖互相覆蓋彼此的裁切區域。
  */
-const chartId = ref(`chart-${Math.random().toString(36).slice(2, 11)}`);
+// useId：SSR 與用戶端一致（原本 Math.random() 會造成 hydration 不一致）
+const chartId = ref(`chart-${useId()}`);
 // === 響應式尺寸管理 ===
 const observedWidth = ref(props.width);
 const observedHeight = ref(props.height);
