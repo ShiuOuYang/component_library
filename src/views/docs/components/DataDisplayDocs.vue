@@ -388,6 +388,47 @@
       <ApiTable of="ChptPivotTable" title="方法（ref）" :rows="pivotMethods" />
     </section>
 
+    <!-- ============ ChptOrgChart ============ -->
+    <section id="chpt-org-chart" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptOrgChart 組織圖</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>組織架構、產線責任歸屬（誰負責哪一線、哪一站）、簽核層級。節點下方的數字是底下有幾個節點，點一下展開或收合（被點的節點不會跳走）；
+        拖曳平移、Ctrl + 滾輪 / 雙指 / 按鈕縮放；搜尋會自動展開上層並把結果移到畫面中央，Enter 跳下一個。方向鍵沿著樹移動、Enter 選取、空白鍵展開收合。可下載 PNG。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptOrgChart, orgFromFlat } from '@/components/library'</code>
+      </p>
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <ChptSegmented v-model="orgOrientation" :options="orgOrientations" aria-label="方向" size="xs" />
+        <span class="text-xs text-content-secondary">選取：{{ orgSelectedText }}</span>
+      </div>
+      <ChptOrgChart v-model:selected="orgSelected" :data="orgPlant" :orientation="orgOrientation" :default-expand-depth="2" :height="460" export-name="plant-org" label="廠區組織圖" />
+      <h3 class="text-base font-semibold text-content-primary mt-6 mb-2">自訂節點：產線責任歸屬</h3>
+      <p class="text-sm text-content-secondary mb-3">用 <code>#node</code> slot 換成自己的卡片（例如顯示線別狀態與人數），版面、展開收合、鍵盤與搜尋照常運作。</p>
+      <ChptOrgChart :data="orgLines" orientation="horizontal" :node-width="190" :node-height="56" :gap-y="36" :height="340" :searchable="false" :exportable="false" label="產線責任歸屬">
+        <template #node="{ node, selected }">
+          <div class="flex h-full w-full cursor-pointer items-center gap-2 rounded-md border bg-surface-primary pl-2 pr-4" :class="selected ? 'border-accent ring-2 ring-accent' : 'border-stroke-default'">
+            <span class="h-8 w-1.5 shrink-0 rounded-full" :class="{ run: 'bg-success-solid', idle: 'bg-warning-solid', down: 'bg-danger-solid' }[node.status] ?? 'bg-stroke-dark'" aria-hidden="true" />
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm font-medium text-content-primary">{{ node.label }}</span>
+              <span class="block truncate text-xs text-content-secondary">{{ node.title }}</span>
+            </span>
+            <span v-if="node.headcount" class="shrink-0 rounded bg-surface-tertiary px-1.5 text-xs tabular-nums text-content-secondary">{{ node.headcount }} 人</span>
+          </div>
+        </template>
+      </ChptOrgChart>
+      <ChptCodeBlock class="mt-6" :code="orgSample" />
+      <ApiTable of="ChptOrgChart" title="Props" :rows="orgProps" />
+      <ApiTable of="-" title="OrgNode" :rows="orgNodeRows" />
+      <ApiTable of="ChptOrgChart" title="Events" :rows="orgEvents" />
+      <ApiTable of="ChptOrgChart" title="Slots" :rows="orgSlots" />
+      <ApiTable of="ChptOrgChart" title="方法（ref）" :rows="orgMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>資料庫常見的平面清單（每筆有 <code>parentId</code>）先用 <code>orgFromFlat(rows)</code> 轉成樹。重複的 id 只取第一次出現的。
+        PNG 以預設節點樣式繪製，自訂 slot 的內容不會出現在圖檔裡。上千個節點時建議 <code>default-expand-depth</code> 設 1～2，需要時再展開。
+      </p>
+    </section>
+
     <!-- ============ ChptBomTree ============ -->
     <section id="chpt-bom-tree" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptBomTree BOM 結構</h2>
@@ -457,7 +498,7 @@
 </template>
 
 <script setup>
-import { ref, useTemplateRef } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import {
   ChptStatistic,
   ChptDescriptions,
@@ -477,6 +518,8 @@ import {
   ChptDiffViewer,
   ChptPivotTable,
   ChptBomTree,
+  ChptOrgChart,
+  orgFromFlat,
   ChptJsonViewer,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
@@ -958,6 +1001,103 @@ const jvMethods = [
   { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開 / 收合' },
   { name: 'reveal(path)', type: '(path: (string | number)[]) => void', desc: '展開到某個路徑並捲到那裡' },
 ]
+// ---- ChptOrgChart ----
+const orgRows = [
+  { id: 'gm', parentId: null, label: '張志明', title: '廠長', color: 'rgb(var(--t-accent))' },
+  { id: 'mfg', parentId: 'gm', label: '李美玲', title: '製造部 經理' },
+  { id: 'qa', parentId: 'gm', label: '王建國', title: '品保部 經理' },
+  { id: 'eq', parentId: 'gm', label: '陳俊宏', title: '設備部 經理' },
+  { id: 'pc', parentId: 'gm', label: '黃雅婷', title: '生管課 課長' },
+  { id: 'smt', parentId: 'mfg', label: '林家豪', title: 'SMT 課 課長' },
+  { id: 'dip', parentId: 'mfg', label: '吳淑芬', title: 'DIP 課 課長' },
+  { id: 'assy', parentId: 'mfg', label: '鄭文傑', title: '組裝課 課長' },
+  { id: 'smt1', parentId: 'smt', label: '周子豪', title: 'SMT 一線 領班' },
+  { id: 'smt2', parentId: 'smt', label: '許怡君', title: 'SMT 二線 領班' },
+  { id: 'smt3', parentId: 'smt', label: 'Ken Liu', title: 'SMT 三線 領班' },
+  { id: 'smt1a', parentId: 'smt1', label: '蔡明哲', title: '技術員' },
+  { id: 'smt1b', parentId: 'smt1', label: '謝佳穎', title: '技術員' },
+  { id: 'dip1', parentId: 'dip', label: '楊宗翰', title: 'DIP 一線 領班' },
+  { id: 'assy1', parentId: 'assy', label: '劉雅雯', title: '組裝 A 線 領班' },
+  { id: 'assy2', parentId: 'assy', label: '洪志偉', title: '組裝 B 線 領班' },
+  { id: 'iqc', parentId: 'qa', label: '高婉婷', title: 'IQC 組長' },
+  { id: 'ipqc', parentId: 'qa', label: '曾冠宇', title: 'IPQC 組長' },
+  { id: 'oqc', parentId: 'qa', label: 'Amy Chen', title: 'OQC 組長' },
+  { id: 'eq1', parentId: 'eq', label: '羅志成', title: 'SMT 設備 工程師' },
+  { id: 'eq2', parentId: 'eq', label: '江雅琪', title: '治具 工程師' },
+]
+const orgPlant = orgFromFlat(orgRows)
+const orgSelected = ref('smt2')
+const orgOrientation = ref('vertical')
+const orgOrientations = [
+  { label: '由上往下', value: 'vertical' },
+  { label: '由左往右', value: 'horizontal' },
+]
+const orgSelectedText = computed(() => {
+  const r = orgRows.find((x) => x.id === orgSelected.value)
+  return r ? `${r.label}（${r.title}）` : '（無）'
+})
+const orgLines = {
+  id: 'f2', label: '二廠 SMT', title: '林家豪 課長', headcount: 48,
+  children: [
+    { id: 'l1', label: 'SMT 一線', title: '周子豪', status: 'run', headcount: 14, children: [
+      { id: 'l1p', label: '印刷 / SPI', title: '蔡明哲', status: 'run' },
+      { id: 'l1m', label: '置件 NXT', title: '謝佳穎', status: 'run' },
+      { id: 'l1r', label: '迴焊 / AOI', title: '楊佩珊', status: 'idle' },
+    ] },
+    { id: 'l2', label: 'SMT 二線', title: '許怡君', status: 'down', headcount: 16, children: [
+      { id: 'l2p', label: '印刷 / SPI', title: '張宏達', status: 'down' },
+      { id: 'l2m', label: '置件 NXT', title: '吳品妤', status: 'run' },
+    ] },
+    { id: 'l3', label: 'SMT 三線', title: 'Ken Liu', status: 'run', headcount: 18 },
+  ],
+}
+const orgSample = `<ChptOrgChart
+  v-model:selected="selected"
+  :data="orgFromFlat(rows)"          // rows：{ id, parentId, label, title, avatar?, color? }[]
+  orientation="vertical"
+  :default-expand-depth="2"
+  :height="460"
+/>
+
+<!-- 自訂節點 -->
+<ChptOrgChart :data="tree" orientation="horizontal" :node-width="190" :node-height="56">
+  <template #node="{ node, selected, expanded, match }">
+    <MyLineCard :line="node" :active="selected" />
+  </template>
+</ChptOrgChart>`
+const orgProps = [
+  { name: 'data', type: 'OrgNode | OrgNode[]', def: '—', desc: '樹狀資料，可以有多個根節點；平面清單用 orgFromFlat() 轉換' },
+  { name: 'orientation', type: "'vertical' | 'horizontal'", def: "'vertical'", desc: '由上往下／由左往右' },
+  { name: 'selected', type: 'string | number | null', def: 'null', desc: '選取的節點（v-model:selected），外部改值時會展開上層並移到中央' },
+  { name: 'defaultExpandDepth', type: 'number', def: 'Infinity', desc: '一開始展開到第幾層（0 = 只有根節點）' },
+  { name: 'nodeWidth / nodeHeight', type: 'number', def: '200 / 64', desc: '節點大小（px）' },
+  { name: 'gapX / gapY', type: 'number', def: '20 / 44', desc: '兄弟之間／上下層之間的距離' },
+  { name: 'height', type: 'number', def: '480', desc: '畫布高度' },
+  { name: 'searchable / searchPlaceholder / searchFields', type: 'boolean / string / string[]', def: "true / 語系 / ['label', 'title']", desc: '搜尋框與比對的欄位' },
+  { name: 'exportable / exportName', type: 'boolean / string', def: "true / 'org-chart'", desc: '下載 PNG 按鈕與檔名' },
+  { name: 'minZoom / maxZoom', type: 'number', def: '0.2 / 2', desc: '縮放範圍' },
+  { name: 'label / emptyText', type: 'string', def: "'' / 語系", desc: '組織圖名稱（螢幕閱讀器）／沒有資料時的文字' },
+]
+const orgNodeRows = [
+  { name: 'id / label', type: 'string | number / string', def: '—', desc: '唯一 id／名稱' },
+  { name: 'title / avatar / color', type: 'string', def: '—', desc: '職稱／頭像網址（沒有時顯示縮寫）／頂端色條' },
+  { name: 'children', type: 'OrgNode[]', def: '—', desc: '下層；其他欄位會原樣傳給 #node slot' },
+]
+const orgEvents = [
+  { name: 'update:selected', params: '(id: string | number | null)', desc: '點選或 Enter 選取節點' },
+  { name: 'node-click', params: '(node: OrgNode)', desc: '點選節點' },
+  { name: 'expand / collapse', params: '(node: OrgNode)', desc: '展開／收合' },
+]
+const orgSlots = [{ name: 'node', params: '{ node, depth, expanded, selected, match, descendants }', desc: '自訂節點內容（大小由 nodeWidth / nodeHeight 決定）' }]
+const orgMethods = [
+  { name: 'expandAll() / collapseAll()', type: '() => void', desc: '全部展開／收合' },
+  { name: 'expand(id) / collapse(id)', type: '(id) => void', desc: '展開／收合一個節點' },
+  { name: 'reveal(id)', type: '(id) => void', desc: '展開上層並移到畫面中央' },
+  { name: 'fit() / zoomIn() / zoomOut()', type: '() => void', desc: '全部顯示／放大／縮小' },
+  { name: 'exportPng(scale?)', type: '(scale = 2) => Promise<Blob | null>', desc: '以預設節點樣式輸出 PNG' },
+  { name: 'layout() / expandedKeys()', type: '() => OrgLayout / string[]', desc: '目前的版面／展開的節點' },
+]
+
 // ---- ChptBomTree ----
 const part = (partNo, name, qty, extra = {}) => ({ partNo, name, qty, unit: 'pcs', ...extra })
 const bomV2 = {
