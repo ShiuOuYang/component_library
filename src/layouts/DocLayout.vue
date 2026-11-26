@@ -632,6 +632,10 @@ const navSections = [
         anchors: [{ label: '數位卡尺', id: 'caliper' }, { label: '需要改善的量測', id: 'poor' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/multi-vari-chart', icon: '🧩', label: '多變異圖',
+        anchors: [{ label: '射出成型', id: 'molding' }, { label: '兩層因子', id: 'shift' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },
