@@ -16,7 +16,7 @@
       >
         <input
           type="radio"
-          :name="name"
+          :name="groupName"
           :value="item.value"
           v-model="innerModelValue"
           :disabled="item.disabled"
@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 import ChptIcon from './ChptIcon.vue'
 import type { ColorVariant, Direction } from '../shared/types/ui.types'
 
@@ -95,7 +95,7 @@ const props = withDefaults(defineProps<ChptRadioProps>(), {
   // 未選取時以 undefined 表示（modelValue 的型別不含 null）
   modelValue: undefined,
   items: () => [],
-  name: () => `chpt-radio-${Math.random().toString(36).slice(2, 9)}`,
+  name: undefined,
   size: '4',
   color: 'primary',
   errors: () => [],
@@ -104,6 +104,13 @@ const props = withDefaults(defineProps<ChptRadioProps>(), {
   labelColor: 'text-content-primary',
   direction: 'row',
 })
+
+/**
+ * 沒給 name 時自動產生群組名稱（同一組 radio 共用）。
+ * 原本是 Math.random()：SSR 時伺服器與用戶端算出不同的值，造成 hydration 不一致；useId() 兩邊一致。
+ */
+const autoName = `chpt-radio-${useId()}`
+const groupName = computed(() => props.name ?? autoName)
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string | number | boolean | null): void

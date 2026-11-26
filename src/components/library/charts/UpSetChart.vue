@@ -105,6 +105,7 @@ import { useAutoResize } from './composables/useAutoResize'
 import { tooltipPlacement } from './utils/tooltipPlacement'
 import { buildUpset, filterCombos, sortCombos, upsetCombos, type UpsetCombo, type UpsetItemInput, type UpsetSet, type UpsetSetInput, type UpsetSort } from './utils/upset'
 import { useLocale } from '../shared/config'
+import { clipText } from '../shared/textClip'
 
 /**
  * UpSetChart —— 集合交集圖
@@ -240,15 +241,7 @@ const comboName = (c: UpsetCombo) => (c.degree ? c.sets.join(i18n.value.upset.jo
 const comboAria = (c: UpsetCombo) =>
   i18n.value.upset.comboAria(comboName(c), props.mode === 'exclusive', fmtCount(c.count), pct(c.count))
 function shortLabel(s: string): string {
-  const budget = Math.max(3, Math.floor((labelW.value - 4) / 6.5))
-  let used = 0
-  let out = ''
-  for (const ch of s) {
-    used += ch.charCodeAt(0) < 256 ? 1 : 2
-    if (used > budget) return `${out}…`
-    out += ch
-  }
-  return out
+  return clipText(s, labelW.value - 4, { min: 3 })
 }
 const ariaLabel = computed(() => i18n.value.upset.ariaLabel(props.title || i18n.value.upset.title, setList.value.length, cols.value.length))
 

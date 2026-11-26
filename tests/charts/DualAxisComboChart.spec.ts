@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { nextTick } from 'vue'
+import { h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import * as d3 from 'd3'
 import DualAxisComboChart from '@/components/library/charts/DualAxisComboChart.vue'
@@ -185,17 +185,19 @@ describe('DualAxisComboChart', () => {
 
   describe('多實例隔離', () => {
     it('每個實例有自己的 chartId（clip-path 不會互相覆蓋）', async () => {
-      const a = await mountChart()
-      const b = await mountChart()
-
-      const clipA = a.find('clipPath').attributes('id')
-      const clipB = b.find('clipPath').attributes('id')
+      // 同一個 app 裡的兩張圖（useId 在同一個 app 內唯一；同一頁有多個 Vue app 時用 app.config.idPrefix 區分）
+      const props = { layers: [barLayer], width: 600, height: 400, animationDuration: 0, autoResize: false }
+      const w = mount({ render: () => h('div', [h(DualAxisComboChart, props), h(DualAxisComboChart, props)]) }, { attachTo: document.body })
+      await nextTick()
+      const [clipA, clipB] = w.findAll('clipPath').map((c) => c.attributes('id'))
 
       expect(clipA).toBeTruthy()
       expect(clipA).not.toBe(clipB)
+      // 每張圖的繪圖區引用的是自己的 clipPath
+      const refs = w.findAll('svg').map((svg) => svg.find('g[clip-path]').attributes('clip-path'))
+      expect(refs).toEqual([`url(#${clipA})`, `url(#${clipB})`])
 
-      a.unmount()
-      b.unmount()
+      w.unmount()
     })
   })
 

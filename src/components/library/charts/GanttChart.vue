@@ -265,7 +265,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, toRaw, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef, toRaw, useId, watch } from 'vue'
 import * as d3 from 'd3'
 import { chartTheme } from './chartTheme'
 import { resolveCanvasColor, wheelModifierPressed } from './utils/largeData'
@@ -600,7 +600,8 @@ const bodyRef = ref<HTMLDivElement | null>(null)
 const plotRef = ref<SVGSVGElement | null>(null)
 
 /** clip-path、箭頭的 id 每個實例唯一，同頁多張圖才不會互相覆蓋（不用 useId：不同 app 實例之間會重複） */
-const instanceId = Math.random().toString(36).slice(2, 11)
+// useId：SSR 與用戶端一致（原本 Math.random() 會造成 hydration 不一致）
+const instanceId = useId()
 const clipId = `gantt-clip-${instanceId}`
 const helpId = `gantt-help-${instanceId}`
 const arrowMarkers = [

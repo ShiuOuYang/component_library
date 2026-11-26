@@ -269,6 +269,7 @@ import { useAutoResize } from './composables/useAutoResize'
 import { tooltipPlacement } from './utils/tooltipPlacement'
 import { analyzeGage, outsideFraction, type GageCell, type GageComponent, type GageResult, type GageRow } from './utils/gageRR'
 import { useLocale } from '../shared/config'
+import { clipText } from '../shared/textClip'
 
 /**
  * GageRRChart —— 量測系統分析圖（Gage R&R，交叉設計、ANOVA 法）
@@ -474,10 +475,8 @@ const fmtPct = (v: number) => `${d3.format('.2f')(v)}%`
 const fmtF = (v: number) => (Number.isFinite(v) ? d3.format('.4~g')(v) : '∞')
 const fmtP = (p: number) => (p < 0.001 ? '< 0.001' : d3.format('.3f')(p))
 const fmtNdc = (n: number) => (Number.isFinite(n) ? String(n) : '∞')
-const shortPart = (pt: string) => {
-  const room = Math.max(2, Math.floor(partStep.value / 6))
-  return pt.length > room ? `${pt.slice(0, Math.max(1, room - 1))}…` : pt
-}
+// 留一格給「…」；中文零件名算兩格（原本按字數算，中文名稱會超出）
+const shortPart = (pt: string) => clipText(pt, partStep.value - 6, { unit: 6, min: 1 })
 const verdictClass = computed(() => {
   const v = res.value?.verdict
   return v === 'acceptable' ? 'bg-success-subtle text-success-on-subtle' : v === 'marginal' ? 'bg-warning-subtle text-warning-on-subtle' : 'bg-danger-subtle text-danger-on-subtle'

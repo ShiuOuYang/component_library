@@ -297,6 +297,7 @@ import { extendSeries } from './autofill'
 import { formatValue, generalAlign, impliedFormat, sortCompare, type CellAlign } from './values'
 import { shiftFormula } from './formula/refRewrite'
 import { useLocale } from '../shared/config'
+import { downloadBlob } from '../shared/download'
 
 /**
  * ChptExcelEditor（CHPT 主題）- 仿原生 Excel 試算表元件
@@ -2327,12 +2328,7 @@ async function performExport(): Promise<void> {
     try {
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true })
       const blob = new Blob([wbout], { type: 'application/octet-stream' })
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = filename
-      link.click()
-      window.URL.revokeObjectURL(url)
+      downloadBlob(blob, filename)
     } catch {
       XLSX.writeFile(wb, filename)
     }

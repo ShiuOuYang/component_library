@@ -31,3 +31,18 @@ export function readableTextColor(background: string): '#ffffff' | '#111827' {
   // 白字對比 (1.05) / (L + 0.05)；深字（#111827，L≈0.012）對比 (L + 0.05) / 0.062
   return 1.05 / (L + 0.05) >= (L + 0.05) / 0.062 ? '#ffffff' : '#111827'
 }
+
+/** 依量測函式截斷文字，超出時補「…」（二分找放得下的最長前綴）；量不到字型時用 estimateTextWidth */
+export function truncateText(text: string, maxWidth: number, measure: (s: string) => number): string {
+  if (measure(text) <= maxWidth) return text
+  const chars = Array.from(text)
+  let lo = 0
+  let hi = chars.length
+  // 二分找最長的前綴
+  while (lo < hi) {
+    const mid = Math.ceil((lo + hi) / 2)
+    if (measure(chars.slice(0, mid).join('') + '…') <= maxWidth) lo = mid
+    else hi = mid - 1
+  }
+  return lo > 0 ? chars.slice(0, lo).join('') + '…' : ''
+}
