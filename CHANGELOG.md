@@ -42,6 +42,11 @@
 
 ### 新增
 
+- **ChptMaskedInput 格式化輸入**（ui）：序號、MAC、IP、電話、料號、日期碼這類固定格式。格式字串 `#` 數字、`A` 字母、`X` 英數、`H` 十六進位、`*` 任意，
+  後面加 `?` 可省略（IP 每段 1～3 位數）、`\` 跳脫，也可用 `tokens` 自訂；分隔符號自動補上（自己打也接受）、不合格式的字元擋掉並提示（`reject`、螢幕閱讀器念出可輸入什麼），
+  貼上時清掉多餘符號，Backspace / Delete 跳過分隔符號、游標位置正確；聚焦時以底線顯示還沒填的位置。`mask` 給陣列依長度自動選（市話 / 手機），
+  `unmask` 只存填入字元，`uppercase`、`validate`（例如 `validIPv4`）、`complete` / `enter`（掃描槍）事件，可放進 ChptFormItem。
+  常用格式 `MASK_PRESETS`（ipv4、mac、date、time、twMobile、twId）與工具函式 `formatMask`。
 - **BumpChart 排名變化圖**（charts）：排名怎麼隨時間變（各線每月良率、供應商評分、各站停機時間）。每期依數值排名（`order` 大的或小的排前面，同分同名次）或直接給名次
   （`valueType="rank"`），名次 1 在最上、點裡寫名次，兩端標籤與首末期變化（▲ 進步 / ▼ 退步，名次相同時標籤錯開）；`display` 切換名次 / 實際值（實際值時標籤自動避讓）、
   `curve` 曲線 / 直線、缺期斷開。滑過或點選高亮一條（`v-model:selected`，高亮的疊在最上面但不改 DOM 順序，鍵盤焦點不會掉）、tooltip；

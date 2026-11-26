@@ -526,6 +526,51 @@
       </p>
     </section>
 
+    <!-- ============ ChptMaskedInput ============ -->
+    <section id="chpt-masked-input" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptMaskedInput 格式化輸入</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>序號、MAC 位址、IP、電話、料號、日期碼這類固定格式。分隔符號自動補上（自己打也可以），不合格式的字元直接擋掉並提示；
+        貼上 <code>aa bb cc dd ee ff</code> 這種帶空白的字串會自動整理；Backspace / Delete 會跳過分隔符號。聚焦時用底線顯示還沒填的位置。
+        掃描槍也能用（多數掃描槍最後會送 Enter，可接 <code>@enter</code>）。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptMaskedInput, MASK_PRESETS, validIPv4 } from '@/components/library'</code>
+      </p>
+      <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <ChptMaskedInput v-model="maskSerial" mask="SN-####-AAAA" uppercase clearable label="產品序號" prefix-icon="qr_code_2" @complete="maskLog(`序號填完：${$event.masked}`)" @enter="maskLog(`Enter：${$event.masked}`)" />
+            <p class="mt-1 text-xs text-content-tertiary">v-model：<code>{{ maskSerial || '（空）' }}</code></p>
+          </div>
+          <div>
+            <ChptMaskedInput v-model="maskMac" :mask="MASK_PRESETS.mac" uppercase label="設備 MAC 位址" />
+            <p class="mt-1 text-xs text-content-tertiary">試試貼上 <code>00 1a 2b 3c 4d 5e</code></p>
+          </div>
+          <div>
+            <ChptMaskedInput v-model="maskIp" :mask="MASK_PRESETS.ipv4" :validate="validIPv4" label="PLC IP" :error-text="maskIpError" />
+            <p class="mt-1 text-xs text-content-tertiary">每段 1～3 位數，打 <code>.</code> 跳下一段；超過 255 時標紅</p>
+          </div>
+          <div>
+            <ChptMaskedInput v-model="maskPhone" :mask="['####-####', '(##) ####-####']" unmask label="聯絡電話" />
+            <p class="mt-1 text-xs text-content-tertiary">8 碼 / 含區碼 10 碼依長度自動選；<code>unmask</code> 只存數字：<code>{{ maskPhone || '（空）' }}</code></p>
+          </div>
+        </div>
+        <ul v-if="maskEvents.length" class="mt-3 text-xs text-content-secondary list-disc pl-5">
+          <li v-for="(e, i) in maskEvents" :key="i">{{ e }}</li>
+        </ul>
+      </div>
+      <ChptCodeBlock class="mt-6" :code="maskSample" />
+      <ApiTable of="ChptMaskedInput" title="Props" :rows="maskProps" />
+      <ApiTable of="-" title="格式語法" :rows="maskSyntaxRows" />
+      <ApiTable of="ChptMaskedInput" title="Events" :rows="maskEventRows" />
+      <ApiTable of="ChptMaskedInput" title="方法（ref）" :rows="maskMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>在中間插入字元時後面的字會往後擠，擠到型別不符的位置（例如數字擠到字母位置）會被丟掉。有可省略位置（例如 IP）時，
+        <code>unmask</code> 的值無法還原分段（<code>192168110</code> 不知道怎麼切），這類格式請用格式化後的值。只想格式化顯示（例如表格裡）可以用 <code>formatMask(value, mask)</code>。
+      </p>
+    </section>
+
     <!-- ============ ChptUpload ============ -->
     <section id="chpt-upload" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptUpload 檔案上傳</h2>
@@ -594,6 +639,9 @@ import {
   ChptDatePicker,
   ChptTextarea,
   ChptUpload,
+  ChptMaskedInput,
+  MASK_PRESETS,
+  validIPv4,
   ChptMentionInput,
   parseMentions,
   ChptImageCropper,
@@ -1220,6 +1268,62 @@ const mentionMethods = [
   { name: 'clear()', type: '() => void', desc: '清空' },
   { name: 'insertTrigger(char?)', type: '(char?: string) => void', desc: '在游標處插入觸發字元並開啟候選（工具列的 @ 按鈕）' },
   { name: 'text / mentions', type: 'string / Mention[]', desc: '目前的純文字與提及' },
+]
+
+// ---- ChptMaskedInput ----
+const maskSerial = ref('SN-2611-')
+const maskMac = ref('')
+const maskIp = ref('192.168.10.25')
+const maskPhone = ref('0227881234')
+const maskEvents = ref([])
+const maskIpError = computed(() => (maskIp.value && maskIp.value.split('.').some((p) => Number(p) > 255) ? '每段要在 0～255 之間' : ''))
+function maskLog(msg) {
+  maskEvents.value = [msg, ...maskEvents.value].slice(0, 4)
+}
+const maskSample = `<ChptMaskedInput v-model="sn" mask="SN-####-AAAA" uppercase @complete="({ masked }) => lookup(masked)" />
+<ChptMaskedInput v-model="mac" :mask="MASK_PRESETS.mac" uppercase />
+<ChptMaskedInput v-model="ip" :mask="MASK_PRESETS.ipv4" :validate="validIPv4" />
+<ChptMaskedInput v-model="phone" :mask="['####-####', '(##) ####-####']" unmask />
+
+// 自訂格式字元：料號 = 2 碼廠別（大寫）+ 6 碼流水號
+<ChptMaskedInput mask="PP-######" :tokens="{ P: { pattern: /[A-Z]/i, transform: 'upper', kind: '廠別代碼' } }" />
+
+// 只格式化顯示
+formatMask('0212345678', ['####-####', '(##) ####-####']).value // '(02) 1234-5678'`
+const maskProps = [
+  { name: 'modelValue', type: 'string', def: "''", desc: '格式化後的值（v-model）；unmask 時為只有填入字元的值' },
+  { name: 'mask', type: 'string | string[]', def: '—', desc: '格式；陣列時依輸入長度自動選放得下最多字元的那個' },
+  { name: 'tokens', type: 'Record<string, MaskTokenDef>', def: '—', desc: '自訂 / 覆寫格式字元：{ pattern, transform?, kind? }' },
+  { name: 'unmask', type: 'boolean', def: 'false', desc: 'v-model 只存填入的字元（電話只存數字）' },
+  { name: 'uppercase', type: 'boolean', def: 'false', desc: '英文字母轉大寫' },
+  { name: 'validate', type: '(masked, raw) => boolean', def: '—', desc: '填完後的額外檢查（例如 validIPv4）；不通過時標紅、不送 complete' },
+  { name: 'showMask', type: 'boolean', def: 'true', desc: '聚焦或有值時顯示還沒填的位置；沒給 placeholder 時以格式樣板當 placeholder' },
+  { name: 'placeholderChar', type: 'string', def: "'_'", desc: '還沒填的位置用的字元' },
+  { name: 'mono', type: 'boolean', def: 'true', desc: '等寬字型' },
+  { name: 'label / placeholder / size', type: 'string / string / ComponentSize', def: "'' / 樣板 / 'sm'", desc: '同 ChptInput' },
+  { name: 'clearable / prefixIcon / fullWidth', type: 'boolean / string / boolean', def: "false / '' / false", desc: '同 ChptInput' },
+  { name: 'disabled / readonly / errorText', type: 'boolean / boolean / string', def: "false / false / ''", desc: '同 ChptInput；放在 ChptFormItem 裡會接上表單驗證' },
+]
+const maskSyntaxRows = [
+  { name: '#', type: '數字', def: '0-9', desc: 'MASK_PRESETS：ipv4、mac、date、time、twMobile、twId' },
+  { name: 'A / X / H', type: '字母 / 英數 / 十六進位', def: '—', desc: '搭配 uppercase 轉大寫' },
+  { name: '*', type: '任意非空白字元', def: '—', desc: '' },
+  { name: '?', type: '接在格式字元後面', def: '—', desc: '可省略，例如 IP 每段 ##?#?（1～3 位數），打分隔符號就跳到下一段' },
+  { name: '\\', type: '跳脫', def: '—', desc: '\\# 是固定的 # 字元' },
+  { name: '其他字元', type: '固定字元', def: '—', desc: '自動補上，要等後面有字才出現（刪除時不會卡住）；結尾的固定字元在填完時補上' },
+]
+const maskEventRows = [
+  { name: 'update:modelValue', params: '(value: string)', desc: '值改變' },
+  { name: 'accept', params: '({ masked, raw, complete })', desc: '使用者每次改動' },
+  { name: 'complete', params: '({ masked, raw, complete })', desc: '剛填完（且通過 validate）' },
+  { name: 'reject', params: '({ char, kind })', desc: '新打的字有不符合格式的（螢幕閱讀器也會念出可以輸入什麼）' },
+  { name: 'enter', params: '({ masked, raw, complete })', desc: '按 Enter（掃描槍）' },
+  { name: 'clear / focus / blur', params: '— / (FocusEvent)', desc: '清除／聚焦／失焦' },
+]
+const maskMethods = [
+  { name: 'focus() / clear()', type: '() => void', desc: '聚焦／清空' },
+  { name: 'value()', type: '() => { masked, raw, complete }', desc: '目前的值' },
+  { name: 'maskIndex()', type: '() => number', desc: '多個格式時目前用的是第幾個' },
 ]
 
 // ---- ChptUpload ----
