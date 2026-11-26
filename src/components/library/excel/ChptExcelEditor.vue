@@ -9,7 +9,7 @@
     @copy="onCopy"
     @cut="onCut"
     @paste="pasteFromSystem"
-    tabindex="0"
+    tabindex="-1"
   >
     <!-- ===== 主工具列 ===== -->
     <div v-if="showToolbar" class="border-b border-stroke-light bg-surface-secondary">
@@ -170,7 +170,9 @@
     </div>
 
     <!-- ===== 表格主體 ===== -->
-    <div class="overflow-auto excel-grid">
+    <!-- Tab 停在可捲動的表格區（原本停在外層，捲動區本身鍵盤到不了）；
+         按鍵、複製貼上照樣冒泡到外層處理。外層 tabindex=-1，程式仍可把焦點拉回來 -->
+    <div class="overflow-auto excel-grid focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-stroke-focus" tabindex="0" role="region" :aria-label="i18n.excelEditor.title">
       <table class="grid-table">
         <thead>
           <tr>

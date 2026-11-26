@@ -99,6 +99,11 @@ describe('工作表命名', () => {
     expect(w.find('.sheet-rename-input').exists()).toBe(true)
     expect(w.find('.sheet-add').attributes('aria-label')).toBeTruthy()
     expect(w.find('.sheet-close').attributes('aria-label')).toContain('Sheet1')
+    // Tab 停在可捲動的表格區（axe：scrollable-region-focusable）
+    const grid = w.find('.excel-grid')
+    expect(grid.attributes('tabindex')).toBe('0')
+    expect(grid.attributes('role')).toBe('region')
+    expect(grid.attributes('aria-label')).toBeTruthy()
     w.unmount()
   })
 
