@@ -254,6 +254,14 @@ const routes = [
         },
       },
       {
+        path: "components/gage-rr-chart",
+        name: "GageRRChartDoc",
+        component: () => import("../views/docs/GageRRChartDoc.vue"),
+        meta: {
+          title: "量測系統分析圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),
