@@ -187,6 +187,33 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  fishbone: {
+    label: string
+    categories: { man: string; machine: string; material: string; method: string; environment: string; measurement: string }
+    summary: (categories: number, causes: number, primary: number, verified: number) => string
+    selected: (text: string) => string
+    problemLabel: string
+    problemPlaceholder: string
+    headAria: (problem: string) => string
+    addCause: string
+    addCauseTo: (category: string) => string
+    addSub: string
+    edit: string
+    editCategory: string
+    editInput: string
+    primary: string
+    verified: string
+    ruledOut: string
+    remove: string
+    untitled: string
+    categoryAria: (label: string, n: number) => string
+    causeAria: (text: string, flags: string[], note: string) => string
+    added: (text: string) => string
+    removed: (text: string) => string
+    toggled: (flag: string, on: boolean) => string
+    hint: string
+    hintEditable: string
+  }
   orgChart: {
     label: string
     empty: string
@@ -1955,6 +1982,33 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  fishbone: {
+    label: '魚骨圖',
+    categories: { man: '人員', machine: '機器', material: '材料', method: '方法', environment: '環境', measurement: '量測' },
+    summary: (categories, causes, primary, verified) => `${categories} 個分類、${causes} 個原因${primary ? `，主要原因 ${primary} 個` : ''}${verified ? `，已驗證 ${verified} 個` : ''}`,
+    selected: (text) => `選取：${text}`,
+    problemLabel: '問題',
+    problemPlaceholder: '（點兩下輸入問題）',
+    headAria: (problem) => `問題：${problem}`,
+    addCause: '新增原因',
+    addCauseTo: (category) => `新增原因到「${category}」`,
+    addSub: '新增次要原因',
+    edit: '編輯',
+    editCategory: '編輯分類名稱',
+    editInput: '原因內容',
+    primary: '主要原因',
+    verified: '已驗證',
+    ruledOut: '已排除',
+    remove: '刪除',
+    untitled: '（未命名）',
+    categoryAria: (label, n) => `${label}，${n} 個原因`,
+    causeAria: (text, flags, note) => [text, ...flags, note].filter(Boolean).join('，'),
+    added: (text) => `已新增「${text}」`,
+    removed: (text) => `已刪除「${text}」`,
+    toggled: (flag, on) => (on ? `已標記為${flag}` : `已取消${flag}`),
+    hint: '上下方向鍵依序瀏覽分類與原因，左右鍵到上一層或下一層',
+    hintEditable: '上下方向鍵依序瀏覽，左右鍵到上一層或下一層；Enter 編輯、Insert 或 + 新增次要原因、Delete 刪除；P 主要原因、V 已驗證、X 已排除',
+  },
   orgChart: {
     label: '組織圖',
     empty: '沒有資料',
@@ -3831,6 +3885,34 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  fishbone: {
+    label: 'Fishbone diagram',
+    categories: { man: 'Man', machine: 'Machine', material: 'Material', method: 'Method', environment: 'Environment', measurement: 'Measurement' },
+    summary: (categories, causes, primary, verified) =>
+      `${categories} categories, ${causes} ${Number(causes) === 1 ? 'cause' : 'causes'}${primary ? `, ${primary} primary` : ''}${verified ? `, ${verified} verified` : ''}`,
+    selected: (text) => `Selected: ${text}`,
+    problemLabel: 'Problem',
+    problemPlaceholder: '(double-click to enter the problem)',
+    headAria: (problem) => `Problem: ${problem}`,
+    addCause: 'Add cause',
+    addCauseTo: (category) => `Add cause to "${category}"`,
+    addSub: 'Add sub-cause',
+    edit: 'Edit',
+    editCategory: 'Rename category',
+    editInput: 'Cause',
+    primary: 'Primary cause',
+    verified: 'Verified',
+    ruledOut: 'Ruled out',
+    remove: 'Delete',
+    untitled: '(untitled)',
+    categoryAria: (label, n) => `${label}, ${n} ${Number(n) === 1 ? 'cause' : 'causes'}`,
+    causeAria: (text, flags, note) => [text, ...flags, note].filter(Boolean).join(', '),
+    added: (text) => `Added "${text}"`,
+    removed: (text) => `Deleted "${text}"`,
+    toggled: (flag, on) => (on ? `Marked as ${String(flag).toLowerCase()}` : `Unmarked ${String(flag).toLowerCase()}`),
+    hint: 'Use Up / Down to move through categories and causes, Left / Right to go up or down a level',
+    hintEditable: 'Up / Down to move, Left / Right to change level; Enter to edit, Insert or + to add a sub-cause, Delete to remove; P primary, V verified, X ruled out',
+  },
   orgChart: {
     label: 'Organization chart',
     empty: 'No data',
