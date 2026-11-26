@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import ChptFilter from '@/components/library/ui/ChptFilter.vue'
 
@@ -146,6 +147,80 @@ describe('ChptFilter', () => {
       })
       expect(wrapper.findAll('button')).toHaveLength(0)
       expect(wrapper.find('select').exists()).toBe(true)
+    })
+  })
+
+  describe('選取行為', () => {
+    const last = (w: ReturnType<typeof mount>) => w.emitted('update:modelValue')!.at(-1)![0]
+
+    it('select：change 送出選到的值；有「全部」選項；未知 size 退回 sm', async () => {
+      const w = mount(ChptFilter, { props: { type: 'select', options: OPTIONS, modelValue: '', label: '線別', showAllOption: true, size: 'huge' } })
+      expect(w.find('label').text()).toBe('線別')
+      expect(w.findAll('option')).toHaveLength(4)
+      expect(w.find('select').classes()).toContain('h-control-sm')
+      await w.find('select').setValue('b')
+      expect(last(w)).toBe('b')
+    })
+
+    it('dropdown：開關、單選、全選 / 全不選、半選狀態、點外面關閉', async () => {
+      const w = mount(ChptFilter, { props: { type: 'dropdown', options: OPTIONS, modelValue: ['a'] }, attachTo: document.body })
+      const panel = () => w.find('.absolute.z-50')
+      expect(panel().isVisible()).toBe(false)
+      expect(w.find('button').text()).toContain('a')
+      await w.find('button').trigger('click')
+      expect(panel().isVisible()).toBe(true)
+
+      const boxes = () => w.findAll('input[type="checkbox"]')
+      expect((boxes()[0].element as HTMLInputElement).indeterminate).toBe(true)
+      await boxes()[2].trigger('change') // 乙
+      expect(last(w)).toEqual(['a', 'b'])
+      await boxes()[1].trigger('change') // 取消甲
+      expect(last(w)).toEqual([])
+
+      await boxes()[0].trigger('change') // 全選
+      expect(last(w)).toEqual(['a', 'b', 'c'])
+      await w.setProps({ modelValue: ['a', 'b', 'c'] })
+      expect(w.find('button').text()).not.toContain('a') // 多選顯示「已選 N 項」
+      await boxes()[0].trigger('change') // 已全選 → 全不選
+      expect(last(w)).toEqual([])
+
+      // 面板內點擊不關；外面點擊才關
+      document.body.querySelector('.absolute.z-50')!.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      await nextTick()
+      expect(panel().isVisible()).toBe(true)
+      document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      await nextTick()
+      expect(panel().isVisible()).toBe(false)
+      w.unmount()
+    })
+
+    it('tag：搜尋後的全選 / 清除只作用在搜尋結果；沒有結果時顯示提示；valueKey / labelKey', async () => {
+      const rows = [
+        { id: 1, name: 'SMT-1' },
+        { id: 2, name: 'SMT-2' },
+        { id: 3, name: 'DIP-1' },
+      ]
+      const w = mount(ChptFilter, { props: { type: 'tag', options: rows as never, valueKey: 'id', labelKey: 'name', modelValue: [3] } })
+      expect(w.text()).toContain('SMT-1')
+      await w.find('input[type="text"]').setValue('smt')
+      expect(w.text()).not.toContain('DIP-1')
+      const btn = (text: string) => w.findAll('button').find((b) => b.text() === text)!
+      await btn('全選').trigger('click')
+      expect(last(w)).toEqual([3, 1, 2])
+      await w.setProps({ modelValue: [3, 1, 2] })
+      await btn('清空').trigger('click')
+      expect(last(w)).toEqual([3])
+
+      await w.find('input[type="text"]').setValue('zzz')
+      expect(w.findAll('button').some((b) => b.text() === '全選')).toBe(false)
+      expect(w.text()).toMatch(/無|沒有/)
+    })
+
+    it('純字串 / 數字選項', async () => {
+      const w = mount(ChptFilter, { props: { type: 'dropdown', options: ['x', 'y'] as never, modelValue: [] } })
+      expect(w.text()).toContain('x')
+      await w.findAll('input[type="checkbox"]')[1].trigger('change')
+      expect(last(w)).toEqual(['x'])
     })
   })
 })

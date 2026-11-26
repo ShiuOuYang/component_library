@@ -505,6 +505,113 @@ describe('GerberViewer', () => {
     })
   })
 
+  describe('手動解析的圖形', () => {
+    /** 沒有 %FS（走手動解析），但有定義 aperture：四種焊墊形狀、走線、含內洞的 region */
+    const MANUAL = [
+      '%ADD10C,0.5*%',
+      '%ADD11R,1.0X2.0*%',
+      '%ADD12O,1.0X0.6*%',
+      '%ADD13P,1.2X5X30*%',
+      '%ADD14C,0.2*%',
+      'D10*', 'X1000000Y1000000D03*',
+      'D11*', 'X3000000Y1000000D03*',
+      'D12*', 'X5000000Y1000000D03*',
+      'D13*', 'X7000000Y1000000D03*',
+      'D14*', 'X0Y0D02*', 'X2000000Y2000000D01*',
+      'G36*', 'X0Y3000000D02*', 'X4000000Y3000000D01*', 'X4000000Y6000000D01*', 'X0Y6000000D01*', 'X0Y3000000D01*',
+      'X1000000Y4000000D02*', 'X2000000Y4000000D01*', 'X2000000Y5000000D01*', 'X1000000Y5000000D01*', 'G37*',
+      'M02*',
+    ].join('\n')
+
+    it('圓形、矩形、橢圓、多邊形焊墊與走線、region 各自畫出', async () => {
+      const wrapper = await mountViewer({ gerberText: MANUAL })
+      const world = wrapper.find('.gerber-world')
+      expect(world.findAll('circle').length).toBeGreaterThanOrEqual(1)
+      const rects = world.findAll('rect')
+      expect(rects.length).toBeGreaterThanOrEqual(2)
+      // 橢圓（obround）的圓角是短邊的一半
+      expect(rects.some((r) => Number(r.attributes('rx')) > 0)).toBe(true)
+      // 多邊形 5 個頂點
+      const poly = world.find('polygon')
+      expect(poly.attributes('points')!.split(' ')).toHaveLength(5)
+      // 走線線寬取 aperture 直徑
+      expect(world.findAll('line').some((l) => l.attributes('stroke-width') === '0.2')).toBe(true)
+      // region：兩個子輪廓（外框 + 內洞），evenodd 填充
+      const region = world.findAll('path').find((p) => p.attributes('fill-rule') === 'evenodd')!
+      expect(region.attributes('d')!.match(/M/g)).toHaveLength(2)
+      wrapper.unmount()
+    })
+  })
+
+  describe('tracespace 的路徑與區域', () => {
+    it('含 region 與弧線的 Gerber 畫出填色區域', async () => {
+      const text = [
+        '%FSLAX36Y36*%', '%MOMM*%', '%ADD10C,0.2*%', 'D10*',
+        'G36*', 'X0Y0D02*', 'G01*', 'X4000000Y0D01*', 'X4000000Y4000000D01*', 'X0Y4000000D01*', 'X0Y0D01*', 'G37*',
+        'G75*', 'X6000000Y0D02*', 'G03*', 'X6000000Y4000000I0J2000000D01*',
+        'M02*',
+      ].join('\n')
+      const wrapper = await mountViewer({ gerberText: text })
+      const paths = wrapper.findAll('.gerber-world path')
+      expect(paths.length).toBeGreaterThan(0)
+      expect(paths.some((p) => /Z$/.test(p.attributes('d') ?? ''))).toBe(true)
+      wrapper.unmount()
+    })
+  })
+
+  describe('縮放與尺寸', () => {
+    it('放大、縮小、重設與雙擊重設', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const wrapper = await mountViewer({ gerberText: GERBER })
+      const vm = wrapper.vm as unknown as { zoomIn: () => void; zoomOut: () => void; resetView: () => void }
+      vm.zoomIn()
+      await vi.advanceTimersByTimeAsync(400)
+      const zIn = (wrapper.emitted('zoom-change')!.at(-1)![0] as { zoom: number }).zoom
+      expect(zIn).toBeGreaterThan(1)
+      vm.zoomOut()
+      await vi.advanceTimersByTimeAsync(400)
+      expect((wrapper.emitted('zoom-change')!.at(-1)![0] as { zoom: number }).zoom).toBeLessThan(zIn)
+      vm.resetView()
+      await vi.advanceTimersByTimeAsync(600)
+      expect((wrapper.emitted('zoom-change')!.at(-1)![0] as { zoom: number }).zoom).toBeCloseTo(1)
+      vm.zoomIn()
+      await vi.advanceTimersByTimeAsync(400)
+      wrapper.find('svg').element.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
+      await vi.advanceTimersByTimeAsync(600)
+      expect((wrapper.emitted('zoom-change')!.at(-1)![0] as { zoom: number }).zoom).toBeCloseTo(1)
+      wrapper.unmount()
+      vi.useRealTimers()
+    })
+
+    it('容器尺寸改變時（防抖後）重畫，不重新載入', async () => {
+      let onResize: (() => void) | null = null
+      const observe = vi.fn()
+      const disconnect = vi.fn()
+      vi.stubGlobal('ResizeObserver', class {
+        constructor(cb: () => void) { onResize = cb }
+        observe = observe
+        disconnect = disconnect
+        unobserve() {}
+      })
+      const wrapper = mount(GerberViewer, { props: { gerberText: GERBER }, attachTo: document.body })
+      await waitUntilLoaded(wrapper)
+      expect(observe).toHaveBeenCalled()
+      const before = wrapper.find('svg').attributes('width')
+      VIEWPORT.width = 400
+      vi.useFakeTimers()
+      onResize!()
+      onResize!() // 連續觸發只重畫一次
+      vi.advanceTimersByTime(250)
+      vi.useRealTimers()
+      expect(wrapper.find('svg').attributes('width')).not.toBe(before)
+      expect(wrapper.emitted('loaded')).toHaveLength(1)
+      wrapper.unmount()
+      expect(disconnect).toHaveBeenCalled()
+      VIEWPORT.width = 800
+      vi.unstubAllGlobals()
+    })
+  })
+
   describe('對外方法', () => {
     it('defineExpose 提供縮放與重載方法', async () => {
       const wrapper = await mountViewer({ gerberText: GERBER })
