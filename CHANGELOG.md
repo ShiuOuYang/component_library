@@ -495,6 +495,17 @@
 
 ### 修正
 
+- **鍵盤操作與 ARIA 結構**（無障礙稽核）：原本只能用滑鼠點的元素改成按鈕，axe 回報的結構錯誤一併修正。
+  - **ChptBreadcrumb**：nav 有名稱（「麵包屑導覽」），最後一項標 `aria-current="page"`；沒有連結的項目改為按鈕（原本是 span，鍵盤到不了）。
+  - **ChptFilter** 標籤模式、**GerberViewer / PcbLayout** 圖層列：改為切換按鈕，`aria-pressed` 反映狀態。
+  - **ChptExcelEditor**：工作表名稱改為按鈕（Enter 切換、F2 改名、目前的表標 `aria-current`），新增 / 刪除鈕有名稱；
+    焦點在按鈕或下拉選單時，編輯器不再把 Enter / 空白鍵 / F2 攔去移動作用格或開始編輯。
+  - **ChptPivotTable**：有 `@cell-click` 時，數值格內放按鈕（可用鍵盤點）；沒有監聽就維持純文字。
+  - **ChptTable**：樹狀模式表格為 `treegrid`，有子項目的列帶 `aria-expanded`。
+  - **ChptStorageMap**：格子包在 `role="row"` 裡（grid 必須有 row）。**ChptFormList / ChptQueryBuilder**：分組改用 `role="group"`，不再放在 list 底下錯置角色。
+  - **ChptFishbone**：「新增原因」按鈕移出 tree（tree 裡只能是 treeitem / group）。**WaferMap**：分區良率 dl 改由 dl 外的標題命名。
+  - **GanttChart / GageRRChart**：可捲動區域可以用 Tab 進入（`tabindex="0"`、`role="region"` 與名稱），鍵盤使用者也能捲動。
+
 - **ChptTable / ChptPagination**：窄螢幕（手機、平板直式）時上方工具列、下方分頁列與 compact 分頁器不會換行，
   分頁與欄位設定被推到表格外面（整頁出現水平捲軸）。改為 flex-wrap：放不下時換行、右側那組靠右。寬螢幕的外觀不變。
 - **ChptFixedTable**：搜尋框寫死英文「Search...」，改為依語系。

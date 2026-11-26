@@ -50,7 +50,7 @@ describe('ChptFormList', () => {
   it('每一列有名稱與 path()；新增用 createItem、聚焦到新的一列並念出來', async () => {
     const { w, list } = mountList()
     expect(rowsOf(w)).toHaveLength(2)
-    expect(rowsOf(w)[1].attributes('aria-label')).toBe('量測值 第 2 筆')
+    expect(rowsOf(w)[1].find('[role="group"]').attributes('aria-label')).toBe('量測值 第 2 筆')
     expect(w.findAll('input.val').map((i) => i.attributes('data-path'))).toEqual(['measures.0.value', 'measures.1.value'])
     await btn(w, /新增一列/).trigger('click')
     await nextTick()
@@ -125,7 +125,7 @@ describe('ChptFormList', () => {
       { render: () => h(ChptConfigProvider, { locale: enUS }, () => h(ChptFormList, { modelValue: [{}], itemLabel: 'Measure' }, { default: () => h('span') })) },
       { attachTo: document.body }
     )
-    expect(wrapper.find('li').attributes('aria-label')).toBe('Measure row 1')
+    expect(wrapper.find('li [role="group"]').attributes('aria-label')).toBe('Measure row 1')
     expect(wrapper.text()).toContain('Add row')
   })
 })

@@ -188,7 +188,7 @@ describe('ChptQueryBuilder', () => {
     // r1 拖到 g1 結尾
     at(1).dispatchEvent(drag('dragstart'))
     const over = drag('dragover')
-    const endRows = w.findAll('li[role="none"]')
+    const endRows = w.findAll('li[role="group"]')
     endRows[0].element.dispatchEvent(over)
     expect(over.defaultPrevented).toBe(true)
     endRows[0].element.dispatchEvent(drag('drop'))

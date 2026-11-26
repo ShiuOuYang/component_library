@@ -129,8 +129,9 @@
       <span>{{ formatValue(valueDomain[1]) }}</span>
     </div>
 
-    <dl v-if="ringStats.length" class="wafer-ring-yield flex flex-wrap gap-x-4 gap-y-1 text-xs text-content-secondary">
-      <dt class="sr-only">{{ i18n.waferMap.ringYield }}</dt>
+    <!-- 標題放在 dl 外面：dl 裡只能是 dt / dd 或包著它們的 div，不能兩種混用 -->
+    <p v-if="ringStats.length" :id="ringTitleId" class="sr-only">{{ i18n.waferMap.ringYield }}</p>
+    <dl v-if="ringStats.length" class="wafer-ring-yield flex flex-wrap gap-x-4 gap-y-1 text-xs text-content-secondary" :aria-labelledby="ringTitleId">
       <div v-for="r in ringStats" :key="r.ring" class="flex gap-1">
         <dt>{{ i18n.waferMap.ring(r.ring, ringStats.length) }}</dt>
         <dd class="tabular-nums text-content-primary">{{ r.yield === null ? '—' : formatPct(r.yield) }}</dd>
@@ -142,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { useId, computed, nextTick, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import * as d3 from 'd3'
 import { chartPalette, chartTheme } from './chartTheme'
 import { resolveCanvasColor } from './utils/largeData'
@@ -255,6 +256,7 @@ interface WaferMapProps {
 
 /** 元件內建文字（ChptConfigProvider 的 locale；預設繁中） */
 const i18n = useLocale()
+const ringTitleId = `${useId()}-ring`
 const props = withDefaults(defineProps<WaferMapProps>(), {
   width: 360,
   height: 360,

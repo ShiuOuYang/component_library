@@ -71,7 +71,8 @@
                   :aria-label="r.rack"
                   :style="{ gridTemplateColumns: `1.5rem repeat(${r.positions.length}, minmax(2.75rem, 4rem))` }"
                 >
-                  <template v-for="lv in r.levels" :key="lv">
+                  <!-- 每一層包成 role="row"（display: contents，不影響 grid 排版）；原本 rowheader / gridcell 直接放在 grid 底下 -->
+                  <div v-for="lv in r.levels" :key="lv" role="row" class="contents">
                     <span class="flex items-center justify-center text-[10px] tabular-nums text-content-tertiary" role="rowheader">{{ t.storage.levelShort(lv) }}</span>
                     <template v-for="pos in r.positions" :key="pos">
                       <button
@@ -101,9 +102,9 @@
                           aria-hidden="true"
                         ></span>
                       </button>
-                      <span v-else class="h-10" aria-hidden="true"></span>
+                      <span v-else class="h-10" role="gridcell" aria-hidden="true"></span>
                     </template>
-                  </template>
+                  </div>
                   <span aria-hidden="true"></span>
                   <span v-for="pos in r.positions" :key="`p${pos}`" class="text-center text-[10px] tabular-nums text-content-tertiary" aria-hidden="true">{{ pos }}</span>
                 </div>

@@ -4,7 +4,8 @@
       <li
         v-for="row in rows"
         :key="`${row.kind}:${row.node.id}`"
-        :role="row.kind === 'end' ? 'none' : 'treeitem'"
+        :role="row.kind === 'end' ? 'group' : 'treeitem'"
+        :aria-label="row.kind === 'end' ? `${t.queryBuilder.addRule} / ${t.queryBuilder.addGroup}` : undefined"
         :aria-level="row.kind === 'end' ? undefined : row.depth + 1"
         class="flex flex-wrap items-center gap-1.5 rounded-md"
         :class="[

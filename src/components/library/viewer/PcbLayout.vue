@@ -11,23 +11,25 @@
         <span>{{ i18n.viewer.layers(internalLayers.length) }}</span>
       </div>
       <div class="flex-1 overflow-y-auto">
-        <div
+        <button
           v-for="layer in internalLayers"
           :key="layer.id"
-          class="flex items-center gap-2 px-2 py-2 cursor-pointer border-b border-gray-800/40 transition-colors"
+          type="button"
+          :aria-pressed="layer.visible"
+          class="flex w-full items-center gap-2 px-2 py-2 text-left cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-stroke-focus border-b border-gray-800/40 transition-colors"
           :class="layer.visible ? 'hover:bg-gray-800' : 'hover:bg-gray-900'"
           @click="toggleLayer(layer)"
           :title="layer.name"
         >
-          <div
-            class="w-3 h-3 rounded-sm border-2 flex-shrink-0"
+          <span
+            class="block w-3 h-3 rounded-sm border-2 flex-shrink-0" aria-hidden="true"
             :style="{ backgroundColor: layer.visible ? layer.color : 'transparent', borderColor: layer.color }"
-          ></div>
+          ></span>
           <span
             class="text-xs font-mono truncate flex-1 leading-none transition-colors"
             :class="layer.visible ? 'text-gray-200' : 'text-gray-600'"
           >{{ layer.name }}</span>
-        </div>
+        </button>
       </div>
     </div>
 
