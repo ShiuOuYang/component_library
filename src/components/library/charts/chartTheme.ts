@@ -28,6 +28,8 @@ export const chartTheme = {
   border: role('stroke-default'),
   /** 參考線、門檻（例如柏拉圖的 80% 線） */
   danger: role('danger'),
+  /** 「好」的文字色（狀態文字用這個，不要用 chartPalette.good —— 那是填色，深色模式對比不夠） */
+  success: role('success'),
   warning: role('warning'),
   accent: role('accent'),
 } as const

@@ -39,16 +39,16 @@
     <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-content-secondary">
       <span class="tabular-nums">{{ t.bom.partCount(explosion.parts.length) }}</span>
       <template v-if="hasStock">
-        <span class="font-medium tabular-nums" :style="{ color: shortParts.length ? role('danger-solid') : role('success-solid') }">
+        <span class="font-medium tabular-nums" :style="{ color: shortParts.length ? role('danger') : role('success') }">
           {{ shortParts.length ? t.bom.shortCount(shortParts.length) : t.bom.noShortage }}
         </span>
-        <span v-if="criticalShort" class="font-medium tabular-nums" :style="{ color: role('danger-solid') }">{{ t.bom.criticalShort(criticalShort) }}</span>
+        <span v-if="criticalShort" class="font-medium tabular-nums" :style="{ color: role('danger') }">{{ t.bom.criticalShort(criticalShort) }}</span>
         <span v-if="props.netting" class="text-content-tertiary">{{ t.bom.nettingNote }}</span>
       </template>
       <template v-if="diff">
-        <span class="tabular-nums" :style="{ color: role('success-solid') }">{{ t.bom.added(diffCount.added) }}</span>
-        <span class="tabular-nums" :style="{ color: role('danger-solid') }">{{ t.bom.removed(diff.removed.length) }}</span>
-        <span class="tabular-nums" :style="{ color: role('warning-solid') }">{{ t.bom.qtyChanged(diffCount.qty) }}</span>
+        <span class="tabular-nums" :style="{ color: role('success') }">{{ t.bom.added(diffCount.added) }}</span>
+        <span class="tabular-nums" :style="{ color: role('danger') }">{{ t.bom.removed(diff.removed.length) }}</span>
+        <span class="tabular-nums" :style="{ color: role('warning') }">{{ t.bom.qtyChanged(diffCount.qty) }}</span>
       </template>
     </div>
 
@@ -112,7 +112,7 @@
                 </button>
                 <span v-else class="inline-block w-5" aria-hidden="true"></span>
                 <span class="font-mono">{{ r.item.partNo }}</span>
-                <span v-if="r.item.critical" class="material-symbols-outlined text-base" :style="{ color: role('warning-solid') }" :title="t.bom.critical" :aria-label="t.bom.critical">priority_high</span>
+                <span v-if="r.item.critical" class="material-symbols-outlined text-base" :style="{ color: role('warning') }" :title="t.bom.critical" :aria-label="t.bom.critical">priority_high</span>
               </span>
             </td>
             <td class="max-w-52 truncate px-3 py-1.5 text-content-secondary" :title="r.item.name">{{ r.item.name ?? '' }}</td>
@@ -123,7 +123,7 @@
             <td v-if="hasStock" class="px-3 py-1.5 text-right tabular-nums text-content-secondary">{{ r.level === 0 || r.removed ? '' : fmt(props.stock![r.item.partNo] ?? 0) }}</td>
             <td v-if="hasStock" class="px-3 py-1.5 text-right tabular-nums">
               <template v-if="r.level > 0 && !r.removed">
-                <span v-if="!r.hasChildren && (need(r)?.net ?? 0) > 0" class="font-semibold" :style="{ color: role('danger-solid') }">{{ fmt(need(r)!.net) }}</span>
+                <span v-if="!r.hasChildren && (need(r)?.net ?? 0) > 0" class="font-semibold" :style="{ color: role('danger') }">{{ fmt(need(r)!.net) }}</span>
                 <span v-else-if="r.hasChildren && (need(r)?.fromStock ?? 0) > 0" class="text-xs text-content-tertiary">{{ t.bom.fromStock(fmt(need(r)!.fromStock)) }}</span>
               </template>
             </td>

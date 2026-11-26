@@ -784,7 +784,7 @@ const groupedColumns = [
         ],
       },
       // 儲存格依資料上色（同 Vuetify 的 cellProps）
-      { key: 'judge', title: '判定', cellProps: ({ value }) => ({ class: value === 'NG' ? 'font-semibold text-danger' : '' }) },
+      { key: 'judge', title: '判定', cellProps: ({ value }) => ({ class: value === 'NG' ? 'font-semibold bg-danger-subtle text-danger-on-subtle' : '' }) },
     ],
   },
 ]
@@ -825,7 +825,7 @@ const columns = [
         { key: 'rMax', title: 'Max', align: 'end' },
       ] },
       { key: 'judge', title: '判定',          // 沒有 children：自動延伸到最後一層
-        cellProps: ({ value }) => ({ class: value === 'NG' ? 'text-danger' : '' }) },
+        cellProps: ({ value }) => ({ class: value === 'NG' ? 'font-semibold bg-danger-subtle text-danger-on-subtle' : '' }) },
     ],
   },
 ]`

@@ -38,7 +38,7 @@
             v-for="r in summary.rows"
             :key="r.slot.id"
             :aria-current="r.state === 'current' ? 'time' : undefined"
-            :class="[r.state === 'current' ? 'bg-accent-subtle' : 'bg-surface-primary', r.state === 'future' ? 'text-content-tertiary' : 'text-content-primary']"
+            :class="[r.state === 'current' ? 'bg-accent-subtle/50' : 'bg-surface-primary', r.state === 'future' ? 'text-content-tertiary' : 'text-content-primary']"
           >
             <th scope="row" class="whitespace-nowrap px-3 py-1.5 text-left font-normal" :style="r.state === 'current' ? { boxShadow: `inset 4px 0 0 ${role('accent-solid')}` } : undefined">
               <span class="font-mono tabular-nums">{{ r.slot.start }}–{{ r.slot.end }}</span>
@@ -84,7 +84,7 @@
                   <option value="">{{ r.needsReason ? t.hourlyBoard.needReason : t.hourlyBoard.noReason }}</option>
                   <option v-for="o in props.reasons" :key="o.code" :value="o.code">{{ o.label }}</option>
                 </select>
-                <span v-if="r.needsReason" class="material-symbols-outlined text-base" :style="{ color: role('warning-solid') }" aria-hidden="true">warning</span>
+                <span v-if="r.needsReason" class="material-symbols-outlined text-base" :style="{ color: role('warning') }" aria-hidden="true">warning</span>
               </span>
             </td>
             <td v-if="props.showNote" class="px-3 py-1.5">
@@ -194,7 +194,8 @@ const totalActual = computed(() => props.slots.reduce((s, x) => s + (x.actual ??
 const fmt = (n: number) => Math.round(n).toLocaleString()
 const pct = (r: number) => `${Math.round(r * 100)}%`
 const signed = (n: number | null) => (n === null ? '' : n > 0 ? `+${fmt(n)}` : fmt(n))
-const diffColor = (n: number | null) => (n === null ? undefined : n < 0 ? role('danger-solid') : role('success-solid'))
+/** 差異是文字：用文字色（深色模式會變亮），不用 *-solid 填色 */
+const diffColor = (n: number | null) => (n === null ? undefined : n < 0 ? role('danger') : role('success'))
 const slotText = (s: HourlySlot) => `${s.start}–${s.end}`
 
 const kpis = computed(() => {

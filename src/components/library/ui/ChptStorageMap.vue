@@ -39,8 +39,8 @@
     <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-content-secondary">
       <span class="tabular-nums">{{ t.storage.used(summary.used, summary.bins) }}</span>
       <span v-if="summary.ratio !== null" class="tabular-nums">{{ t.storage.utilization(pct(summary.ratio)) }}</span>
-      <span v-if="summary.expired" class="font-medium tabular-nums" :style="{ color: role('danger-solid') }">{{ t.storage.expiredCount(summary.expired) }}</span>
-      <span v-if="summary.soon" class="font-medium tabular-nums" :style="{ color: role('warning-solid') }">{{ t.storage.soonCount(summary.soon, props.warnDays) }}</span>
+      <span v-if="summary.expired" class="font-medium tabular-nums" :style="{ color: role('danger') }">{{ t.storage.expiredCount(summary.expired) }}</span>
+      <span v-if="summary.soon" class="font-medium tabular-nums" :style="{ color: role('warning') }">{{ t.storage.soonCount(summary.soon, props.warnDays) }}</span>
       <span v-if="summary.blocked" class="tabular-nums">{{ t.storage.blockedCount(summary.blocked) }}</span>
       <span class="ml-auto flex flex-wrap items-center gap-x-2.5 gap-y-1" :aria-label="t.storage.legend">
         <span v-for="l in legend" :key="l.label" class="inline-flex items-center gap-1">

@@ -105,15 +105,15 @@
           >
             <span class="flex items-center gap-1">
               <strong class="min-w-0 flex-1 truncate font-mono text-sm text-content-primary">{{ s.id }}</strong>
-              <span class="material-symbols-outlined text-base" :style="{ color: statusColor(s) }" aria-hidden="true">{{ statusIcon(s) }}</span>
+              <span class="material-symbols-outlined text-base" :style="{ color: statusTone(s) }" aria-hidden="true">{{ statusIcon(s) }}</span>
             </span>
             <span class="truncate font-mono text-content-primary" :title="s.partNo">{{ s.partNo }}</span>
-            <span v-if="s.description" class="truncate text-content-tertiary" :title="s.description">{{ s.description }}</span>
+            <span v-if="s.description" class="truncate text-content-secondary" :title="s.description">{{ s.description }}</span>
             <template v-if="loadOf(s)">
-              <span class="truncate font-mono text-content-tertiary" :title="loadOf(s)!.reelId">{{ loadOf(s)!.reelId }}</span>
+              <span class="truncate font-mono text-content-secondary" :title="loadOf(s)!.reelId">{{ loadOf(s)!.reelId }}</span>
               <span class="mt-auto flex items-baseline gap-1 pt-1">
-                <strong class="tabular-nums" :style="{ color: statusColor(s) }">{{ t.feeder.qty(fmt(loadOf(s)!.qty)) }}</strong>
-                <span v-if="boardsLeft(s, loadOf(s)) !== null" class="ml-auto tabular-nums text-content-tertiary">{{ t.feeder.boards(fmt(boardsLeft(s, loadOf(s))!)) }}</span>
+                <strong class="tabular-nums" :style="{ color: statusTone(s) }">{{ t.feeder.qty(fmt(loadOf(s)!.qty)) }}</strong>
+                <span v-if="boardsLeft(s, loadOf(s)) !== null" class="ml-auto tabular-nums text-content-secondary">{{ t.feeder.boards(fmt(boardsLeft(s, loadOf(s))!)) }}</span>
               </span>
             </template>
             <span v-else class="mt-auto pt-1 text-content-tertiary">{{ t.feeder.unloaded }}</span>
@@ -266,7 +266,12 @@ function statusColor(s: FeederSlot): string {
   const st = status(s)
   return st === 'ok' ? role('success-solid') : st === 'low' ? role('warning-solid') : st === 'unloaded' ? role('content-tertiary') : role('danger-solid')
 }
-const chipStyle = (kind: 'danger' | 'warning') => ({ borderColor: role(`${kind}-solid`), color: role(`${kind}-solid`) })
+/** 狀態的文字色（深色模式會變亮）；邊框與底色用 statusColor 的 *-solid */
+function statusTone(s: FeederSlot): string {
+  const st = status(s)
+  return st === 'ok' ? role('success') : st === 'low' ? role('warning') : st === 'unloaded' ? role('content-secondary') : role('danger')
+}
+const chipStyle = (kind: 'danger' | 'warning') => ({ borderColor: role(`${kind}-solid`), color: role(kind) })
 
 const flash = ref<{ slot: string; ok: boolean } | null>(null)
 function tileStyle(s: FeederSlot) {

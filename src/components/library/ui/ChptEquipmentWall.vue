@@ -75,7 +75,7 @@
             <span class="min-w-0 break-words">{{ item.alarm }}</span>
           </span>
           <template v-if="props.density !== 'compact'">
-            <span v-if="item.workOrder || item.product" class="truncate text-xs text-content-tertiary">
+            <span v-if="item.workOrder || item.product" class="truncate text-xs text-content-secondary">
               {{ [item.workOrder, item.product].filter(Boolean).join(' · ') }}
             </span>
             <div v-if="typeof item.utilization === 'number'" class="mt-0.5 flex items-center gap-2">
