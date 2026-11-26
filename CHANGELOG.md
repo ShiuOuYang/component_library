@@ -571,6 +571,12 @@
 
 ### 文件與工具
 
+- **文件站表單頁延遲載入富文字編輯器**：ChptRichTextEditor（Tiptap）改用 `defineAsyncComponent`，表單頁的程式碼從 541 kB 降到 199 kB，
+  編輯器（343 kB）捲到範例時才下載；文件也補上延遲載入的寫法。
+- **補測試**（覆蓋率偏低的元件）：
+  - DualAxisComboChart 的框選縮放與拖曳座標軸：x / xy / 類別軸框選、重設、overlay 底下的提示穿透、X / 時間軸 / 左右 Y 軸拖曳（`useBrushZoom` 38% → 98%、`useAxisDrag` 48% → 99%）。
+  - ChptCodeBlock（0% → 100%）、ChptFilter 的 select / dropdown / tag 選取行為（84% → 100%）、
+    GerberViewer 手動解析的四種焊墊、走線、含內洞的 region，tracespace 區域，縮放與尺寸變更重畫（81% → 98%）。
 - **文件站手機版**：側欄原本固定佔 288px，手機上內容區只剩一百多 px、每個區塊被擠到約 66px 寬。
   寬度小於 1024px 時側欄改成從左側滑出的抽屜（頂端列有選單、站名、搜尋；遮罩、Esc、換頁都會關閉；
   打開時焦點移進抽屜、關閉時還給選單鈕，關閉時以 inert 移出 Tab 順序）。各頁也一併修正：

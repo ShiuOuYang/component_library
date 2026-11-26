@@ -180,6 +180,11 @@
       <p class="text-sm text-content-secondary mb-4">
         <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptRichTextEditor } from '@/components/library'</code>
       </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>延遲載入：</strong>Tiptap 約 340 kB。只有少數頁面用得到時，可以用
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded">defineAsyncComponent(() =&gt; import('@/components/library/ui/ChptRichTextEditor.vue'))</code>
+        讓它在畫面真的出現時才下載（本頁就是這樣做的）。
+      </p>
       <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
         <ChptForm ref="reportRef" :model="report" :rules="reportRules" @submit="reportResult = report.content">
           <ChptFormItem prop="title" label="主旨" class="max-w-md">
@@ -617,13 +622,12 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, useTemplateRef } from 'vue'
+import { computed, defineAsyncComponent, h, reactive, ref, useTemplateRef } from 'vue'
 import {
   ChptForm,
   ChptFormItem,
   ChptFormList,
   ChptSchemaForm,
-  ChptRichTextEditor,
   ChptSignaturePad,
   ChptChecklist,
   ChptWorkInstruction,
@@ -651,6 +655,16 @@ import {
   ChptCodeBlock,
 } from '@/components/library'
 import ApiTable from './_ApiTable.vue'
+
+/**
+ * 富文字編輯器（Tiptap，約 400 kB）改成用到才載入：原本跟著整個表單頁一起打包，
+ * 進這一頁要先下載 541 kB。載入前放一塊與範例同高（260px）的佔位，避免版面跳動。
+ */
+const ChptRichTextEditor = defineAsyncComponent({
+  loader: () => import('@/components/library/ui/ChptRichTextEditor.vue'),
+  loadingComponent: { render: () => h('div', { class: 'h-[260px] animate-pulse rounded-md border border-stroke-default bg-surface-secondary', 'aria-hidden': 'true' }) },
+  delay: 0,
+})
 
 // ---- ChptSignaturePad ----
 const signatureRef = ref(null)
