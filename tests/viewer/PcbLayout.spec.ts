@@ -310,10 +310,12 @@ describe('PcbLayout', () => {
 
     it('showControls 決定是否顯示縮放按鈕', async () => {
       const on = await mountPcb({ showControls: true })
-      expect(on.findAll('button').length).toBe(3)
+      // 圖層清單的每一列也是按鈕（可以用鍵盤切換），這裡只數縮放按鈕
+      const zoomButtons = (w: typeof on) => w.findAll('button').filter((b) => !b.attributes('aria-pressed'))
+      expect(zoomButtons(on).length).toBe(3)
 
       const off = await mountPcb({ showControls: false })
-      expect(off.findAll('button')).toHaveLength(0)
+      expect(zoomButtons(off)).toHaveLength(0)
 
       on.unmount()
       off.unmount()

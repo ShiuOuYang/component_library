@@ -17,12 +17,11 @@
         :key="keyOf(item, index)"
         ref="rows"
         class="chpt-form-list-item flex items-start gap-2 rounded-md border border-stroke-light bg-surface-primary p-2"
-        role="group"
-        :aria-label="t.formList.item(props.label || props.itemLabel || '', index + 1)"
       >
         <span v-if="props.showIndex" class="mt-1.5 w-6 shrink-0 text-right text-xs tabular-nums text-content-tertiary" aria-hidden="true">{{ index + 1 }}</span>
 
-        <div class="min-w-0 flex-1">
+        <!-- 群組放在 li 裡面（li 要保持清單項目的角色，ol 才是合法的清單） -->
+        <div class="min-w-0 flex-1" role="group" :aria-label="t.formList.item(props.label || props.itemLabel || '', index + 1)">
           <slot
             :item="item"
             :index="index"

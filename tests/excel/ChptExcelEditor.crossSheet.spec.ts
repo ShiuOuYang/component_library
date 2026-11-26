@@ -49,7 +49,8 @@ async function mountEditor(props: Record<string, unknown> = {}) {
   return wrapper
 }
 
-const tabNames = (w: Wrapper) => w.findAll('.sheet-tab span').map((s) => s.text())
+// 名稱是頁籤裡的第一個按鈕（關閉鈕是 .sheet-close）
+const tabNames = (w: Wrapper) => w.findAll('.sheet-tab > button:not(.sheet-close)').map((s) => s.text())
 
 async function renameTab(w: Wrapper, idx: number, name: string) {
   await w.findAll('.sheet-tab')[idx].trigger('dblclick')
@@ -87,6 +88,22 @@ describe('工作表命名', () => {
     api(w).addSheet()
     await nextTick()
     expect(tabNames(w)).toEqual(['Sheet1', 'Sheet2', 'Sheet3'])
+    // 名稱是按鈕：Enter（點擊）切換、F2 改名；目前的工作表有 aria-current；新增 / 關閉鈕有名稱
+    const nameBtn = (i: number) => w.findAll('.sheet-tab > button:not(.sheet-close)')[i]
+    expect(nameBtn(2).attributes('aria-current')).toBe('true')
+    await nameBtn(0).trigger('click')
+    expect(nameBtn(0).attributes('aria-current')).toBe('true')
+    expect(nameBtn(2).attributes('aria-current')).toBeUndefined()
+    await nameBtn(1).trigger('keydown', { key: 'F2' })
+    await nextTick()
+    expect(w.find('.sheet-rename-input').exists()).toBe(true)
+    expect(w.find('.sheet-add').attributes('aria-label')).toBeTruthy()
+    expect(w.find('.sheet-close').attributes('aria-label')).toContain('Sheet1')
+    // Tab 停在可捲動的表格區（axe：scrollable-region-focusable）
+    const grid = w.find('.excel-grid')
+    expect(grid.attributes('tabindex')).toBe('0')
+    expect(grid.attributes('role')).toBe('region')
+    expect(grid.attributes('aria-label')).toBeTruthy()
     w.unmount()
   })
 

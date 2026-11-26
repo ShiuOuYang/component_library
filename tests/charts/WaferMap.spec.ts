@@ -166,6 +166,11 @@ describe('WaferMap', () => {
     expect(zones).toHaveLength(2)
     expect(zones[0]).toMatch(/^中心/)
     expect(zones[1]).toMatch(/^外圈/)
+    // 分區良率清單由 dl 外的 sr-only 標題命名（dl 裡只能放 dt / dd）
+    const dl = w.find('dl')
+    const title = w.find(`#${dl.attributes('aria-labelledby')}`)
+    expect(title.exists()).toBe(true)
+    expect(title.text()).not.toBe('')
     expect(w.findAll('.wafer-rings circle')).toHaveLength(1)
   })
 

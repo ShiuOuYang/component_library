@@ -88,19 +88,6 @@
             >
               {{ b.category.label }}
             </div>
-            <button
-              v-if="props.editable"
-              type="button"
-              tabindex="-1"
-              class="absolute flex h-4 w-4 items-center justify-center rounded-full border border-stroke-default bg-surface-primary text-[12px] leading-none text-content-secondary hover:border-accent hover:text-accent"
-              :style="{ left: `${b.addAt.x - 8}px`, top: `${b.addAt.y}px` }"
-              :aria-label="t.fishbone.addCauseTo(b.category.label)"
-              :title="t.fishbone.addCause"
-              :data-add="b.category.id"
-              @click="addChild(b.category.id)"
-            >
-              +
-            </button>
           </template>
           <div
             v-for="r in L.rows"
@@ -150,6 +137,24 @@
             </button>
           </div>
         </div>
+
+        <!-- 大骨旁的新增按鈕：放在 tree 外面（tree 底下只能有 treeitem / group） -->
+        <template v-if="props.editable">
+          <button
+            v-for="b in L.bones"
+            :key="`add-${b.category.id}`"
+            type="button"
+            tabindex="-1"
+            class="absolute flex h-4 w-4 items-center justify-center rounded-full border border-stroke-default bg-surface-primary text-[12px] leading-none text-content-secondary hover:border-accent hover:text-accent"
+            :style="{ left: `${b.addAt.x - 8}px`, top: `${b.addAt.y}px` }"
+            :aria-label="t.fishbone.addCauseTo(b.category.label)"
+            :title="t.fishbone.addCause"
+            :data-add="b.category.id"
+            @click="addChild(b.category.id)"
+          >
+            +
+          </button>
+        </template>
 
         <!-- 行內編輯 -->
         <input

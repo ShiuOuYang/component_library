@@ -106,6 +106,7 @@
         :class="{ 'table-fixed': props.resizable }"
         :aria-busy="props.loading || undefined"
         :aria-rowcount="ariaRowCount"
+        :role="props.tree ? 'treegrid' : undefined"
       >
         <!--
           表頭可以多層：columns 裡有 children 的是群組欄，標題橫跨底下所有欄位；
@@ -271,6 +272,7 @@
                   :aria-selected="selectionEnabled ? selectedKeySet.has(keyOf(item, index + renderStart)) : undefined"
                   :aria-rowindex="ariaRowCount ? headerDepth + index + renderStart + 1 : undefined"
                   :aria-level="props.tree ? (metaOf(item)?.level ?? 0) + 1 : undefined"
+                  :aria-expanded="props.tree && metaOf(item)?.hasChildren ? metaOf(item)!.expanded : undefined"
                   :style="props.virtual ? { height: `${rowHeightPx}px` } : undefined"
                   :tabindex="hasRowClickListener ? 0 : undefined"
                   @click="onRowClick(item, index + renderStart, $event)"

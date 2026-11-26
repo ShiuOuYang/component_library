@@ -190,6 +190,11 @@ describe('GerberViewer', () => {
       expect(wrapper.text()).toContain('銅箔')
       expect(wrapper.text()).toContain('鑽孔')
       expect(wrapper.text()).toContain('圖層 (2)')
+      // 每列是切換按鈕（鍵盤可操作），aria-pressed 反映是否顯示
+      const toggle = wrapper.findAll('button[aria-pressed]').find((b) => b.text().includes('鑽孔'))!
+      expect(toggle.attributes('aria-pressed')).toBe('true')
+      await toggle.trigger('click')
+      expect(toggle.attributes('aria-pressed')).toBe('false')
       wrapper.unmount()
     })
 

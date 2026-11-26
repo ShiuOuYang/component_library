@@ -56,6 +56,18 @@ describe('ChptFilter', () => {
     })
   })
 
+  it('tag 型態：選項是可切換的按鈕（鍵盤可以按），aria-pressed 表示是否選取', async () => {
+    const w = mount(ChptFilter, { props: { type: 'tag', options: OPTIONS, modelValue: ['a'] } })
+    const opts = w.findAll('button[aria-pressed]')
+    expect(opts.map((b) => [b.text(), b.attributes('aria-pressed')])).toEqual([
+      ['甲', 'true'],
+      ['乙', 'false'],
+      ['丙', 'false'],
+    ])
+    await opts[1].trigger('click')
+    expect(w.emitted('update:modelValue')![0]).toEqual([['a', 'b']])
+  })
+
   describe('可點擊目標尺寸（WCAG 2.5.8：最小 24×24）', () => {
     /** tag 型態才有清空鈕與全選 / 清空 */
     function mountTag(props: Record<string, unknown> = {}) {

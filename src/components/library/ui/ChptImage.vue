@@ -10,7 +10,7 @@
     <!-- 載入失敗：顯示圖示與替代文字（alt 本來就是給「看不到圖」的人的） -->
     <span
       v-if="status === 'error'"
-      class="flex size-full flex-col items-center justify-center gap-1 p-2 text-center text-xs text-content-tertiary"
+      class="flex size-full flex-col items-center justify-center gap-1 p-2 text-center text-xs text-content-secondary"
       role="img"
       :aria-label="props.alt ? t.image.failedWithAlt(props.alt) : t.image.failed"
     >

@@ -9,7 +9,7 @@
     @copy="onCopy"
     @cut="onCut"
     @paste="pasteFromSystem"
-    tabindex="0"
+    tabindex="-1"
   >
     <!-- ===== 主工具列 ===== -->
     <div v-if="showToolbar" class="border-b border-stroke-light bg-surface-secondary">
@@ -170,7 +170,9 @@
     </div>
 
     <!-- ===== 表格主體 ===== -->
-    <div class="overflow-auto excel-grid">
+    <!-- Tab 停在可捲動的表格區（原本停在外層，捲動區本身鍵盤到不了）；
+         按鍵、複製貼上照樣冒泡到外層處理。外層 tabindex=-1，程式仍可把焦點拉回來 -->
+    <div class="overflow-auto excel-grid focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-stroke-focus" tabindex="0" role="region" :aria-label="i18n.excelEditor.title">
       <table class="grid-table">
         <thead>
           <tr>
@@ -252,7 +254,7 @@
 
     <!-- ===== 工作表頁籤 ===== -->
     <div v-if="showSheetTabs" class="flex items-center gap-1 px-2 py-1.5 border-t border-stroke-light bg-surface-secondary overflow-x-auto">
-      <button type="button" class="sheet-add" @click="addSheet" :title="i18n.excelEditor.addSheet">＋</button>
+      <button type="button" class="sheet-add" @click="addSheet" :title="i18n.excelEditor.addSheet" :aria-label="i18n.excelEditor.addSheet">＋</button>
       <div
         v-for="(sheet, idx) in sheets"
         :key="idx"
@@ -272,8 +274,16 @@
           @keydown.esc.prevent="cancelRenameSheet"
           @blur="confirmRenameSheet(idx)"
         />
-        <span v-else class="px-2 py-0.5 rounded">{{ sheet.name }}</span>
-        <button type="button" v-if="sheets.length > 1" class="sheet-close" @mousedown.stop @click.stop="removeSheet(idx)" :title="i18n.excelEditor.removeSheet">×</button>
+        <!-- 名稱是按鈕：鍵盤可以切換（Enter）與重新命名（F2）；原本整個頁籤是 div，鍵盤到不了 -->
+        <button
+          v-else
+          type="button"
+          class="px-2 py-0.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus"
+          :aria-current="idx === activeSheetIndex ? 'true' : undefined"
+          @click.stop="switchSheet(idx)"
+          @keydown.f2.prevent="startRenameSheet(idx)"
+        >{{ sheet.name }}</button>
+        <button type="button" v-if="sheets.length > 1" class="sheet-close" @mousedown.stop @click.stop="removeSheet(idx)" :title="i18n.excelEditor.removeSheet" :aria-label="`${i18n.excelEditor.removeSheet} ${sheet.name}`">×</button>
       </div>
     </div>
   </div>
@@ -2351,6 +2361,9 @@ function handleKeydown(e: KeyboardEvent) {
   if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
     return
   }
+  // 焦點在按鈕 / 下拉選單（工作表頁籤、工具列）：Enter / 空白鍵 / F2 是按鈕自己的操作，
+  // 不能被當成「移動作用格」或「開始編輯」攔掉
+  if (target && (target.tagName === 'BUTTON' || target.tagName === 'SELECT')) return
   const ctrl = e.ctrlKey || e.metaKey
   // Shift+空白鍵選取整列、Ctrl+空白鍵選取整欄（要在「打字開始編輯」之前判斷）
   if (e.key === ' ' && (e.shiftKey || ctrl) && !(e.shiftKey && ctrl)) {
