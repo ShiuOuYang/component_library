@@ -187,6 +187,60 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  labelDesigner: {
+    label: string
+    toolbar: string
+    add: (type: string) => string
+    types: { text: string; barcode: string; qrcode: string; line: string; rect: string; image: string }
+    align: { left: string; hcenter: string; right: string; top: string; vcenter: string; bottom: string }
+    undo: string
+    redo: string
+    undone: string
+    redone: string
+    zoomIn: string
+    zoomOut: string
+    fit: string
+    preview: string
+    exportPng: string
+    print: string
+    duplicate: string
+    front: string
+    back: string
+    remove: string
+    geom: { x: string; y: string; w: string; h: string }
+    rotation: string
+    locked: string
+    text: string
+    fontSize: string
+    textAlign: string
+    textAligns: { left: string; center: string; right: string }
+    bold: string
+    value: string
+    invalidCode: string
+    format: string
+    showText: string
+    level: string
+    thickness: string
+    radius: string
+    fill: string
+    src: string
+    insertField: string
+    chooseField: string
+    selectedCount: (n: number) => string
+    labelSettings: string
+    labelWidth: string
+    labelHeight: string
+    usedFields: (list: string) => string
+    layers: string
+    empty: string
+    newText: string
+    added: (type: string) => string
+    removed: (n: number) => string
+    position: (x: number, y: number) => string
+    layerName: (type: string, content: string) => string
+    hint: string
+    hintReadonly: string
+  }
   fishbone: {
     label: string
     categories: { man: string; machine: string; material: string; method: string; environment: string; measurement: string }
@@ -1982,6 +2036,60 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  labelDesigner: {
+    label: '標籤設計器',
+    toolbar: '標籤工具',
+    add: (type) => `新增${type}`,
+    types: { text: '文字', barcode: '條碼', qrcode: 'QR code', line: '線條', rect: '方框', image: '圖片' },
+    align: { left: '靠左對齊', hcenter: '水平置中', right: '靠右對齊', top: '靠上對齊', vcenter: '垂直置中', bottom: '靠下對齊' },
+    undo: '復原',
+    redo: '重做',
+    undone: '已復原',
+    redone: '已重做',
+    zoomIn: '放大',
+    zoomOut: '縮小',
+    fit: '符合畫面',
+    preview: '預覽',
+    exportPng: '下載 PNG',
+    print: '列印',
+    duplicate: '複製',
+    front: '移到最上層',
+    back: '移到最下層',
+    remove: '刪除',
+    geom: { x: 'X（mm）', y: 'Y（mm）', w: '寬（mm）', h: '高（mm）' },
+    rotation: '旋轉',
+    locked: '鎖定',
+    text: '內容',
+    fontSize: '字級（pt）',
+    textAlign: '對齊',
+    textAligns: { left: '靠左', center: '置中', right: '靠右' },
+    bold: '粗體',
+    value: '內容',
+    invalidCode: '這個內容無法編碼（Code 39 只能用大寫英數與 - . 空白 $ / + %）',
+    format: '格式',
+    showText: '顯示文字',
+    level: '容錯等級',
+    thickness: '線寬（mm）',
+    radius: '圓角（mm）',
+    fill: '填滿',
+    src: '圖片網址',
+    insertField: '插入欄位',
+    chooseField: '選擇欄位…',
+    selectedCount: (n) => `已選取 ${n} 個元素`,
+    labelSettings: '標籤設定',
+    labelWidth: '寬（mm）',
+    labelHeight: '高（mm）',
+    usedFields: (list) => `使用的欄位：${list}`,
+    layers: '圖層',
+    empty: '還沒有元素，從上方工具列新增',
+    newText: '文字',
+    added: (type) => `已新增${type}`,
+    removed: (n) => `已刪除 ${n} 個元素`,
+    position: (x, y) => `位置 ${x}, ${y} mm`,
+    layerName: (type, content) => `${type}：${content}`,
+    hint: '點選元素後拖曳移動、拖曳控制點改大小；方向鍵移動（Shift 一次 10 格、Alt 0.1 mm），Delete 刪除，Ctrl + D 複製，Ctrl + Z 復原，Ctrl + A 全選，Esc 取消選取',
+    hintReadonly: '唯讀的標籤版面',
+  },
   fishbone: {
     label: '魚骨圖',
     categories: { man: '人員', machine: '機器', material: '材料', method: '方法', environment: '環境', measurement: '量測' },
@@ -3885,6 +3993,60 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  labelDesigner: {
+    label: 'Label designer',
+    toolbar: 'Label tools',
+    add: (type) => `Add ${String(type).toLowerCase()}`,
+    types: { text: 'Text', barcode: 'Barcode', qrcode: 'QR code', line: 'Line', rect: 'Box', image: 'Image' },
+    align: { left: 'Align left', hcenter: 'Center horizontally', right: 'Align right', top: 'Align top', vcenter: 'Center vertically', bottom: 'Align bottom' },
+    undo: 'Undo',
+    redo: 'Redo',
+    undone: 'Undone',
+    redone: 'Redone',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    fit: 'Fit to view',
+    preview: 'Preview',
+    exportPng: 'Download PNG',
+    print: 'Print',
+    duplicate: 'Duplicate',
+    front: 'Bring to front',
+    back: 'Send to back',
+    remove: 'Delete',
+    geom: { x: 'X (mm)', y: 'Y (mm)', w: 'Width (mm)', h: 'Height (mm)' },
+    rotation: 'Rotation',
+    locked: 'Locked',
+    text: 'Text',
+    fontSize: 'Font size (pt)',
+    textAlign: 'Alignment',
+    textAligns: { left: 'Left', center: 'Center', right: 'Right' },
+    bold: 'Bold',
+    value: 'Value',
+    invalidCode: 'This value cannot be encoded (Code 39 accepts only A-Z, 0-9, space and - . $ / + %)',
+    format: 'Format',
+    showText: 'Show text',
+    level: 'Error correction',
+    thickness: 'Stroke (mm)',
+    radius: 'Corner radius (mm)',
+    fill: 'Filled',
+    src: 'Image URL',
+    insertField: 'Insert field',
+    chooseField: 'Choose a field…',
+    selectedCount: (n) => `${n} elements selected`,
+    labelSettings: 'Label settings',
+    labelWidth: 'Width (mm)',
+    labelHeight: 'Height (mm)',
+    usedFields: (list) => `Fields used: ${list}`,
+    layers: 'Layers',
+    empty: 'No elements yet; add one from the toolbar',
+    newText: 'Text',
+    added: (type) => `Added ${String(type).toLowerCase()}`,
+    removed: (n) => `Deleted ${n} ${Number(n) === 1 ? 'element' : 'elements'}`,
+    position: (x, y) => `Position ${x}, ${y} mm`,
+    layerName: (type, content) => `${type}: ${content}`,
+    hint: 'Select an element and drag to move or drag a handle to resize; arrow keys move it (Shift for 10 steps, Alt for 0.1 mm), Delete removes, Ctrl + D duplicates, Ctrl + Z undoes, Ctrl + A selects all, Esc clears the selection',
+    hintReadonly: 'Read-only label layout',
+  },
   fishbone: {
     label: 'Fishbone diagram',
     categories: { man: 'Man', machine: 'Machine', material: 'Material', method: 'Method', environment: 'Environment', measurement: 'Measurement' },

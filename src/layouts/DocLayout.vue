@@ -459,6 +459,7 @@ const navSections = [
           { label: 'ChptShiftRoster', id: 'chpt-shift-roster' },
           { label: 'ChptScheduler', id: 'chpt-scheduler' },
           { label: 'ChptFishbone', id: 'chpt-fishbone' },
+          { label: 'ChptLabelDesigner', id: 'chpt-label-designer' },
           { label: 'ChptSkillMatrix', id: 'chpt-skill-matrix' },
           { label: 'ChptCommentThread', id: 'chpt-comment-thread' },
           { label: 'ChptSortableList', id: 'chpt-sortable-list' },
