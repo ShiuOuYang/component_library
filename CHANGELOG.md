@@ -47,6 +47,10 @@
   多選對齊選取範圍）、復原 / 重做；屬性面板與可用鍵盤操作的圖層清單；方向鍵移動（Shift 10 倍、Alt 0.1 mm）、Delete、Ctrl + D / A / Z / Y。內容寫成 `{{lotNo}}` 綁定欄位
   （「插入欄位」選單），設計時顯示範例資料、預覽（`v-model:preview`）與輸出時代入；`v-model` 為版面 JSON。輸出：PNG（依 DPI）、列印（每筆一頁、頁面等於標籤大小）、
   ZPL II（`toZpl()`，Zebra 標籤機）。工具函式 `labelSvg`、`labelToZpl`、`bindLabelTemplate`。
+- **MarimekkoChart 馬賽克圖**（charts）：兩個維度的組成，例如各產線的不良類型。欄寬為各欄總量、欄內高度為各類別比例（同一格多筆加總、負值與 0 略過），
+  格內標出欄內百分比、欄下標出名稱與占比；`sortColumns` / `sortSegments` 依總量排序，`maxSegments` 把其餘類別併成「其他」（灰色、固定在最後）。
+  `mode="residual"` 改以 Pearson 殘差上色（紅比預期多、藍比預期少）找出特別的組合，`mekkoChiSquare()` 給整體卡方值。
+  滑過看數量與比例、點格子送出 `cell-click`、點圖例標示類別（`v-model:selected`）；鍵盤 ←→ 換欄、↑↓ 換類別念出、Enter 送出、Esc 取消標示；隱藏資料表。
 - **ChptFishbone 魚骨圖（特性要因圖）**（ui）：品質異常分析、8D 的 D4 根本原因。右邊魚頭是問題、大骨是分類（預設 5M1E：人員、機器、材料、方法、環境、量測，可自訂），
   原因接在大骨上最多 3 層；原因可標記主要原因（紅色粗線 + ★）、已驗證（✓）、已排除（刪除線，與主要原因互斥），可附備註。`editable` 時直接在圖上操作：
   + 新增原因或次要原因、雙擊 / Enter 行內編輯（新的原因留白即取消）、選取後用工具列標記或刪除，分類名稱與問題也可以改；tree / treeitem 角色，

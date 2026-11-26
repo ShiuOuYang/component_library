@@ -639,6 +639,10 @@ const navSections = [
         anchors: [{ label: '射出成型', id: 'molding' }, { label: '兩層因子', id: 'shift' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/marimekko-chart', icon: '🧱', label: '馬賽克圖',
+        anchors: [{ label: '不良組成', id: 'defects' }, { label: '併成其他', id: 'returns' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },
