@@ -270,6 +270,14 @@ const routes = [
         },
       },
       {
+        path: "components/marimekko-chart",
+        name: "MarimekkoChartDoc",
+        component: () => import("../views/docs/MarimekkoChartDoc.vue"),
+        meta: {
+          title: "馬賽克圖",
+        },
+      },
+      {
         path: "components/sankey-chart",
         name: "SankeyChartDoc",
         component: () => import("../views/docs/SankeyChartDoc.vue"),
