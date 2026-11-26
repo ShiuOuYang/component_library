@@ -1557,6 +1557,22 @@ export interface ChptLocale {
     tableAnovaReduced: string
     cols: { source: string; contribution: string; sd: string; studyVar: (k: number) => string; pctStudyVar: string; pctTolerance: string; df: string }
   }
+  multiVari: {
+    title: string
+    empty: string
+    dominant: (source: string, pct: string) => string
+    within: string
+    sourcesTitle: string
+    mean: string
+    range: string
+    usl: string
+    lsl: string
+    target: string
+    ariaLabel: (title: string, positions: number, dominant: string) => string
+    stats: (n: number, mean: string, range: string) => string
+    innerLine: (level: string, mean: string, n: number) => string
+    sep: string
+  }
   sankey: {
     title: string
     empty: string
@@ -3409,6 +3425,22 @@ export const zhTW: ChptLocale = {
       pctTolerance: '% 公差',
       df: '自由度',
     },
+  },
+  multiVari: {
+    title: '多變異圖',
+    empty: '沒有資料',
+    dominant: (source, pct) => `主要變異來源：${source}（${pct}）`,
+    within: '組內（重複量測）',
+    sourcesTitle: '各變異來源占總平方和的比例',
+    mean: '平均',
+    range: '全距',
+    usl: 'USL',
+    lsl: 'LSL',
+    target: '目標',
+    ariaLabel: (title, positions, dominant) => `${title}：${positions} 個位置${dominant ? `，主要變異來源為${dominant}` : ''}；← → 切換位置`,
+    stats: (n, mean, range) => `n = ${n}，平均 ${mean}，全距 ${range}`,
+    innerLine: (level, mean, n) => `${level}：${mean}（n = ${n}）`,
+    sep: '；',
   },
   sankey: {
     title: '流向圖',
@@ -5269,6 +5301,22 @@ export const enUS: ChptLocale = {
       pctTolerance: '% Tolerance',
       df: 'DF',
     },
+  },
+  multiVari: {
+    title: 'Multi-vari chart',
+    empty: 'No data',
+    dominant: (source, pct) => `Largest source of variation: ${source} (${pct})`,
+    within: 'Within (repeats)',
+    sourcesTitle: 'Share of total sum of squares by source',
+    mean: 'Mean',
+    range: 'Range',
+    usl: 'USL',
+    lsl: 'LSL',
+    target: 'Target',
+    ariaLabel: (title, positions, dominant) => `${title}: ${positions} ${Number(positions) === 1 ? 'position' : 'positions'}${dominant ? `, largest source of variation is ${dominant}` : ''}; use ← → to move`,
+    stats: (n, mean, range) => `n = ${n}, mean ${mean}, range ${range}`,
+    innerLine: (level, mean, n) => `${level}: ${mean} (n = ${n})`,
+    sep: '; ',
   },
   sankey: {
     title: 'Flow chart',
