@@ -187,6 +187,12 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  maskedInput: {
+    format: (template: string) => string
+    rejected: (kind: string) => string
+    complete: string
+    kinds: { digit: string; letter: string; alnum: string; hex: string; any: string }
+  }
   comments: {
     title: (n: number) => string
     filter: string
@@ -1911,6 +1917,12 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  maskedInput: {
+    format: (template) => `格式：${template}`,
+    rejected: (kind) => `這裡只能輸入${kind}`,
+    complete: '已填完',
+    kinds: { digit: '數字', letter: '英文字母', alnum: '英文字母或數字', hex: '十六進位字元（0-9、A-F）', any: '非空白字元' },
+  },
   comments: {
     title: (n) => `${n} 則留言`,
     filter: '篩選留言',
@@ -3743,6 +3755,12 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  maskedInput: {
+    format: (template) => `Format: ${template}`,
+    rejected: (kind) => `Only ${kind} allowed here`,
+    complete: 'Complete',
+    kinds: { digit: 'digits', letter: 'letters', alnum: 'letters or digits', hex: 'hex characters (0-9, A-F)', any: 'non-space characters' },
+  },
   comments: {
     title: (n) => `${n} ${Number(n) === 1 ? 'comment' : 'comments'}`,
     filter: 'Filter comments',

@@ -40,6 +40,7 @@ export {
   ChptLotTrace,
   ChptDiffViewer,
   ChptChecklist,
+  ChptMaskedInput,
   ChptCommentThread,
   ChptMentionInput,
   ChptSortableList,
@@ -109,6 +110,8 @@ export { fitImage, clampImageView, zoomImageTo, viewOf as imageViewOf, zoomOf as
 export type { ImageView, ImageZoom, CompareMode } from './shared/imageCompare'
 export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
+export { MASK_PRESETS, DEFAULT_MASK_TOKENS, formatMask, parseMask, applyMask as applyInputMask, validIPv4 } from './shared/inputMask'
+export type { MaskTokenDef, MaskItem, MaskResult, ApplyMaskOptions } from './shared/inputMask'
 export { addComment, updateComment, removeComment, countComments } from './shared/commentThread'
 export type { CommentItem, CommentAuthor, CommentAttachment, RelativeUnit } from './shared/commentThread'
 export { parseMentions, mentionMarkup, filterMentionOptions } from './shared/mention'
@@ -182,7 +185,7 @@ export type {
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
-  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptCommentThreadProps, ChptMentionInputProps, MentionTrigger, MentionValue, ChptSortableListProps, SortChange, ChptImageCropperProps, CropState, CropOutputOptions, ChptSchedulerProps, SchedulerView, ChptCronInputProps, ChptJsonViewerProps, ChptQueryBuilderProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
+  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptMaskedInputProps, MaskedValue, ChptCommentThreadProps, ChptMentionInputProps, MentionTrigger, MentionValue, ChptSortableListProps, SortChange, ChptImageCropperProps, CropState, CropOutputOptions, ChptSchedulerProps, SchedulerView, ChptCronInputProps, ChptJsonViewerProps, ChptQueryBuilderProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
   SchemaFormField, SchemaFieldType, SchemaFieldOption, CommandItem, DashboardItem, KanbanColumn, KanbanMoveEvent, RichTextTool,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'
