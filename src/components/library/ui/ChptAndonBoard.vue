@@ -192,9 +192,11 @@ const activeByType = computed(() => {
 type Card = (typeof cards.value)[number]
 const levelColor = (l: AndonLevel) => (l === 2 ? role('danger-solid') : l === 1 ? role('warning-solid') : role('info-solid'))
 /** 呼叫中（等人）：藍 → 黃 → 紅；已經有人在處理而且還沒超時：中性灰，不搶眼 */
+/** 呼叫的圖示與計時是文字：用文字色（深色模式會變亮）；卡片邊框另用 levelColor 的 *-solid */
+const levelText = (l: AndonLevel) => (l === 2 ? role('danger') : l === 1 ? role('warning') : role('info'))
 const callColor = (c: AndonCall) => {
   const l = callLevel(c, nowMs.value, thresholds.value)
-  return l > 0 || callStatus(c) === 'open' ? levelColor(l) : role('content-secondary')
+  return l > 0 || callStatus(c) === 'open' ? levelText(l) : role('content-secondary')
 }
 const cardColor = (s: Card) => (s.hasOpen || s.level > 0 ? levelColor(s.level) : role('stroke-dark'))
 function cardStyle(s: Card) {

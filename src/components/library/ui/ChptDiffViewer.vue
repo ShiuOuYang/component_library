@@ -93,7 +93,7 @@
                 <span class="material-symbols-outlined text-base leading-4" :style="{ color: STATUS_COLOR[line.node.row.status] }" :aria-label="t.diffViewer.status[line.node.row.status]" role="img">{{ STATUS_ICON[line.node.row.status] }}</span>
                 <span class="min-w-0 [overflow-wrap:anywhere]">
                   <span class="block font-mono text-xs leading-4 text-content-primary">{{ displayKey(line.node) }}</span>
-                  <span v-if="props.labels?.[line.node.path]" class="block text-xs text-content-tertiary">{{ props.labels[line.node.path] }}</span>
+                  <span v-if="props.labels?.[line.node.path]" class="block text-xs text-content-secondary">{{ props.labels[line.node.path] }}</span>
                 </span>
               </span>
             </th>

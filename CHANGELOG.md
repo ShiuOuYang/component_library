@@ -495,6 +495,14 @@
 
 ### 修正
 
+- **深色模式的狀態文字對比不足**（axe 掃描：9 頁、110 處，對比只有 2.5～3.3）：紅 / 綠 / 黃的狀態文字用了填色用的 `*-solid` 色（`chartPalette.critical` 等），
+  深色模式不會變亮。改用文字色 token（`danger` / `success` / `warning` / `info`，深色模式會變亮）；邊框、底色、圖例色塊仍用 `*-solid`。
+  涉及 LineBalanceChart、DumbbellChart、YieldFunnel、ProbabilityPlot、BumpChart、ChptStorageMap、ChptSkillMatrix、ChptQueryBuilder、ChptJsonViewer、
+  ChptHourlyBoard（當前時段的底色淡一半）、ChptBomTree、ChptFeederMap、ChptAndonBoard。`chartTheme` 新增 `success` 文字色。
+  ChptLogViewer 的等級標籤改用成對的 `*-subtle` 底 / `*-on-subtle` 字；ChptJsonViewer 的數字改用 `info` 文字色（原本 `chart-1` 在淺色底只有 4.4）。
+- **CorrelationMatrix 不顯著的格子看不清**：原本整格 opacity 0.35（連數字一起淡化，淺色模式對比只有 2.2），|r| > 0.6 用白字在中間色階上也不夠。
+  改為底色濃度上限 60%、不顯著的只用四成濃度並以次要文字色顯示數字。
+- **淡色底上的次要文字**：ChptEquipmentWall 的工單、ChptFeederMap 的料號說明與料捲、ChptDiffViewer 的參數說明在狀態色底上改用 `content-secondary`（原本 tertiary 不到 4.5）。
 - **ChptTable / ChptPagination**：窄螢幕（手機、平板直式）時上方工具列、下方分頁列與 compact 分頁器不會換行，
   分頁與欄位設定被推到表格外面（整頁出現水平捲軸）。改為 flex-wrap：放不下時換行、右側那組靠右。寬螢幕的外觀不變。
 - **ChptFixedTable**：搜尋框寫死英文「Search...」，改為依語系。

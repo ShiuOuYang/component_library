@@ -5,7 +5,7 @@
       <h3 v-if="props.title" class="text-sm font-semibold text-content-primary">{{ props.title }}</h3>
       <template v-if="loads.length">
         <span v-if="props.takt" class="tabular-nums text-content-secondary">{{ i18n.lineBalance.takt(fmt(props.takt)) }}</span>
-        <span class="tabular-nums" :style="{ color: overTaktSet.size ? chartPalette.critical : chartTheme.text }">
+        <span class="tabular-nums" :style="{ color: overTaktSet.size ? chartTheme.danger : chartTheme.text }">
           {{ i18n.lineBalance.bottleneck(bottleneckName, fmt(summary.bottleneck)) }}
         </span>
         <span v-if="summary.balanceRate !== null" class="tabular-nums text-content-secondary">{{ i18n.lineBalance.balanceRate(pct(summary.balanceRate)) }}</span>
@@ -13,7 +13,7 @@
         <span class="tabular-nums text-content-secondary">{{
           summary.minOperators === null ? i18n.lineBalance.operators(summary.operators) : i18n.lineBalance.operatorsMin(summary.operators, summary.minOperators)
         }}</span>
-        <span v-if="overTaktSet.size" class="font-medium tabular-nums" :style="{ color: chartPalette.critical }">{{ i18n.lineBalance.overTakt(overTaktSet.size) }}</span>
+        <span v-if="overTaktSet.size" class="font-medium tabular-nums" :style="{ color: chartTheme.danger }">{{ i18n.lineBalance.overTakt(overTaktSet.size) }}</span>
       </template>
     </div>
 
@@ -105,7 +105,7 @@
             text-anchor="middle"
             font-size="12"
             font-weight="600"
-            :style="{ fill: overTaktSet.has(l.station.id) ? chartPalette.critical : chartTheme.text }"
+            :style="{ fill: overTaktSet.has(l.station.id) ? chartTheme.danger : chartTheme.text }"
           >{{ fmt(l.cycle) }}</text>
           <!-- 站名 -->
           <text

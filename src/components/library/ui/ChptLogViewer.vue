@@ -199,7 +199,10 @@ const LEVEL_SHORT: Record<LogLevel, string> = { debug: 'DEBUG', info: 'INFO', wa
 function levelBadgeStyle(lv: LogLevel): Record<string, string> {
   // fatal 實心底白字（最醒目）；其他是淡底 + 等級色文字
   if (lv === 'fatal') return { background: LEVEL_COLOR.fatal, color: '#fff' }
-  return { background: `color-mix(in srgb, ${LEVEL_COLOR[lv]} 16%, transparent)`, color: lv === 'debug' ? role('content-secondary') : LEVEL_COLOR[lv] }
+  // 淡底與文字用設計系統成對的 subtle / on-subtle（兩種主題都驗過對比）
+  if (lv === 'debug') return { background: role('surface-tertiary'), color: role('content-secondary') }
+  const tone = lv === 'info' ? 'info' : lv === 'warn' ? 'warning' : 'danger'
+  return { background: role(`${tone}-subtle`), color: role(`${tone}-on-subtle`) }
 }
 
 // ---- 篩選 ----

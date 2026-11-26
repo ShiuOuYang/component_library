@@ -91,7 +91,8 @@ describe('LineBalanceChart', () => {
     expect(texts).toContain('2 人')
     expect(texts).toContain('節拍 45')
     const over = w.findAll('svg text').find((t) => t.text() === '52')!
-    expect(over.attributes('style')).toContain('danger-solid')
+    // 文字用文字色（深色模式會變亮），不用 danger-solid 填色
+    expect(over.attributes('style')).toContain('--t-danger)')
     // 分類色：自訂顏色、未知分類用「其他」色
     expect(seg('取板').find('rect').attributes('style')).toContain('rgb(1, 2, 3)')
     expect(seg('未知分類').find('rect').attributes('style')).toContain('stroke-dark')
