@@ -308,7 +308,8 @@ const colorOf = (r: BumpRow) => r.color ?? (r.index < chartPalette.categorical.l
 const fmt = (v: number) => (props.valueFormat ? props.valueFormat(v) : d3.format(',~f')(Number(v.toPrecision(5))))
 const withUnit = (v: number) => (props.unit ? `${fmt(v)} ${props.unit}` : fmt(v))
 const changeText = (c: number) => (c > 0 ? ` ▲${c}` : c < 0 ? ` ▼${-c}` : ' =')
-const changeColor = (c: number) => (c > 0 ? chartPalette.good : c < 0 ? chartPalette.critical : chartTheme.textMuted)
+/** 變化標示是文字：用文字色（深色模式會變亮），不用填色 */
+const changeColor = (c: number) => (c > 0 ? chartTheme.success : c < 0 ? chartTheme.danger : chartTheme.textMuted)
 const changeWords = (c: number) => (c > 0 ? i18n.value.bump.up(c) : c < 0 ? i18n.value.bump.down(-c) : i18n.value.bump.same)
 function cellText(r: BumpRow, p: number): string {
   const s = i18n.value.bump

@@ -92,7 +92,7 @@
             <td class="px-2 py-1 text-right tabular-nums">{{ dist === 'weibull' ? sig(f.fit.params.scale) : sig(f.fit.sd) }}</td>
             <td class="px-2 py-1 text-right tabular-nums">{{ num(f.fit.ad) }}</td>
             <td class="px-2 py-1 text-right tabular-nums">{{ pText(f.fit) }}</td>
-            <td class="px-2 py-1" :style="{ color: verdictOk(f.fit) ? chartTheme.textMuted : chartPalette.critical }">
+            <td class="px-2 py-1" :style="{ color: verdictOk(f.fit) ? chartTheme.textMuted : chartTheme.danger }">
               {{ f.fit.ad !== f.fit.ad ? '—' : verdictOk(f.fit) ? i18n.probability.fits : i18n.probability.notFits }}
             </td>
           </tr>

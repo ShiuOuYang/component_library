@@ -11,8 +11,8 @@
         {{ afterName }}
       </span>
       <span v-if="props.direction !== 'none' && rows.length" class="inline-flex flex-wrap items-center gap-2" data-summary>
-        <span class="inline-flex items-center gap-0.5" :style="{ color: chartPalette.good }"><span aria-hidden="true">▲</span>{{ i18n.dumbbell.better }} {{ summary.better }}</span>
-        <span class="inline-flex items-center gap-0.5" :style="{ color: chartPalette.critical }"><span aria-hidden="true">▼</span>{{ i18n.dumbbell.worse }} {{ summary.worse }}</span>
+        <span class="inline-flex items-center gap-0.5" :style="{ color: chartTheme.success }"><span aria-hidden="true">▲</span>{{ i18n.dumbbell.better }} {{ summary.better }}</span>
+        <span class="inline-flex items-center gap-0.5" :style="{ color: chartTheme.danger }"><span aria-hidden="true">▼</span>{{ i18n.dumbbell.worse }} {{ summary.worse }}</span>
         <span v-if="summary.same" class="inline-flex items-center gap-0.5"><span aria-hidden="true">=</span>{{ i18n.dumbbell.same }} {{ summary.same }}</span>
       </span>
     </div>

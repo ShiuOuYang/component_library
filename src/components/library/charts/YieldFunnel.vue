@@ -20,13 +20,13 @@
         >
           <span aria-hidden="true" class="text-content-tertiary">↓</span>
           <span class="text-content-secondary">{{ i18n.funnel.stepYield }} {{ row.stepYield === null ? '—' : pctText(row.stepYield) }}</span>
-          <span v-if="row.loss > 0" :class="isWorst(i) ? 'font-medium' : 'text-content-tertiary'" :style="isWorst(i) ? { color: chartPalette.critical } : undefined">
+          <span v-if="row.loss > 0" :class="isWorst(i) ? 'font-medium' : 'text-content-tertiary'" :style="isWorst(i) ? { color: chartTheme.danger } : undefined">
             {{ i18n.funnel.loss(fmt(row.loss)) }}
           </span>
           <span
             v-if="isWorst(i)"
             class="funnel-worst rounded px-1.5 py-px text-[11px] font-medium"
-            :style="{ color: chartPalette.critical, boxShadow: `inset 0 0 0 1px ${chartPalette.critical}` }"
+            :style="{ color: chartTheme.danger, boxShadow: `inset 0 0 0 1px ${chartPalette.critical}` }"
           >{{ i18n.funnel.worst }}</span>
         </div>
 
@@ -59,7 +59,7 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance } from 'vue'
 import * as d3 from 'd3'
-import { chartPalette } from './chartTheme'
+import { chartPalette, chartTheme } from './chartTheme'
 import { computeFunnel, type FunnelRow, type FunnelStep } from './utils/bullet'
 import { useLocale } from '../shared/config'
 

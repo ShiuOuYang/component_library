@@ -38,12 +38,12 @@
       </div>
     </div>
     <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-content-secondary">
-      <span v-if="summary.requiredSkills" class="tabular-nums" :style="summary.coveredSkills < summary.requiredSkills ? { color: role('danger-solid') } : undefined">
+      <span v-if="summary.requiredSkills" class="tabular-nums" :style="summary.coveredSkills < summary.requiredSkills ? { color: role('danger') } : undefined">
         {{ t.skillMatrix.covered(summary.coveredSkills, summary.requiredSkills) }}
       </span>
       <span class="tabular-nums">{{ t.skillMatrix.multiSkilled(summary.multiSkilled, summary.persons) }}</span>
-      <span v-if="summary.soon" class="font-medium tabular-nums" :style="{ color: role('warning-solid') }">{{ t.skillMatrix.soonCount(summary.soon) }}</span>
-      <span v-if="summary.expired" class="font-medium tabular-nums" :style="{ color: role('danger-solid') }">{{ t.skillMatrix.expiredCount(summary.expired) }}</span>
+      <span v-if="summary.soon" class="font-medium tabular-nums" :style="{ color: role('warning') }">{{ t.skillMatrix.soonCount(summary.soon) }}</span>
+      <span v-if="summary.expired" class="font-medium tabular-nums" :style="{ color: role('danger') }">{{ t.skillMatrix.expiredCount(summary.expired) }}</span>
       <span class="ml-auto flex flex-wrap items-center gap-x-2.5 gap-y-1" :aria-label="t.skillMatrix.legend">
         <span v-for="lv in levels" :key="lv" class="inline-flex items-center gap-1">
           <svg width="14" height="14" viewBox="-8 -8 16 16" aria-hidden="true"><path :d="pie(lv, 7)" :style="{ fill: levelColor(lv) }" /><circle r="7" fill="none" :style="{ stroke: levelColor(lv) }" stroke-width="1.2" /></svg>{{ lv }} {{ t.skillMatrix.levels[lv] }}

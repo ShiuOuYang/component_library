@@ -227,15 +227,16 @@ function cellStyle(i: number, j: number) {
   if (!visibleCell(i, j)) return base
   const r = at(i, j).r
   if (i === j || r === null) return { ...base, background: chartTheme.surfaceMuted }
-  const pct = Math.round(Math.abs(r) * 90)
-  return {
-    ...base,
-    background: `color-mix(in srgb, ${r < 0 ? negColor.value : posColor.value} ${pct}%, ${chartTheme.surfaceMuted})`,
-    ...(significant(i, j) ? {} : { opacity: 0.35 }),
-  }
+  return { ...base, background: `color-mix(in srgb, ${r < 0 ? negColor.value : posColor.value} ${cellMix(i, j)}%, ${chartTheme.surfaceMuted})` }
 }
-/** 深色的格子用白字，淺的用主要文字色 */
-const textColor = (i: number, j: number) => (Math.abs(at(i, j).r ?? 0) > 0.6 ? '#fff' : chartTheme.text)
+/**
+ * 底色濃度：|r| 對應 0～60%（上限 60%：淺色主題的底夠淡、深色主題的底夠深，數字一律用主要文字色都清楚）；
+ * 不顯著的只用四成濃度。原本是整格 opacity 0.35（連數字一起變淡，對比不到 2.2），
+ * 而且 |r| > 0.6 用白字，在中間色階上對比也不夠。
+ */
+const cellMix = (i: number, j: number) => Math.round(Math.abs(at(i, j).r ?? 0) * 60 * (significant(i, j) ? 1 : 0.4))
+/** 數字的顏色：顯著的用主要文字色，不顯著的用次要文字色（仍有足夠對比） */
+const textColor = (i: number, j: number) => (significant(i, j) ? chartTheme.text : chartTheme.textMuted)
 const gradient = computed(() => `linear-gradient(to right, ${negColor.value}, ${chartTheme.surfaceMuted}, ${posColor.value})`)
 
 // ---- 文字 ----

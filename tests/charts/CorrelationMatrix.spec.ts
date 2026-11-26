@@ -54,7 +54,11 @@ describe('CorrelationMatrix', () => {
     expect(cellAt(0, 3).attributes('style')).toContain('chart-1')
     expect(cellAt(0, 0).text()).toBe('')
     expect(cellAt(0, 0).attributes('aria-label')).toBe('A（自己）')
-    expect(cellAt(0, 1).attributes('style')).toContain('opacity: 0.35')
+    // 不顯著：不再整格透明（數字會看不清），改成底色只用四成濃度、數字用次要文字色
+    expect(cellAt(0, 1).attributes('style')).not.toContain('opacity')
+    expect(cellAt(0, 1).find('span').attributes('style')).toContain('content-secondary')
+    expect(cellAt(0, 2).attributes('style')).toContain('60%') // |r| = 1 → 上限 60%
+    expect(cellAt(0, 2).find('span').attributes('style')).toContain('content-primary')
     expect(cellAt(0, 1).attributes('aria-label')).toContain('（不顯著）')
     expect(cellAt(0, 2).attributes('aria-label')).toBe('A 與 B：r = 1.00，n = 30，p < 0.001')
     expect(w.find('table').attributes('aria-label')).toBe('參數')

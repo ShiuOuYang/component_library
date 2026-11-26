@@ -27,9 +27,9 @@
       </span>
     </div>
     <div v-if="diff" class="flex flex-wrap gap-x-3 text-xs">
-      <span :style="{ color: role('success-solid') }">{{ t.jsonViewer.added(diff.count.added) }}</span>
-      <span :style="{ color: role('danger-solid') }">{{ t.jsonViewer.removed(diff.count.removed) }}</span>
-      <span :style="{ color: role('warning-solid') }">{{ t.jsonViewer.changed(diff.count.changed) }}</span>
+      <span :style="{ color: role('success') }">{{ t.jsonViewer.added(diff.count.added) }}</span>
+      <span :style="{ color: role('danger') }">{{ t.jsonViewer.removed(diff.count.removed) }}</span>
+      <span :style="{ color: role('warning') }">{{ t.jsonViewer.changed(diff.count.changed) }}</span>
     </div>
 
     <!-- 樹 -->
@@ -164,7 +164,7 @@ const emit = defineEmits<{
 const role = (name: string) => `rgb(var(--t-${name}))`
 const isContainer = (r: Pick<JsonRow, 'type'>) => r.type === 'object' || r.type === 'array'
 const typeColor = (type: JsonType) =>
-  ({ string: role('success-solid'), number: role('chart-1'), boolean: role('warning-solid'), null: role('content-tertiary'), undefined: role('content-tertiary') })[type as 'string'] ??
+  ({ string: role('success'), number: role('info'), boolean: role('warning'), null: role('content-tertiary'), undefined: role('content-tertiary') })[type as 'string'] ??
   role('content-primary')
 
 // ---- 展開 ----

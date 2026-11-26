@@ -42,7 +42,7 @@
             {{ t.queryBuilder.not }}
           </label>
           <span class="text-xs text-content-tertiary">{{ t.queryBuilder.groupHint((row.node as QbGroup).combinator === 'and') }}</span>
-          <span v-if="errorOf(row.node.id) === 'emptyGroup'" class="text-xs" :style="{ color: role('danger-solid') }">{{ t.queryBuilder.errors.emptyGroup }}</span>
+          <span v-if="errorOf(row.node.id) === 'emptyGroup'" class="text-xs" :style="{ color: role('danger') }">{{ t.queryBuilder.errors.emptyGroup }}</span>
           <button
             v-if="!props.readonly && row.depth > 0"
             type="button"
@@ -130,7 +130,7 @@
               </span>
             </template>
           </template>
-          <span v-if="errorOf(row.node.id)" class="text-xs" :style="{ color: role('danger-solid') }" role="alert">{{ t.queryBuilder.errors[errorOf(row.node.id)!] }}</span>
+          <span v-if="errorOf(row.node.id)" class="text-xs" :style="{ color: role('danger') }" role="alert">{{ t.queryBuilder.errors[errorOf(row.node.id)!] }}</span>
           <button
             v-if="!props.readonly"
             type="button"
