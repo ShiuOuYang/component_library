@@ -1573,6 +1573,23 @@ export interface ChptLocale {
     innerLine: (level: string, mean: string, n: number) => string
     sep: string
   }
+  marimekko: {
+    title: string
+    empty: string
+    total: (value: string, columns: number) => string
+    residualHint: string
+    fewer: string
+    more: string
+    other: string
+    column: string
+    sum: string
+    cell: (value: string, pct: string) => string
+    ariaLabel: (title: string, columns: number, segments: number) => string
+    shares: (pctOfColumn: string, column: string, pctOfTotal: string) => string
+    residualLine: (residual: string, expected: string) => string
+    sep: string
+    hint: string
+  }
   sankey: {
     title: string
     empty: string
@@ -3441,6 +3458,23 @@ export const zhTW: ChptLocale = {
     stats: (n, mean, range) => `n = ${n}，平均 ${mean}，全距 ${range}`,
     innerLine: (level, mean, n) => `${level}：${mean}（n = ${n}）`,
     sep: '；',
+  },
+  marimekko: {
+    title: '馬賽克圖',
+    empty: '沒有資料',
+    total: (value, columns) => `合計 ${value}，${columns} 欄`,
+    residualHint: '顏色為 Pearson 殘差：紅色比預期多、藍色比預期少',
+    fewer: '比預期少',
+    more: '比預期多',
+    other: '其他',
+    column: '欄',
+    sum: '合計',
+    cell: (value, pct) => `${value}（${pct}）`,
+    ariaLabel: (title, columns, segments) => `${title}：${columns} 欄、${segments} 類`,
+    shares: (pctOfColumn, column, pctOfTotal) => `占 ${column} 的 ${pctOfColumn}，占全部的 ${pctOfTotal}`,
+    residualLine: (residual, expected) => `殘差 ${residual}（預期 ${expected}）`,
+    sep: '；',
+    hint: '左右方向鍵換欄、上下方向鍵換類別，Enter 選取格子；點圖例標示一個類別',
   },
   sankey: {
     title: '流向圖',
@@ -5317,6 +5351,23 @@ export const enUS: ChptLocale = {
     stats: (n, mean, range) => `n = ${n}, mean ${mean}, range ${range}`,
     innerLine: (level, mean, n) => `${level}: ${mean} (n = ${n})`,
     sep: '; ',
+  },
+  marimekko: {
+    title: 'Marimekko chart',
+    empty: 'No data',
+    total: (value, columns) => `Total ${value}, ${columns} ${Number(columns) === 1 ? 'column' : 'columns'}`,
+    residualHint: 'Colored by Pearson residual: red is more than expected, blue is fewer',
+    fewer: 'Fewer than expected',
+    more: 'More than expected',
+    other: 'Other',
+    column: 'Column',
+    sum: 'Total',
+    cell: (value, pct) => `${value} (${pct})`,
+    ariaLabel: (title, columns, segments) => `${title}: ${columns} columns, ${segments} categories`,
+    shares: (pctOfColumn, column, pctOfTotal) => `${pctOfColumn} of ${column}, ${pctOfTotal} of total`,
+    residualLine: (residual, expected) => `Residual ${residual} (expected ${expected})`,
+    sep: '; ',
+    hint: 'Use Left / Right to change column and Up / Down to change category, Enter to select a cell; click the legend to highlight a category',
   },
   sankey: {
     title: 'Flow chart',
