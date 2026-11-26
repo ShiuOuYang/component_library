@@ -628,6 +628,10 @@ const navSections = [
         anchors: [{ label: '各線良率排名', id: 'yield' }, { label: '越小越好', id: 'suppliers' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/gage-rr-chart', icon: '📏', label: '量測系統分析圖',
+        anchors: [{ label: '數位卡尺', id: 'caliper' }, { label: '需要改善的量測', id: 'poor' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/sankey-chart', icon: '🔀', label: '流向圖',
         anchors: [{ label: '不良品去向', id: 'defects' }, { label: '物料流向', id: 'material' }, { label: 'API', id: 'api' }],
       },
