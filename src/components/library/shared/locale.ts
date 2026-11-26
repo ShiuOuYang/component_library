@@ -1493,6 +1493,42 @@ export interface ChptLocale {
     colChange: string
     separator: string
   }
+  gageRR: {
+    verdict: { acceptable: string; marginal: string; unacceptable: string }
+    grrLabel: (basis: 'studyVar' | 'tolerance') => string
+    ndc: string
+    ndcHint: string
+    study: (parts: number, operators: number, trials: number) => string
+    pooled: (p: string) => string
+    interactionKept: (p: string) => string
+    trimmed: (n: number) => string
+    errors: { empty: string; parts: string; operators: string; trials: string; missing: string }
+    operatorToggle: string
+    operator: string
+    part: string
+    mean: string
+    median: string
+    range: string
+    panels: { components: string; range: string; mean: string; byPart: string; byOperator: string; interaction: string }
+    outside: (pct: string) => string
+    overUcl: (n: number) => string
+    partHint: string
+    /** 「標題：內容」 */
+    labeled: (label: string, value: string) => string
+    /** 項目清單（、 / , ） */
+    list: (items: string[]) => string
+    /** 子句（， / , ） */
+    clauses: (items: string[]) => string
+    between: (min: string, max: string) => string
+    series: { contribution: string; studyVar: string; tolerance: string }
+    sources: { grr: string; repeatability: string; reproducibility: string; operator: string; interaction: string; part: string; total: string }
+    short: { grr: string; repeatability: string; reproducibility: string; part: string }
+    anovaSources: { part: string; operator: string; interaction: string; repeatability: string; total: string }
+    tableComponents: string
+    tableAnova: string
+    tableAnovaReduced: string
+    cols: { source: string; contribution: string; sd: string; studyVar: (k: number) => string; pctStudyVar: string; pctTolerance: string; df: string }
+  }
   sankey: {
     title: string
     empty: string
@@ -3255,6 +3291,68 @@ export const zhTW: ChptLocale = {
     colName: '名稱',
     colChange: '變化',
     separator: '，',
+  },
+  gageRR: {
+    verdict: { acceptable: '可接受', marginal: '有條件接受', unacceptable: '不可接受' },
+    grrLabel: (basis) => (basis === 'tolerance' ? '%GRR（對公差）' : '%GRR（對研究變異）'),
+    ndc: '可分辨類別數 ndc',
+    ndcHint: '（≥ 5 為佳）',
+    study: (parts, operators, trials) => `${parts} 個零件 × ${operators} 位作業員 × ${trials} 次`,
+    pooled: (p) => `作業員 × 零件交互作用 p = ${p}，不顯著，已併入重複性`,
+    interactionKept: (p) => `作業員 × 零件交互作用 p = ${p}，顯著，保留在模型中`,
+    trimmed: (n) => `各格量測次數不一，每格只取前 ${n} 次`,
+    errors: {
+      empty: '沒有量測資料',
+      parts: '至少需要 2 個零件',
+      operators: '至少需要 1 位作業員',
+      trials: '每位作業員對每個零件至少要量 2 次',
+      missing: '有零件沒有被每位作業員量到（需要完整的交叉設計）',
+    },
+    operatorToggle: '標示作業員',
+    operator: '作業員',
+    part: '零件',
+    mean: '平均',
+    median: '中位數',
+    range: '全距',
+    panels: {
+      components: '變異成分',
+      range: 'R 管制圖（依作業員）',
+      mean: 'X̄ 管制圖（依作業員）',
+      byPart: '依零件',
+      byOperator: '依作業員',
+      interaction: '作業員 × 零件交互作用',
+    },
+    outside: (pct) => `${pct} 的點在界限外（越多越能分辨零件）`,
+    overUcl: (n) => (n ? `${n} 個點超出 UCL` : '沒有點超出 UCL'),
+    partHint: '← → 切換零件',
+    labeled: (label, value) => `${label}：${value}`,
+    list: (items) => items.join('、'),
+    clauses: (items) => items.filter(Boolean).join('，'),
+    between: (min, max) => `${min} ～ ${max}`,
+    series: { contribution: '% 貢獻度', studyVar: '% 研究變異', tolerance: '% 公差' },
+    sources: {
+      grr: '量測系統（Gage R&R）',
+      repeatability: '重複性（設備）',
+      reproducibility: '再現性（人員）',
+      operator: '作業員',
+      interaction: '作業員 × 零件',
+      part: '零件間',
+      total: '總變異',
+    },
+    short: { grr: 'Gage R&R', repeatability: '重複性', reproducibility: '再現性', part: '零件間' },
+    anovaSources: { part: '零件', operator: '作業員', interaction: '作業員 × 零件', repeatability: '重複性（誤差）', total: '總和' },
+    tableComponents: '變異成分',
+    tableAnova: 'ANOVA（含交互作用）',
+    tableAnovaReduced: 'ANOVA（交互作用已併入）',
+    cols: {
+      source: '來源',
+      contribution: '% 貢獻度',
+      sd: '標準差',
+      studyVar: (k) => `研究變異（${k} × SD）`,
+      pctStudyVar: '% 研究變異',
+      pctTolerance: '% 公差',
+      df: '自由度',
+    },
   },
   sankey: {
     title: '流向圖',
@@ -5025,6 +5123,68 @@ export const enUS: ChptLocale = {
     colName: 'Name',
     colChange: 'Change',
     separator: ', ',
+  },
+  gageRR: {
+    verdict: { acceptable: 'Acceptable', marginal: 'Marginal', unacceptable: 'Unacceptable' },
+    grrLabel: (basis) => (basis === 'tolerance' ? '%GRR (of tolerance)' : '%GRR (of study variation)'),
+    ndc: 'Distinct categories (ndc)',
+    ndcHint: '(5 or more is preferred)',
+    study: (parts, operators, trials) => `${parts} parts × ${operators} ${Number(operators) === 1 ? 'operator' : 'operators'} × ${trials} trials`,
+    pooled: (p) => `Operator × part interaction p = ${p}, not significant; pooled into repeatability`,
+    interactionKept: (p) => `Operator × part interaction p = ${p}, significant; kept in the model`,
+    trimmed: (n) => `Unequal trials per cell; using the first ${n} of each`,
+    errors: {
+      empty: 'No measurement data',
+      parts: 'At least 2 parts are required',
+      operators: 'At least 1 operator is required',
+      trials: 'Each operator must measure each part at least twice',
+      missing: 'Some parts were not measured by every operator (a fully crossed study is required)',
+    },
+    operatorToggle: 'Highlight operator',
+    operator: 'Operator',
+    part: 'Part',
+    mean: 'Mean',
+    median: 'Median',
+    range: 'Range',
+    panels: {
+      components: 'Components of variation',
+      range: 'R chart by operator',
+      mean: 'X̄ chart by operator',
+      byPart: 'By part',
+      byOperator: 'By operator',
+      interaction: 'Operator × part interaction',
+    },
+    outside: (pct) => `${pct} of points outside the limits (more is better)`,
+    overUcl: (n) => (n ? `${n} ${Number(n) === 1 ? 'point' : 'points'} above UCL` : 'No points above UCL'),
+    partHint: 'Use ← → to switch parts',
+    labeled: (label, value) => `${label}: ${value}`,
+    list: (items) => items.join(', '),
+    clauses: (items) => items.filter(Boolean).join(', '),
+    between: (min, max) => `${min} – ${max}`,
+    series: { contribution: '% Contribution', studyVar: '% Study var', tolerance: '% Tolerance' },
+    sources: {
+      grr: 'Total Gage R&R',
+      repeatability: 'Repeatability (equipment)',
+      reproducibility: 'Reproducibility (appraiser)',
+      operator: 'Operator',
+      interaction: 'Operator × part',
+      part: 'Part-to-part',
+      total: 'Total variation',
+    },
+    short: { grr: 'Gage R&R', repeatability: 'Repeat', reproducibility: 'Reprod', part: 'Part-to-part' },
+    anovaSources: { part: 'Part', operator: 'Operator', interaction: 'Operator × part', repeatability: 'Repeatability (error)', total: 'Total' },
+    tableComponents: 'Components of variation',
+    tableAnova: 'ANOVA (with interaction)',
+    tableAnovaReduced: 'ANOVA (interaction pooled)',
+    cols: {
+      source: 'Source',
+      contribution: '% Contribution',
+      sd: 'Std dev',
+      studyVar: (k) => `Study var (${k} × SD)`,
+      pctStudyVar: '% Study var',
+      pctTolerance: '% Tolerance',
+      df: 'DF',
+    },
   },
   sankey: {
     title: 'Flow chart',
