@@ -182,7 +182,7 @@
       </p>
       <p class="text-sm text-content-secondary mb-4">
         <strong>延遲載入：</strong>Tiptap 約 340 kB。只有少數頁面用得到時，可以用
-        <code class="bg-surface-tertiary px-1 py-0.5 rounded">defineAsyncComponent(() =&gt; import('@/components/library/ui/ChptRichTextEditor.vue'))</code>
+        <code class="bg-surface-tertiary px-1 py-0.5 rounded break-all">defineAsyncComponent(() =&gt; import('@/components/library/ui/ChptRichTextEditor.vue'))</code>
         讓它在畫面真的出現時才下載（本頁就是這樣做的）。
       </p>
       <div class="bg-surface-secondary rounded-lg p-4 border border-stroke-light">
@@ -361,6 +361,34 @@
       <p class="text-sm text-content-secondary mt-4">
         <strong>範圍：</strong>內建 Z1.4 表 I（樣本代字）與表 II-A（正常檢驗、單次抽樣）；加嚴與減量的方案請依標準另行查表，元件只提示何時該轉換。
         查表函式也匯出成 <code>aqlCodeLetter</code>、<code>aqlNormalPlan</code>、<code>aqlVerdict</code>、<code>aqlSwitchingAdvice</code>。
+      </p>
+    </section>
+
+    <!-- ============ Chpt8DReport ============ -->
+    <section id="chpt-8d-report" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">Chpt8DReport 8D 報告</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>客訴與品質異常的問題解決流程。左邊是 D0–D8 步驟與狀態（未開始、進行中、已完成、逾期），右邊編輯目前的步驟：
+        每步都有負責人、期限與說明；D1 團隊成員（指定組長）、D2 用 5W2H 描述問題、D3 / D5 / D6 對策、D4 <strong>發生原因與流出原因各一條 5 Why</strong> 與根本原因、
+        D7 預防再發（FMEA、管制計畫、作業標準書、教育訓練、水平展開）。<strong>標記完成</strong>前會檢查必填，沒填齊會列出缺什麼；完成後自動跳到下一個還沒完成的步驟。
+        D4 有插槽，可以放 ChptFishbone 一起分析。可以匯出 Markdown 文字或列印整份報告。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { Chpt8DReport, eightDProgress } from '@/components/library'</code>
+      </p>
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <ChptSwitch v-model="eightDReadonly" size="sm" label="唯讀" />
+      </div>
+      <Chpt8DReport v-model="eightDData" :readonly="eightDReadonly" today="2026-11-27" filename="8D-2611-007" />
+      <ChptCodeBlock class="mt-6" :code="eightDSample" />
+      <ApiTable of="Chpt8DReport" title="Props" :rows="eightDProps" />
+      <ApiTable of="-" title="EightDReport / EightDStep" :rows="eightDDataRows" />
+      <ApiTable of="Chpt8DReport" title="Events" :rows="eightDEvents" />
+      <ApiTable of="Chpt8DReport" title="Slots" :rows="eightDSlots" />
+      <ApiTable of="Chpt8DReport" title="方法（ref）" :rows="eightDMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>各步驟的必填：D0 / D8 說明；D1 至少 2 位成員並指定組長；D2 What 與數量；D3 / D5 至少 1 項對策；
+        D4 發生與流出的根本原因都要填並勾選已驗證；D6 說明且對策都已完成；D7 至少 1 項預防再發。完成日期用 <code>today</code>（預設今天）。
       </p>
     </section>
 
@@ -632,6 +660,7 @@ import {
   ChptChecklist,
   ChptWorkInstruction,
   ChptAqlSampling,
+  Chpt8DReport,
   ChptQueryBuilder,
   ChptCronInput,
   evaluateQuery,
@@ -1440,6 +1469,85 @@ const cronMethods = [
   { name: 'valid', type: 'boolean', desc: '目前的表達式是否正確' },
   { name: 'description', type: 'string', desc: '可讀說明' },
 ]
+// ---- Chpt8DReport ----
+const eightDReadonly = ref(false)
+const eightDData = ref({
+  number: '8D-2611-007',
+  title: '客戶端主機板開機無畫面（BGA 空焊）',
+  steps: {
+    d0: { done: true, completedAt: '2026-11-18', owner: '品保 陳經理', text: '客訴 12 片，影響出貨批 L2611-0042，啟動 8D。' },
+    d1: {
+      done: true, completedAt: '2026-11-18', owner: '陳經理',
+      members: [
+        { id: 'm1', name: '陳經理', role: '品保', leader: true },
+        { id: 'm2', name: '林工程師', role: '製程' },
+        { id: 'm3', name: '王組長', role: 'SMT 生產' },
+      ],
+    },
+    d2: {
+      done: true, completedAt: '2026-11-19', owner: '林工程師',
+      fiveW2H: { what: 'BGA（U12）空焊，開機無畫面', where: '客戶組裝線功能測試', when: '2026-11-17 起', who: '客戶 IQC', howMany: '12 / 200 片（6%）', how: 'X-ray 確認 U12 有 3 顆錫球空焊' },
+    },
+    d3: {
+      done: true, completedAt: '2026-11-20', owner: '王組長',
+      actions: [
+        { id: 'a1', text: '庫存與在途品 X-ray 全檢', owner: '王組長', due: '2026-11-20', done: true },
+        { id: 'a2', text: '客戶端不良品換貨', owner: '業務', due: '2026-11-21', done: true },
+      ],
+    },
+    d4: {
+      owner: '林工程師', due: '2026-11-25',
+      whys: {
+        occurrence: ['錫球未與焊墊接合', '錫膏量不足', '鋼板開孔堵塞', '擦拭頻率不足', '擦拭頻率沒有依錫膏黏度調整'],
+        escape: ['AOI 看不到 BGA 底部', '沒有抽 X-ray'],
+      },
+      rootCause: { occurrence: '鋼板擦拭頻率未依錫膏黏度調整，開孔堵塞造成錫量不足' },
+    },
+  },
+})
+const eightDSample = `<Chpt8DReport v-model="report" today="2026-11-27" filename="8D-2611-007">
+  <!-- D4 可以放魚骨圖一起分析 -->
+  <template #d4>
+    <ChptFishbone v-model="fishbone" editable />
+  </template>
+</Chpt8DReport>
+
+const report = ref({
+  number: '8D-2611-007',
+  title: '主機板開機無畫面',
+  steps: {
+    d1: { members: [{ id: 'm1', name: '陳經理', role: '品保', leader: true }] },
+    d2: { fiveW2H: { what: 'BGA 空焊', howMany: '12 / 200 片' } },
+  },
+})
+
+// 進度：eightDProgress(report.value) → { done, total, current, overdue, closed }`
+const eightDProps = [
+  { name: 'modelValue', type: 'EightDReport | null', def: 'null', desc: '8D 報告（v-model）' },
+  { name: 'readonly', type: 'boolean', def: 'false', desc: '唯讀' },
+  { name: 'initialStep', type: "'d0' | … | 'd8'", def: '第一個未完成的', desc: '一開始顯示的步驟' },
+  { name: 'today', type: 'number | string | Date', def: '現在', desc: '判斷逾期與完成日期的「今天」' },
+  { name: 'filename', type: 'string', def: "'8d-report'", desc: '匯出 Markdown 的檔名（不含副檔名）' },
+]
+const eightDDataRows = [
+  { name: 'EightDReport', type: '{ number?, title, steps: Partial<Record<EightDStepKey, EightDStep>> }', def: '—', desc: '步驟 key 為 d0–d8' },
+  { name: 'EightDStep', type: '{ done?, completedAt?, owner?, due?, text?, members?, fiveW2H?, actions?, whys?, rootCause?, prevention? }', def: '—', desc: 'whys：{ occurrence: string[], escape: string[] }；rootCause：{ occurrence, escape, verified }' },
+]
+const eightDEvents = [
+  { name: 'update:modelValue', params: '(report: EightDReport)', desc: '任何欄位修改、完成或取消完成' },
+  { name: 'step-complete', params: '(key: EightDStepKey)', desc: '某一步通過必填檢查並標記完成' },
+  { name: 'step-change', params: '(key: EightDStepKey)', desc: '切換步驟' },
+]
+const eightDSlots = [
+  { name: 'd4', params: '{ report }', desc: 'D4 根本原因下方的額外內容（例如魚骨圖）' },
+]
+const eightDMethods = [
+  { name: 'goTo(key)', type: '(key: EightDStepKey) => Promise<void>', desc: '切換步驟並把焦點移到標題' },
+  { name: 'complete()', type: '() => boolean', desc: '標記目前步驟完成；必填沒填齊時回傳 false 並列出缺少的欄位' },
+  { name: 'toText() / exportText(filename?)', type: '() => string / (filename?) => void', desc: '報告的 Markdown 文字／下載 .md 檔' },
+  { name: 'print()', type: '() => void', desc: '列印整份報告' },
+]
+
 // ---- ChptQueryBuilder ----
 const qbFields = [
   { key: 'orderNo', label: '工單', type: 'text' },
