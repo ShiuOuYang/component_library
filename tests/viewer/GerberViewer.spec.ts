@@ -561,26 +561,23 @@ describe('GerberViewer', () => {
 
   describe('縮放與尺寸', () => {
     it('放大、縮小、重設與雙擊重設', async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true })
+      // 縮放是 d3 transition：它的時鐘是 performance.now()（真實時間），假計時器推不動，
+      // 機器忙的時候動畫還沒跑完就去讀值會失敗。改成等「最後送出的縮放倍率」到達終值。
       const wrapper = await mountViewer({ gerberText: GERBER })
       const vm = wrapper.vm as unknown as { zoomIn: () => void; zoomOut: () => void; resetView: () => void }
+      const lastZoom = () => (wrapper.emitted('zoom-change')?.at(-1)?.[0] as { zoom: number } | undefined)?.zoom
+      const settleAt = (zoom: number) => vi.waitFor(() => expect(lastZoom()).toBeCloseTo(zoom, 3), { timeout: 3000, interval: 20 })
       vm.zoomIn()
-      await vi.advanceTimersByTimeAsync(400)
-      const zIn = (wrapper.emitted('zoom-change')!.at(-1)![0] as { zoom: number }).zoom
-      expect(zIn).toBeGreaterThan(1)
+      await settleAt(1.5)
       vm.zoomOut()
-      await vi.advanceTimersByTimeAsync(400)
-      expect((wrapper.emitted('zoom-change')!.at(-1)![0] as { zoom: number }).zoom).toBeLessThan(zIn)
+      await settleAt(1.5 * 0.67)
       vm.resetView()
-      await vi.advanceTimersByTimeAsync(600)
-      expect((wrapper.emitted('zoom-change')!.at(-1)![0] as { zoom: number }).zoom).toBeCloseTo(1)
+      await settleAt(1)
       vm.zoomIn()
-      await vi.advanceTimersByTimeAsync(400)
+      await settleAt(1.5)
       wrapper.find('svg').element.dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))
-      await vi.advanceTimersByTimeAsync(600)
-      expect((wrapper.emitted('zoom-change')!.at(-1)![0] as { zoom: number }).zoom).toBeCloseTo(1)
+      await settleAt(1)
       wrapper.unmount()
-      vi.useRealTimers()
     })
 
     it('容器尺寸改變時（防抖後）重畫，不重新載入', async () => {

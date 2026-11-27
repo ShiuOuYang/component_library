@@ -190,6 +190,20 @@
         <ChptCodeBlock class="mt-4" :code="radarCode" />
       </section>
 
+      <section id="oee" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">OeeChart OEE 損失瀑布</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          從<strong>計畫生產時間</strong>依序扣掉六大損失：設備故障、換線調整（稼動損失）→ 小停機、速度降低（性能損失）→ 啟動不良、製程不良（品質損失），
+          剩下的就是<strong>有效時間</strong>。上方列出 OEE = 稼動率 × 性能稼動率 × 良率，與世界級水準（OEE 85%、稼動 90%、性能 95%、良率 99.9%）比較，
+          並指出最大的單項損失。多台設備時下方並排比較（綠色是有效時間），點一台看它的瀑布圖。
+          現場資料若是「停機分鐘 + 理想週期時間 + 生產數 + 良品數」，用 <code>oeeFromCounts</code> 換算成六大損失。
+        </p>
+        <div class="rounded-xl border border-stroke-light bg-surface-secondary p-4">
+          <OeeChart v-model:selected="oeeSelected" :items="oeeItems" title="SMT 線 OEE（11/26 早班，480 分）" auto-resize />
+        </div>
+        <ChptCodeBlock class="mt-4" :code="oeeCode" />
+      </section>
+
       <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <h3 class="text-lg font-semibold text-content-primary mt-4">ChptKpiCard</h3>
@@ -218,6 +232,11 @@
         <ApiTable of="RadarChart" title="Props" :rows="radarProps" />
         <ApiTable of="-" title="RadarAxis / RadarSeries" :rows="radarDataRows" />
         <ApiTable of="RadarChart" title="Events" :rows="radarEvents" />
+        <h3 class="text-lg font-semibold text-content-primary mt-6">OeeChart</h3>
+        <ApiTable of="OeeChart" title="Props" :rows="oeeProps" />
+        <ApiTable of="-" title="OeeInput / oeeFromCounts" :rows="oeeDataRows" />
+        <ApiTable of="OeeChart" title="Events" :rows="oeeEvents" />
+        <ApiTable of="OeeChart" title="方法（ref）" :rows="oeeMethods" />
       </section>
     </div>
   </div>
@@ -225,7 +244,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { BulletChart, CalendarHeatmap, RadarChart, ChptButton, ChptCodeBlock, ChptKpiCard, GaugeChart, SparklineChart, YieldFunnel } from '@/components/library'
+import { BulletChart, CalendarHeatmap, RadarChart, ChptButton, ChptCodeBlock, ChptKpiCard, GaugeChart, OeeChart, SparklineChart, YieldFunnel, oeeFromCounts } from '@/components/library'
 import ApiTable from './components/_ApiTable.vue'
 
 // ---- CalendarHeatmap：固定種子的示範資料（每次重新整理都一樣） ----
@@ -633,4 +652,48 @@ const funnelProps = [
   { name: 'emptyText', type: 'string', def: '語系（繁中「沒有資料」）', desc: '沒有資料時的文字' },
 ]
 const funnelEvents = [{ name: 'step-click', params: '(step: FunnelStep, row: FunnelRow)', desc: '點擊一站（有綁才會變成按鈕）；row 帶 stepYield、cumulative、loss' }]
+// ---- OeeChart ----
+const oeeSelected = ref('smt2')
+const oeeItems = [
+  { id: 'smt1', name: 'SMT-1', plannedTime: 480, losses: { breakdown: 12, setup: 35, minorStops: 18, reducedSpeed: 14, startupRejects: 2, productionRejects: 4 } },
+  { id: 'smt2', name: 'SMT-2', plannedTime: 480, losses: { breakdown: 46, setup: 52, minorStops: 22, reducedSpeed: 25, startupRejects: 5, productionRejects: 9 } },
+  { id: 'smt3', name: 'SMT-3', plannedTime: 480, losses: { breakdown: 5, setup: 20, minorStops: 8, reducedSpeed: 6, startupRejects: 0.5, productionRejects: 1 } },
+  // 用生產數量換算：理想週期 24 秒、生產 1000 片、良品 985 片
+  { id: 'smt4', name: 'SMT-4（數量換算）', ...oeeFromCounts({ plannedTime: 480, breakdown: 30, setup: 25, minorStops: 15, idealCycleTime: 24, totalCount: 1000, goodCount: 985, startupRejects: 5 }) },
+]
+const oeeCode = `<OeeChart v-model:selected="selected" :items="items" title="SMT 線 OEE" auto-resize />
+
+const items = [
+  { id: 'smt1', name: 'SMT-1', plannedTime: 480,   // 分鐘（已扣休息、計畫保養）
+    losses: { breakdown: 12, setup: 35, minorStops: 18, reducedSpeed: 14, startupRejects: 2, productionRejects: 4 } },
+  // 現場只有停機時間與數量：換算成六大損失
+  { id: 'smt4', name: 'SMT-4', ...oeeFromCounts({
+      plannedTime: 480, breakdown: 30, setup: 25, minorStops: 15,
+      idealCycleTime: 24, totalCount: 1000, goodCount: 985, startupRejects: 5 }) },
+]
+
+// 只要數字：computeOee(item) → { oee, availability, performance, quality, losses, steps, biggestLoss }`
+const oeeProps = [
+  { name: 'items', type: 'OeeInput[]', def: '—', desc: '設備 / 產線 / 班別；多筆時下方並排比較' },
+  { name: 'selected', type: 'string | null', def: '第一筆', desc: '顯示哪一筆（v-model:selected）' },
+  { name: 'unit', type: 'string', def: '「分」', desc: '時間單位的顯示文字' },
+  { name: 'benchmark', type: '{ oee?, availability?, performance?, quality? } | false', def: '世界級水準', desc: '目標值（0～1）；false 不比較' },
+  { name: 'width / height', type: 'number', def: '760 / 300', desc: '寬度 / 瀑布圖高度' },
+  { name: 'autoResize / debounceDelay', type: 'boolean / number', def: 'false / 100', desc: '跟著容器寬度調整' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'valueFormat', type: '(v: number) => string', def: 'null', desc: '時間的數字格式' },
+  { name: 'emptyText', type: 'string', def: '「沒有資料」', desc: '沒有資料時的文字' },
+]
+const oeeDataRows = [
+  { name: 'OeeInput', type: '{ id, name, plannedTime, losses }', def: '—', desc: 'losses：{ breakdown, setup, minorStops, reducedSpeed, startupRejects, productionRejects }（與 plannedTime 同單位）' },
+  { name: 'oeeFromCounts(c)', type: '{ plannedTime, breakdown?, setup?, minorStops?, idealCycleTime, totalCount, goodCount, startupRejects? }', def: '—', desc: 'idealCycleTime 秒 / 件；回傳 { plannedTime, losses }（分鐘）' },
+]
+const oeeEvents = [
+  { name: 'update:selected', params: '(id: string)', desc: '在比較清單點選設備' },
+  { name: 'select', params: '(item: OeeInput)', desc: '同上，帶完整資料' },
+  { name: 'chart-resize', params: '({ width, height })', desc: 'autoResize 時尺寸改變' },
+]
+const oeeMethods = [
+  { name: 'result()', type: '() => OeeResult | null', desc: '目前設備的計算結果' },
+]
 </script>
