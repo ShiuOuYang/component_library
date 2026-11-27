@@ -535,6 +535,33 @@
       </p>
     </section>
 
+    <!-- ============ ChptFmeaTable ============ -->
+    <section id="chpt-fmea-table" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptFmeaTable FMEA 分析表</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>製程 FMEA（PFMEA）與設計 FMEA（DFMEA）。每列一個失效模式，評<strong>嚴重度 S、發生度 O、偵測度 D</strong>（1–10），
+        自動算出 <strong>RPN</strong>（S × O × D）與 AIAG-VDA 的<strong>處置優先等級 AP</strong>（H / M / L）。RPN 會讓不同組合乘出一樣的數字，
+        AP 先看嚴重度、再看發生度、最後看偵測度，嚴重度高的失效不會被低分掩蓋，兩者都顯示。
+        展開一列可以編輯影響、原因、管制、特殊特性（CC / SC）、改善對策（負責人、期限、完成），以及對策完成後的<strong>重新評分</strong>。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptFmeaTable, fmeaSummary } from '@/components/library'</code>
+      </p>
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <ChptSwitch v-model="fmeaEditable" size="sm" label="編輯模式" />
+      </div>
+      <ChptFmeaTable v-model="fmeaRows" :editable="fmeaEditable" title="SMT 二線 PFMEA" :threshold="100" today="2026-11-27" filename="smt-line2-pfmea" />
+      <ChptCodeBlock class="mt-6" :code="fmeaSample" />
+      <ApiTable of="ChptFmeaTable" title="Props" :rows="fmeaProps" />
+      <ApiTable of="-" title="FmeaRow / FmeaAction" :rows="fmeaDataRows" />
+      <ApiTable of="ChptFmeaTable" title="Events" :rows="fmeaEvents" />
+      <ApiTable of="ChptFmeaTable" title="方法（ref）" :rows="fmeaMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>AP 依 AIAG-VDA FMEA 手冊（2019）的查表；嚴重度 1 一律為 L。RPN 門檻（<code>threshold</code>）只用來標紅，
+        不影響 AP；只想看 AP 時設成 <code>Infinity</code>。對策期限當天不算逾期，用的是當地日期。匯出 CSV 匯出的是目前篩選與排序後的列。
+      </p>
+    </section>
+
     <!-- ============ ChptLabelDesigner ============ -->
     <section id="chpt-label-designer" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptLabelDesigner 標籤設計器</h2>
@@ -626,6 +653,7 @@ import {
   ChptShiftRoster,
   ChptSkillMatrix,
   ChptFishbone,
+  ChptFmeaTable,
   ChptLabelDesigner,
   labelToZpl,
   fishboneOutline,
@@ -1024,6 +1052,70 @@ const fishMethods = [
   { name: 'addCause(parentId, text)', type: '(parentId, text) => string | null', desc: '新增原因（parentId 為分類或原因 id），回傳新 id' },
   { name: 'updateCause(id, patch) / removeCause(id)', type: '(id, patch?) => void', desc: '修改或標記／刪除原因' },
   { name: 'select(id)', type: '(id: string | null) => void', desc: '選取' },
+]
+
+// ---- ChptFmeaTable ----
+const fmeaEditable = ref(true)
+const fmeaRows = ref([
+  {
+    id: 'p1', item: '錫膏印刷', failureMode: '錫膏量不足', effect: '空焊、功能失效', special: 'SC', severity: 8,
+    cause: '鋼板開孔堵塞', prevention: '每 5 片自動擦拭鋼板', occurrence: 6, detectionControl: 'SPI 全檢', detection: 3,
+    actions: [{ id: 'a1', text: '擦拭改為每 3 片並加真空', owner: '林工程師', due: '2026-12-05', done: false }],
+  },
+  {
+    id: 'p2', item: '錫膏印刷', failureMode: '印刷偏移', effect: '錫橋短路', severity: 7,
+    cause: '基板定位銷磨損', prevention: '定位銷每月點檢', occurrence: 4, detectionControl: 'SPI 全檢', detection: 3,
+    actions: [{ id: 'a2', text: '定位銷改為每週點檢', owner: '陳組長', due: '2026-11-20', done: false }],
+  },
+  {
+    id: 'p3', item: '零件置件', failureMode: '極性反向', effect: '產品燒毀', special: 'CC', severity: 10,
+    cause: '料捲方向放錯', prevention: '上料掃描防錯', occurrence: 3, detectionControl: 'AOI 極性檢查', detection: 4,
+    actions: [{ id: 'a3', text: 'AOI 加入極性點辨識', owner: '王工程師', due: '2026-11-15', done: true }],
+    revised: { severity: 10, occurrence: 2, detection: 2 },
+  },
+  {
+    id: 'p4', item: '迴焊', failureMode: '冷焊', effect: '焊點強度不足', severity: 6,
+    cause: '爐溫曲線偏低', prevention: '每日量測爐溫', occurrence: 3, detectionControl: '目視抽檢', detection: 7,
+  },
+  {
+    id: 'p5', item: '清潔', failureMode: '助焊劑殘留', effect: '外觀不良', severity: 3,
+    cause: '清洗時間不足', prevention: '作業標準書', occurrence: 4, detectionControl: '目視全檢', detection: 5,
+  },
+])
+const fmeaSample = `<ChptFmeaTable v-model="rows" editable :threshold="100" filename="pfmea" />
+
+// rows：FmeaRow[]
+const rows = ref([
+  {
+    id: 'p1', item: '錫膏印刷', failureMode: '錫膏量不足', effect: '空焊',
+    severity: 8, cause: '鋼板開孔堵塞', occurrence: 6, detectionControl: 'SPI 全檢', detection: 3,
+    actions: [{ id: 'a1', text: '擦拭改為每 3 片', owner: '林', due: '2026-12-05', done: false }],
+    revised: null, // 對策完成後重新評分：{ severity, occurrence, detection }
+  },
+])
+
+// 也可以直接算：fmeaRpn(row)、fmeaActionPriority(row)、fmeaSummary(rows, { threshold: 100 })`
+const fmeaProps = [
+  { name: 'modelValue', type: 'FmeaRow[]', def: '[]', desc: 'FMEA 項目（v-model）' },
+  { name: 'editable', type: 'boolean', def: 'false', desc: '評分下拉、展開後編輯文字與對策、新增 / 刪除項目' },
+  { name: 'title', type: 'string', def: "''", desc: '標題（也是表格區域的名稱）' },
+  { name: 'threshold', type: 'number', def: '100', desc: 'RPN 達此值時標紅；Infinity 表示不用 RPN 門檻' },
+  { name: 'today', type: 'number | string | Date', def: '現在', desc: '判斷對策逾期的「今天」' },
+  { name: 'defaultSort', type: "'none' | 'ap' | 'rpn' | 'severity'", def: "'none'", desc: '初始排序' },
+  { name: 'maxHeight', type: 'number', def: '—', desc: '表格最大高度（px），超過時捲動、表頭固定' },
+  { name: 'filename', type: 'string', def: "'fmea'", desc: '匯出 CSV 的檔名（不含副檔名）' },
+]
+const fmeaDataRows = [
+  { name: 'FmeaRow', type: '{ id, item, failureMode, effect?, cause?, prevention?, detectionControl?, severity, occurrence, detection, special?, actions?, revised? }', def: '—', desc: "special：'CC' 關鍵 / 'SC' 重要；revised：改善後的 { severity, occurrence, detection }" },
+  { name: 'FmeaAction', type: '{ id, text, owner?, due?, done? }', def: '—', desc: 'due 可以是 YYYY-MM-DD、epoch ms 或 Date' },
+]
+const fmeaEvents = [
+  { name: 'update:modelValue', params: '(rows: FmeaRow[])', desc: '評分、文字、對策、重新評分、新增或刪除項目' },
+]
+const fmeaMethods = [
+  { name: 'addRow(partial?)', type: '(partial?: Partial<FmeaRow>) => Promise<FmeaRow>', desc: '新增一列並展開、聚焦（會清掉篩選）' },
+  { name: 'exportCsv(filename?)', type: '(filename?: string) => void', desc: '匯出目前篩選與排序後的列' },
+  { name: 'expandAll() / collapseAll()', type: '() => void', desc: '展開 / 收合全部詳細內容' },
 ]
 
 // ---- ChptLabelDesigner ----
