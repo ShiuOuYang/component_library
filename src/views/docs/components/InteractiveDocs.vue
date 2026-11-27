@@ -601,6 +601,42 @@
       <ApiTable of="ChptSkillMatrix" title="Events" :rows="smEvents" />
       <ApiTable of="ChptSkillMatrix" title="方法（ref）" :rows="smMethods" />
     </section>
+
+    <!-- ============ ChptValueStreamMap ============ -->
+    <section id="chpt-value-stream-map" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptValueStreamMap 價值流圖</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>精實生產分析一條產品族從供應商到客戶的物流與時間。工站方塊列出週期時間 C/T、換線時間 C/O、稼動率、不良率與人數；
+        工站之間是<strong>庫存三角</strong>（數量與天數）與物流方式（推式、拉式超市、先進先出）。底部<strong>時間梯</strong>：庫存天數在上、週期時間在下，
+        合計<strong>前置時間、加值時間與流程效率</strong>。由客戶的每日需求與可用時間算出<strong>節拍時間</strong>，週期時間超過節拍的工站標紅並顯示負荷，最慢的工站標為瓶頸。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptValueStreamMap, vsmMetrics } from '@/components/library'</code>
+      </p>
+      <div class="flex flex-wrap items-center gap-3 mb-3 text-sm text-content-secondary">
+        <span>每日需求</span>
+        <ChptSegmented v-model="vsmDemand" size="sm" :options="[{ label: '400 件', value: 400 }, { label: '600 件', value: 600 }, { label: '800 件', value: 800 }]" />
+        <span v-if="vsmSelected">已選取：{{ vsmProcesses.find((p) => p.id === vsmSelected)?.name }}</span>
+      </div>
+      <ChptValueStreamMap
+        v-model:selected="vsmSelected"
+        title="主機板組裝線（現況）"
+        supplier="PCB 供應商"
+        control="MRP / 生管"
+        :customer="{ name: '組裝廠', demand: vsmDemand, availableTime: 27000 }"
+        :processes="vsmProcesses"
+        :finished-goods="{ qty: 1800 }"
+      />
+      <ChptCodeBlock class="mt-6" :code="vsmSample" />
+      <ApiTable of="ChptValueStreamMap" title="Props" :rows="vsmProps" />
+      <ApiTable of="-" title="VsmProcess / VsmCustomer / VsmInventory" :rows="vsmDataRows" />
+      <ApiTable of="ChptValueStreamMap" title="Events" :rows="vsmEvents" />
+      <ApiTable of="ChptValueStreamMap" title="方法（ref）" :rows="vsmMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>前置時間與加值時間換算成同一單位時，「一天」用客戶的每日可用時間（預設 27000 秒 = 7.5 小時），不是 24 小時。
+        庫存有給 <code>days</code> 時直接用，否則用數量 ÷ 每日需求。畫面比外框寬時可以左右捲動（Tab 進入後用方向鍵）。
+      </p>
+    </section>
   </div>
 </template>
 
@@ -625,6 +661,7 @@ import {
   ChptSwitch,
   ChptShiftRoster,
   ChptSkillMatrix,
+  ChptValueStreamMap,
   ChptFishbone,
   ChptLabelDesigner,
   labelToZpl,
@@ -1098,6 +1135,55 @@ const labelMethods = [
   { name: 'print(records?)', type: '(records?) => void', desc: '列印（每筆資料一張）' },
   { name: 'toZpl(data?)', type: '(data?) => string', desc: 'ZPL II（Zebra 標籤機）' },
   { name: 'undo() / redo() / select(ids) / addElement(type)', type: '…', desc: '復原／重做／選取／新增元素' },
+]
+
+// ---- ChptValueStreamMap ----
+const vsmDemand = ref(600)
+const vsmSelected = ref(null)
+const vsmProcesses = [
+  { id: 'smt', name: 'SMT 置件', cycleTime: 38, changeover: 45, uptime: 85, operators: 2, scrap: 0.8, inventoryBefore: { qty: 4200 } },
+  { id: 'reflow', name: '回焊', cycleTime: 30, changeover: 20, uptime: 95, operators: 1, inventoryBefore: { qty: 120 }, flowIn: 'fifo' },
+  { id: 'dip', name: '手插件', cycleTime: 52, changeover: 10, uptime: 98, operators: 4, scrap: 1.5, inventoryBefore: { qty: 900 } },
+  { id: 'test', name: '功能測試', cycleTime: 41, changeover: 5, uptime: 90, operators: 2, scrap: 2.0, inventoryBefore: { qty: 300 }, flowIn: 'pull' },
+  { id: 'pack', name: '包裝', cycleTime: 25, operators: 1, inventoryBefore: { qty: 600 } },
+]
+const vsmSample = `<ChptValueStreamMap
+  v-model:selected="selected"
+  supplier="PCB 供應商"
+  control="MRP / 生管"
+  :customer="{ name: '組裝廠', demand: 600, availableTime: 27000 }"
+  :processes="processes"
+  :finished-goods="{ qty: 1800 }"
+/>
+
+const processes = [
+  { id: 'smt', name: 'SMT 置件', cycleTime: 38, changeover: 45, uptime: 85, operators: 2, inventoryBefore: { qty: 4200 } },
+  { id: 'reflow', name: '回焊', cycleTime: 30, inventoryBefore: { qty: 120 }, flowIn: 'fifo' },
+  { id: 'test', name: '功能測試', cycleTime: 41, inventoryBefore: { days: 0.5 }, flowIn: 'pull' },
+]
+
+// 只要數字：vsmMetrics(processes, customer, finishedGoods)
+// → { takt, leadTimeDays, valueAddedSeconds, pce, bottleneck, overTakt, steps }`
+const vsmProps = [
+  { name: 'processes', type: 'VsmProcess[]', def: '—', desc: '工站（依流程順序），每站可帶前面的庫存與物流方式' },
+  { name: 'customer', type: 'VsmCustomer', def: '—', desc: '客戶：每日需求與可用時間（算節拍）' },
+  { name: 'supplier', type: 'string', def: "''", desc: '供應商名稱' },
+  { name: 'control', type: 'string', def: "''", desc: '生產管理方塊的文字；不給時不顯示' },
+  { name: 'finishedGoods', type: 'VsmInventory | null', def: 'null', desc: '成品庫存' },
+  { name: 'title', type: 'string', def: "''", desc: '標題（也是捲動區域的名稱）' },
+  { name: 'selected', type: 'string | null', def: '—', desc: '選取的工站 id（v-model:selected；不給時元件自己記）' },
+]
+const vsmDataRows = [
+  { name: 'VsmProcess', type: '{ id, name, cycleTime, changeover?, uptime?, operators?, scrap?, inventoryBefore?, flowIn? }', def: '—', desc: "cycleTime 秒、changeover 分鐘、uptime / scrap 百分比；flowIn：'push' | 'pull' | 'fifo'" },
+  { name: 'VsmCustomer', type: '{ name, demand, availableTime? }', def: '—', desc: 'demand：件 / 天；availableTime：每日可用秒數（預設 27000）' },
+  { name: 'VsmInventory', type: '{ qty?, days? }', def: '—', desc: '有 days 時直接用，否則以 qty ÷ 每日需求換算' },
+]
+const vsmEvents = [
+  { name: 'update:selected', params: '(id: string | null)', desc: '點工站選取；再點一次取消' },
+  { name: 'select', params: '(process: VsmProcess | null)', desc: '同上，帶完整工站資料' },
+]
+const vsmMethods = [
+  { name: 'metrics()', type: '() => VsmMetrics', desc: '節拍、前置時間、加值時間、流程效率、瓶頸與超過節拍的工站' },
 ]
 
 // ---- ChptSkillMatrix ----
