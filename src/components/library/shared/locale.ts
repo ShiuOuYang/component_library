@@ -187,6 +187,42 @@ export interface ChptLocale {
     item: (n: number, alt: string) => string
   }
   inputNumber: { decrease: string; increase: string }
+  valueStream: {
+    title: string
+    empty: string
+    supplier: string
+    customer: string
+    control: string
+    demand: (n: string) => string
+    takt: string
+    leadTime: string
+    valueAdded: string
+    pce: string
+    cycleTime: string
+    changeover: string
+    uptime: string
+    scrap: string
+    operators: (n: number) => string
+    seconds: (v: string) => string
+    minutes: (v: string) => string
+    days: (v: string) => string
+    percent: (v: string) => string
+    pieces: (n: string) => string
+    rawMaterial: string
+    wip: string
+    finishedGoods: string
+    shipping: string
+    flows: { push: string; pull: string; fifo: string }
+    flowLabel: string
+    timeline: string
+    load: (pct: number) => string
+    overTakt: string
+    overTaktCount: (n: number) => string
+    bottleneck: string
+    selected: (name: string) => string
+    labeled: (label: string, value: string) => string
+    note: (text: string) => string
+  }
   fmea: {
     title: string
     empty: string
@@ -2121,6 +2157,42 @@ export const zhTW: ChptLocale = {
     item: (n, alt) => `第 ${n} 張${alt ? `：${alt}` : ''}`,
   },
   inputNumber: { decrease: '減少', increase: '增加' },
+  valueStream: {
+    title: '價值流圖',
+    empty: '沒有工站',
+    supplier: '供應商',
+    customer: '客戶',
+    control: '生產管理',
+    demand: (n) => `需求 ${n} 件/天`,
+    takt: '節拍時間',
+    leadTime: '前置時間',
+    valueAdded: '加值時間',
+    pce: '流程效率',
+    cycleTime: 'C/T',
+    changeover: 'C/O',
+    uptime: '稼動率',
+    scrap: '不良率',
+    operators: (n) => `${n} 人`,
+    seconds: (v) => `${v} 秒`,
+    minutes: (v) => `${v} 分`,
+    days: (v) => `${v} 天`,
+    percent: (v) => `${v}%`,
+    pieces: (n) => `${n} 件`,
+    rawMaterial: '原料',
+    wip: '在製品',
+    finishedGoods: '成品',
+    shipping: '出貨',
+    flows: { push: '推式', pull: '拉式', fifo: '先進先出' },
+    flowLabel: '物流：庫存與工站',
+    timeline: '時間梯：庫存天數與週期時間',
+    load: (pct) => `負荷 ${pct}%`,
+    overTakt: '超過節拍',
+    overTaktCount: (n) => `${n} 站超過節拍`,
+    bottleneck: '瓶頸',
+    selected: (name) => `已選取 ${name}`,
+    labeled: (label, value) => `${label}：${value}`,
+    note: (text) => `（${text}）`,
+  },
   fmea: {
     title: 'FMEA 分析表',
     empty: '沒有符合的項目',
@@ -4163,6 +4235,42 @@ export const enUS: ChptLocale = {
     item: (n, alt) => `Image ${n}${alt ? `: ${alt}` : ''}`,
   },
   inputNumber: { decrease: 'Decrease', increase: 'Increase' },
+  valueStream: {
+    title: 'Value stream map',
+    empty: 'No processes',
+    supplier: 'Supplier',
+    customer: 'Customer',
+    control: 'Production control',
+    demand: (n) => `Demand ${n} pcs/day`,
+    takt: 'Takt time',
+    leadTime: 'Lead time',
+    valueAdded: 'Value-added time',
+    pce: 'Process cycle efficiency',
+    cycleTime: 'C/T',
+    changeover: 'C/O',
+    uptime: 'Uptime',
+    scrap: 'Scrap',
+    operators: (n) => `${n} ${n === 1 ? 'operator' : 'operators'}`,
+    seconds: (v) => `${v} s`,
+    minutes: (v) => `${v} min`,
+    days: (v) => `${v} ${v === '1' ? 'day' : 'days'}`,
+    percent: (v) => `${v}%`,
+    pieces: (n) => `${n} pcs`,
+    rawMaterial: 'Raw material',
+    wip: 'WIP',
+    finishedGoods: 'Finished goods',
+    shipping: 'Shipping',
+    flows: { push: 'Push', pull: 'Pull', fifo: 'FIFO' },
+    flowLabel: 'Material flow: inventory and processes',
+    timeline: 'Timeline: inventory days and cycle times',
+    load: (pct) => `Load ${pct}%`,
+    overTakt: 'over takt',
+    overTaktCount: (n) => `${n} ${n === 1 ? 'process is' : 'processes are'} over takt`,
+    bottleneck: 'Bottleneck',
+    selected: (name) => `Selected ${name}`,
+    labeled: (label, value) => `${label}: ${value}`,
+    note: (text) => ` (${text})`,
+  },
   fmea: {
     title: 'FMEA',
     empty: 'No matching items',
