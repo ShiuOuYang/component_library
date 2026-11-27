@@ -1780,6 +1780,26 @@ export interface ChptLocale {
     tableAnovaReduced: string
     cols: { source: string; contribution: string; sd: string; studyVar: (k: number) => string; pctStudyVar: string; pctTolerance: string; df: string }
   }
+  ewmaCusum: {
+    title: string
+    empty: string
+    baseline: (mu0: string, sigma: string) => string
+    ewmaParams: (lambda: string, L: string) => string
+    cusumParams: (k: string, h: string) => string
+    ewmaSignal: (at: string) => string
+    ewmaOk: string
+    cusumSignal: (at: string, onset: string, direction: string, newMean: string) => string
+    cusumOk: string
+    directions: { up: string; down: string }
+    onset: string
+    sample: string
+    value: string
+    outOfControl: string
+    ewmaLine: (z: string, lcl: string, ucl: string) => string
+    cusumLine: (cPlus: string, cMinus: string) => string
+    pointsCount: (n: number) => string
+    keyHint: string
+  }
   multiVari: {
     title: string
     empty: string
@@ -3945,6 +3965,26 @@ export const zhTW: ChptLocale = {
       pctTolerance: '% 公差',
       df: '自由度',
     },
+  },
+  ewmaCusum: {
+    title: 'EWMA / CUSUM 管制圖',
+    empty: '沒有資料',
+    baseline: (mu0, sigma) => `目標 μ0 = ${mu0}，σ = ${sigma}`,
+    ewmaParams: (lambda, L) => `EWMA：λ = ${lambda}，L = ${L}`,
+    cusumParams: (k, h) => `CUSUM：k = ${k}，h = ${h}`,
+    ewmaSignal: (at) => `EWMA 在第 ${at} 點超出管制界限`,
+    ewmaOk: 'EWMA 沒有超出管制界限',
+    cusumSignal: (at, onset, direction, newMean) => `CUSUM 在第 ${at} 點發出訊號：約從第 ${onset} 點開始${direction}，估計新平均 ${newMean}`,
+    cusumOk: 'CUSUM 沒有偏移訊號',
+    directions: { up: '向上偏移', down: '向下偏移' },
+    onset: '偏移開始',
+    sample: '樣本',
+    value: '量測值',
+    outOfControl: '（超出界限）',
+    ewmaLine: (z, lcl, ucl) => `EWMA ${z}（界限 ${lcl} ～ ${ucl}）`,
+    cusumLine: (cPlus, cMinus) => `C⁺ ${cPlus}，C⁻ ${cMinus}`,
+    pointsCount: (n) => `${n} 點`,
+    keyHint: '左右方向鍵逐點移動，Enter 選取',
   },
   multiVari: {
     title: '多變異圖',
@@ -6129,6 +6169,26 @@ export const enUS: ChptLocale = {
       pctTolerance: '% Tolerance',
       df: 'DF',
     },
+  },
+  ewmaCusum: {
+    title: 'EWMA / CUSUM chart',
+    empty: 'No data',
+    baseline: (mu0, sigma) => `Target μ0 = ${mu0}, σ = ${sigma}`,
+    ewmaParams: (lambda, L) => `EWMA: λ = ${lambda}, L = ${L}`,
+    cusumParams: (k, h) => `CUSUM: k = ${k}, h = ${h}`,
+    ewmaSignal: (at) => `EWMA out of control at sample ${at}`,
+    ewmaOk: 'EWMA within control limits',
+    cusumSignal: (at, onset, direction, newMean) => `CUSUM signal at sample ${at}: ${direction} starting around sample ${onset}, estimated new mean ${newMean}`,
+    cusumOk: 'No CUSUM shift signal',
+    directions: { up: 'upward shift', down: 'downward shift' },
+    onset: 'Shift start',
+    sample: 'Sample',
+    value: 'Value',
+    outOfControl: '(out of control)',
+    ewmaLine: (z, lcl, ucl) => `EWMA ${z} (limits ${lcl} – ${ucl})`,
+    cusumLine: (cPlus, cMinus) => `C⁺ ${cPlus}, C⁻ ${cMinus}`,
+    pointsCount: (n) => `${n} ${n === 1 ? 'point' : 'points'}`,
+    keyHint: 'Use left and right arrow keys to move between points, Enter to select',
   },
   multiVari: {
     title: 'Multi-vari chart',
