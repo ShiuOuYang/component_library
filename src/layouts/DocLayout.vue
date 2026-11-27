@@ -577,7 +577,7 @@ const navSections = [
         to: '/docs/components/spc-charts', icon: '📉', label: 'SPC 管制圖與 Cpk',
         anchors: [
           { label: 'I-MR', id: 'imr' }, { label: 'X̄-R', id: 'xbar' }, { label: 'p 圖', id: 'p' },
-          { label: '判異規則', id: 'rules' }, { label: '製程能力', id: 'capability' }, { label: 'API', id: 'api' },
+          { label: '判異規則', id: 'rules' }, { label: '製程能力', id: 'capability' }, { label: 'EWMA / CUSUM', id: 'ewma' }, { label: 'API', id: 'api' },
         ],
       },
       {
