@@ -1744,6 +1744,24 @@ export interface ChptLocale {
     colChange: string
     separator: string
   }
+  oee: {
+    title: string
+    empty: string
+    metrics: { oee: string; availability: string; performance: string; quality: string }
+    target: (pct: string) => string
+    belowTarget: string
+    losses: { breakdown: string; setup: string; minorStops: string; reducedSpeed: string; startupRejects: string; productionRejects: string }
+    totals: { planned: string; runTime: string; netRunTime: string; valuable: string }
+    groups: { availability: string; performance: string; quality: string }
+    biggestLoss: (name: string, value: string, unit: string, pct: string) => string
+    minutes: string
+    ofPlanned: (pct: string) => string
+    waterfallLabel: (name: string, oee: string) => string
+    item: string
+    share: string
+    compareTitle: string
+    compareRow: (name: string, oee: string, a: string, p: string, q: string) => string
+  }
   gageRR: {
     verdict: { acceptable: string; marginal: string; unacceptable: string }
     grrLabel: (basis: 'studyVar' | 'tolerance') => string
@@ -3903,6 +3921,24 @@ export const zhTW: ChptLocale = {
     colName: '名稱',
     colChange: '變化',
     separator: '，',
+  },
+  oee: {
+    title: 'OEE 損失瀑布',
+    empty: '沒有資料',
+    metrics: { oee: 'OEE', availability: '稼動率', performance: '性能稼動率', quality: '良率' },
+    target: (pct) => `目標 ${pct}`,
+    belowTarget: '（未達）',
+    losses: { breakdown: '設備故障', setup: '換線調整', minorStops: '小停機', reducedSpeed: '速度降低', startupRejects: '啟動不良', productionRejects: '製程不良' },
+    totals: { planned: '計畫時間', runTime: '稼動時間', netRunTime: '淨稼動時間', valuable: '有效時間' },
+    groups: { availability: '稼動損失', performance: '性能損失', quality: '品質損失' },
+    biggestLoss: (name, value, unit, pct) => `最大損失：${name} ${value} ${unit}（計畫時間的 ${pct}）`,
+    minutes: '分',
+    ofPlanned: (pct) => `計畫時間的 ${pct}`,
+    waterfallLabel: (name, oee) => `${name} 的 OEE 損失瀑布，OEE ${oee}`,
+    item: '項目',
+    share: '占計畫時間',
+    compareTitle: '設備比較（點選查看）',
+    compareRow: (name, oee, a, p, q) => `${name}：OEE ${oee}，稼動率 ${a}，性能 ${p}，良率 ${q}`,
   },
   gageRR: {
     verdict: { acceptable: '可接受', marginal: '有條件接受', unacceptable: '不可接受' },
@@ -6107,6 +6143,24 @@ export const enUS: ChptLocale = {
     colName: 'Name',
     colChange: 'Change',
     separator: ', ',
+  },
+  oee: {
+    title: 'OEE loss waterfall',
+    empty: 'No data',
+    metrics: { oee: 'OEE', availability: 'Availability', performance: 'Performance', quality: 'Quality' },
+    target: (pct) => `Target ${pct}`,
+    belowTarget: '(below)',
+    losses: { breakdown: 'Breakdowns', setup: 'Setup & adjustment', minorStops: 'Minor stops', reducedSpeed: 'Reduced speed', startupRejects: 'Startup rejects', productionRejects: 'Production rejects' },
+    totals: { planned: 'Planned time', runTime: 'Run time', netRunTime: 'Net run time', valuable: 'Valuable time' },
+    groups: { availability: 'Availability loss', performance: 'Performance loss', quality: 'Quality loss' },
+    biggestLoss: (name, value, unit, pct) => `Biggest loss: ${name} ${value} ${unit} (${pct} of planned time)`,
+    minutes: 'min',
+    ofPlanned: (pct) => `${pct} of planned time`,
+    waterfallLabel: (name, oee) => `OEE loss waterfall for ${name}, OEE ${oee}`,
+    item: 'Item',
+    share: 'Share of planned time',
+    compareTitle: 'Compare (select to view)',
+    compareRow: (name, oee, a, p, q) => `${name}: OEE ${oee}, availability ${a}, performance ${p}, quality ${q}`,
   },
   gageRR: {
     verdict: { acceptable: 'Acceptable', marginal: 'Marginal', unacceptable: 'Unacceptable' },
