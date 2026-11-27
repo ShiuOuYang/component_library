@@ -262,6 +262,14 @@ const routes = [
         },
       },
       {
+        path: "components/doe-effects-chart",
+        name: "DoeEffectsChartDoc",
+        component: () => import("../views/docs/DoeEffectsChartDoc.vue"),
+        meta: {
+          title: "實驗設計效果圖",
+        },
+      },
+      {
         path: "components/multi-vari-chart",
         name: "MultiVariChartDoc",
         component: () => import("../views/docs/MultiVariChartDoc.vue"),

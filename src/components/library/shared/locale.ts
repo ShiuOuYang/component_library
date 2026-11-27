@@ -1626,6 +1626,30 @@ export interface ChptLocale {
     legend: string
     ariaLabel: (total: number, yieldText: string) => string
   }
+  doe: {
+    title: string
+    empty: string
+    viewLabel: string
+    views: { pareto: string; main: string; interaction: string }
+    factorLegend: (name: string, low: string, high: string) => string
+    methodReplicates: (n: number, df: string, tCrit: string) => string
+    methodLenth: (pse: string, df: string, tCrit: string) => string
+    methodNone: string
+    significant: (list: string) => string
+    noneSignificant: string
+    listSep: string
+    invalidFactors: (names: string) => string
+    axisT: string
+    axisEffect: string
+    interactionHint: string
+    term: string
+    effect: string
+    coef: string
+    significantCol: string
+    yes: string
+    no: string
+    mainItem: (name: string, low: string, high: string) => string
+  }
   bullet: {
     title: string
     target: (value: string) => string
@@ -3803,6 +3827,30 @@ export const zhTW: ChptLocale = {
     empty: '沒有晶粒資料',
     legend: 'Bin 圖例（點一下淡化 / 恢復）',
     ariaLabel: (total, yieldText) => `晶圓圖，${total.toLocaleString()} 顆晶粒${yieldText ? `，良率 ${yieldText}` : ''}。方向鍵逐顆移動，Enter 選取`,
+  },
+  doe: {
+    title: '實驗設計效果圖',
+    empty: '沒有可分析的資料',
+    viewLabel: '圖表類型',
+    views: { pareto: '標準化效果', main: '主效果', interaction: '交互作用' },
+    factorLegend: (name, low, high) => `= ${name}（${low} → ${high}）`,
+    methodReplicates: (n, df, tCrit) => `${n} 次實驗，有重複：用組內變異判斷顯著（自由度 ${df}，t 臨界值 ${tCrit}）。`,
+    methodLenth: (pse, df, tCrit) => `沒有重複：用 Lenth 法判斷顯著（PSE ${pse}，自由度 ${df}，t 臨界值 ${tCrit}）。`,
+    methodNone: '無法估計誤差（實驗次數太少或效果都是 0），不判斷顯著性。',
+    significant: (list) => `顯著：${list}`,
+    noneSignificant: '沒有顯著的效果',
+    listSep: '、',
+    invalidFactors: (names) => `這些因子不是剛好兩個水準，無法分析：${names}`,
+    axisT: '標準化效果（t 值）',
+    axisEffect: '效果（絕對值）',
+    interactionHint: '兩條線越不平行，交互作用越大；* 為顯著。',
+    term: '項目',
+    effect: '效果',
+    coef: '係數',
+    significantCol: '顯著',
+    yes: '是',
+    no: '否',
+    mainItem: (name, low, high) => `${name} 低水準平均 ${low}，高水準平均 ${high}`,
   },
   bullet: {
     title: '子彈圖',
@@ -6025,6 +6073,30 @@ export const enUS: ChptLocale = {
     empty: 'No die data',
     legend: 'Bin legend (click to dim / restore)',
     ariaLabel: (total, yieldText) => `Wafer map, ${total.toLocaleString()} dies${yieldText ? `, yield ${yieldText}` : ''}. Use arrow keys to move between dies, Enter to select`,
+  },
+  doe: {
+    title: 'DOE effects',
+    empty: 'No data to analyze',
+    viewLabel: 'Chart type',
+    views: { pareto: 'Standardized effects', main: 'Main effects', interaction: 'Interactions' },
+    factorLegend: (name, low, high) => `= ${name} (${low} → ${high})`,
+    methodReplicates: (n, df, tCrit) => `${n} runs with replicates: significance from pure error (df ${df}, critical t ${tCrit}).`,
+    methodLenth: (pse, df, tCrit) => `No replicates: significance by Lenth's method (PSE ${pse}, df ${df}, critical t ${tCrit}).`,
+    methodNone: 'Error cannot be estimated (too few runs or all effects are zero); significance not tested.',
+    significant: (list) => `Significant: ${list}`,
+    noneSignificant: 'No significant effects',
+    listSep: ', ',
+    invalidFactors: (names) => `These factors do not have exactly two levels and cannot be analyzed: ${names}`,
+    axisT: 'Standardized effect (t)',
+    axisEffect: 'Effect (absolute)',
+    interactionHint: 'The less parallel the lines, the stronger the interaction; * marks significant.',
+    term: 'Term',
+    effect: 'Effect',
+    coef: 'Coefficient',
+    significantCol: 'Significant',
+    yes: 'Yes',
+    no: 'No',
+    mainItem: (name, low, high) => `${name} low-level mean ${low}, high-level mean ${high}`,
   },
   bullet: {
     title: 'Bullet chart',

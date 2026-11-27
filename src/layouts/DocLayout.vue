@@ -638,6 +638,10 @@ const navSections = [
         anchors: [{ label: '數位卡尺', id: 'caliper' }, { label: '需要改善的量測', id: 'poor' }, { label: 'API', id: 'api' }],
       },
       {
+        to: '/docs/components/doe-effects-chart', icon: '🧪', label: '實驗設計效果圖',
+        anchors: [{ label: '有重複', id: 'replicated' }, { label: 'Lenth 法', id: 'lenth' }, { label: 'API', id: 'api' }],
+      },
+      {
         to: '/docs/components/multi-vari-chart', icon: '🧩', label: '多變異圖',
         anchors: [{ label: '射出成型', id: 'molding' }, { label: '兩層因子', id: 'shift' }, { label: 'API', id: 'api' }],
       },
