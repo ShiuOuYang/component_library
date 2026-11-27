@@ -462,6 +462,7 @@ const navSections = [
           { label: 'ChptFmeaTable', id: 'chpt-fmea-table' },
           { label: 'ChptLabelDesigner', id: 'chpt-label-designer' },
           { label: 'ChptSkillMatrix', id: 'chpt-skill-matrix' },
+          { label: 'ChptValueStreamMap', id: 'chpt-value-stream-map' },
           { label: 'ChptCommentThread', id: 'chpt-comment-thread' },
           { label: 'ChptSortableList', id: 'chpt-sortable-list' },
         ],
