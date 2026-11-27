@@ -1027,6 +1027,44 @@ export interface ChptLocale {
     fit: string
     close: string
   }
+  auditTrail: {
+    title: string
+    empty: string
+    search: string
+    user: string
+    allUsers: string
+    field: string
+    allFields: string
+    from: string
+    to: string
+    exportCsv: string
+    count: (shown: number, total: number) => string
+    showMore: (n: number) => string
+    today: string
+    yesterday: string
+    actions: { create: string; update: string; delete: string }
+    emptyValue: string
+    yes: string
+    no: string
+    oldValue: string
+    newValue: string
+    changeLine: (field: string, from: string, to: string) => string
+    revert: string
+    revertLabel: (field: string, value: string) => string
+    compare: string
+    compareLabel: (time: string, user: string) => string
+    compareHint: string
+    compareTitle: string
+    versionA: string
+    versionB: string
+    clearCompare: string
+    revertToVersion: (label: string) => string
+    differences: (n: number) => string
+    noDifferences: string
+    initial: string
+    by: (user: string) => string
+    csv: { time: string; user: string; action: string; target: string; field: string; from: string; to: string; note: string }
+  }
   logViewer: {
     label: string
     levels: string
@@ -3070,6 +3108,44 @@ export const zhTW: ChptLocale = {
     zoomOut: '縮小',
     fit: '顯示整張',
     close: '關閉明細',
+  },
+  auditTrail: {
+    title: '變更紀錄',
+    empty: '沒有符合的紀錄',
+    search: '搜尋人員、對象、欄位、值',
+    user: '人員',
+    allUsers: '所有人員',
+    field: '欄位',
+    allFields: '所有欄位',
+    from: '從',
+    to: '到',
+    exportCsv: '匯出 CSV',
+    count: (shown, total) => `顯示 ${shown} / ${total} 筆`,
+    showMore: (n) => `顯示更多（還有 ${n} 筆）`,
+    today: '今天',
+    yesterday: '昨天',
+    actions: { create: '新增', update: '修改', delete: '刪除' },
+    emptyValue: '（空）',
+    yes: '是',
+    no: '否',
+    oldValue: '原值',
+    newValue: '新值',
+    changeLine: (field, from, to) => `${field}：${from} 改為 ${to}`,
+    revert: '還原',
+    revertLabel: (field, value) => `把 ${field} 還原為 ${value}`,
+    compare: '比較',
+    compareLabel: (time, user) => `選取 ${time} ${user} 的版本來比較`,
+    compareHint: '勾選兩筆紀錄可以比較那兩個時間點的完整內容',
+    compareTitle: '版本比較',
+    versionA: '版本 A',
+    versionB: '版本 B',
+    clearCompare: '清除比較',
+    revertToVersion: (label) => `還原到${label}`,
+    differences: (n) => `${n} 個欄位不同`,
+    noDifferences: '兩個版本內容相同',
+    initial: '初始',
+    by: (user) => `${user} 修改`,
+    csv: { time: '時間', user: '人員', action: '動作', target: '對象', field: '欄位', from: '原值', to: '新值', note: '備註' },
   },
   logViewer: {
     label: '日誌',
@@ -5216,6 +5292,44 @@ export const enUS: ChptLocale = {
     zoomOut: 'Zoom out',
     fit: 'Fit to view',
     close: 'Close details',
+  },
+  auditTrail: {
+    title: 'Audit trail',
+    empty: 'No matching records',
+    search: 'Search users, targets, fields, values',
+    user: 'User',
+    allUsers: 'All users',
+    field: 'Field',
+    allFields: 'All fields',
+    from: 'From',
+    to: 'To',
+    exportCsv: 'Export CSV',
+    count: (shown, total) => `Showing ${shown} of ${total}`,
+    showMore: (n) => `Show more (${n} left)`,
+    today: 'Today',
+    yesterday: 'Yesterday',
+    actions: { create: 'Created', update: 'Updated', delete: 'Deleted' },
+    emptyValue: '(empty)',
+    yes: 'Yes',
+    no: 'No',
+    oldValue: 'Old value',
+    newValue: 'New value',
+    changeLine: (field, from, to) => `${field}: ${from} changed to ${to}`,
+    revert: 'Revert',
+    revertLabel: (field, value) => `Revert ${field} to ${value}`,
+    compare: 'Compare',
+    compareLabel: (time, user) => `Select the version of ${time} by ${user} to compare`,
+    compareHint: 'Check two records to compare the full content at those two points in time',
+    compareTitle: 'Version comparison',
+    versionA: 'Version A',
+    versionB: 'Version B',
+    clearCompare: 'Clear comparison',
+    revertToVersion: (label) => `Revert to ${label}`,
+    differences: (n) => `${n} ${n === 1 ? 'field differs' : 'fields differ'}`,
+    noDifferences: 'Both versions are identical',
+    initial: 'Initial',
+    by: (user) => `by ${user}`,
+    csv: { time: 'Time', user: 'User', action: 'Action', target: 'Target', field: 'Field', from: 'Old value', to: 'New value', note: 'Note' },
   },
   logViewer: {
     label: 'Log',

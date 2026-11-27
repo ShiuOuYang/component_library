@@ -366,6 +366,39 @@
       <ApiTable of="ChptDiffViewer" title="方法（ref）" :rows="diffMethods" />
     </section>
 
+    <!-- ============ ChptAuditTrail ============ -->
+    <section id="chpt-audit-trail" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
+      <h2 class="text-2xl font-bold text-content-primary mb-2">ChptAuditTrail 變更紀錄</h2>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>使用時機：</strong>MES 參數、配方、料號主檔的稽核軌跡（誰在何時把哪個欄位從什麼改成什麼）。依日期分組的時間軸，欄位變更以
+        <strong>原值 → 新值</strong>呈現；可依人員、欄位、關鍵字與日期區間篩選。<strong>勾選兩筆</strong>可以比較那兩個時間點的完整內容
+        （從變更紀錄推回當時的快照，不需要另外存版本）。<code>revertable</code> 時每個變更與每個版本都有還原按鈕，送出事件由使用端寫回。可匯出 CSV。
+      </p>
+      <p class="text-sm text-content-secondary mb-4">
+        <strong>引入：</strong><code class="bg-surface-tertiary px-1 py-0.5 rounded">import { ChptAuditTrail, auditSnapshot } from '@/components/library'</code>
+      </p>
+      <ChptAuditTrail
+        title="配方 R-102 回焊溫度曲線"
+        :entries="auditEntries"
+        :field-labels="auditFieldLabels"
+        :format-value="auditFormat"
+        revertable
+        now="2026-11-27T10:00:00"
+        @revert="(p) => (auditLast = `還原 ${auditFieldLabels[p.change.field]} → ${auditFormat(p.change.from, p.change.field)}`)"
+        @revert-version="(p) => (auditLast = `還原到 ${p.entry?.user ?? ''} 的版本：${Object.keys(p.snapshot).length} 個欄位`)"
+      />
+      <p v-if="auditLast" class="mt-2 text-xs text-content-secondary">最後一個事件：{{ auditLast }}</p>
+      <ChptCodeBlock class="mt-6" :code="auditSample" />
+      <ApiTable of="ChptAuditTrail" title="Props" :rows="auditProps" />
+      <ApiTable of="-" title="AuditEntry / AuditChange" :rows="auditDataRows" />
+      <ApiTable of="ChptAuditTrail" title="Events" :rows="auditEvents" />
+      <ApiTable of="ChptAuditTrail" title="方法（ref）" :rows="auditMethods" />
+      <p class="text-sm text-content-secondary mt-4">
+        <strong>注意：</strong>版本快照用每個欄位最早一筆變更的「原值」當初始值，再依時間套用之後的「新值」；紀錄不完整（中間有改動沒記到）時快照也會跟著不完整。
+        元件不會自己改資料：還原事件給你欄位與要寫回的值（或整個快照），寫回後再把新的紀錄加進 <code>entries</code>。
+      </p>
+    </section>
+
     <!-- ============ ChptPivotTable ============ -->
     <section id="chpt-pivot-table" class="mb-12 bg-surface-primary rounded-xl shadow-md p-4 sm:p-8 border border-stroke-light scroll-mt-24">
       <h2 class="text-2xl font-bold text-content-primary mb-2">ChptPivotTable 樞紐分析表</h2>
@@ -516,6 +549,7 @@ import {
   ChptSwitch,
   ChptLotTrace,
   ChptDiffViewer,
+  ChptAuditTrail,
   ChptPivotTable,
   ChptBomTree,
   ChptOrgChart,
@@ -902,6 +936,67 @@ const qrProps = [
   { name: 'bordered', type: 'boolean', def: 'true', desc: '外框' },
   { name: '@refresh', type: 'event', def: '—', desc: 'status 為 expired 時按「重新產生」' },
 ]
+// ---- ChptAuditTrail ----
+const auditLast = ref('')
+const auditFieldLabels = { peak: '峰值溫度', soak: '恆溫時間', speed: '輸送速度', n2: '氮氣保護', approved: '核准' }
+const auditFormat = (v, f) => {
+  if (v === null || v === undefined || v === '') return '（空）'
+  if (f === 'peak') return `${v} °C`
+  if (f === 'soak') return `${v} 秒`
+  if (f === 'speed') return `${v} cm/min`
+  if (typeof v === 'boolean') return v ? '是' : '否'
+  return String(v)
+}
+const auditEntries = [
+  { id: 'e1', at: '2026-11-20T09:12:00', user: '林工程師', action: 'create', target: '配方 R-102', changes: [{ field: 'peak', to: 245 }, { field: 'soak', to: 90 }, { field: 'speed', to: 80 }, { field: 'n2', to: false }] },
+  { id: 'e2', at: '2026-11-24T14:30:00', user: '林工程師', action: 'update', target: '配方 R-102', changes: [{ field: 'peak', from: 245, to: 250 }, { field: 'soak', from: 90, to: 75 }], note: 'BGA 空焊改善：提高峰值、縮短恆溫' },
+  { id: 'e3', at: '2026-11-25T08:05:00', user: '陳經理', action: 'update', target: '配方 R-102', changes: [{ field: 'approved', from: false, to: true }], note: '試產 200 片 X-ray 無空焊，核准' },
+  { id: 'e4', at: '2026-11-26T16:42:00', user: '王組長', action: 'update', target: '配方 R-102', changes: [{ field: 'speed', from: 80, to: 75 }, { field: 'n2', from: false, to: true }] },
+  { id: 'e5', at: '2026-11-27T09:20:00', user: '林工程師', action: 'update', target: '配方 R-102', changes: [{ field: 'peak', from: 250, to: 248 }], note: '零件廠商建議峰值上限 248 °C' },
+]
+const auditSample = `<ChptAuditTrail
+  :entries="entries"
+  :field-labels="{ peak: '峰值溫度', soak: '恆溫時間' }"
+  :format-value="(v, field) => field === 'peak' ? \`\${v} °C\` : String(v ?? '（空）')"
+  revertable
+  @revert="({ change }) => save(change.field, change.from)"
+  @revert-version="({ snapshot }) => saveAll(snapshot)"
+/>
+
+const entries = [
+  { id: 'e1', at: '2026-11-20T09:12:00', user: '林工程師', action: 'create', target: '配方 R-102',
+    changes: [{ field: 'peak', to: 245 }, { field: 'soak', to: 90 }] },
+  { id: 'e2', at: '2026-11-24T14:30:00', user: '林工程師', action: 'update',
+    changes: [{ field: 'peak', from: 245, to: 250 }], note: 'BGA 空焊改善' },
+]
+
+// 某一筆之後的完整內容：auditSnapshot(entries, 'e2') → { peak: 250, soak: 90 }`
+const auditProps = [
+  { name: 'entries', type: 'AuditEntry[]', def: '—', desc: '紀錄（順序不拘，依時間由新到舊顯示）' },
+  { name: 'title', type: 'string', def: "''", desc: '標題' },
+  { name: 'fieldLabels', type: 'Record<string, string>', def: '{}', desc: '欄位 key → 顯示名稱（變更本身有 label 時以 label 為準）' },
+  { name: 'formatValue', type: '(value, field) => string', def: '—', desc: '值的顯示方式；不給時空值顯示「（空）」、布林顯示是 / 否、日期顯示 YYYY-MM-DD HH:mm、物件顯示 JSON' },
+  { name: 'revertable', type: 'boolean', def: 'false', desc: '顯示還原按鈕（送出 revert / revert-version）' },
+  { name: 'compare', type: 'boolean', def: 'true', desc: '可勾選兩筆比較版本' },
+  { name: 'pageSize', type: 'number', def: '50', desc: '一次顯示幾筆，其餘按「顯示更多」' },
+  { name: 'maxHeight', type: 'number', def: '—', desc: '時間軸最大高度（px），超過時捲動' },
+  { name: 'now', type: 'number | string | Date', def: '現在', desc: '判斷「今天 / 昨天」用' },
+  { name: 'filename', type: 'string', def: "'audit-trail'", desc: '匯出 CSV 的檔名（不含副檔名）' },
+]
+const auditDataRows = [
+  { name: 'AuditEntry', type: '{ id, at, user, action?, target?, changes?, note? }', def: '—', desc: "action：'create' | 'update' | 'delete' 或自訂文字；at：epoch ms、ISO 字串或 Date" },
+  { name: 'AuditChange', type: '{ field, label?, from?, to? }', def: '—', desc: '新增時通常只有 to' },
+]
+const auditEvents = [
+  { name: 'revert', params: '({ entry, change })', desc: '還原單一欄位：把 change.field 改回 change.from' },
+  { name: 'revert-version', params: '({ entry, snapshot })', desc: '還原整個版本：snapshot 是那一筆之後的完整欄位值' },
+]
+const auditMethods = [
+  { name: 'snapshot(id)', type: '(id: string | null) => Record<string, unknown>', desc: '某一筆之後的完整欄位值（null：初始狀態）' },
+  { name: 'compareWith(a, b)', type: '(a: string, b: string) => void', desc: '設定要比較的兩筆紀錄' },
+  { name: 'exportCsv(filename?)', type: '(filename?: string) => void', desc: '匯出目前篩選後的紀錄（每個欄位變更一列）' },
+]
+
 // ---- ChptDiffViewer ----
 const recipeA = {
   product: 'PCB-A12',
