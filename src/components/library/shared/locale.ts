@@ -222,6 +222,72 @@ export interface ChptLocale {
     selected: (name: string) => string
     labeled: (label: string, value: string) => string
     note: (text: string) => string
+  fmea: {
+    title: string
+    empty: string
+    search: string
+    all: string
+    priorityFilter: string
+    sortBy: string
+    sorts: { none: string; ap: string; rpn: string; severity: string }
+    add: string
+    exportCsv: string
+    columns: {
+      item: string
+      failureMode: string
+      effect: string
+      severity: string
+      cause: string
+      prevention: string
+      occurrence: string
+      detectionControl: string
+      detection: string
+      rpn: string
+      ap: string
+      actions: string
+      revised: string
+    }
+    ratingNames: { severity: string; occurrence: string; detection: string }
+    priorities: { H: string; M: string; L: string }
+    apBadge: (p: string, name: string) => string
+    special: { CC: string; SC: string }
+    specialLabel: string
+    specialNone: string
+    countByPriority: (p: string, n: number) => string
+    overThreshold: (n: number, threshold: number) => string
+    openActions: (n: number) => string
+    overdueActions: (n: number) => string
+    highWithoutAction: (n: number) => string
+    reduction: (before: number, after: number, pct: number) => string
+    actionStates: { none: string; open: string; overdue: string; done: string }
+    actionProgress: (done: number, total: number) => string
+    details: string
+    expand: (name: string) => string
+    collapse: (name: string) => string
+    ratingLabel: (row: string, field: string) => string
+    untitled: string
+    sameItem: (item: string) => string
+    highSeverity: string
+    rpnOver: (threshold: number) => string
+    actionText: string
+    owner: string
+    due: string
+    done: string
+    addAction: string
+    removeAction: (text: string) => string
+    noActions: string
+    removeRow: string
+    revisedTitle: string
+    revise: string
+    clearRevised: string
+    revisedSummary: (before: number, after: number) => string
+    notRevised: string
+    changed: (row: string, field: string, value: string) => string
+    rowAdded: string
+    rowRemoved: (row: string) => string
+    note: (text: string) => string
+    labeled: (label: string, value: string) => string
+    csv: { revisedSeverity: string; revisedOccurrence: string; revisedDetection: string; revisedRpn: string; revisedAp: string; special: string }
   }
   breadcrumbNav: { label: string }
   labelDesigner: {
@@ -2125,6 +2191,72 @@ export const zhTW: ChptLocale = {
     selected: (name) => `已選取 ${name}`,
     labeled: (label, value) => `${label}：${value}`,
     note: (text) => `（${text}）`,
+  fmea: {
+    title: 'FMEA 分析表',
+    empty: '沒有符合的項目',
+    search: '搜尋步驟、失效模式、原因、對策',
+    all: '全部',
+    priorityFilter: '依處置優先等級篩選',
+    sortBy: '排序',
+    sorts: { none: '原始順序', ap: '依 AP', rpn: '依 RPN', severity: '依嚴重度' },
+    add: '新增項目',
+    exportCsv: '匯出 CSV',
+    columns: {
+      item: '製程步驟',
+      failureMode: '失效模式',
+      effect: '失效影響',
+      severity: 'S',
+      cause: '失效原因',
+      prevention: '預防管制',
+      occurrence: 'O',
+      detectionControl: '偵測管制',
+      detection: 'D',
+      rpn: 'RPN',
+      ap: 'AP',
+      actions: '改善對策',
+      revised: '改善後',
+    },
+    ratingNames: { severity: '嚴重度', occurrence: '發生度', detection: '偵測度' },
+    priorities: { H: '高', M: '中', L: '低' },
+    apBadge: (p, name) => `處置優先等級 ${p}（${name}）`,
+    special: { CC: '關鍵特性（安全 / 法規）', SC: '重要特性' },
+    specialLabel: '特殊特性',
+    specialNone: '無',
+    countByPriority: (p, n) => `AP ${p}：${n}`,
+    overThreshold: (n, threshold) => `RPN ≥ ${threshold}：${n} 項`,
+    openActions: (n) => `未完成對策 ${n}`,
+    overdueActions: (n) => `逾期 ${n}`,
+    highWithoutAction: (n) => `${n} 項高優先尚無對策`,
+    reduction: (before, after, pct) => `已改善項目 RPN ${before} → ${after}（降低 ${pct}%）`,
+    actionStates: { none: '尚無對策', open: '進行中', overdue: '有逾期', done: '已完成' },
+    actionProgress: (done, total) => `${done}/${total}`,
+    details: '詳細內容',
+    expand: (name) => `展開「${name}」的詳細內容`,
+    collapse: (name) => `收合「${name}」的詳細內容`,
+    ratingLabel: (row, field) => `${row}：${field}`,
+    untitled: '（未命名）',
+    sameItem: (item) => `同上：${item}`,
+    highSeverity: '嚴重度 9–10：涉及安全或法規',
+    rpnOver: (threshold) => `RPN 達門檻 ${threshold}`,
+    actionText: '對策內容',
+    owner: '負責人',
+    due: '期限',
+    done: '完成',
+    addAction: '新增對策',
+    removeAction: (text) => `刪除對策「${text}」`,
+    noActions: '尚無對策',
+    removeRow: '刪除此項目',
+    revisedTitle: '改善後重新評分',
+    revise: '重新評分',
+    clearRevised: '清除重新評分',
+    revisedSummary: (before, after) => `RPN ${before} → ${after}`,
+    notRevised: '尚未重新評分',
+    changed: (row, field, value) => `${row}：${field}改為 ${value}`,
+    rowAdded: '已新增項目',
+    rowRemoved: (row) => `已刪除「${row}」`,
+    note: (text) => `（${text}）`,
+    labeled: (label, value) => `${label}：${value}`,
+    csv: { revisedSeverity: '改善後 S', revisedOccurrence: '改善後 O', revisedDetection: '改善後 D', revisedRpn: '改善後 RPN', revisedAp: '改善後 AP', special: '特殊特性' },
   },
   breadcrumbNav: { label: '麵包屑導覽' },
   labelDesigner: {
@@ -4136,6 +4268,72 @@ export const enUS: ChptLocale = {
     selected: (name) => `Selected ${name}`,
     labeled: (label, value) => `${label}: ${value}`,
     note: (text) => ` (${text})`,
+  fmea: {
+    title: 'FMEA',
+    empty: 'No matching items',
+    search: 'Search steps, failure modes, causes, actions',
+    all: 'All',
+    priorityFilter: 'Filter by action priority',
+    sortBy: 'Sort',
+    sorts: { none: 'Original order', ap: 'By AP', rpn: 'By RPN', severity: 'By severity' },
+    add: 'Add item',
+    exportCsv: 'Export CSV',
+    columns: {
+      item: 'Process step',
+      failureMode: 'Failure mode',
+      effect: 'Effect',
+      severity: 'S',
+      cause: 'Cause',
+      prevention: 'Prevention control',
+      occurrence: 'O',
+      detectionControl: 'Detection control',
+      detection: 'D',
+      rpn: 'RPN',
+      ap: 'AP',
+      actions: 'Actions',
+      revised: 'After actions',
+    },
+    ratingNames: { severity: 'Severity', occurrence: 'Occurrence', detection: 'Detection' },
+    priorities: { H: 'High', M: 'Medium', L: 'Low' },
+    apBadge: (p, name) => `Action priority ${p} (${name})`,
+    special: { CC: 'Critical characteristic (safety / regulatory)', SC: 'Significant characteristic' },
+    specialLabel: 'Special characteristic',
+    specialNone: 'None',
+    countByPriority: (p, n) => `AP ${p}: ${n}`,
+    overThreshold: (n, threshold) => `RPN ≥ ${threshold}: ${n}`,
+    openActions: (n) => `${n} open ${n === 1 ? 'action' : 'actions'}`,
+    overdueActions: (n) => `${n} overdue`,
+    highWithoutAction: (n) => `${n} high-priority ${n === 1 ? 'item has' : 'items have'} no action`,
+    reduction: (before, after, pct) => `Improved items: RPN ${before} → ${after} (−${pct}%)`,
+    actionStates: { none: 'No actions', open: 'In progress', overdue: 'Overdue', done: 'Done' },
+    actionProgress: (done, total) => `${done}/${total}`,
+    details: 'Details',
+    expand: (name) => `Expand details of "${name}"`,
+    collapse: (name) => `Collapse details of "${name}"`,
+    ratingLabel: (row, field) => `${row}: ${field}`,
+    untitled: '(untitled)',
+    sameItem: (item) => `Same as above: ${item}`,
+    highSeverity: 'Severity 9–10: safety or regulatory',
+    rpnOver: (threshold) => `RPN at or above ${threshold}`,
+    actionText: 'Action',
+    owner: 'Owner',
+    due: 'Due',
+    done: 'Done',
+    addAction: 'Add action',
+    removeAction: (text) => `Remove action "${text}"`,
+    noActions: 'No actions',
+    removeRow: 'Delete this item',
+    revisedTitle: 'Ratings after actions',
+    revise: 'Re-rate',
+    clearRevised: 'Clear re-rating',
+    revisedSummary: (before, after) => `RPN ${before} → ${after}`,
+    notRevised: 'Not re-rated',
+    changed: (row, field, value) => `${row}: ${field} set to ${value}`,
+    rowAdded: 'Item added',
+    rowRemoved: (row) => `Deleted "${row}"`,
+    note: (text) => ` (${text})`,
+    labeled: (label, value) => `${label}: ${value}`,
+    csv: { revisedSeverity: 'Revised S', revisedOccurrence: 'Revised O', revisedDetection: 'Revised D', revisedRpn: 'Revised RPN', revisedAp: 'Revised AP', special: 'Special characteristic' },
   },
   breadcrumbNav: { label: 'Breadcrumb' },
   labelDesigner: {
