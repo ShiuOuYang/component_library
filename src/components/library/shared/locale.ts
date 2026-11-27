@@ -1775,6 +1775,63 @@ export interface ChptLocale {
     sep: string
     hint: string
   }
+  eightD: {
+    title: string
+    number: string
+    subject: string
+    steps: { d0: string; d1: string; d2: string; d3: string; d4: string; d5: string; d6: string; d7: string; d8: string }
+    hints: { d0: string; d1: string; d2: string; d3: string; d4: string; d5: string; d6: string; d7: string; d8: string }
+    fiveW2H: { what: string; where: string; when: string; who: string; why: string; how: string; howMany: string }
+    prevention: { fmea: string; controlPlan: string; sop: string; training: string; horizontal: string }
+    missing: {
+      text: string
+      members: string
+      leader: string
+      what: string
+      howMany: string
+      actions: string
+      actionsDone: string
+      occurrenceRoot: string
+      escapeRoot: string
+      verified: string
+      prevention: string
+    }
+    states: { done: string; inProgress: string; empty: string }
+    overdue: string
+    progress: (done: number, total: number) => string
+    closed: string
+    owner: string
+    due: string
+    text: string
+    member: string
+    role: string
+    leader: string
+    addMember: string
+    removeMember: (name: string) => string
+    action: string
+    addAction: string
+    removeAction: (text: string) => string
+    actionDone: string
+    occurrence: string
+    escape: string
+    why: (n: number) => string
+    rootCause: string
+    verified: string
+    complete: string
+    reopen: string
+    prev: string
+    next: string
+    completedOn: (date: string) => string
+    cannotComplete: string
+    exportText: string
+    print: string
+    stepsNav: string
+    untitled: string
+    done: string
+    stepCompleted: (step: string) => string
+    stepReopened: (step: string) => string
+    labeled: (label: string, value: string) => string
+  }
   sankey: {
     title: string
     empty: string
@@ -3845,6 +3902,73 @@ export const zhTW: ChptLocale = {
     residualLine: (residual, expected) => `殘差 ${residual}（預期 ${expected}）`,
     sep: '；',
     hint: '左右方向鍵換欄、上下方向鍵換類別，Enter 選取格子；點圖例標示一個類別',
+  },
+  eightD: {
+    title: '8D 報告',
+    number: '8D 編號',
+    subject: '問題主旨',
+    steps: { d0: 'D0 準備', d1: 'D1 成立團隊', d2: 'D2 問題描述', d3: 'D3 暫時對策', d4: 'D4 根本原因', d5: 'D5 永久對策', d6: 'D6 執行與確認', d7: 'D7 預防再發', d8: 'D8 結案' },
+    hints: {
+      d0: '評估是否需要 8D，記錄緊急應變措施',
+      d1: '跨部門小組，至少 2 人並指定組長',
+      d2: '用 5W2H 描述問題，量化影響範圍',
+      d3: '找到根本原因之前，先隔離與圍堵不良品',
+      d4: '發生原因與流出原因各問 5 次為什麼，並驗證',
+      d5: '針對根本原因的永久對策',
+      d6: '執行永久對策並確認效果',
+      d7: '修訂文件、教育訓練並水平展開',
+      d8: '總結成果並肯定團隊',
+    },
+    fiveW2H: { what: 'What 什麼問題', where: 'Where 在哪裡發現', when: 'When 何時發生', who: 'Who 誰發現', why: 'Why 為何是問題', how: 'How 如何發現', howMany: 'How many 數量與影響' },
+    prevention: { fmea: '更新 FMEA', controlPlan: '更新管制計畫', sop: '修訂作業標準書', training: '教育訓練', horizontal: '水平展開到類似產品 / 製程' },
+    missing: {
+      text: '請填寫說明',
+      members: '至少要有 2 位成員',
+      leader: '請指定組長',
+      what: '請填寫 What',
+      howMany: '請填寫數量與影響',
+      actions: '至少要有 1 項對策',
+      actionsDone: '對策尚未全部完成',
+      occurrenceRoot: '請填寫發生的根本原因',
+      escapeRoot: '請填寫流出的根本原因',
+      verified: '根本原因尚未驗證',
+      prevention: '至少勾選 1 項預防再發措施',
+    },
+    states: { done: '已完成', inProgress: '進行中', empty: '未開始' },
+    overdue: '逾期',
+    progress: (done, total) => `${done}/${total} 步完成`,
+    closed: '已結案',
+    owner: '負責人',
+    due: '期限',
+    text: '說明',
+    member: '成員姓名',
+    role: '職務 / 部門',
+    leader: '組長',
+    addMember: '新增成員',
+    removeMember: (name) => `移除成員「${name}」`,
+    action: '對策內容',
+    addAction: '新增對策',
+    removeAction: (text) => `刪除對策「${text}」`,
+    actionDone: '完成',
+    occurrence: '發生原因（為什麼會產生不良）',
+    escape: '流出原因（為什麼沒被攔下）',
+    why: (n) => `為什麼 ${n}`,
+    rootCause: '根本原因',
+    verified: '已驗證根本原因（重現或對策後不再發生）',
+    complete: '標記完成',
+    reopen: '取消完成',
+    prev: '上一步',
+    next: '下一步',
+    completedOn: (date) => `完成於 ${date}`,
+    cannotComplete: '還不能標記完成',
+    exportText: '匯出文字',
+    print: '列印',
+    stepsNav: '8D 步驟',
+    untitled: '（未命名）',
+    done: '完成',
+    stepCompleted: (step) => `${step} 已完成`,
+    stepReopened: (step) => `${step} 已取消完成`,
+    labeled: (label, value) => `${label}：${value}`,
   },
   sankey: {
     title: '流向圖',
@@ -5924,6 +6048,73 @@ export const enUS: ChptLocale = {
     residualLine: (residual, expected) => `Residual ${residual} (expected ${expected})`,
     sep: '; ',
     hint: 'Use Left / Right to change column and Up / Down to change category, Enter to select a cell; click the legend to highlight a category',
+  },
+  eightD: {
+    title: '8D report',
+    number: '8D number',
+    subject: 'Problem',
+    steps: { d0: 'D0 Prepare', d1: 'D1 Team', d2: 'D2 Describe the problem', d3: 'D3 Containment', d4: 'D4 Root cause', d5: 'D5 Corrective actions', d6: 'D6 Implement & validate', d7: 'D7 Prevent recurrence', d8: 'D8 Close & recognize' },
+    hints: {
+      d0: 'Decide whether an 8D is needed; record emergency response',
+      d1: 'Cross-functional team: at least 2 people and a leader',
+      d2: 'Describe the problem with 5W2H and quantify the impact',
+      d3: 'Isolate and contain defects until the root cause is found',
+      d4: 'Ask why five times for both occurrence and escape, then verify',
+      d5: 'Permanent actions that address the root cause',
+      d6: 'Implement the permanent actions and confirm they work',
+      d7: 'Update documents, train people and deploy horizontally',
+      d8: 'Summarize the results and recognize the team',
+    },
+    fiveW2H: { what: 'What is the problem', where: 'Where was it found', when: 'When did it happen', who: 'Who found it', why: 'Why is it a problem', how: 'How was it found', howMany: 'How many / impact' },
+    prevention: { fmea: 'Update FMEA', controlPlan: 'Update control plan', sop: 'Revise work instructions', training: 'Training', horizontal: 'Deploy to similar products / processes' },
+    missing: {
+      text: 'Add a description',
+      members: 'At least 2 team members',
+      leader: 'Assign a team leader',
+      what: 'Fill in What',
+      howMany: 'Fill in How many / impact',
+      actions: 'At least 1 action',
+      actionsDone: 'Not all actions are done',
+      occurrenceRoot: 'Fill in the occurrence root cause',
+      escapeRoot: 'Fill in the escape root cause',
+      verified: 'Root cause not verified',
+      prevention: 'Check at least 1 prevention item',
+    },
+    states: { done: 'Done', inProgress: 'In progress', empty: 'Not started' },
+    overdue: 'Overdue',
+    progress: (done, total) => `${done}/${total} steps done`,
+    closed: 'Closed',
+    owner: 'Owner',
+    due: 'Due',
+    text: 'Description',
+    member: 'Member name',
+    role: 'Role / department',
+    leader: 'Leader',
+    addMember: 'Add member',
+    removeMember: (name) => `Remove member "${name}"`,
+    action: 'Action',
+    addAction: 'Add action',
+    removeAction: (text) => `Remove action "${text}"`,
+    actionDone: 'Done',
+    occurrence: 'Occurrence (why the defect was made)',
+    escape: 'Escape (why it was not caught)',
+    why: (n) => `Why ${n}`,
+    rootCause: 'Root cause',
+    verified: 'Root cause verified (reproduced, or gone after the fix)',
+    complete: 'Mark as done',
+    reopen: 'Reopen',
+    prev: 'Previous',
+    next: 'Next',
+    completedOn: (date) => `Completed ${date}`,
+    cannotComplete: 'Cannot mark as done yet',
+    exportText: 'Export text',
+    print: 'Print',
+    stepsNav: '8D steps',
+    untitled: '(untitled)',
+    done: 'Done',
+    stepCompleted: (step) => `${step} done`,
+    stepReopened: (step) => `${step} reopened`,
+    labeled: (label, value) => `${label}: ${value}`,
   },
   sankey: {
     title: 'Flow chart',

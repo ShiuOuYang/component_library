@@ -40,6 +40,7 @@ export {
   ChptLotTrace,
   ChptDiffViewer,
   ChptChecklist,
+  Chpt8DReport,
   ChptLabelDesigner,
   ChptFishbone,
   ChptValueStreamMap,
@@ -113,6 +114,8 @@ export { rosterDates, coverage as rosterCoverage, shortages as rosterShortages, 
 export type { RosterShift, RosterPerson, Roster, ShiftRequirement, RosterRules, RosterWarning } from './shared/shiftRoster'
 export { fitImage, clampImageView, zoomImageTo, viewOf as imageViewOf, zoomOf as imageZoomOf } from './shared/imageCompare'
 export type { ImageView, ImageZoom, CompareMode } from './shared/imageCompare'
+export { EIGHT_D_STEPS, FIVE_W2H as EIGHT_D_5W2H, PREVENTION_ITEMS as EIGHT_D_PREVENTION, createEightD, eightDMissing, eightDProgress, eightDText, stepState as eightDStepState, updateStep as eightDUpdateStep } from './shared/eightD'
+export type { EightDReport, EightDStep, EightDStepKey, EightDMember, EightDAction, EightDMissing, EightDProgress, EightDStepState, EightDTextLabels, FiveW2HKey, PreventionItem } from './shared/eightD'
 export { ALARM_SEVERITIES, alarmState, sortAlarms, filterAlarms, countUnacked, ackAlarms, shelveAlarms, unshelveAlarms, escalateAlarms, playAlarmTone } from './shared/alarm'
 export type { AlarmItem, AlarmSeverity, AlarmState, AlarmView } from './shared/alarm'
 export { createElement as createLabelElement, bindTemplate as bindLabelTemplate, templateFields as labelTemplateFields, labelSvg, toZpl as labelToZpl, mmToDots, alignElements as alignLabelElements } from './shared/labelDesigner'
@@ -200,7 +203,7 @@ export type {
   DropdownItem, ChptFixedTableColumn, ChptFixedTableRow, ViewerImage, MenuItem, MenuKey,
   SegmentOption, SliderMark, TableColumn, TableRow, TableRowKey, TableSortItem,
   TableDefaultSort, TableChangeEvent, TableSortEvent, TableColumnAlign, TableCellContext, TableColumnColor, TableColumnFixed, TableSummaryType, TimelineItem, TourStep, TransferItem,
-  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, ChptLabelDesignerProps, ChptFishboneProps, ChptFmeaTableProps, ChptValueStreamMapProps, ChptOrgChartProps, ChptMaskedInputProps, MaskedValue, ChptCommentThreadProps, ChptMentionInputProps, MentionTrigger, MentionValue, ChptSortableListProps, SortChange, ChptImageCropperProps, CropState, CropOutputOptions, ChptSchedulerProps, SchedulerView, ChptCronInputProps, ChptJsonViewerProps, ChptQueryBuilderProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
+  ScanResult, ScanStatus, ScanRejectReason, ChptScanInputProps, ScanSource, ChptFormListProps, Chpt8DReportProps, ChptLabelDesignerProps, ChptFishboneProps, ChptFmeaTableProps, ChptValueStreamMapProps, ChptOrgChartProps, ChptMaskedInputProps, MaskedValue, ChptCommentThreadProps, ChptMentionInputProps, MentionTrigger, MentionValue, ChptSortableListProps, SortChange, ChptImageCropperProps, CropState, CropOutputOptions, ChptSchedulerProps, SchedulerView, ChptCronInputProps, ChptJsonViewerProps, ChptQueryBuilderProps, ChptBomTreeProps, AqlDefectClass, AqlRecord, ChptAqlSamplingProps, ChptSkillMatrixProps, HourlyReason, ChptHourlyBoardProps, StorageColorMode, StorageMoveEvent, ChptStorageMapProps, FeederRejectReason, ChptFeederMapProps,
   SchemaFormField, SchemaFieldType, SchemaFieldOption, CommandItem, DashboardItem, KanbanColumn, KanbanMoveEvent, RichTextTool,
   TreeNode, UploadFile, UploadRequest, UploadStatus,
 } from './ui/index.js'
