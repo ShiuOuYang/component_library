@@ -103,6 +103,43 @@
         <ChptCodeBlock class="mt-4" :code="capCode" />
       </section>
 
+      <section id="ewma" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
+        <h2 class="text-2xl font-semibold text-content-primary mb-2">EWMA / CUSUM（小偏移管制圖）</h2>
+        <p class="text-sm text-content-secondary mb-4">
+          <code>EwmaCusumChart</code>：一般的個別值管制圖對 1.5σ 以下的偏移反應很慢；EWMA 與 CUSUM 會累積過去的資訊，0.5～1σ 的偏移也能在十幾點內發出訊號。
+          上半部是 EWMA（λ 越小越能抓小偏移，但反應越慢）與隨點數展開的管制界限，下半部是表格式 CUSUM 的上下累積和與決策界限 ±H，
+          發出訊號時往回估計<strong>偏移開始的位置與新平均</strong>。下面的資料從第 31 點起平均往上偏 1σ（+0.08 µm）：
+          個別值都還在 ±3σ 之內，I-MR 圖看不出來。
+        </p>
+        <div class="mb-3 flex flex-wrap items-center gap-3 text-sm text-content-secondary">
+          <span>λ</span>
+          <ChptSegmented v-model="ewLambda" size="sm" :options="[{ label: '0.05', value: 0.05 }, { label: '0.1', value: 0.1 }, { label: '0.2', value: 0.2 }, { label: '0.4', value: 0.4 }]" />
+          <span>顯示</span>
+          <ChptSegmented v-model="ewMode" size="sm" :options="[{ label: '兩者', value: 'both' }, { label: 'EWMA', value: 'ewma' }, { label: 'CUSUM', value: 'cusum' }]" />
+        </div>
+        <div class="bg-surface-secondary rounded-xl p-4 border border-stroke-light">
+          <EwmaCusumChart
+            :data="ewData"
+            value="thickness"
+            label="sample"
+            title="銅厚（µm）"
+            unit="µm"
+            :target="10"
+            :sigma="0.08"
+            :lambda="ewLambda"
+            :mode="ewMode"
+            :auto-resize="true"
+            @point-click="(p) => (ewClicked = `樣本 ${p.label}：${p.value}`)"
+          />
+          <p v-if="ewClicked" class="mt-2 text-xs text-content-secondary">point-click：{{ ewClicked }}</p>
+        </div>
+        <ChptCodeBlock class="mt-4" :code="ewCode" />
+        <p class="mt-3 text-sm text-content-secondary">
+          <strong>注意：</strong>μ0 與 σ 不給時用資料本身估（平均、移動全距 ÷ 1.128）；資料裡已經有偏移時，平均會被拉過去、訊號變慢，
+          監控時請用穩定期算好的 <code>target</code> 與 <code>sigma</code>。常用組合：λ = 0.2、L = 2.86～3；k = 0.5、h = 4～5（偵測 1σ 的偏移）。
+        </p>
+      </section>
+
       <section id="api" class="bg-surface-primary rounded-lg shadow-sm p-4 sm:p-6 mb-8 scroll-mt-24">
         <h2 class="text-2xl font-semibold text-content-primary mb-2">API</h2>
         <h3 class="text-lg font-semibold text-content-primary mt-4">ControlChart</h3>
@@ -113,6 +150,10 @@
         <ApiTable of="CapabilityHistogram" title="Props" :rows="chProps" />
         <ApiTable of="CapabilityHistogram" title="Events" :rows="chEvents" />
         <ApiTable of="CapabilityHistogram" title="Slots 與方法" :rows="chSlots" />
+        <h3 class="text-lg font-semibold text-content-primary mt-6">EwmaCusumChart</h3>
+        <ApiTable of="EwmaCusumChart" title="Props" :rows="ewProps" />
+        <ApiTable of="EwmaCusumChart" title="Events" :rows="ewEvents" />
+        <ApiTable of="EwmaCusumChart" title="方法（ref）" :rows="ewMethods" />
       </section>
     </div>
   </div>
@@ -120,7 +161,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { CapabilityHistogram, ChptCodeBlock, ControlChart } from '@/components/library'
+import { CapabilityHistogram, ChptCodeBlock, ChptSegmented, ControlChart, EwmaCusumChart } from '@/components/library'
 import ApiTable from './components/_ApiTable.vue'
 
 /** 可重現的常態亂數（Box–Muller） */
@@ -167,6 +208,52 @@ const capBase = Array.from({ length: 200 }, () => g4(10.02, 0.07))
 const shift = ref(0)
 const showWithin = ref(false)
 const capData = computed(() => capBase.map((v) => +(v + shift.value).toFixed(4)))
+
+// EWMA / CUSUM：前 30 點穩定（μ = 10、σ = 0.08），第 31 點起往上偏 1σ
+const g5 = normalGen(73)
+const ewData = Array.from({ length: 60 }, (_, i) => ({ sample: i + 1, thickness: +g5(10 + (i >= 30 ? 0.08 : 0), 0.08).toFixed(3) }))
+const ewLambda = ref(0.2)
+const ewMode = ref('both')
+const ewClicked = ref('')
+const ewCode = `<EwmaCusumChart
+  :data="rows"            // 數字陣列，或 [{ sample: 1, thickness: 10.03 }, …]
+  value="thickness"
+  label="sample"
+  :target="10"            // 穩定期的平均（不給時用資料平均）
+  :sigma="0.08"           // 穩定期的 σ（不給時用移動全距估計）
+  :lambda="0.2" :limit-width="3"   // EWMA：λ 與界限寬度 L
+  :k="0.5" :h="5"         // CUSUM
+  mode="both"             // 'both' | 'ewma' | 'cusum'
+  @point-click="(p) => …" // { index, label, value, ewma, cusum }
+/>
+
+// 只要數字：ewma(values, { lambda, L, target, sigma })、cusum(values, { k, h, target, sigma })
+// cusum(...).shift → { signalAt, onset, direction, newMean }`
+const ewProps = [
+  { name: 'data', type: '(number | Record<string, unknown>)[]', def: '—', desc: '數值陣列或資料列' },
+  { name: 'value', type: 'string', def: "'value'", desc: '量測值欄位' },
+  { name: 'label', type: 'string', def: '序號', desc: 'x 軸標籤欄位' },
+  { name: 'mode', type: "'both' | 'ewma' | 'cusum'", def: "'both'", desc: '顯示哪些圖' },
+  { name: 'lambda', type: 'number', def: '0.2', desc: 'EWMA 平滑係數 λ（0 < λ ≤ 1）' },
+  { name: 'limitWidth', type: 'number', def: '3', desc: 'EWMA 管制界限寬度 L（σ 倍數）；λ = 0.2 時 2.86 約對應 ARL₀ 500' },
+  { name: 'k', type: 'number', def: '0.5', desc: 'CUSUM 參考值（σ 倍數），通常取要偵測的偏移量的一半' },
+  { name: 'h', type: 'number', def: '5', desc: 'CUSUM 決策界限（σ 倍數）' },
+  { name: 'target', type: 'number | null', def: 'null', desc: '目標值 μ0；null 時用資料平均' },
+  { name: 'sigma', type: 'number | null', def: 'null', desc: '製程標準差；null 時用 MR̄ ÷ 1.128' },
+  { name: 'showData', type: 'boolean', def: 'true', desc: 'EWMA 圖上畫出原始量測值（淡）' },
+  { name: 'width / height', type: 'number', def: '760 / 420', desc: '圖表尺寸（點很多時寬度會自動加寬並可捲動）' },
+  { name: 'autoResize / debounceDelay', type: 'boolean / number', def: 'false / 100', desc: '跟著容器寬度調整' },
+  { name: 'title / unit', type: 'string', def: "''", desc: '標題 / 單位' },
+  { name: 'valueFormat', type: '(v: number) => string', def: 'null', desc: '數值格式' },
+  { name: 'emptyText', type: 'string', def: '「沒有資料」', desc: '沒有資料時的文字' },
+]
+const ewEvents = [
+  { name: 'point-click', params: '(point: EwmaCusumPointEvent)', desc: '點擊或 Enter：{ index, label, value, ewma, cusum }' },
+  { name: 'chart-resize', params: '({ width, height })', desc: 'autoResize 時尺寸改變' },
+]
+const ewMethods = [
+  { name: 'ewma() / cusum()', type: '() => EwmaResult / CusumResult', desc: '計算結果（含界限、訊號與偏移估計）' },
+]
 
 const imrCode = `<ControlChart
   :data="rows"                 // [{ time: '08:00', thickness: 10.03 }, …]
