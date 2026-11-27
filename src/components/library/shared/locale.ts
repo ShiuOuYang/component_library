@@ -222,6 +222,7 @@ export interface ChptLocale {
     selected: (name: string) => string
     labeled: (label: string, value: string) => string
     note: (text: string) => string
+  }
   fmea: {
     title: string
     empty: string
@@ -2191,6 +2192,7 @@ export const zhTW: ChptLocale = {
     selected: (name) => `已選取 ${name}`,
     labeled: (label, value) => `${label}：${value}`,
     note: (text) => `（${text}）`,
+  },
   fmea: {
     title: 'FMEA 分析表',
     empty: '沒有符合的項目',
@@ -4268,6 +4270,7 @@ export const enUS: ChptLocale = {
     selected: (name) => `Selected ${name}`,
     labeled: (label, value) => `${label}: ${value}`,
     note: (text) => ` (${text})`,
+  },
   fmea: {
     title: 'FMEA',
     empty: 'No matching items',
